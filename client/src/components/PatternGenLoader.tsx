@@ -42,7 +42,7 @@ const PatternGenLoader: React.FC<PatternGenLoaderProps> = React.memo(({ stage, p
       </div>
 
       {/* Yarn-themed progress bar */}
-      <div className="w-full max-w-md h-4 bg-gray-100 rounded-full overflow-hidden relative mb-3">
+      <div className="w-full max-w-md h-4 bg-gray-100 rounded-full overflow-hidden relative mb-3" role="progressbar" aria-valuenow={currentProgress} aria-valuemin={0} aria-valuemax={100}>
         <div 
           className="h-full bg-primary-400 transition-all duration-700 ease-in-out flex items-center"
           style={{ width: `${currentProgress}%` }}

@@ -25,7 +25,13 @@ class ErrorBoundary extends React.Component<Props, State> {
         <div className="flex flex-col items-center justify-center p-6 bg-red-50 rounded-xl border border-red-100">
           <AlertTriangle className="h-8 w-8 text-red-500 mb-2" />
           <h3 className="text-lg font-medium text-red-700">Something went wrong</h3>
-          <p className="text-sm text-red-600">Please try refreshing the page</p>
+          <p className="text-sm text-red-600 mb-4">Something went wrong with this component</p>
+          <button 
+            onClick={() => this.setState({ hasError: false })}
+            className="px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       );
     }
