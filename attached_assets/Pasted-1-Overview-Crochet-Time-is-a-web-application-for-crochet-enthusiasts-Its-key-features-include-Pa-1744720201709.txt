@@ -1,0 +1,237 @@
+1. Overview
+Crochet Time is a web application for crochet enthusiasts. Its key features include:
+
+Pattern Generation:
+Using a unified input box, the user provides a text prompt (or pastes an existing pattern), optionally uploads an image, and selects metadata (Project Type, Skill Level, Yarn Type, Target Size).
+The app then builds an AI prompt and uses OpenAI’s GPT‑4 to generate a structured crochet pattern (organized into sections and steps).
+If the wool colour is not indicated, the AI will recommend colours as part of the output and incorporate them into step instructions.
+
+AI-Generated Visuals:
+In parallel, the system calls an OpenAI image API (DALL·E or Stable Diffusion) to generate:
+• An overall “end product” image (e.g. a digital illustration of the finished crocheted item, styled with wool/crochet iconography)
+• Images for key steps if desired (for example, a diagram of a magic ring step).
+These images are stored (as URLs) within the pattern JSON.
+
+Editing & Regeneration:
+The pattern is displayed in an editor where each step appears in a “step card” complete with:
+• Text instructions
+• A lock toggle (so that locked steps are not regenerated)
+• Stitch/row counters
+• Notes and file upload for user photos
+Users can edit, add, and delete steps. When regenerating, the AI is instructed to keep locked steps unchanged and update unlocked ones.
+
+Progress Tracking & Persistence:
+A progress bar calculates the percentage of completed steps.
+The complete pattern (text and generated images) is saved in Replit DB via helper functions.
+A library view allows users to see all saved patterns.
+
+Theming & Iconography:
+The app uses TailwindCSS for a clean, warm pastel UI with rounded corners and gentle drop shadows.
+Icons throughout are wool/crochet–themed (e.g., a ball of wool for “Yarn Type,” crochet hook for “Project Type,” etc.).
+
+2. Project File Structure
+Set up the following structure for modular development:
+
+cpp
+Copy
+src/
+├── App.js
+├── index.css
+├── components/
+│   ├── PatternInput.js       // Unified input box for text, metadata, and optional image upload
+│   ├── PatternViewer.js      // Main editor/viewer for patterns
+│   ├── PatternStepCard.js    // Reusable component for each pattern step
+│   ├── PatternProgressBar.js // Progress bar component
+│   ├── PatternLibrary.js     // (Optional) Library view for saved patterns
+├── db/
+│   └── patternService.js     // Functions to interact with Replit DB (create, get, update, delete)
+├── api/
+│   ├── generatePattern.js    // Backend endpoint for AI text generation (GPT‑4)
+│   └── generateImage.js      // Backend endpoint for image generation (DALL·E/Stable Diffusion)
+3. Detailed Implementation
+3.1 Pattern Input (PatternInput.js)
+Create a component that:
+
+Offers one large unified input box (where the user can type a prompt or paste a pattern)
+
+Supports optional image upload (for future OCR/visual inspiration)
+
+Provides dropdown selectors with crochet–themed icons for:
+
+Project Type (Plushie 🧸, Blanket 🛏, Hat 🎩, Bag 👜, etc.)
+
+Skill Level (Beginner, Intermediate, Advanced)
+
+Yarn Type (if left blank, the AI should recommend wool colours)
+
+Target Size (e.g., "15 cm")
+
+When the user clicks “Create Pattern”:
+
+Construct an AI prompt that includes the text input and metadata.
+
+Call your backend API endpoint /api/generatePattern (see Section 3.3) to generate the pattern.
+
+In parallel, build an image prompt and call /api/generateImage to generate the “end product” image.
+
+Merge the returned text and image data into a pattern object (see data model below).
+
+Save the pattern to Replit DB using createPattern() (from patternService.js).
+
+3.2 Pattern Data Model
+Store the pattern as a JSON object. Example structure:
+
+js
+Copy
+{
+  id: "uuid",
+  title: "Baby Tiger",
+  projectType: "Plushie",
+  skillLevel: "Beginner",
+  yarnType: "Alize Velluto", // or recommended colour if not specified
+  size: "15 cm",
+  endProductImage: "https://generated-image-url.com/final.jpg",
+  createdAt: "2024-04-15T14:00:00",
+  sections: [
+    {
+      name: "Head",
+      steps: [
+        {
+          id: 1,
+          text: "Make a magic ring with 6 SC.",
+          locked: false,
+          count: 0,
+          notes: "",
+          photo: null,
+          aiStepImage: "https://generated-image-url.com/step1.jpg",
+          completed: false
+        },
+        // More steps ...
+      ]
+    },
+    // Additional sections (Ears, Body, Tail)...
+  ]
+}
+3.3 API – AI Generation Endpoints
+3.3.1 /api/generatePattern.js
+Write an endpoint that:
+
+Receives the user’s prompt and metadata.
+
+Constructs an AI prompt such as:
+
+Generate a beginner-friendly crochet pattern for a "baby tiger plushie" using Alize Velluto yarn sized for 15 cm. Include sections for Head, Ears, Body, and Tail. Use crochet terms: SC (Single Crochet), MR (Magic Ring), INC (Increase), DEC (Decrease). If the user did not specify a wool colour, recommend appropriate colours and include these in the instructions. Return the response in JSON format with keys: title, sections[].
+
+Calls OpenAI’s GPT‑4 to generate the structured pattern.
+
+Returns the JSON structure.
+
+3.3.2 /api/generateImage.js
+Write an endpoint that:
+
+Accepts a text prompt.
+
+Uses OpenAI’s DALL·E (or Stable Diffusion API) to generate an image.
+
+For the final product image, use a prompt like:
+
+Generate a digital illustration of a baby tiger plushie in a cute, hand-crafted style with warm pastel tones. Include crochet and wool textures.
+
+For key steps, use similar prompts (e.g., “Generate an image illustrating: 'Make a magic ring with 6 SC' in a diagrammatic, cute style.”).
+
+Return the URL of the generated image.
+
+3.4 Pattern Viewer & Editor (PatternViewer.js & PatternStepCard.js)
+Create an interactive editor that:
+
+Displays the AI-generated final product image at the top.
+
+Renders the pattern organized into sections.
+
+Each section is collapsible and contains step cards.
+
+Each Step Card (in PatternStepCard.js) displays:
+
+Text instructions.
+
+A lock toggle (to prevent regeneration of that step).
+
+A stitch/row counter with + and – buttons.
+
+A small thumbnail for an AI-generated image (if available).
+
+A textarea for user notes.
+
+A checkbox to mark the step as complete.
+
+Users can add, delete, or re-order steps and sections.
+
+A global “Regenerate” button (if desired) sends a refined prompt—respecting locked steps—back to the AI for updated instructions and images.
+
+3.5 Pattern Progress Bar (PatternProgressBar.js)
+Implement a component that:
+
+Computes the percentage of steps marked complete across the entire pattern.
+
+Displays a progress bar (using TailwindCSS, e.g., a div with width proportional to completion percentage).
+
+Shows a text indicator (e.g., “6 of 12 steps completed”).
+
+3.6 Pattern Library (PatternLibrary.js) [Optional MVP]
+Create a view that:
+
+Lists all patterns saved in Replit DB.
+
+Displays summary info (title, project type, date).
+
+Provides options to load or delete a pattern.
+
+3.7 Replit DB Integration (db/patternService.js)
+Implement functions to interact with Replit DB:
+
+createPattern(pattern): Save a new pattern (assign a unique UUID).
+
+getPattern(id): Retrieve a pattern by its id.
+
+updatePattern(id, updatedPattern): Update an existing pattern.
+
+getAllPatterns(): Retrieve a list of all patterns.
+
+deletePattern(id): Delete a pattern.
+
+Store data as JSON strings.
+
+3.8 Orchestrating in App.js
+In App.js:
+
+Display a top‑navigation bar with options: “➕ New Pattern” and “📚 My Patterns.”
+
+Initially render PatternInput. Once a pattern is generated, switch to render PatternViewer with the pattern data.
+
+Provide a “Load Last Pattern” feature that uses getAllPatterns() from patternService.js.
+
+Use React state (useState) and side‑effects (useEffect) to manage which view to display.
+
+4. Design & UI Guidelines
+Theming & Styling:
+Use TailwindCSS with a pastel colour palette (beige, peach, lavender) to evoke warmth.
+Employ rounded corners (e.g., rounded-xl), subtle shadows (shadow-md), and wool/crochet–based iconography (e.g., small icons of yarn balls, crochet hooks).
+
+Responsiveness:
+Ensure the UI is mobile‑friendly: large, tappable buttons and clear typography.
+
+Error Handling & Fallback:
+If the AI generation fails, use a default fallback pattern (e.g., a simple 3‑step pattern with placeholder images).
+Notify the user gracefully (e.g., “We couldn’t generate your pattern—here’s a starter pattern you can edit.”).
+
+5. Final MVP Feature Summary
+
+Feature	Description
+Unified Pattern Input:	Single input box for prompt/paste, metadata selectors (with crochet icons), and optional image upload.
+AI Generation:	Uses OpenAI’s GPT‑4 to generate a detailed crochet pattern (with sections and steps) and recommends wool colours if missing.
+AI Visuals:	Calls DALL·E (or Stable Diffusion) to generate an AI image of the final product and optionally key steps.
+Pattern Viewer & Editor:	Displays sections and step cards with text instructions, lock toggles, stitch counters, notes, photo uploads, and completion status.
+Regeneration Logic:	Allows users to lock steps and regenerate only unlocked parts; updates both text and images.
+Progress Tracking:	Stitch/row counter and progress bar displaying overall pattern completion.
+Persistent Storage:	Full CRUD operations for patterns via Replit DB with a modular patternService.
+Pattern Library (Optional):	Lists saved patterns with options to load or delete.
