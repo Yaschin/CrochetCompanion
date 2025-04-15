@@ -8,7 +8,6 @@ import PatternGenLoader from './PatternGenLoader';
 import ProjectTypeCards from './ProjectTypeCards';
 import SizeSlider from './SizeSlider';
 import DifficultySelector from './DifficultySelector';
-import MaterialsList from './MaterialsList';
 import PreviewPanel from './PreviewPanel';
 
 interface PatternInputProps {
