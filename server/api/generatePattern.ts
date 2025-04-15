@@ -44,6 +44,16 @@ export async function generatePattern(inputData: PatternInputData) {
     
     ${size ? `The finished item should be approximately ${size}.` : ''}
     
+    Include ALL materials needed for the project, including:
+    1. Yarn/wool (colors and amounts)
+    2. Hook size(s) required
+    3. Stuffing (if it's a plushie/amigurumi)
+    4. Safety eyes, buttons, or other embellishments
+    5. Accessories like zippers, handles, etc. if needed
+    6. Any special tools required (tapestry needle, stitch markers, etc.)
+    
+    Be comprehensive with materials to ensure the crafter has everything needed before starting.
+    
     Use standard crochet terms: SC (Single Crochet), MR (Magic Ring), INC (Increase), DEC (Decrease).
     Organize the pattern into logical sections (e.g., Head, Body, Arms, etc.) with clear, numbered steps.
     
@@ -129,7 +139,14 @@ async function generatePartImages(pattern: any, projectType: string): Promise<an
   try {
     // Generate part images for each section in parallel
     const sectionPromises = pattern.sections.map(async (section: any) => {
-      const prompt = `A simple illustration of the ${section.name.toLowerCase()} part of a crocheted ${projectType}`;
+      // Extract colors from yarn requirements if available
+      const colors = pattern.yarnRequirements 
+        ? pattern.yarnRequirements.map((req: any) => req.color).join(", ") 
+        : "";
+        
+      const prompt = `A detailed illustration of the ${section.name.toLowerCase()} part of a crocheted ${projectType}${
+        colors ? ` using these colors: ${colors}` : ""
+      }`;
       
       try {
         const imageUrl = await generatePartImage(prompt, section.name, projectType);

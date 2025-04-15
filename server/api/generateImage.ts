@@ -16,9 +16,12 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
 
   if (type === "final") {
     // For final product images, create a more detailed prompt that emphasizes crochet aesthetic
-    enhancedPrompt = `Generate a digital illustration of ${prompt} ${projectType ? `(a crocheted ${projectType})` : ""} 
+    // and includes multiple views (front, side, back)
+    enhancedPrompt = `Generate a digital illustration showing three views (front, side, and back) of ${prompt} ${projectType ? `(a crocheted ${projectType})` : ""} 
       in a cute, hand-crafted style with warm pastel tones. 
       ${yarnType ? `Made with ${yarnType} wool. ` : ""} 
+      Arrange the three views side by side in a single image to show how the item looks from different angles.
+      Label each view discreetly with "Front View", "Side View", and "Back View".
       Include visible crochet stitches and wool textures to clearly show this is a crocheted item. 
       Use a soft, warm lighting and neutral background to highlight the details of the crochet work.
       Make the image detailed enough to show the texture of the yarn.`;
