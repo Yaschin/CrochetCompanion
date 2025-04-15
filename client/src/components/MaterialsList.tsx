@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit, Trash, Save, X, StickyNote } from 'lucide-react';
+import { Edit, Trash, Save, X, StickyNote, RefreshCw } from 'lucide-react';
 import { YarnRequirement } from '@shared/schema';
 
 interface MaterialsListProps {
@@ -72,126 +72,127 @@ const MaterialsList: React.FC<MaterialsListProps> = ({
   };
 
   return (
-    <div className="mb-6 bg-white rounded-xl p-4 border border-gray-200">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-secondary-700">Materials</h3>
-        <div>
+    <div className="mb-4 bg-white rounded-lg border border-gray-200">
+      <div className="flex justify-between items-center p-2 border-b border-gray-200">
+        <h3 className="text-base font-medium text-secondary-700">Materials</h3>
+        <div className="flex space-x-1">
           {isEditing ? (
-            <div className="flex space-x-2">
+            <>
               <button 
                 onClick={handleSave}
-                className="inline-flex items-center p-1.5 rounded-full text-green-600 hover:bg-green-50"
+                className="inline-flex items-center p-1 rounded text-green-600 hover:bg-green-50"
+                title="Save changes"
               >
-                <Save size={18} />
+                <Save size={16} />
               </button>
               <button 
                 onClick={handleCancel}
-                className="inline-flex items-center p-1.5 rounded-full text-red-600 hover:bg-red-50"
+                className="inline-flex items-center p-1 rounded text-red-600 hover:bg-red-50"
+                title="Cancel"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
-            </div>
+            </>
           ) : (
-            <button 
-              onClick={() => setIsEditing(true)}
-              className="inline-flex items-center p-1.5 rounded-full text-gray-600 hover:bg-gray-50"
-            >
-              <Edit size={18} />
-            </button>
+            <>
+              <button 
+                onClick={() => setIsNotesOpen(!isNotesOpen)}
+                className={`inline-flex items-center p-1 rounded ${isNotesOpen ? 'text-amber-500' : 'text-gray-500'} hover:bg-gray-50`}
+                title="Material notes"
+              >
+                <StickyNote size={16} />
+              </button>
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="inline-flex items-center p-1 rounded text-gray-500 hover:bg-gray-50"
+                title="Edit materials"
+              >
+                <Edit size={16} />
+              </button>
+            </>
           )}
         </div>
       </div>
 
-      <div className="space-y-2">
-        {editedRequirements.length === 0 && (
-          <div className="text-gray-500 italic text-center py-2">
+      {isNotesOpen && (
+        <div className={`p-2 bg-yellow-50 border-b border-yellow-100 text-xs`}>
+          {isEditing ? (
+            <textarea
+              value={editedNotes}
+              onChange={(e) => setEditedNotes(e.target.value)}
+              className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+              rows={2}
+              placeholder="Add any notes about materials here..."
+            />
+          ) : (
+            <p className="text-xs text-gray-700">{materialsNotes || "No material notes added."}</p>
+          )}
+        </div>
+      )}
+
+      <div className="p-0">
+        {(yarnRequirements.length === 0 && !isEditing) ? (
+          <div className="text-gray-500 italic text-center py-2 text-xs">
             No materials specified
           </div>
-        )}
-        
-        {isEditing ? (
-          // Editable view
-          <>
-            {editedRequirements.map((req, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <div 
-                  className="flex-shrink-0 w-6 h-6 rounded-full" 
-                  style={{ backgroundColor: getColorStyle(req.color) }}
-                />
-                <input
-                  type="text"
-                  value={req.color}
-                  onChange={(e) => updateRequirement(index, 'color', e.target.value)}
-                  className="flex-grow border border-gray-300 rounded-md px-2 py-1 text-sm"
-                  placeholder="Color name"
-                />
-                <input
-                  type="text"
-                  value={req.volume}
-                  onChange={(e) => updateRequirement(index, 'volume', e.target.value)}
-                  className="w-20 border border-gray-300 rounded-md px-2 py-1 text-sm"
-                  placeholder="Amount"
-                />
-                <button 
-                  onClick={() => removeRequirement(index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash size={16} />
-                </button>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {(isEditing ? editedRequirements : yarnRequirements).map((req, index) => (
+              <div key={index} className="flex items-center justify-between py-1.5 px-2">
+                <div className="flex items-center">
+                  <span className="flex-shrink-0 w-4 h-4 rounded-full mr-2" 
+                    style={{ backgroundColor: getColorStyle(req.color) }} />
+                  
+                  {isEditing ? (
+                    <>
+                      <input
+                        type="text"
+                        value={req.color}
+                        onChange={(e) => updateRequirement(index, 'color', e.target.value)}
+                        className="border border-gray-300 rounded px-1.5 py-0.5 text-xs w-24 mr-1"
+                        placeholder="Color"
+                      />
+                      <input
+                        type="text"
+                        value={req.volume}
+                        onChange={(e) => updateRequirement(index, 'volume', e.target.value)}
+                        className="border border-gray-300 rounded px-1.5 py-0.5 text-xs w-16"
+                        placeholder="Amount"
+                      />
+                    </>
+                  ) : (
+                    <span className="text-sm">
+                      <span className="font-medium text-gray-800">{req.color}</span>
+                      {req.volume && (
+                        <span className="text-gray-500 ml-1">({req.volume})</span>
+                      )}
+                    </span>
+                  )}
+                </div>
+                
+                {isEditing && (
+                  <button 
+                    onClick={() => removeRequirement(index)}
+                    className="text-red-400 hover:text-red-600 p-0.5"
+                    title="Remove material"
+                  >
+                    <Trash size={14} />
+                  </button>
+                )}
               </div>
             ))}
             
-            <button 
-              onClick={addRequirement}
-              className="w-full text-center py-2 border border-dashed border-gray-300 rounded-md text-primary-600 hover:border-primary-500 text-sm"
-            >
-              + Add Material
-            </button>
-
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Materials Notes</label>
-              <textarea
-                value={editedNotes}
-                onChange={(e) => setEditedNotes(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                rows={3}
-                placeholder="Add any notes about materials here..."
-              />
-            </div>
-          </>
-        ) : (
-          // Display view
-          <>
-            {yarnRequirements.map((req, index) => (
-              <div key={index} className="flex items-center px-3 py-2 bg-gray-50 rounded-lg">
-                <div 
-                  className="flex-shrink-0 w-6 h-6 rounded-full mr-3" 
-                  style={{ backgroundColor: getColorStyle(req.color) }}
-                />
-                <span className="flex-grow font-medium">{req.color} Yarn</span>
-                <span className="text-gray-600">{req.volume}</span>
-              </div>
-            ))}
-
-            {/* Materials Notes */}
-            {materialsNotes && (
-              <div className="mt-3">
+            {isEditing && (
+              <div className="py-1 px-2">
                 <button 
-                  onClick={() => setIsNotesOpen(!isNotesOpen)} 
-                  className="flex items-center text-sm text-gray-600 hover:text-primary-700"
+                  onClick={addRequirement}
+                  className="w-full text-center py-1 border border-dashed border-gray-300 rounded text-primary-600 hover:border-primary-500 text-xs"
                 >
-                  <StickyNote size={16} className="mr-1" />
-                  {isNotesOpen ? 'Hide' : 'Show'} Materials Notes
+                  + Add Material
                 </button>
-                
-                {isNotesOpen && (
-                  <div className="mt-2 p-3 bg-yellow-50 rounded-md text-sm">
-                    {materialsNotes}
-                  </div>
-                )}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

@@ -3,7 +3,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Pattern, PatternSection as PatternSectionType, PatternStep } from '../lib/types';
-import PatternStepCard from './PatternStepCard';
 import PatternSection from './PatternSection';
 import MaterialsList from './MaterialsList';
 import PatternProgressBar from './PatternProgressBar';

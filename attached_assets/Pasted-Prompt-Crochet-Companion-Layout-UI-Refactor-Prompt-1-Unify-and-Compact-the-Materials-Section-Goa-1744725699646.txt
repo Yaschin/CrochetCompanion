@@ -1,0 +1,142 @@
+Prompt: Crochet Companion Layout & UI Refactor
+Prompt 1: Unify and Compact the Materials Section
+Goal: Convert the large, multi-row materials list into row-based items (one row per color or material) with an icon, color name, optional volume, and a single shared notes field.
+
+Remove the per-item text/notes area.
+
+Create a row-based layout:
+
+Yarn/wool icon on the left (e.g. 🧶)
+
+Material name & color (e.g., “Orange Yarn”)
+
+Estimated volume if available (e.g., “~50g” or “~80 yards”)
+
+[✏ Edit] button for adjustments
+
+Add one consolidated “Materials Notes” field. This can be a text area at the bottom or a “notes” icon that opens a modal.
+
+Implement an optional function to calculate total volume (either from AI logic or a backend calculation) and store it in the pattern data. Display that in each row if present.
+
+Use Tailwind to keep rows compact. For example:
+
+html
+Copy
+<div className="flex items-center justify-between p-2">
+  <span className="flex items-center">
+    <IconYarn />
+    <span className="ml-2">Orange Yarn (~50g)</span>
+  </span>
+  <button className="text-sm text-blue-600">Edit</button>
+</div>
+Prompt 2: Collapse Steps Under Part-Level Headings & Notes
+Goal: Instead of showing large step cards with separate notes fields, each part (Head, Body, Arms, etc.) should have one notes field. Steps are minimal lines that appear only when expanded.
+
+Introduce a new component, e.g. PartCard.js, representing a single crocheted body part or major section.
+
+Collapsed Mode (default):
+
+A row or small card containing:
+
+Expand/Collapse Icon (▶ or ▼)
+
+Part Image Thumbnail (if AI-generated)
+
+Part Title (e.g., “Head”)
+
+Icons for “Notes” and “Lock” (if you’re locking entire parts from regeneration)
+
+Expanded Mode:
+
+A minimal list of step rows:
+
+Step #, short instruction (1–2 lines),
+
+[+/- Count] (if needed),
+
+[✓ Mark as complete]
+
+A single notes field for the entire part at the bottom (or top) of the expanded area.
+
+Remove step-level notes fields. If your code has <textarea> for each step, delete those references and rely on the part-level notes field.
+
+Prompt 3: Add (or Move) the ‘Generate Visual Guide’ Button to Part-Level
+Goal: Each part (Head, Arms, Legs) has a single “Generate Visual Guide” button or icon, not each step.
+
+Remove the “Generate visual guide for this step” button from individual steps.
+
+Add a single button in PartCard.js (e.g., “Generate Visual for this Part”).
+
+On click, call your AI image-generation logic with a prompt such as:
+
+“Generate a simple illustration for the ‘Head’ part of a baby tiger crochet project in a pastel yarn style.”
+
+Store the returned URL in sections[i].partImageUrl.
+
+Display that image as a small thumbnail in the collapsed row (step #2 above).
+
+Prompt 4: Minimize Vertical Space Within Steps
+Goal: Each step is just a short line of text, plus any crucial controls.
+
+Eliminate unneeded spacing. In Tailwind, shrink margins/paddings, e.g. p-2, my-1.
+
+Ensure each step has:
+
+A small label for the step number,
+
+A one-line instruction,
+
+A row/stitch counter if needed,
+
+A “complete” checkbox.
+
+No notes or “Generate Visual” UI inside each step.
+
+Example layout (expanded):
+
+html
+Copy
+<div className="flex items-center justify-between p-2 border-b">
+  <span>Step 1: Make a MR with 6 SC.</span>
+  <div>
+    <button>-</button> 0 <button>+</button>
+    <input type="checkbox" />
+  </div>
+</div>
+Prompt 5: Update Data Model and Code References
+Goal: Align your code with the new structure: part-level notes, part-level image, compact materials.
+
+In your pattern object, remove any step.notes fields and use sections[].partNotes instead.
+
+Replace step.aiStepImage references with sections[].partImageUrl.
+
+Refactor your UI components to reflect these changes:
+
+PatternInput or PatternViewer no longer references step-level notes or images.
+
+PartCard handles images, notes, and locking at the part level.
+
+Prompt 6: Final Pass on Tailwind Classes & Responsive Layout
+Goal: Ensure everything is visually aligned, responsive, and minimized in height.
+
+Reduce vertical padding. Replace p-4 with p-2 or p-1.5 where possible.
+
+Check on mobile breakpoints. Steps should stack nicely with minimal horizontal overflow.
+
+Use flex items-center justify-between for row-based layouts, grid or gap-2 for a tidy design.
+
+Prompt 7: Testing & Validation
+Goal: Confirm the new layout matches the agreed approach.
+
+Add a test pattern with multiple parts and multiple materials.
+
+Check that:
+
+Materials appear as a small table or row list, not separate big cards.
+
+Each part has a single notes area and a single “Generate Visual” button.
+
+Steps are collapsed by default with minimal spacing. Expanding them works as expected.
+
+Locking or regenerating entire parts vs. steps functions as intended.
+

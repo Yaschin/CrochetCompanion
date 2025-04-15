@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { PatternSection as PatternSectionType, PatternStep } from '@/lib/types';
-import PatternStepCard from './PatternStepCard';
-import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon } from 'lucide-react';
 
 interface PatternSectionProps {
   section: PatternSectionType;
@@ -13,6 +12,61 @@ interface PatternSectionProps {
   onAddStep: () => void;
   onUpdateSection: (updatedSection: PatternSectionType) => void;
 }
+
+// Simplified Step row component
+const StepRow: React.FC<{
+  step: PatternStep;
+  stepIndex: number;
+  onUpdate: (updatedStep: PatternStep) => void;
+}> = ({ step, stepIndex, onUpdate }) => {
+  const toggleComplete = () => {
+    onUpdate({
+      ...step,
+      completed: !step.completed
+    });
+  };
+  
+  const updateCount = (increment: boolean) => {
+    onUpdate({
+      ...step,
+      count: increment ? step.count + 1 : Math.max(0, step.count - 1)
+    });
+  };
+
+  return (
+    <div className="flex items-center justify-between py-1 px-2 border-b border-gray-100 text-sm">
+      <div className={`flex-grow ${step.completed ? 'line-through text-gray-400' : ''}`}>
+        <span className="font-medium text-gray-500 mr-2">{step.id}.</span>
+        {step.text}
+      </div>
+      <div className="flex items-center space-x-2">
+        {step.count > 0 && (
+          <div className="flex items-center space-x-1">
+            <button 
+              onClick={() => updateCount(false)}
+              className="text-gray-400 hover:text-gray-600 px-1"
+            >
+              -
+            </button>
+            <span className="text-xs bg-gray-100 rounded-full px-2 py-0.5">{step.count}</span>
+            <button 
+              onClick={() => updateCount(true)}
+              className="text-gray-400 hover:text-gray-600 px-1"
+            >
+              +
+            </button>
+          </div>
+        )}
+        <input 
+          type="checkbox" 
+          checked={step.completed}
+          onChange={toggleComplete}
+          className="h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary"
+        />
+      </div>
+    </div>
+  );
+};
 
 const PatternSection: React.FC<PatternSectionProps> = ({
   section,
@@ -49,135 +103,197 @@ const PatternSection: React.FC<PatternSectionProps> = ({
     setIsEditingNotes(false);
   };
 
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+
+  const generatePartImage = async () => {
+    if (isGeneratingImage) return;
+    setIsGeneratingImage(true);
+    
+    try {
+      const res = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: `The ${section.name} part of a crocheted item`,
+          type: 'part',
+          partName: section.name
+        })
+      });
+      
+      const data = await res.json();
+      if (data && data.url) {
+        onUpdateSection({
+          ...section,
+          partImageUrl: data.url
+        });
+      }
+    } catch (error) {
+      console.error('Error generating image:', error);
+      alert('Could not generate image at this time. Please try again later.');
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
+  // Calculate completion stats for this section
+  const completedSteps = section.steps.filter(step => step.completed).length;
+  const totalSteps = section.steps.length;
+  const completionPercentage = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
-      <div className={`w-full flex items-center p-4 text-left ${
+    <div className="border border-gray-200 rounded-lg overflow-hidden mb-2">
+      <div className={`w-full flex items-center p-1.5 text-left ${
         isExpanded ? 'bg-primary-50' : ''
       }`}>
+        {/* Expand/Collapse control */}
+        <button 
+          className="p-1 text-gray-500"
+          onClick={onToggleExpand}
+          aria-expanded={isExpanded}
+        >
+          {isExpanded ? (
+            <ChevronDown size={16} className="text-secondary-600" />
+          ) : (
+            <ChevronRight size={16} className="text-secondary-600" />
+          )}
+        </button>
+        
         {/* Section Thumbnail */}
-        {section.partImageUrl && (
-          <div className="relative mr-3 flex-shrink-0">
+        {section.partImageUrl ? (
+          <div className="h-8 w-8 rounded overflow-hidden mr-2 flex-shrink-0 bg-gray-100">
             <img 
               src={section.partImageUrl} 
               alt={section.name}
-              className="h-10 w-10 rounded-md object-cover"
+              className="h-full w-full object-cover"
             />
+          </div>
+        ) : (
+          <div className="h-8 w-8 rounded overflow-hidden mr-2 flex-shrink-0 bg-gray-100 flex items-center justify-center text-gray-400">
+            <ImageIcon size={14} />
           </div>
         )}
         
         {/* Section Header Content */}
         <div className="flex-grow cursor-pointer" onClick={onToggleExpand}>
-          <h3 className="text-lg font-bold text-secondary-700 font-heading">{section.name}</h3>
+          <h3 className="text-sm font-medium text-secondary-700">{section.name}</h3>
+          {!isExpanded && (
+            <div className="flex items-center mt-0.5">
+              <div className="w-16 h-1.5 bg-gray-200 rounded-full mr-2">
+                <div 
+                  className="h-full bg-green-500 rounded-full" 
+                  style={{ width: `${completionPercentage}%` }}
+                />
+              </div>
+              <span className="text-xs text-gray-500">{completedSteps}/{totalSteps}</span>
+            </div>
+          )}
         </div>
         
         {/* Section Actions */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
+          {/* Generate Image button */}
+          <button 
+            className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+            onClick={generatePartImage}
+            title="Generate visual guide"
+          >
+            <ImageIcon size={14} />
+          </button>
+          
           {/* Notes button */}
           <button 
-            className="p-1.5 rounded-full text-gray-500 hover:bg-gray-100"
+            className={`p-1 rounded ${
+              isNotesOpen ? 'text-amber-500 hover:bg-amber-50' : 'text-gray-500 hover:bg-gray-100'
+            }`}
             onClick={() => {
-              if (isEditingNotes) {
-                return; // Don't toggle if we're editing
-              }
+              if (isEditingNotes) return;
               setIsNotesOpen(!isNotesOpen);
             }}
             title="Section Notes"
           >
-            <StickyNote size={18} />
+            <StickyNote size={14} />
           </button>
           
           {/* Lock/Unlock button */}
           <button 
-            className={`p-1.5 rounded-full ${section.locked 
+            className={`p-1 rounded ${section.locked 
               ? 'text-amber-500 hover:bg-amber-50' 
               : 'text-gray-500 hover:bg-gray-100'}`}
             onClick={toggleLock}
             title={section.locked ? "Unlock Section" : "Lock Section"}
           >
-            {section.locked ? <Lock size={18} /> : <Unlock size={18} />}
-          </button>
-          
-          {/* Expand/Collapse button */}
-          <button 
-            className="p-1.5 rounded-full text-gray-500 hover:bg-gray-100"
-            onClick={onToggleExpand}
-          >
-            {isExpanded ? (
-              <ChevronDown size={18} className="text-secondary-600" />
-            ) : (
-              <ChevronRight size={18} className="text-secondary-600" />
-            )}
+            {section.locked ? <Lock size={14} /> : <Unlock size={14} />}
           </button>
         </div>
       </div>
       
-      {/* Notes Section */}
-      {isExpanded && (isNotesOpen || isEditingNotes) && (
-        <div className="px-4 pt-2 pb-0">
+      {/* Notes Section - Only shown when expanded and notes are toggled */}
+      {isExpanded && isNotesOpen && (
+        <div className="px-2 py-1.5 bg-yellow-50 border-y border-yellow-100">
           {isEditingNotes ? (
-            <div className="bg-yellow-50 p-3 rounded-md mb-4">
-              <div className="flex justify-between mb-2">
-                <label className="text-sm font-medium text-gray-700">Section Notes</label>
-                <div className="flex space-x-2">
-                  <button 
-                    onClick={saveNotes}
-                    className="text-green-600 hover:text-green-800"
-                  >
-                    <Save size={16} />
-                  </button>
-                  <button 
-                    onClick={cancelEditNotes}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              </div>
+            <div className="flex flex-col">
               <textarea
                 value={editedNotes}
                 onChange={(e) => setEditedNotes(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                rows={3}
+                className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+                rows={2}
                 placeholder="Add notes for this section..."
               />
+              <div className="flex justify-end mt-1 space-x-1">
+                <button 
+                  onClick={saveNotes}
+                  className="text-xs px-2 py-0.5 rounded bg-green-50 text-green-600 hover:bg-green-100"
+                >
+                  Save
+                </button>
+                <button 
+                  onClick={cancelEditNotes}
+                  className="text-xs px-2 py-0.5 rounded bg-gray-50 text-gray-600 hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           ) : (
-            <div className="bg-yellow-50 p-3 rounded-md mb-4 flex justify-between">
-              <div className="text-sm">
+            <div className="flex justify-between items-start text-xs">
+              <div className="text-gray-700">
                 {section.notes || "No notes added for this section."}
               </div>
               <button 
                 onClick={() => setIsEditingNotes(true)}
-                className="text-gray-500 hover:text-gray-700 ml-2"
+                className="text-gray-500 hover:text-gray-700 p-0.5 ml-1 flex-shrink-0"
               >
-                <Edit size={16} />
+                <Edit size={12} />
               </button>
             </div>
           )}
         </div>
       )}
       
-      {/* Steps */}
+      {/* Steps - Only shown when expanded */}
       {isExpanded && (
-        <div className="p-4 space-y-4">
-          {section.steps.map((step, stepIndex) => (
-            <PatternStepCard
-              key={`step-${step.id}`}
-              step={step}
-              stepNumber={step.id}
-              onUpdate={(updatedStep) => onUpdateStep(stepIndex, updatedStep)}
-              onDelete={() => onDeleteStep(stepIndex)}
-            />
-          ))}
+        <div className="pt-1 pb-2">
+          <div className="divide-y divide-gray-50">
+            {section.steps.map((step, stepIndex) => (
+              <StepRow
+                key={`step-${step.id}`}
+                step={step}
+                stepIndex={stepIndex}
+                onUpdate={(updatedStep) => onUpdateStep(stepIndex, updatedStep)}
+              />
+            ))}
+          </div>
 
           {/* Add Step Button */}
-          <button 
-            className="w-full flex items-center justify-center p-3 border border-dashed border-gray-300 rounded-lg text-secondary-500 hover:text-secondary-700 hover:border-secondary-400 transition-colors"
-            onClick={onAddStep}
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            <span>Add New Step</span>
-          </button>
+          <div className="px-2 mt-1">
+            <button 
+              className="w-full flex items-center justify-center py-1 border border-dashed border-gray-300 rounded text-secondary-500 hover:text-secondary-700 hover:border-secondary-400 text-xs"
+              onClick={onAddStep}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              <span>Add Step</span>
+            </button>
+          </div>
         </div>
       )}
     </div>
