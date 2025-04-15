@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Pattern, PatternSection, PatternStep } from '../lib/types';
+import { Pattern, PatternSection as PatternSectionType, PatternStep } from '../lib/types';
 import PatternStepCard from './PatternStepCard';
+import PatternSection from './PatternSection';
+import MaterialsList from './MaterialsList';
 import PatternProgressBar from './PatternProgressBar';
-import { Edit, Save, RefreshCw, Download, ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { Edit, Save, RefreshCw, Download, Plus } from 'lucide-react';
 
 interface PatternViewerProps {
   pattern: Pattern;
@@ -149,6 +151,9 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         ...pattern.sections,
         {
           name: newSectionName,
+          notes: "",
+          locked: false,
+          partImageUrl: null,
           steps: [
             {
               id: 1,
@@ -157,6 +162,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
               count: 0,
               notes: "",
               photo: null,
+              aiStepImage: null,
               completed: false
             }
           ]
@@ -289,47 +295,39 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       {/* Pattern Progress Bar */}
       <PatternProgressBar sections={pattern.sections} />
 
+      {/* Materials Section */}
+      <MaterialsList 
+        yarnRequirements={pattern.yarnRequirements || []}
+        materialsNotes={pattern.materialsNotes || ""}
+        onUpdate={(updatedRequirements, updatedNotes) => {
+          const updatedPattern = {
+            ...pattern,
+            yarnRequirements: updatedRequirements,
+            materialsNotes: updatedNotes
+          };
+          updatePatternMutation.mutate(updatedPattern);
+        }}
+      />
+
       {/* Pattern Sections (Accordion) */}
       <div className="space-y-4">
         {pattern.sections.map((section, sectionIndex) => (
-          <div key={`section-${sectionIndex}`} className="border border-gray-200 rounded-xl overflow-hidden">
-            <button 
-              className={`w-full flex justify-between items-center p-4 text-left ${
-                expandedSections.has(section.name) ? 'bg-primary-50' : ''
-              }`}
-              onClick={() => toggleSection(section.name)}
-            >
-              <h3 className="text-lg font-bold text-secondary-700 font-heading">{section.name}</h3>
-              {expandedSections.has(section.name) ? (
-                <ChevronDown className="h-5 w-5 text-secondary-600" />
-              ) : (
-                <ChevronRight className="h-5 w-5 text-secondary-600" />
-              )}
-            </button>
-            
-            {expandedSections.has(section.name) && (
-              <div className="p-4 space-y-4">
-                {section.steps.map((step, stepIndex) => (
-                  <PatternStepCard
-                    key={`step-${step.id}`}
-                    step={step}
-                    stepNumber={step.id}
-                    onUpdate={(updatedStep) => updateStep(sectionIndex, stepIndex, updatedStep)}
-                    onDelete={() => deleteStep(sectionIndex, stepIndex)}
-                  />
-                ))}
-
-                {/* Add Step Button */}
-                <button 
-                  className="w-full flex items-center justify-center p-3 border border-dashed border-gray-300 rounded-lg text-secondary-500 hover:text-secondary-700 hover:border-secondary-400 transition-colors"
-                  onClick={() => addStep(sectionIndex)}
-                >
-                  <Plus className="h-5 w-5 mr-2" />
-                  <span>Add New Step</span>
-                </button>
-              </div>
-            )}
-          </div>
+          <PatternSection
+            key={`section-${sectionIndex}`}
+            section={section}
+            sectionIndex={sectionIndex}
+            isExpanded={expandedSections.has(section.name)}
+            onToggleExpand={() => toggleSection(section.name)}
+            onUpdateStep={(stepIndex, updatedStep) => updateStep(sectionIndex, stepIndex, updatedStep)}
+            onDeleteStep={(stepIndex) => deleteStep(sectionIndex, stepIndex)}
+            onAddStep={() => addStep(sectionIndex)}
+            onUpdateSection={(updatedSection) => {
+              const updatedSections = [...pattern.sections];
+              updatedSections[sectionIndex] = updatedSection;
+              const updatedPattern = { ...pattern, sections: updatedSections };
+              updatePatternMutation.mutate(updatedPattern);
+            }}
+          />
         ))}
 
         {/* Add Section Button */}

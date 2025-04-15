@@ -39,6 +39,8 @@ export class DatabaseStorage implements IStorage {
         yarnType: pattern.yarnType || undefined,
         size: pattern.size || undefined,
         endProductImage: pattern.endProductImage || undefined,
+        materialsNotes: pattern.materialsNotes || "",
+        yarnRequirements: pattern.yarnRequirements || [],
         createdAt,
         sections: pattern.sections as Pattern["sections"]
       };

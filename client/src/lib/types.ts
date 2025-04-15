@@ -1,4 +1,9 @@
 // Pattern data model
+export interface YarnRequirement {
+  color: string;
+  volume: string; // e.g., "~50g" or "~80 yards"
+}
+
 export interface PatternStep {
   id: number;
   text: string;
@@ -12,6 +17,9 @@ export interface PatternStep {
 
 export interface PatternSection {
   name: string;
+  notes: string;
+  locked: boolean;
+  partImageUrl?: string | null;
   steps: PatternStep[];
 }
 
@@ -23,8 +31,10 @@ export interface Pattern {
   yarnType?: string;
   size?: string;
   endProductImage?: string;
+  materialsNotes: string;
   createdAt: string;
   sections: PatternSection[];
+  yarnRequirements: YarnRequirement[];
 }
 
 // Input forms
