@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit, Trash, Plus, Save, X } from 'lucide-react';
 import { YarnIcon } from '../icons/WoolIcons';
 import { YarnRequirement } from '@/lib/types';
@@ -19,13 +19,19 @@ const MaterialsList: React.FC<MaterialsListProps> = ({
   onUpdate 
 }) => {
   // Use provided materials/yarnRequirements or empty array
-  const materialItems = materials || yarnRequirements || [];
+  const materialItems: YarnRequirement[] = materials || yarnRequirements || [];
   // Use provided notes/materialsNotes or empty string
-  const materialNotes = notes || materialsNotes || "";
+  const materialNotes: string = notes || materialsNotes || "";
+  
   const [editingMaterialIndex, setEditingMaterialIndex] = useState<number | null>(null);
   const [editedMaterial, setEditedMaterial] = useState<YarnRequirement | null>(null);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [editedNotes, setEditedNotes] = useState(materialNotes);
+
+  // Update edited notes when props change
+  useEffect(() => {
+    setEditedNotes(materialNotes);
+  }, [materialNotes]);
 
   const handleEditMaterial = (index: number) => {
     setEditingMaterialIndex(index);
@@ -48,20 +54,20 @@ const MaterialsList: React.FC<MaterialsListProps> = ({
   };
 
   const handleDeleteMaterial = (index: number) => {
-    const updatedMaterials = materials.filter((_, i) => i !== index);
-    onUpdate(updatedMaterials, notes);
+    const updatedMaterials = materialItems.filter((_, i) => i !== index);
+    onUpdate(updatedMaterials, materialNotes);
   };
 
   const handleAddMaterial = () => {
     const newMaterial: YarnRequirement = { color: 'New Yarn', volume: '~100g' };
-    onUpdate([...materials, newMaterial], notes);
+    onUpdate([...materialItems, newMaterial], materialNotes);
     // Start editing the new material
-    setEditingMaterialIndex(materials.length);
+    setEditingMaterialIndex(materialItems.length);
     setEditedMaterial(newMaterial);
   };
 
   const handleSaveNotes = () => {
-    onUpdate(materials, editedNotes);
+    onUpdate(materialItems, editedNotes);
     setIsEditingNotes(false);
   };
 
@@ -74,10 +80,10 @@ const MaterialsList: React.FC<MaterialsListProps> = ({
       
       {/* Material Rows */}
       <div className="space-y-2 mb-4">
-        {materials.length === 0 ? (
+        {materialItems.length === 0 ? (
           <p className="text-sm text-gray-500 italic">No materials added yet.</p>
         ) : (
-          materials.map((material, index) => (
+          materialItems.map((material, index) => (
             <div key={index} className="flex items-center text-sm border-b border-gray-100 pb-2">
               {editingMaterialIndex === index && editedMaterial ? (
                 // Edit mode
@@ -185,15 +191,15 @@ const MaterialsList: React.FC<MaterialsListProps> = ({
           </div>
         ) : (
           <div className="bg-gray-50 rounded-md p-2 text-sm text-gray-600 relative min-h-[3rem]">
-            {notes ? (
-              notes
+            {materialNotes ? (
+              materialNotes
             ) : (
               <span className="text-gray-400 italic">No notes added.</span>
             )}
             <button
               onClick={() => {
                 setIsEditingNotes(true);
-                setEditedNotes(notes);
+                setEditedNotes(materialNotes);
               }}
               className="absolute top-1 right-1 p-1 text-gray-400 hover:text-gray-700"
               title="Edit notes"
