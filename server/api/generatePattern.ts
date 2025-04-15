@@ -190,15 +190,26 @@ async function generatePartImages(pattern: any, projectType: string): Promise<an
 // Calculate yarn requirements based on the pattern
 async function calculateYarnRequirements(pattern: any, projectType: string): Promise<YarnRequirement[]> {
   try {
-    // Count total steps and extract the pattern structure
+    // Extract pattern summary and complexity metrics for better estimation
     const totalSteps = pattern.sections.reduce((count: number, section: any) => 
       count + section.steps.length, 0);
-
+    const complexityScore = calculatePatternComplexity(pattern, projectType);
+    
+    // Create a detailed summary of the pattern including section names and steps
     const patternSummary = pattern.sections.map((section: any) => {
       return `${section.name}: ${section.steps.length} steps`;
     }).join(", ");
 
-    // Ask the AI to estimate yarn requirements
+    // Extract potential color mentions from pattern title and description
+    const colorMentions = extractColorMentions(pattern);
+    const colorMentionsText = colorMentions.length > 0 
+      ? `I found these potential colors mentioned in the pattern: ${colorMentions.join(", ")}.` 
+      : "";
+
+    console.log(`Calculating yarn requirements for ${projectType} with ${totalSteps} steps (complexity: ${complexityScore})...`);
+    console.log(`Detected colors: ${colorMentions.join(", ") || "None detected"}`);
+
+    // Ask the AI to estimate yarn requirements with enhanced context
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -206,27 +217,38 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
           role: "system", 
           content: `You are an expert in crochet who can accurately estimate yarn requirements.
             Given a pattern structure, estimate the amount of yarn needed for each color.
+            Be specific about weights and measurements:
+            - For small amigurumi: use grams (usually 10-50g per color)
+            - For wearables: use both grams and yards/meters (e.g., "~200g/400yds")
+            - For blankets: specify using grams or skeins (e.g., "~400g (4 skeins)")
+            
+            Specify yarn weight when relevant (e.g., "~100g worsted weight" or "~50g fingering weight").
+            
             Return a JSON object with a 'yarnRequirements' property that contains an array of objects.
             Each object must have 'color' and 'volume' properties.
             Example response format:
             {
               "yarnRequirements": [
-                {"color": "Orange", "volume": "~50g"},
-                {"color": "Black", "volume": "~20g"}
+                {"color": "Orange", "volume": "~50g fingering weight"},
+                {"color": "Black", "volume": "~20g (1/4 skein)"}
               ]
             }` 
         },
         { 
           role: "user", 
-          content: `For a ${projectType} with ${totalSteps} total steps divided into sections (${patternSummary}),
-            please estimate the yarn requirements. Return the result in the exact format I specified, with a 'yarnRequirements' array 
-            containing objects that have 'color' and 'volume' properties.
+          content: `For a ${projectType} with ${totalSteps} total steps divided into sections (${patternSummary}).
+            The pattern has a complexity score of ${complexityScore}/10 (higher means more complex).
+            ${colorMentionsText}
+            
+            Please estimate the yarn requirements with specific weights and measurements.
+            For larger projects, include both weight and yardage estimations.
+            Return the result with a 'yarnRequirements' array containing objects with 'color' and 'volume' properties.
 
-            Important: Make sure to return the response in this exact format:
+            Important: Make sure your response follows this exact format:
             {
               "yarnRequirements": [
-                {"color": "Orange", "volume": "~50g"},
-                {"color": "Black", "volume": "~20g"}
+                {"color": "Orange", "volume": "~50g fingering weight"},
+                {"color": "Black", "volume": "~20g worsted weight (1/4 skein)"}
               ]
             }` 
         }
@@ -235,7 +257,7 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
-    console.log("Yarn requirements API response:", result);
+    console.log("Enhanced yarn requirements API response:", result);
 
     // Handle different response formats from the AI
     if (Array.isArray(result)) {
@@ -264,13 +286,103 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
       }
     }
 
-    // Default fallback if we couldn't parse the response properly
-    throw new Error("Failed to calculate yarn requirements");
+    // Default fallback with estimated requirements based on project type
+    console.warn("AI response parsing failed, using default estimates");
+    return generateDefaultYarnRequirements(pattern, projectType, complexityScore);
+    
   } catch (error) {
     console.error("Error calculating yarn requirements:", error);
-    // Return a default requirement if calculation fails
-    throw new Error("Failed to calculate yarn requirements");
+    // Return estimated requirements instead of throwing an error
+    const complexityScore = calculatePatternComplexity(pattern, projectType);
+    return generateDefaultYarnRequirements(pattern, projectType, complexityScore);
   }
+}
+
+// Helper function to calculate pattern complexity (0-10 scale)
+function calculatePatternComplexity(pattern: any, projectType: string): number {
+  // Base complexity based on project type
+  let baseComplexity = 5;
+  
+  // Adjust based on project type
+  if (/blanket|afghan|throw/i.test(projectType)) baseComplexity = 7;
+  else if (/amigurumi|plush|toy/i.test(projectType)) baseComplexity = 6;
+  else if (/hat|beanie/i.test(projectType)) baseComplexity = 4;
+  else if (/scarf|cowl/i.test(projectType)) baseComplexity = 3;
+  
+  // Count total steps
+  const totalSteps = pattern.sections.reduce((total: number, section: any) => total + section.steps.length, 0);
+  
+  // Factor in number of steps (more steps = higher complexity)
+  const stepComplexity = Math.min(3, Math.floor(totalSteps / 20));
+  
+  // Factor in number of sections (more sections = higher complexity)
+  const sectionComplexity = Math.min(2, Math.floor(pattern.sections.length / 3));
+  
+  // Calculate final score (clamped between 1-10)
+  return Math.max(1, Math.min(10, baseComplexity + stepComplexity + sectionComplexity));
+}
+
+// Extract color mentions from pattern text
+function extractColorMentions(pattern: any): string[] {
+  const commonColors = [
+    'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 
+    'white', 'gray', 'grey', 'brown', 'beige', 'cream', 'teal', 'navy', 
+    'turquoise', 'maroon', 'olive', 'mint', 'coral', 'indigo', 'violet'
+  ];
+  
+  // Text to search for color mentions
+  const textToSearch = [
+    pattern.title || '',
+    pattern.description || '',
+    ...(pattern.sections || []).map((s: any) => s.name || '')
+  ].join(' ').toLowerCase();
+  
+  // Find color mentions
+  return commonColors.filter(color => 
+    new RegExp(`\\b${color}\\b`, 'i').test(textToSearch)
+  );
+}
+
+// Generate default yarn requirements when AI fails
+function generateDefaultYarnRequirements(pattern: any, projectType: string, complexityScore: number): YarnRequirement[] {
+  // Extract potential colors or use defaults
+  const detectedColors = extractColorMentions(pattern);
+  const colors = detectedColors.length > 0 ? detectedColors : ['Main Color', 'Contrast Color'];
+  
+  // Estimate volume based on project type and complexity
+  let mainVolume = '';
+  
+  if (/blanket|afghan|throw/i.test(projectType)) {
+    mainVolume = complexityScore > 7 ? '~800g (8 skeins)' : '~500g (5 skeins)';
+  } else if (/sweater|cardigan|jumper/i.test(projectType)) {
+    mainVolume = complexityScore > 7 ? '~500g (5 skeins)' : '~400g (4 skeins)';
+  } else if (/amigurumi|plush|toy/i.test(projectType)) {
+    mainVolume = complexityScore > 7 ? '~150g' : '~100g';
+  } else if (/hat|beanie/i.test(projectType)) {
+    mainVolume = '~100g (1 skein)';
+  } else if (/scarf|cowl/i.test(projectType)) {
+    mainVolume = '~200g (2 skeins)';
+  } else {
+    // Default for unknown project types
+    mainVolume = '~200g (2 skeins)';
+  }
+  
+  // Create requirements list
+  const requirements: YarnRequirement[] = [
+    { color: colors[0], volume: mainVolume }
+  ];
+  
+  // Add contrast colors if detected
+  if (colors.length > 1) {
+    for (let i = 1; i < colors.length && i < 3; i++) {
+      requirements.push({
+        color: colors[i],
+        volume: '~50g (1/2 skein)'
+      });
+    }
+  }
+  
+  return requirements;
 }
 
 // Helper function to extract information about locked steps

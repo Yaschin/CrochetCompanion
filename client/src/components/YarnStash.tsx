@@ -233,10 +233,76 @@ export default function YarnStash() {
     setSearchTerm('');
   };
 
-  // Material usage calculation placeholder
+  // Fetch all patterns to check for material usage
+  const { data: patterns = [] } = useQuery({
+    queryKey: ['patterns'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/patterns');
+        return response.json();
+      } catch (error) {
+        console.error('Error fetching patterns:', error);
+        return [];
+      }
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    enabled: stashItems.length > 0 // Only fetch patterns if there are stash items
+  });
+
+  // Calculate material usage based on patterns
   const estimateUsage = (item: StashItem) => {
-    // This would be replaced with actual usage calculation logic
-    return "Not used in any project";
+    if (!patterns || patterns.length === 0) {
+      return "Checking usage...";
+    }
+
+    // Find patterns that use this item
+    const matchingPatterns = patterns.filter((pattern: any) => {
+      // For yarn items
+      if (item.type === 'yarn' && pattern.yarnRequirements) {
+        return pattern.yarnRequirements.some((yarn: any) => 
+          (yarn.color && item.color && 
+           yarn.color.toLowerCase().includes(item.color.toLowerCase())) || 
+          (yarn.color && item.name && 
+           yarn.color.toLowerCase().includes(item.name.toLowerCase()))
+        );
+      }
+      
+      // For hook items
+      if (item.type === 'hook' && pattern.hookRequirements) {
+        return pattern.hookRequirements.some((hook: any) => 
+          hook.size === item.name || 
+          (hook.size && item.description && hook.size.includes(item.description))
+        );
+      }
+      
+      // For notions
+      if (item.type === 'notion' && pattern.notionsRequirements) {
+        return pattern.notionsRequirements.some((notion: any) => 
+          notion.name === item.name ||
+          (notion.description && item.description && 
+           notion.description.toLowerCase().includes(item.description.toLowerCase()))
+        );
+      }
+      
+      // For tools
+      if (item.type === 'tool' && pattern.toolRequirements) {
+        return pattern.toolRequirements.some((tool: any) => 
+          tool.name === item.name ||
+          (tool.description && item.description && 
+           tool.description.toLowerCase().includes(item.description.toLowerCase()))
+        );
+      }
+      
+      return false;
+    });
+    
+    if (matchingPatterns.length === 0) {
+      return "Not used in any project";
+    } else if (matchingPatterns.length === 1) {
+      return `Used in: ${matchingPatterns[0].title}`;
+    } else {
+      return `Used in ${matchingPatterns.length} projects`;
+    }
   };
 
   return (
