@@ -7,7 +7,18 @@ export const stashService = {
   // Get all stash items
   async getAllItems(): Promise<StashItem[]> {
     try {
-      return await db.select().from(stashItems);
+      const items = await db.select().from(stashItems);
+      return items.map(item => ({
+        id: item.id,
+        type: item.type as "yarn" | "hook" | "notion" | "tool",
+        name: item.name,
+        quantity: item.quantity,
+        color: item.color || undefined,
+        volume: item.volume || undefined,
+        size: item.size || undefined,
+        description: item.description || undefined,
+        notes: item.notes || undefined
+      }));
     } catch (error) {
       console.error('Error fetching stash items:', error);
       throw error;
@@ -18,7 +29,20 @@ export const stashService = {
   async getItem(id: string): Promise<StashItem | undefined> {
     try {
       const results = await db.select().from(stashItems).where(eq(stashItems.id, id));
-      return results[0];
+      if (results.length === 0) return undefined;
+      
+      const item = results[0];
+      return {
+        id: item.id,
+        type: item.type as "yarn" | "hook" | "notion" | "tool",
+        name: item.name,
+        quantity: item.quantity,
+        color: item.color || undefined,
+        volume: item.volume || undefined,
+        size: item.size || undefined,
+        description: item.description || undefined,
+        notes: item.notes || undefined
+      };
     } catch (error) {
       console.error(`Error fetching stash item ${id}:`, error);
       throw error;

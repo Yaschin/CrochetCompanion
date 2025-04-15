@@ -7,10 +7,11 @@ import PatternInput from "./components/PatternInput";
 import PatternInputRefactored from "./components/PatternInputRefactored";
 import PatternViewer from "./components/PatternViewer";
 import PatternLibrary from "./components/PatternLibrary";
+import YarnStash from "./components/YarnStash";
 import { Pattern } from "./lib/types";
 
 // View options
-type ViewType = "input" | "viewer" | "library";
+type ViewType = "input" | "viewer" | "library" | "stash";
 
 function App() {
   const [activeView, setActiveView] = useState<ViewType>("input");
@@ -95,6 +96,10 @@ function App() {
               onPatternSelected={handlePatternLoaded} 
               onCreateNew={() => navigateToView("input")}
             />
+          )}
+          
+          {activeView === "stash" && (
+            <YarnStash />
           )}
         </main>
       </div>

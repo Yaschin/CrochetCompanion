@@ -319,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stash notes endpoints
-  app.get("/api/stash/notes", async (_req: Request, res: Response) => {
+  app.get("/api/stash-notes", async (_req: Request, res: Response) => {
     try {
       const notes = await stashService.getNotes();
       res.json({ notes });
@@ -329,7 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/stash/notes", async (req: Request, res: Response) => {
+  app.put("/api/stash-notes", async (req: Request, res: Response) => {
     try {
       const { notes } = req.body;
       
