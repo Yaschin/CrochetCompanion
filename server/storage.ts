@@ -69,6 +69,8 @@ export class DatabaseStorage implements IStorage {
           yarnType: pattern.yarnType || undefined,
           size: pattern.size || undefined,
           endProductImage: pattern.endProductImage || undefined,
+          materialsNotes: pattern.materialsNotes || "",
+          yarnRequirements: pattern.yarnRequirements || [],
           createdAt,
           sections: pattern.sections as Pattern["sections"]
         };
@@ -92,6 +94,8 @@ export class DatabaseStorage implements IStorage {
         yarnType: pattern.yarnType || null,
         size: pattern.size || null,
         endProductImage: pattern.endProductImage || null,
+        materialsNotes: pattern.materialsNotes || "",
+        yarnRequirements: pattern.yarnRequirements || [],
         sections: pattern.sections
       };
       
@@ -118,6 +122,8 @@ export class DatabaseStorage implements IStorage {
         yarnType: created.yarnType || undefined,
         size: created.size || undefined,
         endProductImage: created.endProductImage || undefined,
+        materialsNotes: created.materialsNotes || "",
+        yarnRequirements: created.yarnRequirements || [],
         createdAt,
         sections: created.sections as Pattern["sections"]
       };
@@ -144,6 +150,8 @@ export class DatabaseStorage implements IStorage {
       if (patternUpdate.yarnType !== undefined) dbUpdate.yarnType = patternUpdate.yarnType || null;
       if (patternUpdate.size !== undefined) dbUpdate.size = patternUpdate.size || null;
       if (patternUpdate.endProductImage !== undefined) dbUpdate.endProductImage = patternUpdate.endProductImage || null;
+      if (patternUpdate.materialsNotes !== undefined) dbUpdate.materialsNotes = patternUpdate.materialsNotes || "";
+      if (patternUpdate.yarnRequirements !== undefined) dbUpdate.yarnRequirements = patternUpdate.yarnRequirements || [];
       if (patternUpdate.sections !== undefined) dbUpdate.sections = patternUpdate.sections;
       
       // Update the database
@@ -172,6 +180,8 @@ export class DatabaseStorage implements IStorage {
         yarnType: updated.yarnType || undefined,
         size: updated.size || undefined,
         endProductImage: updated.endProductImage || undefined,
+        materialsNotes: updated.materialsNotes || "",
+        yarnRequirements: updated.yarnRequirements || [],
         createdAt,
         sections: updated.sections as Pattern["sections"]
       };

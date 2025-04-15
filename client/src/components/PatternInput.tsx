@@ -103,8 +103,13 @@ const PatternInput: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
         yarnType: formData.yarnType || undefined,
         size: formData.size || undefined,
         endProductImage: imageResponse.url,
+        materialsNotes: generatedPatternData.materialsNotes || "",
+        yarnRequirements: generatedPatternData.yarnRequirements || [],
         sections: generatedPatternData.sections.map((section: any) => ({
           name: section.name,
+          notes: section.notes || "",
+          locked: false,
+          partImageUrl: section.partImageUrl || null,
           steps: section.steps.map((step: any) => ({
             id: step.id,
             text: step.text,
