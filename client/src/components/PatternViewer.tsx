@@ -315,7 +315,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
           .map((section, sectionIndex) => (
           <PatternSection
             key={`section-${sectionIndex}`}
-            section={section}
+            section={{...section, patternId: pattern.id}}
             sectionIndex={sectionIndex}
             isExpanded={expandedSections.has(section.name)}
             onToggleExpand={() => toggleSection(section.name)}

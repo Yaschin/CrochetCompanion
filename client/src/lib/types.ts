@@ -21,6 +21,7 @@ export interface PatternSection {
   locked: boolean;
   partImageUrl?: string | null;
   steps: PatternStep[];
+  patternId?: string;
 }
 
 export interface Pattern {

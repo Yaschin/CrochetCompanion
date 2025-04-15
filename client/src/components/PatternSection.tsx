@@ -317,9 +317,20 @@ const PatternSection: React.FC<PatternSectionProps> = ({
         </div>
       )}
       
-      {/* Steps - Only shown when expanded */}
+      {/* Image placeholder and steps - Only shown when expanded */}
       {isExpanded && (
         <div className="pt-1 pb-2">
+          {/* Section Image */}
+          <div className="px-2 mb-2">
+            <SectionImagePlaceholder
+              patternId={section.patternId || ""}
+              sectionIndex={sectionIndex}
+              sectionName={section.name}
+              partImageUrl={section.partImageUrl || null}
+              onImageGenerated={handleSectionImageGenerated}
+            />
+          </div>
+
           <div className="divide-y divide-gray-50">
             {section.steps.map((step, stepIndex) => (
               <StepRow

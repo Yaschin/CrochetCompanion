@@ -7,7 +7,7 @@ interface SectionImagePlaceholderProps {
   patternId: string;
   sectionIndex: number;
   sectionName: string;
-  partImageUrl: string | null;
+  partImageUrl: string | null | undefined;
   onImageGenerated: (imageUrl: string) => void;
 }
 
