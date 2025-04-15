@@ -2,6 +2,10 @@
  * Utility functions for pattern-related calculations
  */
 import { Pattern, ProjectEvent } from "./types";
+import { formatDateForInput, isWeekend } from './dateUtils';
+
+// Re-export for backward compatibility
+export { isWeekend };
 
 // Crochet speeds in minutes per stitch for different project types
 export const CROCHET_SPEEDS: Record<string, number> = {
@@ -147,10 +151,7 @@ export function getEventsForDate(events: ProjectEvent[], date: Date | undefined)
   });
 }
 
-// Import isWeekend from dateUtils to avoid duplication
-import { isWeekend } from './dateUtils';
-// Re-export for backward compatibility
-export { isWeekend };
+// No need to re-export isWeekend as it's already imported and exported at the top
 
 /**
  * Determine the effective crochet time for a date based on its availability

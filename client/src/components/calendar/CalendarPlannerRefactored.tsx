@@ -220,7 +220,7 @@ const CalendarPlannerRefactored: React.FC<CalendarPlannerProps> = (props) => {
     if (!date) return;
     
     // Create a consistent date string format
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateForInput(date);
     const currentStatus = dayAvailability[dateStr] || 'full';
     
     // Cycle through: full -> half -> blocked -> full
@@ -243,7 +243,7 @@ const CalendarPlannerRefactored: React.FC<CalendarPlannerProps> = (props) => {
     if (!date) return 'full';
     
     // Create a consistent date string format
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateForInput(date);
     
     // If explicitly set in state, use that
     if (dateStr in dayAvailability) {
