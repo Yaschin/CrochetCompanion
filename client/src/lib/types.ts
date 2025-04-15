@@ -1,22 +1,108 @@
-// Import all schema types from shared schema
-import { 
-  Pattern, PatternSection, PatternStep,
-  YarnRequirement, HookRequirement, NotionsRequirement, ToolRequirement,
-  StashItem
-} from '../shared/schema';
+/**
+ * Type definitions for the Crochet Companion app
+ */
 
-// Re-export them for backward compatibility
-export type {
-  Pattern, PatternSection, PatternStep,
-  YarnRequirement, HookRequirement, NotionsRequirement, ToolRequirement,
-  StashItem
-};
+export interface YarnRequirement {
+  color: string;
+  volume: string; // e.g., "~50g" or "~80 yards"
+}
 
-// Form models (keeping this as it's client-specific)
-export interface PatternInputFormData {
-  prompt: string;
+export interface HookRequirement {
+  size: string; // e.g., "5.0mm" or "H/8"
+  quantity: number;
+  note?: string;
+}
+
+export interface NotionsRequirement {
+  name: string; // e.g., "Safety eyes", "Buttons"
+  description: string; // e.g., "15mm black", "1 inch wooden"
+  quantity: number;
+}
+
+export interface ToolRequirement {
+  name: string; // e.g., "Tapestry needle", "Stitch markers"
+  description?: string;
+  quantity?: number;
+}
+
+export interface PatternStep {
+  id: number;
+  text: string;
+  locked: boolean;
+  count: number;
+  notes: string;
+  photo: string | null;
+  aiStepImage?: string | null;
+  diagramUrl?: string | null;
+  completed: boolean;
+}
+
+export interface PatternSection {
+  name: string;
+  notes: string;
+  locked: boolean;
+  partImageUrl?: string | null;
+  diagramUrl?: string | null;
+  steps: PatternStep[];
+}
+
+export interface Pattern {
+  id: string;
+  title: string;
+  description: string;
   projectType: string;
   skillLevel: string;
-  yarnType?: string;
-  size?: string;
+  imgUrl: string;
+  difficultyLevel: string;
+  completed: boolean;
+  materialsNotes?: string;
+  yarnRequirements?: YarnRequirement[];
+  hookRequirements?: HookRequirement[];
+  notionsRequirements?: NotionsRequirement[];
+  toolRequirements?: ToolRequirement[];
+  needsStuffing?: string;
+  sections: PatternSection[];
+  createdAt: string;
 }
+
+export interface ProjectEvent {
+  id: string;
+  title: string;
+  patternId?: string;
+  patternTitle?: string;
+  date: Date | string;
+  description?: string;
+  completed: boolean;
+  timeEstimate?: number; // in minutes
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface StashItem {
+  id: string;
+  name: string;
+  brand: string;
+  colorName: string;
+  colorCode?: string;
+  type: string;
+  weight: string;
+  fiberContent?: string;
+  yardage?: number;
+  grams?: number;
+  quantity: number;
+  purchaseDate?: string;
+  location?: string;
+  imageUrl?: string;
+  notes?: string;
+  inUse: boolean;
+  usedIn?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface DayAvailability {
+  date: string;
+  status: 'blocked' | 'half' | 'full';
+}
+
+export type ViewType = "input" | "viewer" | "library" | "stash" | "calendar";

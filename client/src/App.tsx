@@ -7,11 +7,8 @@ import PatternInputRefactored from "./components/PatternInputRefactored";
 import PatternViewer from "./components/PatternViewer";
 import PatternLibrary from "./components/PatternLibrary";
 import YarnStash from "./components/YarnStash";
-import CalendarPlanner from "./components/CalendarPlanner";
-import { Pattern } from "./lib/types";
-
-// View options
-type ViewType = "input" | "viewer" | "library" | "stash" | "calendar";
+import CalendarPlannerRefactored from "./components/calendar/CalendarPlannerRefactored";
+import { Pattern, ViewType } from "./lib/types";
 
 function App() {
   const [activeView, setActiveView] = useState<ViewType>("input");
@@ -123,7 +120,7 @@ function App() {
           )}
           
           {activeView === "calendar" && (
-            <CalendarPlanner onNavigate={navigateToView} />
+            <CalendarPlannerRefactored onNavigate={navigateToView} />
           )}
         </main>
       </div>
