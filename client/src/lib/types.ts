@@ -2,6 +2,14 @@
  * Type definitions for the Crochet Companion app
  */
 
+export interface PatternInputFormData {
+  prompt: string;
+  projectType: string;
+  skillLevel: string;
+  yarnType?: string;
+  size?: string;
+}
+
 export interface YarnRequirement {
   color: string;
   volume: string; // e.g., "~50g" or "~80 yards"

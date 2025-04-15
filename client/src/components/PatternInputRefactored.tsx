@@ -56,7 +56,43 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(selectedFile.type)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a JPG, PNG, or GIF image.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Validate file size (10MB limit)
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 10MB.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setFile(selectedFile);
+      
+      // Update the prompt with file description
+      setFormData(prev => ({
+        ...prev,
+        prompt: prev.prompt 
+          ? `${prev.prompt} (Reference image: ${selectedFile.name})`
+          : `Create a crochet pattern based on the uploaded reference image (${selectedFile.name})`
+      }));
+      
+      toast({
+        title: "Reference Image Added",
+        description: "Your image has been added as a reference for the pattern generation.",
+      });
     }
   };
 
@@ -171,9 +207,22 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       });
     } catch (error) {
       console.error('Error generating pattern:', error);
+      
+      // Provide more specific error messages based on error type
+      let errorDescription = "There was an error generating your pattern. Please try again.";
+      const errorString = String(error);
+      
+      if (errorString.includes('OPENAI_API_KEY')) {
+        errorDescription = "OpenAI API key is missing or invalid. Please contact support.";
+      } else if (errorString.includes('rate limit') || errorString.includes('429')) {
+        errorDescription = "Rate limit exceeded. Please wait a moment and try again.";
+      } else if (errorString.includes('network') || errorString.includes('timeout')) {
+        errorDescription = "Network error. Please check your connection and try again.";
+      }
+      
       toast({
         title: "Generation Failed",
-        description: "There was an error generating your pattern. Please try again.",
+        description: errorDescription,
         variant: "destructive"
       });
     } finally {

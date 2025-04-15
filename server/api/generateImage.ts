@@ -1,5 +1,10 @@
 import OpenAI from "openai";
 
+// Check if OpenAI API key is available
+if (!process.env.OPENAI_API_KEY) {
+  console.error("ERROR: OPENAI_API_KEY environment variable is not set. Image generation will fail.");
+}
+
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -82,10 +87,10 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
       
       // If it's not a rate limit error or this is our last attempt, don't retry
       if (!isRateLimit || attempt === maxRetries - 1) {
-        // For part images, we can gracefully degrade by returning empty string
+        // For part images, provide a fallback image URL instead of empty string
         if (type === "part") {
           console.log("Using fallback for part image due to generation failures");
-          return ""; // Return empty string for part images, as they're not critical
+          return "https://placehold.co/400x400/f8f9fa/6c757d?text=Image+Generation+Failed"; // Return a placeholder with error text
         }
         
         // For main product images, we need to fail
