@@ -293,6 +293,19 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         patternId: pattern.id,
         unlockedStepsOnly: true
       });
+    } catch (error) {
+      // Error is already handled by the mutation's onError
+      // This catch prevents unhandled promise rejections
+      console.error('Error in handleRegeneratePattern:', error);
+      
+      // Display a more user-friendly message if it's an OpenAI API issue
+      if (String(error).includes('API key')) {
+        toast({
+          title: "API Key Required",
+          description: "An OpenAI API key is needed for pattern regeneration. Please check your environment variables.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsRegenerating(false);
     }
@@ -311,6 +324,25 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         patternId: pattern.id,
         refinements: imageRefinements
       });
+    } catch (error) {
+      // Error is already handled by the mutation's onError
+      // This catch prevents unhandled promise rejections
+      console.error('Error in handleImageRefinementSubmit:', error);
+      
+      // Display a more user-friendly message if it's an OpenAI API issue
+      if (String(error).includes('API key')) {
+        toast({
+          title: "API Key Required",
+          description: "An OpenAI API key is needed for image generation. Please check your environment variables.",
+          variant: "destructive",
+        });
+      } else if (String(error).includes('429') || String(error).includes('rate limit')) {
+        toast({
+          title: "Rate Limit Exceeded",
+          description: "The OpenAI API rate limit has been reached. Please try again later.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsRegeneratingImage(false);
     }

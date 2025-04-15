@@ -78,11 +78,36 @@ const SectionImagePlaceholder: React.FC<SectionImagePlaceholderProps> = ({
       }
     } catch (error) {
       console.error("Error generating section image:", error);
-      toast({
-        title: "Image generation failed",
-        description: "Could not generate a section image. Please try again later.",
-        variant: "destructive",
-      });
+      
+      // Provide more specific error messages based on error type
+      const errorMsg = String(error);
+      
+      if (errorMsg.includes('API key') || errorMsg.includes('authentication') || 
+          errorMsg.includes('401') || errorMsg.includes('403')) {
+        toast({
+          title: "API Key Required",
+          description: "An OpenAI API key is needed for image generation. Please check your environment variables.",
+          variant: "destructive",
+        });
+      } else if (errorMsg.includes('429') || errorMsg.includes('rate limit')) {
+        toast({
+          title: "Rate Limit Exceeded",
+          description: "The OpenAI API rate limit has been reached. Please try again later.",
+          variant: "destructive",
+        });
+      } else if (errorMsg.includes('timeout') || errorMsg.includes('timed out')) {
+        toast({
+          title: "Request Timeout",
+          description: "The image generation request took too long. Please try again with a simpler prompt.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Image Generation Failed",
+          description: "Could not generate a section image. Please try again later.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsGenerating(false);
       setIsDialogOpen(false);
