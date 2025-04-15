@@ -107,7 +107,8 @@ function formatTimeEstimate(minutes: number): string {
 function calculateCompletionDate(
   startDate: Date, 
   timeEstimate: number, 
-  dailyCrochetTime: number
+  dailyCrochetTime: number,
+  dayAvailabilityMap?: Record<string, 'blocked' | 'half' | 'full'>
 ): Date {
   // If no daily time set, assume it takes one day
   if (!dailyCrochetTime || dailyCrochetTime <= 0) {
@@ -116,14 +117,51 @@ function calculateCompletionDate(
     return result;
   }
   
-  // Calculate how many days it will take
-  const daysNeeded = Math.ceil(timeEstimate / dailyCrochetTime);
+  // Track remaining minutes
+  let remainingMinutes = timeEstimate;
   
-  // Create a new date object for the result
-  const result = new Date(startDate);
-  result.setDate(result.getDate() + daysNeeded);
+  // Clone start date to use as current position
+  const currentDate = new Date(startDate);
+  let completionDate = new Date(startDate);
   
-  return result;
+  // Loop until all time is accounted for
+  while (remainingMinutes > 0) {
+    // Move to next day
+    currentDate.setDate(currentDate.getDate() + 1);
+    
+    // Determine available time based on day and availability settings
+    let availableMinutes = dailyCrochetTime;
+    const dateStr = currentDate.toISOString().split('T')[0];
+    
+    // Check if we have explicit availability settings for this day
+    if (dayAvailabilityMap && dateStr in dayAvailabilityMap) {
+      const availability = dayAvailabilityMap[dateStr];
+      
+      if (availability === 'blocked') {
+        availableMinutes = 0;
+      } else if (availability === 'half') {
+        availableMinutes = Math.floor(dailyCrochetTime / 2);
+      }
+    } else {
+      // If not explicitly set, check if it's a weekend
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) { // 0 = Sunday, 6 = Saturday
+        availableMinutes = 0; // Weekends blocked by default
+      }
+    }
+    
+    // Subtract available time from remaining work
+    if (availableMinutes > 0) {
+      remainingMinutes -= availableMinutes;
+      
+      // Update completion date if progress was made
+      if (remainingMinutes <= 0) {
+        completionDate = new Date(currentDate);
+      }
+    }
+  }
+  
+  return completionDate;
 }
 
 export default function CalendarPlanner() {
@@ -140,7 +178,9 @@ export default function CalendarPlanner() {
     completed: false,
     timeEstimate: 30
   });
-  const [dailyCrochetTime, setDailyCrochetTime] = useState<number>(60); // Default 60 minutes per day
+  const [dailyCrochetTime, setDailyCrochetTime] = useState<number>(120); // Default 2 hours per day
+  const [dayAvailability, setDayAvailability] = useState<Record<string, 'blocked' | 'half' | 'full'>>({});
+  const [activeProjects, setActiveProjects] = useState<Array<Pattern & { priority: number }>>([]);
   
   // Fetch events from the server
   const { data: events = [], isLoading: eventsLoading } = useQuery({
@@ -329,6 +369,70 @@ export default function CalendarPlanner() {
     return `Expected completion: ${completionDate.toLocaleDateString()}`;
   };
 
+  // Helper function to toggle day availability
+  const toggleDayAvailability = (date: Date) => {
+    if (!date) return;
+    
+    const dateStr = date.toISOString().split('T')[0];
+    const currentStatus = dayAvailability[dateStr] || 'full';
+    
+    // Cycle through: full -> half -> blocked -> full
+    let newStatus: 'full' | 'half' | 'blocked';
+    if (currentStatus === 'full') {
+      newStatus = 'half';
+    } else if (currentStatus === 'half') {
+      newStatus = 'blocked';
+    } else {
+      newStatus = 'full';
+    }
+    
+    setDayAvailability({
+      ...dayAvailability,
+      [dateStr]: newStatus
+    });
+  };
+  
+  // Check if a date is a weekend
+  const isWeekend = (date: Date) => {
+    const day = date.getDay();
+    return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
+  };
+  
+  // Determine the availability status for a date
+  const getDayAvailability = (date: Date): 'blocked' | 'half' | 'full' => {
+    if (!date) return 'full';
+    
+    const dateStr = date.toISOString().split('T')[0];
+    
+    // If explicitly set in state, use that
+    if (dateStr in dayAvailability) {
+      return dayAvailability[dateStr];
+    }
+    
+    // Default weekends to blocked unless overridden
+    if (isWeekend(date)) {
+      return 'blocked';
+    }
+    
+    return 'full';
+  };
+  
+  // Get effective crochet time for a date based on availability
+  const getEffectiveCrochetTime = (date: Date): number => {
+    const availability = getDayAvailability(date);
+    
+    switch (availability) {
+      case 'full':
+        return dailyCrochetTime;
+      case 'half':
+        return Math.floor(dailyCrochetTime / 2);
+      case 'blocked':
+        return 0;
+      default:
+        return dailyCrochetTime;
+    }
+  };
+  
   // Events for the selected date
   const selectedDateEvents = getEventsForDate(date);
 
@@ -355,34 +459,74 @@ export default function CalendarPlanner() {
 
           {/* Daily crochet time setting */}
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <Label htmlFor="dailyCrochetTime" className="text-sm font-medium text-gray-700 mb-2 block">
-              Daily Crochet Time (minutes)
+            <Label htmlFor="dailyCrochetTimeHours" className="text-sm font-medium text-gray-700 mb-2 block">
+              Daily Crochet Time: {dailyCrochetTime / 60} hours
             </Label>
-            <div className="flex gap-2">
-              <Input
-                id="dailyCrochetTime"
-                type="number"
-                min="5"
-                max="480"
-                value={dailyCrochetTime}
-                onChange={(e) => setDailyCrochetTime(parseInt(e.target.value) || 60)}
-                className="w-32"
-              />
-              <Button variant="outline" onClick={() => setDailyCrochetTime(30)}>30m</Button>
-              <Button variant="outline" onClick={() => setDailyCrochetTime(60)}>1h</Button>
-              <Button variant="outline" onClick={() => setDailyCrochetTime(120)}>2h</Button>
+            <input
+              id="dailyCrochetTimeHours"
+              type="range"
+              min="60"
+              max="600"
+              step="30"
+              value={dailyCrochetTime}
+              onChange={(e) => setDailyCrochetTime(parseInt(e.target.value))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between mt-1 text-xs text-gray-500">
+              <span>1 hour</span>
+              <span>5 hours</span>
+              <span>10 hours</span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              This helps estimate when your projects will be completed.
+            <div className="flex gap-2 mt-3">
+              <Button variant="outline" size="sm" onClick={() => setDailyCrochetTime(60)}>1h</Button>
+              <Button variant="outline" size="sm" onClick={() => setDailyCrochetTime(120)}>2h</Button>
+              <Button variant="outline" size="sm" onClick={() => setDailyCrochetTime(180)}>3h</Button>
+              <Button variant="outline" size="sm" onClick={() => setDailyCrochetTime(300)}>5h</Button>
+              <Button variant="outline" size="sm" onClick={() => setDailyCrochetTime(480)}>8h</Button>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Set your typical daily crochet time to estimate project completion dates.
             </p>
           </div>
 
           {/* Calendar component */}
+          <div className="mb-2 bg-gray-50 p-3 rounded-lg text-sm">
+            <div className="flex justify-start items-center gap-x-4 gap-y-1 flex-wrap">
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-white border border-gray-300 rounded mr-1"></div>
+                <span className="text-gray-600">Available</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-gray-200 border border-gray-300 rounded mr-1"></div>
+                <span className="text-gray-600">Half Day</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-gray-400 border border-gray-300 rounded mr-1"></div>
+                <span className="text-gray-600">Not Available</span>
+              </div>
+            </div>
+            <p className="text-xs mt-2 text-gray-500">Click on a day to toggle: Full Day → Half Day → Not Available → Full Day</p>
+          </div>
           <Calendar
             mode="single"
             selected={date}
             onSelect={setDate}
+            modifiersClassNames={{
+              selected: 'bg-primary text-primary-foreground',
+            }}
+            modifiers={{
+              blocked: (date) => getDayAvailability(date) === 'blocked',
+              half: (date) => getDayAvailability(date) === 'half',
+            }}
+            modifiersStyles={{
+              blocked: { backgroundColor: 'rgba(156, 163, 175, 0.7)', color: '#fff', opacity: '0.8' },
+              half: { backgroundColor: 'rgba(229, 231, 235, 0.7)', color: '#374151' },
+            }}
             className="rounded-md border"
+            onDayClick={(day) => {
+              // Toggle day availability on click
+              toggleDayAvailability(day);
+            }}
           />
         </div>
 
