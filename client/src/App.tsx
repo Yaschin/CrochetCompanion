@@ -76,6 +76,16 @@ function App() {
               >
                 My Library
               </button>
+              <button 
+                onClick={() => navigateToView("stash")}
+                className={`flex-1 sm:flex-initial whitespace-nowrap py-3 sm:py-4 text-center border-b-2 font-medium text-xs sm:text-sm ${
+                  activeView === "stash" 
+                    ? "border-primary text-primary" 
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                My Stash
+              </button>
             </div>
           </div>
 

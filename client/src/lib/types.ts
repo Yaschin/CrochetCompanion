@@ -1,30 +1,4 @@
-// Pattern data model
-export interface YarnRequirement {
-  color: string;
-  volume: string; // e.g., "~50g" or "~80 yards"
-}
-
-// Define hook requirement
-export interface HookRequirement {
-  size: string; // e.g., "5.0mm" or "H/8"
-  quantity: number;
-  note?: string;
-}
-
-// Define notions requirement (accessories, embellishments, etc.)
-export interface NotionsRequirement {
-  name: string; // e.g., "Safety eyes", "Buttons"
-  description: string; // e.g., "15mm black", "1 inch wooden"
-  quantity: number;
-}
-
-// Define tool requirement
-export interface ToolRequirement {
-  name: string; // e.g., "Tapestry needle", "Stitch markers"
-  description?: string;
-  quantity?: number;
-}
-
+// Pattern models
 export interface PatternStep {
   id: number;
   text: string;
@@ -44,7 +18,29 @@ export interface PatternSection {
   partImageUrl?: string | null;
   diagramUrl?: string | null;
   steps: PatternStep[];
-  patternId?: string;
+}
+
+export interface YarnRequirement {
+  color: string;
+  volume: string; // e.g., "~50g" or "~80 yards"
+}
+
+export interface HookRequirement {
+  size: string; // e.g., "5.0mm" or "H/8"
+  quantity: number;
+  note?: string;
+}
+
+export interface NotionsRequirement {
+  name: string; // e.g., "Safety eyes", "Buttons"
+  description: string; // e.g., "15mm black", "1 inch wooden"
+  quantity: number;
+}
+
+export interface ToolRequirement {
+  name: string; // e.g., "Tapestry needle", "Stitch markers"
+  description?: string;
+  quantity?: number;
 }
 
 export interface Pattern {
@@ -55,39 +51,34 @@ export interface Pattern {
   yarnType?: string;
   size?: string;
   endProductImage?: string;
-  materialsNotes: string;
+  materialsNotes?: string;
   createdAt: string;
   sections: PatternSection[];
-  yarnRequirements: YarnRequirement[];
-  // New material types
+  yarnRequirements?: YarnRequirement[];
   hookRequirements?: HookRequirement[];
   notionsRequirements?: NotionsRequirement[];
   toolRequirements?: ToolRequirement[];
   needsStuffing?: string;
 }
 
-// Input forms
+// Form models
 export interface PatternInputFormData {
   prompt: string;
   projectType: string;
   skillLevel: string;
   yarnType?: string;
   size?: string;
-  referenceImage?: File;
 }
 
-// Dropdown options
-export const projectTypes = [
-  { value: "plushie", label: "Plushie 🧸" },
-  { value: "blanket", label: "Blanket 🛏" },
-  { value: "hat", label: "Hat 🎩" },
-  { value: "bag", label: "Bag 👜" },
-  { value: "scarf", label: "Scarf 🧣" },
-  { value: "other", label: "Other" }
-];
-
-export const skillLevels = [
-  { value: "beginner", label: "Beginner" },
-  { value: "intermediate", label: "Intermediate" },
-  { value: "advanced", label: "Advanced" }
-];
+// Stash models
+export interface StashItem {
+  id: string;
+  type: 'yarn' | 'hook' | 'notion' | 'tool';
+  name: string;
+  color?: string;
+  volume?: string;
+  size?: string;
+  quantity: number;
+  description?: string;
+  notes?: string;
+}

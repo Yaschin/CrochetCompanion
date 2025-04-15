@@ -1,12 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Edit, Trash, Plus, Save, X, Search } from 'lucide-react';
 import { YarnIcon, WoolBallIcon } from '../icons/WoolIcons';
-import { 
-  YarnRequirement, 
-  HookRequirement, 
-  NotionsRequirement, 
-  ToolRequirement 
-} from '../lib/types';
+import { StashItem } from '../lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
@@ -16,18 +11,6 @@ import { Textarea } from './ui/textarea';
 import { apiRequest } from '../lib/queryClient';
 import { useToast } from '../hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-interface StashItem {
-  id: string;
-  type: 'yarn' | 'hook' | 'notion' | 'tool';
-  name: string;
-  color?: string;
-  volume?: string;
-  size?: string;
-  quantity: number;
-  description?: string;
-  notes?: string;
-}
 
 export default function YarnStash() {
   const { toast } = useToast();
@@ -55,6 +38,22 @@ export default function YarnStash() {
       } catch (error) {
         console.error('Error fetching stash:', error);
         return [];
+      }
+    }
+  });
+
+  // Fetch stash notes
+  const { data: stashNotes = "" } = useQuery({
+    queryKey: ['stashNotes'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/stash-notes');
+        const data = await response.json();
+        setNotes(data.content || "");
+        return data.content || "";
+      } catch (error) {
+        console.error('Error fetching stash notes:', error);
+        return "";
       }
     }
   });
@@ -131,10 +130,11 @@ export default function YarnStash() {
   // Update notes mutation
   const updateNotesMutation = useMutation({
     mutationFn: async (notes: string) => {
-      const res = await apiRequest('PUT', '/api/stash/notes', { notes });
+      const res = await apiRequest('PUT', '/api/stash-notes', { content: notes });
       return res.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stashNotes'] });
       toast({
         title: "Notes Updated",
         description: "Your stash notes have been updated.",
