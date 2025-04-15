@@ -71,6 +71,10 @@ export interface Pattern {
   needsStuffing?: string;
   sections: PatternSection[];
   createdAt: string;
+  // Additional properties used in newer implementations
+  yarnType?: string;
+  size?: string;
+  endProductImage?: string;
 }
 
 export interface ProjectEvent {

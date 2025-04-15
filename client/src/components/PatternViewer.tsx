@@ -70,17 +70,34 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   // Regenerate steps mutation
   const regenerateStepsMutation = useMutation({
     mutationFn: async (data: { patternId: string; unlockedStepsOnly: boolean }) => {
-      const res = await apiRequest('POST', '/api/generate-pattern', {
-        prompt: pattern.title, // Use the title as a base prompt for regeneration
-        patternId: data.patternId,
-        projectType: pattern.projectType,
-        skillLevel: pattern.skillLevel,
-        yarnType: pattern.yarnType,
-        size: pattern.size,
-        unlockedStepsOnly: true,
-        originalPattern: pattern
-      });
-      return res.json();
+      try {
+        const res = await apiRequest('POST', '/api/generate-pattern', {
+          prompt: pattern.title, // Use the title as a base prompt for regeneration
+          patternId: data.patternId,
+          projectType: pattern.projectType,
+          skillLevel: pattern.skillLevel,
+          yarnType: pattern.yarnType,
+          size: pattern.size,
+          unlockedStepsOnly: true,
+          originalPattern: pattern
+        });
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+        }
+        
+        return res.json();
+      } catch (error) {
+        console.error('Error regenerating pattern:', error);
+        // Check if it's likely an API key issue
+        const errorMsg = String(error);
+        if (errorMsg.includes('API key') || errorMsg.includes('authentication') || 
+            errorMsg.includes('401') || errorMsg.includes('403')) {
+          throw new Error('OpenAI API key missing or invalid. Please check your API key configuration.');
+        }
+        throw error;
+      }
     },
     onSuccess: (data) => {
       // Assuming the returned data is the regenerated pattern
@@ -90,22 +107,51 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         description: "Your pattern has been updated with new instructions.",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 
+        "There was an error regenerating your pattern.";
+      
       toast({
         title: "Regeneration Failed",
-        description: "There was an error regenerating your pattern.",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      if (String(error).includes('API key')) {
+        toast({
+          title: "API Key Required",
+          description: "OpenAI API key is required for this feature. Please add it in your environment variables.",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
     },
   });
 
   // Regenerate product image mutation
   const regenerateImageMutation = useMutation({
     mutationFn: async (data: { patternId: string; refinements?: string }) => {
-      const res = await apiRequest('POST', `/api/patterns/${data.patternId}/product-image`, {
-        refinements: data.refinements
-      });
-      return res.json();
+      try {
+        const res = await apiRequest('POST', `/api/patterns/${data.patternId}/product-image`, {
+          refinements: data.refinements
+        });
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+        }
+        
+        return res.json();
+      } catch (error) {
+        console.error('Error regenerating pattern image:', error);
+        // Check if it's likely an API key issue
+        const errorMsg = String(error);
+        if (errorMsg.includes('API key') || errorMsg.includes('authentication') || 
+            errorMsg.includes('401') || errorMsg.includes('403')) {
+          throw new Error('OpenAI API key missing or invalid. Please check your API key configuration.');
+        }
+        throw error;
+      }
     },
     onSuccess: (data) => {
       // Update pattern with new image
@@ -118,12 +164,25 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       setImageDialogOpen(false);
       setImageRefinements('');
     },
-    onError: () => {
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 
+        "There was an error regenerating your pattern image.";
+      
       toast({
         title: "Image Regeneration Failed",
-        description: "There was an error regenerating your pattern image.",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      if (String(error).includes('API key')) {
+        toast({
+          title: "API Key Required",
+          description: "OpenAI API key is required for this feature. Please add it in your environment variables.",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
+      
       setImageDialogOpen(false);
     },
   });
