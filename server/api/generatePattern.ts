@@ -120,10 +120,9 @@ export async function generatePattern(inputData: PatternInputData) {
     // For regeneration, merge with locked steps from the original pattern
     if (isRegeneration) {
       generatedPattern = mergeWithLockedSteps(originalPattern, generatedPattern);
-    } else {
-      // Generate part images for each section (only for new patterns)
-      generatedPattern = await generatePartImages(generatedPattern, projectType);
-    }
+    } 
+  // We're no longer auto-generating section images
+  // Instead, they'll be generated on-demand when requested
     
     return generatedPattern;
   } catch (error) {

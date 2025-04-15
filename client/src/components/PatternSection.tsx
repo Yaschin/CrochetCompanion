@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PatternSection as PatternSectionType, PatternStep } from '@/lib/types';
 import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon, Trash } from 'lucide-react';
+import SectionImagePlaceholder from './SectionImagePlaceholder';
 
 interface PatternSectionProps {
   section: PatternSectionType;
@@ -182,36 +183,12 @@ const PatternSection: React.FC<PatternSectionProps> = ({
     setIsEditingNotes(false);
   };
 
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-
-  const generatePartImage = async () => {
-    if (isGeneratingImage) return;
-    setIsGeneratingImage(true);
-    
-    try {
-      const res = await fetch('/api/generate-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: `The ${section.name} part of a crocheted item`,
-          type: 'part',
-          partName: section.name
-        })
-      });
-      
-      const data = await res.json();
-      if (data && data.url) {
-        onUpdateSection({
-          ...section,
-          partImageUrl: data.url
-        });
-      }
-    } catch (error) {
-      console.error('Error generating image:', error);
-      alert('Could not generate image at this time. Please try again later.');
-    } finally {
-      setIsGeneratingImage(false);
-    }
+  // Handle section image generation
+  const handleSectionImageGenerated = (imageUrl: string) => {
+    onUpdateSection({
+      ...section,
+      partImageUrl: imageUrl
+    });
   };
 
   // Calculate completion stats for this section
@@ -238,19 +215,19 @@ const PatternSection: React.FC<PatternSectionProps> = ({
         </button>
         
         {/* Section Thumbnail */}
-        {section.partImageUrl ? (
-          <div className="h-8 w-8 rounded overflow-hidden mr-2 flex-shrink-0 bg-gray-100">
+        <div className="h-8 w-8 rounded overflow-hidden mr-2 flex-shrink-0 bg-gray-100">
+          {section.partImageUrl ? (
             <img 
               src={section.partImageUrl} 
               alt={section.name}
               className="h-full w-full object-cover"
             />
-          </div>
-        ) : (
-          <div className="h-8 w-8 rounded overflow-hidden mr-2 flex-shrink-0 bg-gray-100 flex items-center justify-center text-gray-400">
-            <ImageIcon size={14} />
-          </div>
-        )}
+          ) : (
+            <div className="h-full w-full flex items-center justify-center text-gray-400">
+              <ImageIcon size={14} />
+            </div>
+          )}
+        </div>
         
         {/* Section Header Content */}
         <div className="flex-grow cursor-pointer" onClick={onToggleExpand}>
@@ -270,15 +247,6 @@ const PatternSection: React.FC<PatternSectionProps> = ({
         
         {/* Section Actions */}
         <div className="flex items-center space-x-1">
-          {/* Generate Image button */}
-          <button 
-            className="p-1 text-gray-500 hover:bg-gray-100 rounded"
-            onClick={generatePartImage}
-            title="Generate visual guide"
-          >
-            <ImageIcon size={14} />
-          </button>
-          
           {/* Notes button */}
           <button 
             className={`p-1 rounded ${

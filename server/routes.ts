@@ -127,6 +127,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate image for a specific pattern section
+  app.post("/api/patterns/:patternId/sections/:sectionIndex/image", async (req: Request, res: Response) => {
+    try {
+      const { patternId, sectionIndex } = req.params;
+      const sectionIdx = parseInt(sectionIndex, 10);
+      
+      if (isNaN(sectionIdx)) {
+        return res.status(400).json({ message: "Invalid section index" });
+      }
+      
+      // Get the pattern
+      const pattern = await patternService.getPattern(patternId);
+      if (!pattern) {
+        return res.status(404).json({ message: "Pattern not found" });
+      }
+      
+      // Get the section
+      const section = pattern.sections[sectionIdx];
+      if (!section) {
+        return res.status(404).json({ message: "Section not found" });
+      }
+      
+      // Generate image for the section
+      const prompt = `A detailed illustration of the ${section.name.toLowerCase()} part of a crocheted ${pattern.projectType}`;
+      const colors = pattern.yarnRequirements && pattern.yarnRequirements.length > 0
+        ? ` using these colors: ${pattern.yarnRequirements.map((req: any) => req.color).join(", ")}`
+        : '';
+      
+      const imageUrl = await generateImage({
+        prompt: prompt + colors,
+        type: 'part',
+        projectType: pattern.projectType,
+        partName: section.name
+      });
+      
+      // Update the pattern with the new image URL
+      if (imageUrl) {
+        const updatedSection = { ...section, partImageUrl: imageUrl };
+        const updatedSections = [...pattern.sections];
+        updatedSections[sectionIdx] = updatedSection;
+        
+        const updatedPattern = await patternService.updatePattern(patternId, {
+          sections: updatedSections
+        });
+        
+        return res.json({ success: true, imageUrl, pattern: updatedPattern });
+      }
+      
+      res.status(500).json({ message: "Failed to generate image" });
+    } catch (error) {
+      console.error("Error generating section image:", error);
+      res.status(500).json({ 
+        message: "Failed to generate section image", 
+        error: (error as Error).message 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
