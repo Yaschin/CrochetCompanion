@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { YarnIcon } from '../icons/WoolIcons';

@@ -7,8 +7,8 @@ interface PatternGenLoaderProps {
   progress?: number;
 }
 
-const PatternGenLoader: React.FC<PatternGenLoaderProps> = ({ stage, progress = 0 }) => {
-  const stageLabels = {
+const PatternGenLoader: React.FC<PatternGenLoaderProps> = React.memo(({ stage, progress = 0 }) => {
+  const stageLabels = React.useMemo(() => ({
     prompt: "Preparing your pattern...",
     pattern: "Crafting your instructions...",
     images: "Weaving your images...",

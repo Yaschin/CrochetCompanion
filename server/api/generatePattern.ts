@@ -99,9 +99,17 @@ export async function generatePattern(inputData: PatternInputData) {
     `;
   }
 
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+  const maxRetries = 3;
+  let lastError;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+      }
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
