@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
 import { Sparkles } from 'lucide-react';
-import { PatternInputFormData, Pattern } from '@/lib/types';
+import { PatternInputFormData, Pattern } from '../lib/types';
 import PatternGenLoader from './PatternGenLoader';
 import ProjectTypeCards from './ProjectTypeCards';
 import SizeSlider from './SizeSlider';
@@ -31,26 +31,26 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
 
   // Handle prompt input change
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFormData(prev => ({ ...prev, prompt: e.target.value }));
+    setFormData((prev: PatternInputFormData) => ({ ...prev, prompt: e.target.value }));
   };
 
   // Handle project type selection
   const handleProjectTypeSelect = (type: string, customValue?: string) => {
     if (type === 'custom' && customValue) {
-      setFormData(prev => ({ ...prev, projectType: customValue }));
+      setFormData((prev: PatternInputFormData) => ({ ...prev, projectType: customValue }));
     } else {
-      setFormData(prev => ({ ...prev, projectType: type }));
+      setFormData((prev: PatternInputFormData) => ({ ...prev, projectType: type }));
     }
   };
 
   // Handle size change
   const handleSizeChange = (size: string) => {
-    setFormData(prev => ({ ...prev, size }));
+    setFormData((prev: PatternInputFormData) => ({ ...prev, size }));
   };
 
   // Handle difficulty selection
   const handleDifficultySelect = (level: string) => {
-    setFormData(prev => ({ ...prev, skillLevel: level }));
+    setFormData((prev: PatternInputFormData) => ({ ...prev, skillLevel: level }));
   };
 
   // Handle file upload
@@ -82,7 +82,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       setFile(selectedFile);
       
       // Update the prompt with file description
-      setFormData(prev => ({
+      setFormData((prev: PatternInputFormData) => ({
         ...prev,
         prompt: prev.prompt 
           ? `${prev.prompt} (Reference image: ${selectedFile.name})`
@@ -164,13 +164,20 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       // Prepare pattern for saving
       const patternToSave = {
         title: generatedPatternData.title,
+        description: generatedPatternData.description || `A ${formData.skillLevel} level ${formData.projectType} crochet pattern.`,
         projectType: formData.projectType,
         skillLevel: formData.skillLevel,
         yarnType: formData.yarnType || undefined,
         size: formData.size || undefined,
-        endProductImage: imageResponse.url,
+        imgUrl: imageResponse.url, // Main image
+        endProductImage: imageResponse.url, // Product image
+        difficultyLevel: formData.skillLevel, // Map skill level to difficulty level
+        completed: false, // New pattern starts as not completed
         materialsNotes: generatedPatternData.materialsNotes || "",
         yarnRequirements: generatedPatternData.yarnRequirements || [],
+        hookRequirements: generatedPatternData.hookRequirements || [],
+        notionsRequirements: generatedPatternData.notionsRequirements || [],
+        toolRequirements: generatedPatternData.toolRequirements || [],
         sections: generatedPatternData.sections.map((section: any) => ({
           name: section.name,
           notes: section.notes || "",
@@ -303,7 +310,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
                   className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-300"
                   placeholder="Leave blank for AI recommendations"
                   value={formData.yarnType}
-                  onChange={(e) => setFormData(prev => ({ ...prev, yarnType: e.target.value }))}
+                  onChange={(e) => setFormData((prev: PatternInputFormData) => ({ ...prev, yarnType: e.target.value }))}
                 />
               </div>
               
