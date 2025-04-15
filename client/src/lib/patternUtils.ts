@@ -107,9 +107,8 @@ export function calculateCompletionDate(
         availableMinutes = Math.floor(dailyCrochetTime / 2);
       }
     } else {
-      // If not explicitly set, check if it's a weekend
-      const dayOfWeek = currentDate.getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) { // 0 = Sunday, 6 = Saturday
+      // If not explicitly set, check if it's a weekend using our utility function
+      if (isWeekend(currentDate)) {
         availableMinutes = 0; // Weekends blocked by default
       }
     }
@@ -137,10 +136,14 @@ export function calculateCompletionDate(
 export function getEventsForDate(events: ProjectEvent[], date: Date | undefined): ProjectEvent[] {
   if (!date || !events.length) return [];
   
+  // Create a consistent date string format
   const dateString = date.toISOString().split('T')[0];
+  
   return events.filter((event: ProjectEvent) => {
-    const eventDate = new Date(event.date);
-    return eventDate.toISOString().split('T')[0] === dateString;
+    // Handle both Date objects and date strings
+    const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
+    const eventDateString = eventDate.toISOString().split('T')[0];
+    return eventDateString === dateString;
   });
 }
 

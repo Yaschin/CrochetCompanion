@@ -5,7 +5,7 @@ import { CalendarIcon, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "../../lib/queryClient";
 import { Pattern, ProjectEvent, ViewType } from "../../lib/types";
-import { formatDateForDisplay } from "../../lib/dateUtils";
+import { formatDateForDisplay, formatDateForInput } from "../../lib/dateUtils";
 import { 
   calculateTimeEstimate, 
   calculateCompletionDate, 
@@ -219,6 +219,7 @@ const CalendarPlannerRefactored: React.FC<CalendarPlannerProps> = (props) => {
   const toggleDayAvailability = (date: Date) => {
     if (!date) return;
     
+    // Create a consistent date string format
     const dateStr = date.toISOString().split('T')[0];
     const currentStatus = dayAvailability[dateStr] || 'full';
     
@@ -241,6 +242,7 @@ const CalendarPlannerRefactored: React.FC<CalendarPlannerProps> = (props) => {
   const getDayAvailability = (date: Date): 'blocked' | 'half' | 'full' => {
     if (!date) return 'full';
     
+    // Create a consistent date string format
     const dateStr = date.toISOString().split('T')[0];
     
     // If explicitly set in state, use that
