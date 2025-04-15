@@ -3,7 +3,8 @@ import OpenAI from "openai";
 // Check if OpenAI API key is available and validate its format
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const API_KEY_AVAILABLE = Boolean(OPENAI_API_KEY);
-const API_KEY_VALID_FORMAT = /^sk-[A-Za-z0-9]{32,}$/.test(OPENAI_API_KEY);
+// Updated regex to support more characters in API keys (newer formats may include hyphens, underscores, etc.)
+const API_KEY_VALID_FORMAT = /^sk-[A-Za-z0-9_\-+/]{32,}$/.test(OPENAI_API_KEY.trim());
 
 if (!API_KEY_AVAILABLE) {
   console.error("ERROR: OPENAI_API_KEY environment variable is not set. Using fallback placeholders for all images.");
