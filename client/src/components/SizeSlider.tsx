@@ -13,8 +13,8 @@ const SizeSlider: React.FC<SizeSliderProps> = ({ value, onChange }) => {
     return match ? parseInt(match[0], 10) : 10; // Default to 10 if no number is found
   };
 
-  const [sliderValue, setSliderValue] = useState(extractSize(value || '10'));
-  const [unit, setUnit] = useState(value.includes('inch') ? 'inch' : 'cm');
+  const [sliderValue, setSliderValue] = useState(extractSize(value || '10 cm'));
+  const [unit, setUnit] = useState((value || '').includes('inch') ? 'inch' : 'cm');
 
   // Update the slider when the external value changes
   useEffect(() => {

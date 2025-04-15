@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import Navigation from "./components/Navigation";
 import PatternInput from "./components/PatternInput";
+import PatternInputRefactored from "./components/PatternInputRefactored";
 import PatternViewer from "./components/PatternViewer";
 import PatternLibrary from "./components/PatternLibrary";
 import { Pattern } from "./lib/types";
@@ -79,7 +80,7 @@ function App() {
 
           {/* Conditional content based on active view */}
           {activeView === "input" && (
-            <PatternInput onPatternCreated={handlePatternCreated} />
+            <PatternInputRefactored onPatternCreated={handlePatternCreated} />
           )}
           
           {activeView === "viewer" && currentPattern && (
