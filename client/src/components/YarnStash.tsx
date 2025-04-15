@@ -28,8 +28,8 @@ export default function YarnStash() {
     quantity: 1
   });
 
-  // Fetch stash items
-  const { data: stashItems = [], isLoading } = useQuery({
+  // Fetch stash items with optimized configuration
+  const { data: stashItems = [], isLoading, error: stashError } = useQuery({
     queryKey: ['stashItems'],
     queryFn: async () => {
       try {
@@ -37,25 +37,43 @@ export default function YarnStash() {
         return response.json();
       } catch (error) {
         console.error('Error fetching stash:', error);
-        return [];
+        toast({
+          title: "Failed to Load Items",
+          description: "There was an error loading your stash items. Please try again.",
+          variant: "destructive"
+        });
+        throw error;
       }
-    }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
+    retry: 2
   });
 
-  // Fetch stash notes
-  const { data: stashNotes = "" } = useQuery({
+  // Fetch stash notes with optimized configuration
+  const { data: stashNotes = "", error: notesError } = useQuery({
     queryKey: ['stashNotes'],
     queryFn: async () => {
       try {
         const response = await apiRequest('GET', '/api/stash-notes');
         const data = await response.json();
-        setNotes(data.content || "");
-        return data.content || "";
+        // Use the content field if API returns it, otherwise use notes field
+        const notesContent = data.content || data.notes || "";
+        setNotes(notesContent);
+        return notesContent;
       } catch (error) {
         console.error('Error fetching stash notes:', error);
-        return "";
+        toast({
+          title: "Failed to Load Notes",
+          description: "There was an error loading your stash notes.",
+          variant: "destructive"
+        });
+        throw error;
       }
-    }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
+    retry: 2
   });
 
   // Add item mutation

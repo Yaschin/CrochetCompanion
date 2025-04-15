@@ -208,7 +208,7 @@ const PatternSection: React.FC<PatternSectionProps> = ({
   
   // Open dialog for diagram refinement
   const openDiagramRefinementDialog = () => {
-    const basePrompt = `Crochet stitch diagram for the ${section.name} section of a ${projectType || 'crochet project'} - ${section.steps.map(s => s.text).slice(0, 3).join(". ")}`;
+    const basePrompt = `Crochet stitch diagram for the ${section.name} section of a ${projectType || 'crochet project'} - ${section.steps.map((s: PatternStep) => s.text).slice(0, 3).join(". ")}`;
     setDiagramRefinementPrompt(`${basePrompt}. Make sure to include the following specific details and improvements:`);
     setIsDiagramDialogOpen(true);
   };
@@ -232,7 +232,7 @@ const PatternSection: React.FC<PatternSectionProps> = ({
     try {
       console.log("Generating stitch diagram for section:", section.name);
       const response = await apiRequest('POST', '/api/generate-image', {
-        prompt: promptToUse || `Crochet stitch diagram for the ${section.name} section of a ${projectType || 'crochet project'} - ${section.steps.map(s => s.text).slice(0, 3).join(". ")}`,
+        prompt: promptToUse || `Crochet stitch diagram for the ${section.name} section of a ${projectType || 'crochet project'} - ${section.steps.map((s: PatternStep) => s.text).slice(0, 3).join(". ")}`,
         type: 'diagram',
         projectType,
       });
@@ -264,7 +264,7 @@ const PatternSection: React.FC<PatternSectionProps> = ({
   };
 
   // Calculate completion stats for this section
-  const completedSteps = section.steps.filter(step => step.completed).length;
+  const completedSteps = section.steps.filter((step: PatternStep) => step.completed).length;
   const totalSteps = section.steps.length;
   const completionPercentage = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
@@ -456,7 +456,7 @@ const PatternSection: React.FC<PatternSectionProps> = ({
           )}
 
           <div className="divide-y divide-gray-50">
-            {section.steps.map((step, stepIndex) => (
+            {section.steps.map((step: PatternStep, stepIndex: number) => (
               <StepRow
                 key={`step-${step.id}`}
                 step={step}

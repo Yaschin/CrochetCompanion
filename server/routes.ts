@@ -322,7 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/stash-notes", async (_req: Request, res: Response) => {
     try {
       const notes = await stashService.getNotes();
-      res.json({ notes });
+      res.json({ content: notes }); // Using content key for consistency
     } catch (error) {
       console.error("Error getting stash notes:", error);
       res.status(500).json({ message: "Failed to get stash notes", error: (error as Error).message });
@@ -331,14 +331,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/stash-notes", async (req: Request, res: Response) => {
     try {
-      const { notes } = req.body;
+      // Accept both content and notes for backwards compatibility
+      const content = req.body.content || req.body.notes;
       
-      if (typeof notes !== 'string') {
+      if (typeof content !== 'string') {
         return res.status(400).json({ message: "Invalid notes data" });
       }
       
-      const updatedNotes = await stashService.updateNotes(notes);
-      res.json({ notes: updatedNotes });
+      const updatedNotes = await stashService.updateNotes(content);
+      res.json({ content: updatedNotes }); // Using content key for consistency
     } catch (error) {
       console.error("Error updating stash notes:", error);
       res.status(500).json({ message: "Failed to update stash notes", error: (error as Error).message });
