@@ -19,6 +19,7 @@ export interface ToasterToast {
   className?: string
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  duration?: number
 }
 
 export const actionTypes = {

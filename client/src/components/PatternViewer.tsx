@@ -122,7 +122,6 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
           title: "API Key Required",
           description: "OpenAI API key is required for this feature. Please add it in your environment variables.",
           variant: "destructive",
-          duration: 5000,
         });
       }
     },
@@ -179,7 +178,6 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
           title: "API Key Required",
           description: "OpenAI API key is required for this feature. Please add it in your environment variables.",
           variant: "destructive",
-          duration: 5000,
         });
       }
       
@@ -557,14 +555,21 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         </button>
         <button 
           type="button" 
-          className={`inline-flex justify-center items-center px-6 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
-            isRegenerating ? 'opacity-75 cursor-not-allowed' : ''
-          }`}
+          className={`inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark ${isRegenerating ? 'opacity-75 cursor-not-allowed' : ''}`}
           onClick={handleRegeneratePattern}
           disabled={isRegenerating}
         >
-          <RefreshCw className={`h-5 w-5 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
-          {isRegenerating ? 'Regenerating...' : 'Regenerate Unlocked Steps'}
+          {isRegenerating ? (
+            <>
+              <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+              Regenerating...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-5 w-5 mr-2" />
+              Regenerate Pattern
+            </>
+          )}
         </button>
       </div>
     </div>
