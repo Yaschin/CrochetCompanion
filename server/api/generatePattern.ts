@@ -170,20 +170,66 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
           role: "system", 
           content: `You are an expert in crochet who can accurately estimate yarn requirements.
             Given a pattern structure, estimate the amount of yarn needed for each color.
-            Return ONLY a JSON array with color names and volumes.` 
+            Return a JSON object with a 'yarnRequirements' property that contains an array of objects.
+            Each object must have 'color' and 'volume' properties.
+            Example response format:
+            {
+              "yarnRequirements": [
+                {"color": "Orange", "volume": "~50g"},
+                {"color": "Black", "volume": "~20g"}
+              ]
+            }` 
         },
         { 
           role: "user", 
           content: `For a ${projectType} with ${totalSteps} total steps divided into sections (${patternSummary}),
-            please estimate the yarn requirements. Return the result as a JSON array of objects with 'color' and 'volume' properties.
-            Example: [{"color": "Orange", "volume": "~50g"}, {"color": "Black", "volume": "~20g"}]` 
+            please estimate the yarn requirements. Return the result in the exact format I specified, with a 'yarnRequirements' array 
+            containing objects that have 'color' and 'volume' properties.
+            
+            Important: Make sure to return the response in this exact format:
+            {
+              "yarnRequirements": [
+                {"color": "Orange", "volume": "~50g"},
+                {"color": "Black", "volume": "~20g"}
+              ]
+            }` 
         }
       ],
       response_format: { type: "json_object" }
     });
     
     const result = JSON.parse(response.choices[0].message.content || "{}");
-    return result.yarnRequirements || [];
+    console.log("Yarn requirements API response:", result);
+    
+    // Handle different response formats from the AI
+    if (Array.isArray(result)) {
+      return result;
+    } else if (result.yarnRequirements && Array.isArray(result.yarnRequirements)) {
+      return result.yarnRequirements;
+    } else if (typeof result === 'object') {
+      // Convert flat object to array if needed
+      const requirements = [];
+      for (const key in result) {
+        if (key !== 'yarnRequirements') {
+          const colorMatch = key.match(/color|yarn|wool/i);
+          const volumeMatch = key.match(/volume|amount|quantity|yards|grams/i);
+          
+          if (colorMatch) {
+            requirements.push({
+              color: result[key],
+              volume: volumeMatch && result[volumeMatch[0]] ? result[volumeMatch[0]] : "~100g"
+            });
+          }
+        }
+      }
+      
+      if (requirements.length > 0) {
+        return requirements;
+      }
+    }
+    
+    // Default fallback if we couldn't parse the response properly
+    return [{ color: "Main Color", volume: "~100g" }];
   } catch (error) {
     console.error("Error calculating yarn requirements:", error);
     // Return a default requirement if calculation fails
