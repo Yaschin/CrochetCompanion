@@ -86,28 +86,25 @@ const SectionImagePlaceholder: React.FC<SectionImagePlaceholderProps> = ({
       if (errorMsg.includes('API key') || errorMsg.includes('authentication') || 
           errorMsg.includes('401') || errorMsg.includes('403')) {
         toast({
-          title: "API Key Required",
-          description: "An OpenAI API key is needed for image generation. Please add your OpenAI API key to continue with image generation.",
+          title: "OpenAI API Key Required",
+          description: "To generate section images, please add a valid OpenAI API key in your environment variables. Visit platform.openai.com to get a key.",
           variant: "apiWarning",
-          action: (
-            <ToastAction altText="Get API Key">
-              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
-                Get API Key
-              </a>
-            </ToastAction>
-          ),
+          action: <ToastAction altText="Visit OpenAI" onClick={() => window.open('https://platform.openai.com/account/api-keys', '_blank')}>Get API Key</ToastAction>,
+          duration: 10000, // Show for longer (10 seconds)
         });
-      } else if (errorMsg.includes('429') || errorMsg.includes('rate limit')) {
+      } else if (errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate limit')) {
         toast({
-          title: "Rate Limit Exceeded",
-          description: "The OpenAI API rate limit has been reached. Please try again later.",
-          variant: "destructive",
+          title: "Rate Limit Reached",
+          description: "OpenAI API rate limit reached. Please try again in a few moments.",
+          variant: "apiWarning",
+          duration: 8000,
         });
       } else if (errorMsg.includes('timeout') || errorMsg.includes('timed out')) {
         toast({
-          title: "Request Timeout",
-          description: "The image generation request took too long. Please try again with a simpler prompt.",
-          variant: "destructive",
+          title: "Generation Timed Out",
+          description: "The image generation request timed out. Please try again with a simpler prompt.",
+          variant: "apiWarning",
+          duration: 8000,
         });
       } else {
         toast({

@@ -487,13 +487,13 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         toast({
           title: "Rate Limit Exceeded",
           description: "The OpenAI API rate limit has been reached. Please try again later.",
-          variant: "destructive",
+          variant: "apiWarning",
         });
       } else if (errorString.includes('timeout') || errorString.includes('timed out')) {
         toast({
           title: "Request Timeout",
           description: "The image generation request took too long. Please try again with a simpler prompt.",
-          variant: "destructive",
+          variant: "apiWarning",
         });
       }
     } finally {

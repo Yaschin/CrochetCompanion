@@ -26,6 +26,22 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // Helper function to get ordinal suffix for numbers (1st, 2nd, 3rd, etc.)
+  const getOrdinalSuffix = (num: number): string => {
+    const j = num % 10;
+    const k = num % 100;
+    if (j === 1 && k !== 11) {
+      return "st";
+    }
+    if (j === 2 && k !== 12) {
+      return "nd";
+    }
+    if (j === 3 && k !== 13) {
+      return "rd";
+    }
+    return "th";
+  };
+  
   // Handle file selection
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -83,8 +99,9 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
       onPhotoUpdated(data.photoUrl);
       
       toast({
-        title: 'Photo uploaded',
-        description: 'Your photo has been added to this step'
+        title: 'Photo Successfully Uploaded',
+        description: `Your photo has been added to step ${stepIndex + 1} of the ${sectionIndex + 1}${getOrdinalSuffix(sectionIndex + 1)} section.`,
+        duration: 5000,
       });
       
       // Close dialog and reset state
@@ -93,11 +110,37 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
       setPreviewUrl(null);
     } catch (error) {
       console.error('Error uploading photo:', error);
-      toast({
-        title: 'Upload failed',
-        description: 'There was an error uploading your photo. Please try again.',
-        variant: 'destructive'
-      });
+      
+      // Format error message
+      const errorMsg = String(error);
+      
+      // Specific error message for file size issues
+      if (errorMsg.includes('size') || errorMsg.includes('large')) {
+        toast({
+          title: 'File Too Large',
+          description: 'The photo you selected is too large. Please choose a smaller image.',
+          variant: 'destructive',
+          duration: 6000,
+        });
+      } 
+      // Format error message
+      else if (errorMsg.includes('format') || errorMsg.includes('type')) {
+        toast({
+          title: 'Invalid File Format',
+          description: 'Please select a valid image file (JPEG, PNG, GIF, etc.).',
+          variant: 'destructive',
+          duration: 6000,
+        });
+      }
+      // Default error message
+      else {
+        toast({
+          title: 'Upload Failed',
+          description: 'There was an error uploading your photo. Please try again.',
+          variant: 'destructive',
+          duration: 6000,
+        });
+      }
     } finally {
       setIsUploading(false);
     }
@@ -123,16 +166,38 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
       onPhotoUpdated('');
       
       toast({
-        title: 'Photo removed',
-        description: 'The photo has been removed from this step'
+        title: 'Photo Successfully Removed',
+        description: `Your photo has been removed from step ${stepIndex + 1} of the ${sectionIndex + 1}${getOrdinalSuffix(sectionIndex + 1)} section.`,
+        duration: 5000,
       });
     } catch (error) {
       console.error('Error deleting photo:', error);
-      toast({
-        title: 'Delete failed',
-        description: 'There was an error removing the photo. Please try again.',
-        variant: 'destructive'
-      });
+      
+      const errorMsg = String(error);
+      
+      // Check for specific error types
+      if (errorMsg.includes('404') || errorMsg.includes('not found')) {
+        toast({
+          title: 'Photo Not Found',
+          description: 'The photo you\'re trying to delete could not be found. It may have been already removed.',
+          variant: 'destructive',
+          duration: 6000,
+        });
+      } else if (errorMsg.includes('403') || errorMsg.includes('permissions')) {
+        toast({
+          title: 'Permission Denied',
+          description: 'You don\'t have permission to delete this photo.',
+          variant: 'destructive',
+          duration: 6000,
+        });
+      } else {
+        toast({
+          title: 'Delete Failed',
+          description: 'There was an error removing the photo. Please try again.',
+          variant: 'destructive',
+          duration: 6000,
+        });
+      }
     } finally {
       setIsUploading(false);
     }
