@@ -1,10 +1,10 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Define the pattern schema structure
 export const patterns = pgTable("patterns", {
-  id: serial("id").primaryKey(),
+  id: varchar("id", { length: 36 }).primaryKey(),
   title: text("title").notNull(),
   projectType: text("projectType").notNull(),
   skillLevel: text("skillLevel").notNull(),

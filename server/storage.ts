@@ -2,6 +2,7 @@ import { Pattern, patterns as patternsTable } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
+import { SQL } from "drizzle-orm";
 
 // Storage interface with CRUD methods
 export interface IStorage {
@@ -29,10 +30,18 @@ export class DatabaseStorage implements IStorage {
         ? pattern.createdAt.toISOString() 
         : pattern.createdAt as string;
       
-      return { 
-        ...pattern, 
-        createdAt 
-      } as Pattern;
+      // Map database record to Pattern type
+      return {
+        id: pattern.id,
+        title: pattern.title,
+        projectType: pattern.projectType,
+        skillLevel: pattern.skillLevel,
+        yarnType: pattern.yarnType || undefined,
+        size: pattern.size || undefined,
+        endProductImage: pattern.endProductImage || undefined,
+        createdAt,
+        sections: pattern.sections as Pattern["sections"]
+      };
     } catch (error) {
       console.error("Error getting pattern:", error);
       return undefined;
@@ -43,12 +52,25 @@ export class DatabaseStorage implements IStorage {
     try {
       const result = await db.select().from(patternsTable);
       
-      return result.map(pattern => ({
-        ...pattern,
-        createdAt: pattern.createdAt instanceof Date 
+      return result.map(pattern => {
+        // Convert createdAt to ISO string if it's a Date object
+        const createdAt = pattern.createdAt instanceof Date 
           ? pattern.createdAt.toISOString() 
-          : pattern.createdAt as string
-      })) as Pattern[];
+          : pattern.createdAt as string;
+        
+        // Map database record to Pattern type
+        return {
+          id: pattern.id,
+          title: pattern.title,
+          projectType: pattern.projectType,
+          skillLevel: pattern.skillLevel,
+          yarnType: pattern.yarnType || undefined,
+          size: pattern.size || undefined,
+          endProductImage: pattern.endProductImage || undefined,
+          createdAt,
+          sections: pattern.sections as Pattern["sections"]
+        };
+      });
     } catch (error) {
       console.error("Error getting all patterns:", error);
       return [];
@@ -58,15 +80,21 @@ export class DatabaseStorage implements IStorage {
   async createPattern(pattern: Omit<Pattern, "id" | "createdAt">): Promise<Pattern> {
     try {
       const id = uuidv4();
-      const createdAt = new Date().toISOString();
       
-      const newPattern = {
-        ...pattern,
+      // Prepare the database record
+      const dbRecord = {
         id,
-        createdAt
+        title: pattern.title,
+        projectType: pattern.projectType,
+        skillLevel: pattern.skillLevel,
+        yarnType: pattern.yarnType || null,
+        size: pattern.size || null,
+        endProductImage: pattern.endProductImage || null,
+        sections: pattern.sections
       };
       
-      const result = await db.insert(patternsTable).values(newPattern).returning();
+      // Insert into database
+      const result = await db.insert(patternsTable).values(dbRecord).returning();
       
       if (result.length === 0) {
         throw new Error("Failed to create pattern");
@@ -75,14 +103,22 @@ export class DatabaseStorage implements IStorage {
       const created = result[0];
       
       // Convert createdAt to ISO string if it's a Date object
-      const createdAtStr = created.createdAt instanceof Date 
+      const createdAt = created.createdAt instanceof Date 
         ? created.createdAt.toISOString() 
         : created.createdAt as string;
       
-      return { 
-        ...created, 
-        createdAt: createdAtStr 
-      } as Pattern;
+      // Map database record to Pattern type
+      return {
+        id: created.id,
+        title: created.title,
+        projectType: created.projectType,
+        skillLevel: created.skillLevel,
+        yarnType: created.yarnType || undefined,
+        size: created.size || undefined,
+        endProductImage: created.endProductImage || undefined,
+        createdAt,
+        sections: created.sections as Pattern["sections"]
+      };
     } catch (error) {
       console.error("Error creating pattern:", error);
       throw error;
@@ -96,8 +132,21 @@ export class DatabaseStorage implements IStorage {
         return undefined;
       }
       
+      // Prepare the database update record
+      const dbUpdate: any = {};
+      
+      // Only include fields that are present in the update
+      if (patternUpdate.title !== undefined) dbUpdate.title = patternUpdate.title;
+      if (patternUpdate.projectType !== undefined) dbUpdate.projectType = patternUpdate.projectType;
+      if (patternUpdate.skillLevel !== undefined) dbUpdate.skillLevel = patternUpdate.skillLevel;
+      if (patternUpdate.yarnType !== undefined) dbUpdate.yarnType = patternUpdate.yarnType || null;
+      if (patternUpdate.size !== undefined) dbUpdate.size = patternUpdate.size || null;
+      if (patternUpdate.endProductImage !== undefined) dbUpdate.endProductImage = patternUpdate.endProductImage || null;
+      if (patternUpdate.sections !== undefined) dbUpdate.sections = patternUpdate.sections;
+      
+      // Update the database
       const result = await db.update(patternsTable)
-        .set(patternUpdate)
+        .set(dbUpdate)
         .where(eq(patternsTable.id, id))
         .returning();
       
@@ -112,10 +161,18 @@ export class DatabaseStorage implements IStorage {
         ? updated.createdAt.toISOString() 
         : updated.createdAt as string;
       
-      return { 
-        ...updated, 
-        createdAt 
-      } as Pattern;
+      // Map database record to Pattern type
+      return {
+        id: updated.id,
+        title: updated.title,
+        projectType: updated.projectType,
+        skillLevel: updated.skillLevel,
+        yarnType: updated.yarnType || undefined,
+        size: updated.size || undefined,
+        endProductImage: updated.endProductImage || undefined,
+        createdAt,
+        sections: updated.sections as Pattern["sections"]
+      };
     } catch (error) {
       console.error("Error updating pattern:", error);
       return undefined;
