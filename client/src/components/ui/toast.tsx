@@ -110,9 +110,11 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
+// Define ToastProps explicitly
+export type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
-type ToastActionElement = React.ReactElement<typeof ToastAction>
+// Define ToastActionElement explicitly without circular reference
+export type ToastActionElement = React.ReactElement<typeof ToastAction>
 
 export {
   type ToastProps,

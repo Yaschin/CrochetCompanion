@@ -2,18 +2,23 @@
 import * as React from "react"
 
 import type {
-  ToastActionElement,
-  ToastProps,
+  ToastActionElement, 
+  ToastProps
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 5
 const TOAST_REMOVE_DELAY = 1000000
 
-export type ToasterToast = ToastProps & {
+// Define ToasterToast without circular reference
+export interface ToasterToast {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: React.ReactElement
+  variant?: 'default' | 'destructive'
+  className?: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export const actionTypes = {
