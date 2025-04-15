@@ -578,7 +578,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
     sections.push(
       {
         name: "Head",
-        notes: "Work in continuous rounds, do not join.",
+        notes: "Work in continuous rounds, do not join. ⚠️ NOTE: This is a template pattern - add OpenAI API key for custom patterns.",
         locked: false,
         steps: [
           { id: 1, text: "Start with a magic ring", locked: false, count: 0, notes: "", photo: null, completed: false },
@@ -589,7 +589,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
       },
       {
         name: "Body",
-        notes: "Continue working in rounds",
+        notes: "Continue working in rounds. For a complete custom pattern, add your OpenAI API key to environment variables.",
         locked: false,
         steps: [
           { id: 5, text: "Round 1: sc in each st around (18)", locked: false, count: 0, notes: "", photo: null, completed: false },
@@ -602,7 +602,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
     sections.push(
       {
         name: "Crown",
-        notes: "Work in continuous rounds",
+        notes: "Work in continuous rounds. ⚠️ This is a basic template - add your OpenAI API key for a complete custom pattern.",
         locked: false,
         steps: [
           { id: 1, text: "Start with a magic ring", locked: false, count: 0, notes: "", photo: null, completed: false },
@@ -628,7 +628,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
     sections.push(
       {
         name: "Main Section",
-        notes: "Basic pattern structure - please add OpenAI API key for full pattern generation",
+        notes: "⚠️ API KEY REQUIRED: This is a basic template pattern. Add an OpenAI API key to your environment variables for a complete custom pattern with detailed instructions.",
         locked: false,
         steps: [
           { id: 1, text: "Chain 20 (or desired width)", locked: false, count: 0, notes: "", photo: null, completed: false },
@@ -649,10 +649,12 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
     );
   }
   
-  // Create the pattern object
+  // Create the pattern object with clear messaging about the missing API key
   return {
     title,
-    description: `A ${skillLevel} level ${projectType} pattern. This is a template - for complete patterns, add an OpenAI API key.`,
+    description: `⚠️ AI GENERATION UNAVAILABLE: This is a basic ${skillLevel} level ${projectType} template. 
+    To generate complete custom patterns, please add an OpenAI API key to your environment variables.
+    Visit https://platform.openai.com to obtain an API key.`,
     projectType,
     skillLevel,
     yarnRequirements,
@@ -662,7 +664,12 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
     notionsRequirements: [
       { name: "Tapestry needle", description: "For weaving in ends", quantity: 1 }
     ],
+    toolRequirements: [
+      { name: "Stitch markers", description: "For marking rounds/sections" }
+    ],
     sections,
-    materialsNotes: `You'll need worsted weight yarn and a ${hookSize} hook. This is a basic template - add your OpenAI API key for a complete custom pattern.`
+    materialsNotes: `NOTE: This is a basic template pattern. For full AI-generated custom patterns with detailed steps, 
+    please add your OpenAI API key to the OPENAI_API_KEY environment variable. This template provides a starting point with a 
+    ${hookSize} hook and worsted weight yarn.`
   };
 }
