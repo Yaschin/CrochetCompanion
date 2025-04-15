@@ -437,7 +437,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         toast({
           title: "Rate Limit Exceeded",
           description: "The OpenAI API rate limit has been reached. Please try again later.",
-          variant: "destructive",
+          variant: "apiWarning",
         });
       }
     } finally {
