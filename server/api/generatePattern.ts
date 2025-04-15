@@ -615,7 +615,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
       },
       {
         name: "Body",
-        notes: "Work even for desired length",
+        notes: "Work even for desired length. Visit platform.openai.com to obtain an API key for detailed custom patterns.",
         locked: false,
         steps: [
           { id: 7, text: "Rounds 6-15: sc in each st around (30)", locked: false, count: 0, notes: "", photo: null, completed: false },
@@ -639,7 +639,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
       },
       {
         name: "Border",
-        notes: "Optional finishing touch",
+        notes: "Optional finishing touch. For AI-generated custom patterns, add your OpenAI API key to environment variables.",
         locked: false,
         steps: [
           { id: 5, text: "Round 1: sc evenly around all edges, with 3 sc in each corner", locked: false, count: 0, notes: "", photo: null, completed: false },

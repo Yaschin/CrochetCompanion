@@ -219,12 +219,16 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       let errorDescription = "There was an error generating your pattern. Please try again.";
       const errorString = String(error);
       
-      if (errorString.includes('OPENAI_API_KEY')) {
-        errorDescription = "OpenAI API key is missing or invalid. Please contact support.";
+      if (errorString.includes('OPENAI_API_KEY') || errorString.includes('API key') || errorString.includes('authentication')) {
+        errorDescription = "OpenAI API key is missing or invalid. Please add your OpenAI API key to continue with AI-powered pattern generation.";
       } else if (errorString.includes('rate limit') || errorString.includes('429')) {
         errorDescription = "Rate limit exceeded. Please wait a moment and try again.";
       } else if (errorString.includes('network') || errorString.includes('timeout')) {
         errorDescription = "Network error. Please check your connection and try again.";
+      } else if (errorString.includes('billing') || errorString.includes('quota')) {
+        errorDescription = "OpenAI account quota exceeded. Please check your OpenAI account billing status.";
+      } else if (errorString.includes('content policy') || errorString.includes('violates')) {
+        errorDescription = "Content policy violation. Please modify your pattern description and try again.";
       }
       
       toast({
