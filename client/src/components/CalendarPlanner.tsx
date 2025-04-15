@@ -922,8 +922,8 @@ export default function CalendarPlanner(props: CalendarPlannerProps = {}) {
                     type="date"
                     value={
                       selectedEvent.date instanceof Date 
-                        ? selectedEvent.date.toISOString().split('T')[0] 
-                        : new Date(selectedEvent.date).toISOString().split('T')[0]
+                        ? formatDateForInput(selectedEvent.date) 
+                        : formatDateForInput(new Date(selectedEvent.date))
                     }
                     onChange={(e) => setSelectedEvent({ ...selectedEvent, date: new Date(e.target.value) })}
                   />
