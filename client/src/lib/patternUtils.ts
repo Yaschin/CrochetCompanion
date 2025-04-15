@@ -99,7 +99,7 @@ export function calculateCompletionDate(
     
     // Determine available time based on day and availability settings
     let availableMinutes = dailyCrochetTime;
-    const dateStr = currentDate.toISOString().split('T')[0];
+    const dateStr = formatDateForInput(currentDate);
     
     // Check if we have explicit availability settings for this day
     if (dayAvailabilityMap && dateStr in dayAvailabilityMap) {
@@ -141,12 +141,12 @@ export function getEventsForDate(events: ProjectEvent[], date: Date | undefined)
   if (!date || !events.length) return [];
   
   // Create a consistent date string format
-  const dateString = date.toISOString().split('T')[0];
+  const dateString = formatDateForInput(date);
   
   return events.filter((event: ProjectEvent) => {
     // Handle both Date objects and date strings
     const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
-    const eventDateString = eventDate.toISOString().split('T')[0];
+    const eventDateString = formatDateForInput(eventDate);
     return eventDateString === dateString;
   });
 }

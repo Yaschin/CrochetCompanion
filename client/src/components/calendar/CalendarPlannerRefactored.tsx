@@ -5,12 +5,11 @@ import { CalendarIcon, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "../../lib/queryClient";
 import { Pattern, ProjectEvent, ViewType } from "../../lib/types";
-import { formatDateForDisplay, formatDateForInput } from "../../lib/dateUtils";
+import { formatDateForDisplay, formatDateForInput, isWeekend } from "../../lib/dateUtils";
 import { 
   calculateTimeEstimate, 
   calculateCompletionDate, 
-  getEventsForDate, 
-  isWeekend
+  getEventsForDate
 } from "../../lib/patternUtils";
 
 // Component imports
