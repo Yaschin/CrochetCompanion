@@ -73,19 +73,25 @@ const CROCHET_SPEEDS: Record<string, number> = {
 function calculateTimeEstimate(pattern: Pattern): number {
   if (!pattern) return 0;
   
+  // Set default values for undefined properties
   const projectType = pattern.projectType || 'other';
   const speed = CROCHET_SPEEDS[projectType] || CROCHET_SPEEDS.other;
   
-  // Count total steps
+  // Count total steps - with extensive null checking
   let totalSteps = 0;
-  if (pattern.sections) {
+  if (pattern.sections && Array.isArray(pattern.sections)) {
     pattern.sections.forEach(section => {
-      totalSteps += section.steps?.length || 0;
+      if (section && section.steps && Array.isArray(section.steps)) {
+        totalSteps += section.steps.length;
+      }
     });
   }
   
+  // Ensure at least some estimated time even if no steps are defined
+  const minTime = 60; // 1 hour minimum
+  
   // Base time: 30 min per step (simplified model)
-  let baseTime = totalSteps * 30;
+  let baseTime = Math.max(totalSteps * 30, minTime);
   
   // Adjust based on difficulty
   switch (pattern.skillLevel) {
@@ -689,10 +695,78 @@ export default function CalendarPlanner(props: CalendarPlannerProps = {}) {
                 <DialogFooter>
                   <Button type="button" onClick={() => {
                     // Auto-fill calendar functionality
-                    toast({
-                      title: "Calendar Auto-Fill",
-                      description: "Calendar has been filled with your active projects based on priority.",
-                    });
+                    if (activeProjects.length === 0) {
+                      toast({
+                        title: "No Active Projects",
+                        description: "Please select at least one project to add to your calendar.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    
+                    // Sort by priority (lower number = higher priority)
+                    const sortedProjects = [...activeProjects].sort((a, b) => a.priority - b.priority);
+                    
+                    // Starting from tomorrow
+                    const startDate = new Date();
+                    startDate.setDate(startDate.getDate() + 1);
+                    
+                    // Schedule each project
+                    const newEvents: Partial<ProjectEvent>[] = [];
+                    
+                    // Track the current date for scheduling
+                    let currentDate = new Date(startDate);
+                    
+                    // For each project, create events based on pattern sections
+                    for (const project of sortedProjects) {
+                      if (project.sections && project.sections.length > 0) {
+                        // Calculate total time estimate for pattern
+                        const totalTimeEstimate = calculateTimeEstimate(project);
+                        
+                        // Add a main project event
+                        newEvents.push({
+                          title: `Start ${project.title}`,
+                          patternId: project.id,
+                          patternTitle: project.title,
+                          date: new Date(currentDate),
+                          timeEstimate: totalTimeEstimate,
+                          completed: false,
+                          description: `Begin working on ${project.title}`
+                        });
+                        
+                        // Advance the date based on time estimate and daily availability
+                        currentDate = calculateCompletionDate(
+                          currentDate,
+                          totalTimeEstimate,
+                          dailyCrochetTime,
+                          dayAvailability
+                        );
+                        
+                        // Add buffer day
+                        currentDate.setDate(currentDate.getDate() + 1);
+                      }
+                    }
+                    
+                    // Batch add all new events
+                    const addAllEvents = async () => {
+                      for (const eventData of newEvents) {
+                        try {
+                          await apiRequest('POST', '/api/project-events', eventData);
+                        } catch (error) {
+                          console.error('Error adding event:', error);
+                        }
+                      }
+                      
+                      // Refresh events list
+                      queryClient.invalidateQueries({ queryKey: ['projectEvents'] });
+                      
+                      toast({
+                        title: "Calendar Auto-Filled",
+                        description: `Added ${newEvents.length} events to your calendar based on project priorities.`,
+                      });
+                    };
+                    
+                    addAllEvents();
                   }}>
                     Auto-Fill Calendar
                   </Button>
