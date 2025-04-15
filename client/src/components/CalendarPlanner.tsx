@@ -43,7 +43,7 @@ import { apiRequest } from '../lib/queryClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../hooks/use-toast';
 import { Pattern } from '../lib/types';
-import { isWeekend, formatTimeEstimate, formatDateForDisplay, isSameDay } from '../lib/dateUtils';
+import { isWeekend, formatTimeEstimate, formatDateForDisplay, formatDateForInput, isSameDay } from '../lib/dateUtils';
 
 // Types for project events
 interface ProjectEvent {
@@ -142,7 +142,7 @@ function calculateCompletionDate(
     
     // Determine available time based on day and availability settings
     let availableMinutes = dailyCrochetTime;
-    const dateStr = currentDate.toISOString().split('T')[0];
+    const dateStr = formatDateForInput(currentDate);
     
     // Check if we have explicit availability settings for this day
     if (dayAvailabilityMap && dateStr in dayAvailabilityMap) {
@@ -306,10 +306,10 @@ export default function CalendarPlanner(props: CalendarPlannerProps = {}) {
   const getEventsForDate = (date: Date | undefined) => {
     if (!date || !events.length) return [];
     
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = formatDateForInput(date);
     return events.filter((event: ProjectEvent) => {
       const eventDate = new Date(event.date);
-      return eventDate.toISOString().split('T')[0] === dateString;
+      return formatDateForInput(eventDate) === dateString;
     });
   };
 
@@ -389,7 +389,7 @@ export default function CalendarPlanner(props: CalendarPlannerProps = {}) {
   const toggleDayAvailability = (date: Date) => {
     if (!date) return;
     
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateForInput(date);
     const currentStatus = dayAvailability[dateStr] || 'full';
     
     // Cycle through: full -> half -> blocked -> full
@@ -414,7 +414,7 @@ export default function CalendarPlanner(props: CalendarPlannerProps = {}) {
   const getDayAvailability = (date: Date): 'blocked' | 'half' | 'full' => {
     if (!date) return 'full';
     
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateForInput(date);
     
     // If explicitly set in state, use that
     if (dateStr in dayAvailability) {
@@ -856,8 +856,8 @@ export default function CalendarPlanner(props: CalendarPlannerProps = {}) {
                   id="date"
                   type="date"
                   value={newEvent.date instanceof Date 
-                    ? newEvent.date.toISOString().split('T')[0] 
-                    : new Date().toISOString().split('T')[0]}
+                    ? formatDateForInput(newEvent.date) 
+                    : formatDateForInput(new Date())}
                   onChange={(e) => setNewEvent({ ...newEvent, date: new Date(e.target.value) })}
                 />
               </div>
