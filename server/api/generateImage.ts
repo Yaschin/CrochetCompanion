@@ -81,26 +81,69 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
         throw new Error("OpenAI client is not initialized - API key missing");
       }
 
-      const response = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: enhancedPrompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "standard",
-      });
+      // Create a promise that rejects after a timeout
+      const timeout = (ms: number) => {
+        return new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error(`Request timed out after ${ms}ms`)), ms);
+        });
+      };
+
+      // Race the actual API call against the timeout
+      const requestTimeout = 30000; // 30 seconds timeout
+      const response = await Promise.race([
+        openai.images.generate({
+          model: "dall-e-3",
+          prompt: enhancedPrompt,
+          n: 1,
+          size: "1024x1024",
+          quality: "standard",
+        }),
+        timeout(requestTimeout)
+      ]);
 
       return response.data[0].url || "";
     } catch (err) {
       console.error(`Image generation attempt ${attempt + 1}/${maxRetries} failed:`, err);
       
-      // Convert error to string to check if it's a rate limit issue
+      // Convert error to string to check for specific error types
       const errorStr = String(err);
-      const isRateLimit = errorStr.includes('429') || errorStr.toLowerCase().includes('rate limit');
       
-      // If it's not a rate limit error or this is our last attempt, don't retry
-      if (!isRateLimit || attempt === maxRetries - 1) {
+      // Identify specific error types for better error handling
+      const isRateLimit = errorStr.includes('429') || errorStr.toLowerCase().includes('rate limit');
+      const isTimeout = errorStr.includes('timed out') || errorStr.includes('timeout');
+      const isAuthError = errorStr.includes('401') || errorStr.includes('authentication') || 
+                         errorStr.includes('OPENAI_API_KEY') || errorStr.includes('API key');
+      const isBillingError = errorStr.includes('billing') || errorStr.includes('quota') || 
+                            errorStr.includes('payment');
+      const isContentPolicyError = errorStr.includes('content policy') || errorStr.includes('safety');
+      
+      // Log more specific error details for debugging
+      if (isAuthError) {
+        console.error("Authentication error with OpenAI API. Check API key.");
+      } else if (isRateLimit) {
+        console.error(`Rate limit reached on attempt ${attempt + 1}. Will retry with backoff.`);
+      } else if (isTimeout) {
+        console.error(`Request timed out after ${attempt + 1} attempts.`);
+      } else if (isBillingError) {
+        console.error("OpenAI billing error or quota exceeded.");
+      } else if (isContentPolicyError) {
+        console.error("Content policy violation - the image prompt may violate OpenAI content policies.");
+      }
+      
+      // Determine if we should retry
+      const shouldRetry = isRateLimit || isTimeout;
+      
+      // If we shouldn't retry or this is our last attempt, use fallback
+      if (!shouldRetry || attempt === maxRetries - 1) {
         // Return appropriate placeholder based on image type
-        console.log(`Using fallback for ${type} image due to generation failures`);
+        console.log(`Using fallback for ${type} image due to generation failures. Error type: ${
+          isAuthError ? "Authentication" : 
+          isRateLimit ? "Rate limit" : 
+          isTimeout ? "Timeout" : 
+          isBillingError ? "Billing" : 
+          isContentPolicyError ? "Content policy" : 
+          "Unknown"
+        }`);
         return getPlaceholderImage(type, prompt, partName);
       }
       
@@ -120,15 +163,15 @@ function getPlaceholderImage(type: string, prompt: string, partName?: string): s
   
   switch (type) {
     case "final":
-      return `${baseUrl}/1024x1024/f2e6ff/6c4ea6?text=Product+Image+Unavailable`;
+      return `${baseUrl}/1024x1024/f2e6ff/6c4ea6?text=AI+Image+Generation+Unavailable%0AAdd+OpenAI+API+Key+for+Custom+Images`;
     case "part":
       const partText = partName ? partName.replace(/\s+/g, '+') : 'Part';
-      return `${baseUrl}/400x400/f8f9fa/6c757d?text=${partText}+Image+Unavailable`;
+      return `${baseUrl}/400x400/f8f9fa/6c757d?text=${partText}+Image%0AAdd+OpenAI+API+Key`;
     case "diagram":
-      return `${baseUrl}/600x600/fffcf0/8a7340?text=Stitch+Diagram+Unavailable`;
+      return `${baseUrl}/600x600/fffcf0/8a7340?text=Stitch+Diagram%0AAdd+OpenAI+API+Key+to+Enable`;
     case "step":
     default:
-      return `${baseUrl}/600x400/f0f6ff/3a5c8a?text=Step+Instruction+Image+Unavailable`;
+      return `${baseUrl}/600x400/f0f6ff/3a5c8a?text=Step+Image+Unavailable%0AAdd+OpenAI+API+Key+for+Generation`;
   }
 }
 
