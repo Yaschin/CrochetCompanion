@@ -1,19 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2, Sparkles, LifeBuoy } from 'lucide-react';
 import { YarnIcon } from '../icons/WoolIcons';
+import { cn } from '../lib/utils';
+
+// Simple debounce function implementation
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 interface PatternGenLoaderProps {
   stage: 'prompt' | 'pattern' | 'images' | 'complete'; 
   progress?: number;
 }
 
-const PatternGenLoader: React.FC<PatternGenLoaderProps> = React.memo(({ stage, progress = 0 }) => {
-  const stageLabels = React.useMemo(() => ({
+const PatternGenLoader: React.FC<PatternGenLoaderProps> = ({ stage, progress = 0 }) => {
+  const stageLabels = {
     prompt: "Preparing your pattern...",
     pattern: "Crafting your instructions...",
     images: "Weaving your images...",
     complete: "Ready to crochet!"
-  }), []);
+  };
 
   const stagePercent = {
     prompt: 20,
@@ -22,11 +35,7 @@ const PatternGenLoader: React.FC<PatternGenLoaderProps> = React.memo(({ stage, p
     complete: 100
   };
 
-  const currentProgress = useMemo(() => 
-    progress > 0 ? progress : stagePercent[stage],
-    [progress, stage]
-  );
-
+  const currentProgress = progress > 0 ? progress : stagePercent[stage];
   const debouncedProgress = useDebounce(currentProgress, 100);
 
   return (
@@ -55,7 +64,7 @@ const PatternGenLoader: React.FC<PatternGenLoaderProps> = React.memo(({ stage, p
 
         {/* Animated crochet hook indicator */}
         <div 
-          className={`absolute top-0 transition-all duration-500 transform -translate-y-1/5`}
+          className="absolute top-0 transition-all duration-500 transform -translate-y-1/5"
           style={{ left: `${Math.min(98, currentProgress)}%` }}
         >
           {stage !== 'complete' && (
