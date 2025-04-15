@@ -1,16 +1,16 @@
-import { useState, useRef } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useRef, useEffect } from 'react';
+import { useToast } from '../hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest } from '../lib/queryClient';
 import { Pattern, PatternSection as PatternSectionType, PatternStep } from '../lib/types';
 import PatternSection from './PatternSection';
-import MaterialsList from './MaterialsList';
+import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
 import { Edit, Save, RefreshCw, Download, Plus, Image } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 interface PatternViewerProps {
   pattern: Pattern;
@@ -431,14 +431,22 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       <PatternProgressBar sections={pattern.sections} />
 
       {/* Materials Section */}
-      <MaterialsList 
+      <EnhancedMaterialsList 
         yarnRequirements={pattern.yarnRequirements || []}
+        hookRequirements={pattern.hookRequirements || []}
+        notionsRequirements={pattern.notionsRequirements || []}
+        toolRequirements={pattern.toolRequirements || []}
+        needsStuffing={pattern.needsStuffing || ""}
         materialsNotes={pattern.materialsNotes || ""}
-        onUpdate={(updatedRequirements, updatedNotes) => {
+        onUpdate={(updatedMaterials) => {
           const updatedPattern = {
             ...pattern,
-            yarnRequirements: updatedRequirements,
-            materialsNotes: updatedNotes
+            yarnRequirements: updatedMaterials.yarnRequirements,
+            hookRequirements: updatedMaterials.hookRequirements,
+            notionsRequirements: updatedMaterials.notionsRequirements,
+            toolRequirements: updatedMaterials.toolRequirements,
+            needsStuffing: updatedMaterials.needsStuffing,
+            materialsNotes: updatedMaterials.materialsNotes
           };
           updatePatternMutation.mutate(updatedPattern);
         }}

@@ -1,6 +1,7 @@
 import { FC, useState } from 'react';
 import { PlusIcon, BookOpenIcon } from 'lucide-react';
 import { WoolBallIcon } from '../icons/WoolIcons';
+import { cn } from '../lib/utils';
 
 interface NavigationProps {
   activeView: string;
@@ -12,7 +13,7 @@ const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {
 
   return (
     <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b">
-      <Container>
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex flex-shrink-0">
             <div className="flex-shrink-0 flex items-center">
@@ -37,7 +38,7 @@ const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {
             </button>
           </div>
         </div>
-      </Container>
+      </div>
     </nav>
   );
 };

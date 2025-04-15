@@ -15,12 +15,37 @@ export const patterns = pgTable("patterns", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   sections: jsonb("sections").notNull(),
   yarnRequirements: jsonb("yarnRequirements"),
+  hookRequirements: jsonb("hookRequirements"),
+  notionsRequirements: jsonb("notionsRequirements"),
+  toolRequirements: jsonb("toolRequirements"),
+  needsStuffing: text("needsStuffing"),
 });
 
 // Define yarn requirement
 export interface YarnRequirement {
   color: string;
   volume: string; // e.g., "~50g" or "~80 yards"
+}
+
+// Define hook requirement
+export interface HookRequirement {
+  size: string; // e.g., "5.0mm" or "H/8"
+  quantity: number;
+  note?: string;
+}
+
+// Define notions requirement (accessories, embellishments, etc.)
+export interface NotionsRequirement {
+  name: string; // e.g., "Safety eyes", "Buttons"
+  description: string; // e.g., "15mm black", "1 inch wooden"
+  quantity: number;
+}
+
+// Define tool requirement
+export interface ToolRequirement {
+  name: string; // e.g., "Tapestry needle", "Stitch markers"
+  description?: string;
+  quantity?: number;
 }
 
 // Define pattern step with enhanced features
@@ -79,12 +104,43 @@ export const patternSchema = z.object({
       ),
     })
   ),
+  // Yarn requirements
   yarnRequirements: z.array(
     z.object({
       color: z.string(),
       volume: z.string(),
     })
   ).optional().default([]),
+  
+  // Hook requirements
+  hookRequirements: z.array(
+    z.object({
+      size: z.string(),
+      quantity: z.number().default(1),
+      note: z.string().optional(),
+    })
+  ).optional().default([]),
+  
+  // Notions requirements (safety eyes, buttons, etc.)
+  notionsRequirements: z.array(
+    z.object({
+      name: z.string(),
+      description: z.string(),
+      quantity: z.number().default(1),
+    })
+  ).optional().default([]),
+  
+  // Tool requirements
+  toolRequirements: z.array(
+    z.object({
+      name: z.string(),
+      description: z.string().optional(),
+      quantity: z.number().optional(),
+    })
+  ).optional().default([]),
+  
+  // Stuffing requirement
+  needsStuffing: z.string().optional(),
 });
 
 export const insertPatternSchema = createInsertSchema(patterns).omit({

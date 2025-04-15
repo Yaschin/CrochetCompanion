@@ -4,6 +4,27 @@ export interface YarnRequirement {
   volume: string; // e.g., "~50g" or "~80 yards"
 }
 
+// Define hook requirement
+export interface HookRequirement {
+  size: string; // e.g., "5.0mm" or "H/8"
+  quantity: number;
+  note?: string;
+}
+
+// Define notions requirement (accessories, embellishments, etc.)
+export interface NotionsRequirement {
+  name: string; // e.g., "Safety eyes", "Buttons"
+  description: string; // e.g., "15mm black", "1 inch wooden"
+  quantity: number;
+}
+
+// Define tool requirement
+export interface ToolRequirement {
+  name: string; // e.g., "Tapestry needle", "Stitch markers"
+  description?: string;
+  quantity?: number;
+}
+
 export interface PatternStep {
   id: number;
   text: string;
@@ -38,6 +59,11 @@ export interface Pattern {
   createdAt: string;
   sections: PatternSection[];
   yarnRequirements: YarnRequirement[];
+  // New material types
+  hookRequirements?: HookRequirement[];
+  notionsRequirements?: NotionsRequirement[];
+  toolRequirements?: ToolRequirement[];
+  needsStuffing?: string;
 }
 
 // Input forms
