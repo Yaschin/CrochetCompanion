@@ -43,6 +43,7 @@ import { apiRequest } from '../lib/queryClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../hooks/use-toast';
 import { Pattern } from '../lib/types';
+import { isWeekend, formatTimeEstimate, formatDateForDisplay, isSameDay } from '../lib/dateUtils';
 
 // Types for project events
 interface ProjectEvent {
@@ -111,21 +112,7 @@ function calculateTimeEstimate(pattern: Pattern): number {
   return Math.round(baseTime);
 }
 
-// Format minutes into hours and minutes
-function formatTimeEstimate(minutes: number): string {
-  if (minutes < 60) {
-    return `${minutes} minutes`;
-  }
-  
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  
-  if (remainingMinutes === 0) {
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
-  }
-  
-  return `${hours} ${hours === 1 ? 'hour' : 'hours'} ${remainingMinutes} minutes`;
-}
+// Using formatTimeEstimate from dateUtils.ts instead of local implementation
 
 // Calculate completion date based on time estimate and daily crochet time
 function calculateCompletionDate(
@@ -395,7 +382,7 @@ export default function CalendarPlanner(props: CalendarPlannerProps = {}) {
       dayAvailability // Pass the day availability map for accurate estimates
     );
     
-    return `Expected completion: ${completionDate.toLocaleDateString()}`;
+    return `Expected completion: ${formatDateForDisplay(completionDate)}`;
   };
 
   // Helper function to toggle day availability
@@ -421,11 +408,7 @@ export default function CalendarPlanner(props: CalendarPlannerProps = {}) {
     });
   };
   
-  // Check if a date is a weekend
-  const isWeekend = (date: Date) => {
-    const day = date.getDay();
-    return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
-  };
+  // Using isWeekend from dateUtils.ts instead of local implementation
   
   // Determine the availability status for a date
   const getDayAvailability = (date: Date): 'blocked' | 'half' | 'full' => {
@@ -563,12 +546,7 @@ export default function CalendarPlanner(props: CalendarPlannerProps = {}) {
         <div className="lg:w-1/2">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">
-              {date ? date.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              }) : "Select a date"}
+              {date ? formatDateForDisplay(date) : "Select a date"}
             </h3>
             <Dialog>
               <DialogTrigger asChild>
