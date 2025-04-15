@@ -69,12 +69,48 @@ const PatternGenLoader: React.FC<PatternGenLoaderProps> = React.memo(({ stage, p
         {currentProgress}% {stage === 'complete' ? 'Complete!' : 'Complete'}
       </div>
 
+      {/* Stage progress indicators */}
+      <div className="mt-6 grid grid-cols-4 gap-2 w-full max-w-md">
+        {['prompt', 'pattern', 'images', 'complete'].map((s) => (
+          <div 
+            key={s} 
+            className={cn(
+              "h-1 rounded-full transition-colors duration-300",
+              stage === s ? "bg-primary animate-pulse" : 
+              ['complete', 'images', 'pattern', 'prompt'].indexOf(stage) >= ['complete', 'images', 'pattern', 'prompt'].indexOf(s) 
+                ? "bg-primary/30" 
+                : "bg-gray-200"
+            )}
+          />
+        ))}
+      </div>
+      
       {/* Current activity description */}
-      <div className="mt-4 text-sm text-gray-500 italic">
-        {stage === 'prompt' && "Converting your ideas into a crochet pattern..."}
-        {stage === 'pattern' && "Designing sections and steps for your project..."}
-        {stage === 'images' && "Generating visual guides for your pattern..."}
-        {stage === 'complete' && "All set! Your pattern is ready to view."}
+      <div className="mt-4 text-sm text-gray-500 italic flex items-center gap-2">
+        {stage === 'prompt' && (
+          <>
+            <Sparkles className="h-4 w-4 animate-pulse" />
+            <span>Converting your ideas into a crochet pattern...</span>
+          </>
+        )}
+        {stage === 'pattern' && (
+          <>
+            <YarnIcon className="h-4 w-4 animate-spin" />
+            <span>Designing sections and steps for your project...</span>
+          </>
+        )}
+        {stage === 'images' && (
+          <>
+            <LifeBuoy className="h-4 w-4 animate-bounce" />
+            <span>Generating visual guides for your pattern...</span>
+          </>
+        )}
+        {stage === 'complete' && (
+          <>
+            <Sparkles className="h-4 w-4" />
+            <span>All set! Your pattern is ready to view.</span>
+          </>
+        )}
       </div>
     </div>
   );

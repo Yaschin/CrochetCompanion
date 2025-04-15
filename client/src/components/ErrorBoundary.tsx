@@ -22,17 +22,25 @@ class ErrorBoundary extends React.Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center p-6 bg-red-50 rounded-xl border border-red-100">
-          <AlertTriangle className="h-8 w-8 text-red-500 mb-2" />
-          <h3 className="text-lg font-medium text-red-700">Something went wrong</h3>
-          <p className="text-sm text-red-600 mb-4">Something went wrong with this component</p>
-          <button 
-            onClick={() => this.setState({ hasError: false })}
-            className="px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
+        <AlertDialog open>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                <span>Something went wrong</span>
+              </AlertDialogTitle>
+            </AlertDialogHeader>
+            <p className="text-sm text-muted-foreground">
+              We encountered an error while rendering this component. 
+              Would you like to try again?
+            </p>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => this.setState({ hasError: false })}>
+                Try Again
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       );
     }
 
