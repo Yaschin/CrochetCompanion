@@ -7,10 +7,11 @@ import PatternInputRefactored from "./components/PatternInputRefactored";
 import PatternViewer from "./components/PatternViewer";
 import PatternLibrary from "./components/PatternLibrary";
 import YarnStash from "./components/YarnStash";
+import CalendarPlanner from "./components/CalendarPlanner";
 import { Pattern } from "./lib/types";
 
 // View options
-type ViewType = "input" | "viewer" | "library" | "stash";
+type ViewType = "input" | "viewer" | "library" | "stash" | "calendar";
 
 function App() {
   const [activeView, setActiveView] = useState<ViewType>("input");
@@ -84,6 +85,16 @@ function App() {
                 }`}
               >
                 My Stash
+              </button>
+              <button 
+                onClick={() => navigateToView("calendar")}
+                className={`flex-1 sm:flex-initial whitespace-nowrap py-3 sm:py-4 text-center border-b-2 font-medium text-xs sm:text-sm ${
+                  activeView === "calendar" 
+                    ? "border-primary text-primary" 
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Project Planner
               </button>
             </div>
           </div>

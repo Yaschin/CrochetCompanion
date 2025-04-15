@@ -5,7 +5,8 @@ import { generatePattern } from "./api/generatePattern";
 import { generateImage } from "./api/generateImage";
 import { patternService } from "./patternService";
 import { stashService } from "./stashService";
-import { patternSchema, stashItemSchema } from "../shared/schema";
+import { projectEventService } from "./projectEventService";
+import { patternSchema, stashItemSchema, projectEventSchema } from "../shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -343,6 +344,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating stash notes:", error);
       res.status(500).json({ message: "Failed to update stash notes", error: (error as Error).message });
+    }
+  });
+
+  // Project Events CRUD endpoints
+  app.get("/api/project-events", async (_req: Request, res: Response) => {
+    try {
+      const events = await projectEventService.getAllEvents();
+      res.json(events);
+    } catch (error) {
+      console.error("Error getting project events:", error);
+      res.status(500).json({ message: "Failed to get project events", error: (error as Error).message });
+    }
+  });
+
+  app.get("/api/project-events/:id", async (req: Request, res: Response) => {
+    try {
+      const event = await projectEventService.getEvent(req.params.id);
+      
+      if (!event) {
+        return res.status(404).json({ message: "Project event not found" });
+      }
+      
+      res.json(event);
+    } catch (error) {
+      console.error("Error getting project event:", error);
+      res.status(500).json({ message: "Failed to get project event", error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/project-events", async (req: Request, res: Response) => {
+    try {
+      const result = projectEventSchema.omit({ id: true, createdAt: true, updatedAt: true }).safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ message: "Invalid project event data", errors: result.error.errors });
+      }
+      
+      const event = await projectEventService.createEvent(result.data);
+      res.status(201).json(event);
+    } catch (error) {
+      console.error("Error creating project event:", error);
+      res.status(500).json({ message: "Failed to create project event", error: (error as Error).message });
+    }
+  });
+
+  app.put("/api/project-events/:id", async (req: Request, res: Response) => {
+    try {
+      const result = projectEventSchema.partial().safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ message: "Invalid project event data", errors: result.error.errors });
+      }
+      
+      const updatedEvent = await projectEventService.updateEvent(req.params.id, result.data);
+      
+      if (!updatedEvent) {
+        return res.status(404).json({ message: "Project event not found" });
+      }
+      
+      res.json(updatedEvent);
+    } catch (error) {
+      console.error("Error updating project event:", error);
+      res.status(500).json({ message: "Failed to update project event", error: (error as Error).message });
+    }
+  });
+
+  app.delete("/api/project-events/:id", async (req: Request, res: Response) => {
+    try {
+      const success = await projectEventService.deleteEvent(req.params.id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Project event not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting project event:", error);
+      res.status(500).json({ message: "Failed to delete project event", error: (error as Error).message });
     }
   });
 

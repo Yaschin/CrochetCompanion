@@ -10,7 +10,11 @@ export const projectEventService = {
       return events.map(event => ({
         ...event,
         completed: !!event.completed, // Convert integer to boolean
-      })) as ProjectEvent[];
+        // Convert dates to strings for API consistency
+        createdAt: event.createdAt ? event.createdAt.toISOString() : undefined,
+        updatedAt: event.updatedAt ? event.updatedAt.toISOString() : undefined,
+        date: event.date instanceof Date ? event.date.toISOString() : event.date,
+      })) as unknown as ProjectEvent[];
     } catch (error) {
       console.error('Error getting project events:', error);
       throw new Error('Failed to retrieve project events');
@@ -23,10 +27,16 @@ export const projectEventService = {
       if (events.length === 0) {
         return undefined;
       }
+      
+      const event = events[0];
       return {
-        ...events[0],
-        completed: !!events[0].completed, // Convert integer to boolean
-      } as ProjectEvent;
+        ...event,
+        completed: !!event.completed, // Convert integer to boolean
+        // Convert dates to strings for API consistency
+        createdAt: event.createdAt ? event.createdAt.toISOString() : undefined,
+        updatedAt: event.updatedAt ? event.updatedAt.toISOString() : undefined,
+        date: event.date instanceof Date ? event.date.toISOString() : event.date,
+      } as unknown as ProjectEvent;
     } catch (error) {
       console.error(`Error getting project event with id ${id}:`, error);
       throw new Error('Failed to retrieve project event');
