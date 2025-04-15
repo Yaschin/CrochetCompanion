@@ -9,6 +9,7 @@ import PatternProgressBar from './PatternProgressBar';
 import { Edit, Save, RefreshCw, Download, Plus, Image } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
+import { ToastAction } from './ui/toast';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 
@@ -111,16 +112,41 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       const errorMessage = error instanceof Error ? error.message : 
         "There was an error regenerating your pattern.";
       
-      toast({
-        title: "Regeneration Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      const errorString = String(error);
+      const isApiKeyError = errorString.includes('API key') || 
+                           errorString.includes('authentication') || 
+                           errorString.includes('401') || 
+                           errorString.includes('403');
       
-      if (String(error).includes('API key')) {
+      if (isApiKeyError) {
         toast({
           title: "API Key Required",
-          description: "OpenAI API key is required for this feature. Please add it in your environment variables.",
+          description: "OpenAI API key is missing or invalid. Please add your OpenAI API key to continue with pattern regeneration.",
+          variant: "apiWarning",
+          action: (
+            <ToastAction altText="Get API Key">
+              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
+                Get API Key
+              </a>
+            </ToastAction>
+          ),
+        });
+      } else if (errorString.includes('429') || errorString.toLowerCase().includes('rate limit')) {
+        toast({
+          title: "Rate Limit Exceeded",
+          description: "The OpenAI API rate limit has been reached. Please try again later.",
+          variant: "destructive",
+        });
+      } else if (errorString.includes('timeout') || errorString.includes('timed out')) {
+        toast({
+          title: "Request Timeout",
+          description: "The pattern generation request took too long. Please try again with a simpler prompt.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Regeneration Failed",
+          description: errorMessage,
           variant: "destructive",
         });
       }
@@ -167,16 +193,41 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       const errorMessage = error instanceof Error ? error.message : 
         "There was an error regenerating your pattern image.";
       
-      toast({
-        title: "Image Regeneration Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      const errorString = String(error);
+      const isApiKeyError = errorString.includes('API key') || 
+                           errorString.includes('authentication') || 
+                           errorString.includes('401') || 
+                           errorString.includes('403');
       
-      if (String(error).includes('API key')) {
+      if (isApiKeyError) {
         toast({
           title: "API Key Required",
-          description: "OpenAI API key is required for this feature. Please add it in your environment variables.",
+          description: "OpenAI API key is missing or invalid. Please add your OpenAI API key to continue with image generation.",
+          variant: "apiWarning",
+          action: (
+            <ToastAction altText="Get API Key">
+              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
+                Get API Key
+              </a>
+            </ToastAction>
+          ),
+        });
+      } else if (errorString.includes('429') || errorString.toLowerCase().includes('rate limit')) {
+        toast({
+          title: "Rate Limit Exceeded",
+          description: "The OpenAI API rate limit has been reached. Please try again later.",
+          variant: "destructive",
+        });
+      } else if (errorString.includes('timeout') || errorString.includes('timed out')) {
+        toast({
+          title: "Request Timeout",
+          description: "The image generation request took too long. Please try again with a simpler prompt.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Image Regeneration Failed",
+          description: errorMessage,
           variant: "destructive",
         });
       }
@@ -330,16 +381,35 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       console.error('Error in handleImageRefinementSubmit:', error);
       
       // Display a more user-friendly message if it's an OpenAI API issue
-      if (String(error).includes('API key')) {
+      const errorString = String(error);
+      const isApiKeyError = errorString.includes('API key') || 
+                           errorString.includes('authentication') || 
+                           errorString.includes('401') || 
+                           errorString.includes('403');
+      
+      if (isApiKeyError) {
         toast({
           title: "API Key Required",
-          description: "An OpenAI API key is needed for image generation. Please check your environment variables.",
-          variant: "destructive",
+          description: "OpenAI API key is missing or invalid. Please add your OpenAI API key to continue with image generation.",
+          variant: "apiWarning",
+          action: (
+            <ToastAction altText="Get API Key">
+              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
+                Get API Key
+              </a>
+            </ToastAction>
+          ),
         });
-      } else if (String(error).includes('429') || String(error).includes('rate limit')) {
+      } else if (errorString.includes('429') || errorString.toLowerCase().includes('rate limit')) {
         toast({
           title: "Rate Limit Exceeded",
           description: "The OpenAI API rate limit has been reached. Please try again later.",
+          variant: "destructive",
+        });
+      } else if (errorString.includes('timeout') || errorString.includes('timed out')) {
+        toast({
+          title: "Request Timeout",
+          description: "The image generation request took too long. Please try again with a simpler prompt.",
           variant: "destructive",
         });
       }
