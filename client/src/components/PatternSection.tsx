@@ -220,8 +220,11 @@ const PatternSection: React.FC<PatternSectionProps> = ({
   };
 
   // Generate stitch diagram for this section
-  const generateSectionDiagram = async (customPrompt?: string) => {
+  const generateSectionDiagram = async (customPrompt?: string | React.MouseEvent) => {
     if (isGeneratingDiagram) return;
+    
+    // Convert event to undefined if it's a React.MouseEvent
+    const promptToUse = typeof customPrompt === 'string' ? customPrompt : undefined;
     
     setIsGeneratingDiagram(true);
     setIsDiagramDialogOpen(false);
@@ -229,7 +232,7 @@ const PatternSection: React.FC<PatternSectionProps> = ({
     try {
       console.log("Generating stitch diagram for section:", section.name);
       const response = await apiRequest('POST', '/api/generate-image', {
-        prompt: customPrompt || `Crochet stitch diagram for the ${section.name} section of a ${projectType || 'crochet project'} - ${section.steps.map(s => s.text).slice(0, 3).join(". ")}`,
+        prompt: promptToUse || `Crochet stitch diagram for the ${section.name} section of a ${projectType || 'crochet project'} - ${section.steps.map(s => s.text).slice(0, 3).join(". ")}`,
         type: 'diagram',
         projectType,
       });
@@ -476,6 +479,41 @@ const PatternSection: React.FC<PatternSectionProps> = ({
           </div>
         </div>
       )}
+
+      {/* Diagram Refinement Dialog */}
+      <Dialog open={isDiagramDialogOpen} onOpenChange={setIsDiagramDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Refine Stitch Diagram</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="text-sm text-gray-700 mb-1 block">
+              Customize your prompt with specific refinements:
+            </label>
+            <Textarea
+              value={diagramRefinementPrompt}
+              onChange={(e) => setDiagramRefinementPrompt(e.target.value)}
+              placeholder="Describe specific details or changes you want for the diagram..."
+              className="min-h-[100px]"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDiagramDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRegenerateDiagramWithRefinements} disabled={isGeneratingDiagram}>
+              {isGeneratingDiagram ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                'Generate with Refinements'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
