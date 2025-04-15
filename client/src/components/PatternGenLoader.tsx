@@ -13,7 +13,7 @@ const PatternGenLoader: React.FC<PatternGenLoaderProps> = React.memo(({ stage, p
     pattern: "Crafting your instructions...",
     images: "Weaving your images...",
     complete: "Ready to crochet!"
-  };
+  }), []);
 
   const stagePercent = {
     prompt: 20,

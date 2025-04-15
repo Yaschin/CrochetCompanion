@@ -40,8 +40,16 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   // Update pattern mutation
   const updatePatternMutation = useMutation({
     mutationFn: async (updatedPattern: Pattern) => {
-      const res = await apiRequest('PUT', `/api/patterns/${updatedPattern.id}`, updatedPattern);
-      return res.json();
+      try {
+        const res = await apiRequest('PUT', `/api/patterns/${updatedPattern.id}`, updatedPattern);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      } catch (error) {
+        console.error('Error updating pattern:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       onPatternUpdated(data);

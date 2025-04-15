@@ -134,9 +134,9 @@ export function usePatternState(initialPattern?: Pattern) {
     }, { total: 0, completed: 0 });
 
     return {
-      completedSteps: completedCount,
-      totalSteps: totalCount,
-      percentComplete: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+      completedSteps: counts.completed,
+      totalSteps: counts.total,
+      percentComplete: counts.total > 0 ? Math.round((counts.completed / counts.total) * 100) : 0
     };
   }, [pattern]);
 
