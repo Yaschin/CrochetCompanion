@@ -35,13 +35,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate image endpoint
   app.post("/api/generate-image", async (req: Request, res: Response) => {
     try {
-      const { prompt, type, projectType, yarnType } = req.body;
+      const { prompt, type, projectType, yarnType, partName } = req.body;
       
       if (!prompt || !type) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
-      const imageUrl = await generateImage({ prompt, type, projectType, yarnType });
+      const imageUrl = await generateImage({ prompt, type, projectType, yarnType, partName });
       res.json({ url: imageUrl });
     } catch (error) {
       console.error("Error in generate-image endpoint:", error);
@@ -127,10 +127,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate main product image for a pattern
+  app.post("/api/patterns/:patternId/product-image", async (req: Request, res: Response) => {
+    try {
+      const { patternId } = req.params;
+      const { refinements } = req.body;
+      
+      // Get the pattern
+      const pattern = await patternService.getPattern(patternId);
+      if (!pattern) {
+        return res.status(404).json({ message: "Pattern not found" });
+      }
+      
+      // Create a base prompt from the pattern title and additional refinements
+      let prompt = pattern.title;
+      if (refinements) {
+        prompt += `. ${refinements}`;
+      }
+      
+      // Get yarn colors for additional context
+      const colors = pattern.yarnRequirements && pattern.yarnRequirements.length > 0
+        ? ` using these colors: ${pattern.yarnRequirements.map((req: any) => req.color).join(", ")}`
+        : '';
+      
+      const imageUrl = await generateImage({
+        prompt: prompt + colors,
+        type: 'final',
+        projectType: pattern.projectType,
+        yarnType: pattern.yarnType
+      });
+      
+      // Update the pattern with the new image URL
+      if (imageUrl) {
+        const updatedPattern = await patternService.updatePattern(patternId, {
+          endProductImage: imageUrl
+        });
+        
+        return res.json({ success: true, imageUrl, pattern: updatedPattern });
+      }
+      
+      res.status(500).json({ message: "Failed to generate product image" });
+    } catch (error) {
+      console.error("Error generating product image:", error);
+      res.status(500).json({ 
+        message: "Failed to generate product image", 
+        error: (error as Error).message 
+      });
+    }
+  });
+
   // Generate image for a specific pattern section
   app.post("/api/patterns/:patternId/sections/:sectionIndex/image", async (req: Request, res: Response) => {
     try {
       const { patternId, sectionIndex } = req.params;
+      const { refinements } = req.body;
       const sectionIdx = parseInt(sectionIndex, 10);
       
       if (isNaN(sectionIdx)) {
@@ -150,7 +200,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Generate image for the section
-      const prompt = `A detailed illustration of the ${section.name.toLowerCase()} part of a crocheted ${pattern.projectType}`;
+      let prompt = `A detailed illustration of the ${section.name.toLowerCase()} part of a crocheted ${pattern.projectType}`;
+      if (refinements) {
+        prompt += `. ${refinements}`;
+      }
+      
       const colors = pattern.yarnRequirements && pattern.yarnRequirements.length > 0
         ? ` using these colors: ${pattern.yarnRequirements.map((req: any) => req.color).join(", ")}`
         : '';

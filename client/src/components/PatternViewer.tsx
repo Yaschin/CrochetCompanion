@@ -6,7 +6,11 @@ import { Pattern, PatternSection as PatternSectionType, PatternStep } from '../l
 import PatternSection from './PatternSection';
 import MaterialsList from './MaterialsList';
 import PatternProgressBar from './PatternProgressBar';
-import { Edit, Save, RefreshCw, Download, Plus } from 'lucide-react';
+import { Edit, Save, RefreshCw, Download, Plus, Image } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface PatternViewerProps {
   pattern: Pattern;
@@ -17,6 +21,9 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const { toast } = useToast();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set([pattern.sections[0]?.name]));
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [imageRefinements, setImageRefinements] = useState('');
 
   // Format the creation date
   const formattedDate = new Date(pattern.createdAt).toLocaleDateString();
@@ -72,6 +79,35 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         description: "There was an error regenerating your pattern.",
         variant: "destructive",
       });
+    },
+  });
+  
+  // Regenerate product image mutation
+  const regenerateImageMutation = useMutation({
+    mutationFn: async (data: { patternId: string; refinements?: string }) => {
+      const res = await apiRequest('POST', `/api/patterns/${data.patternId}/product-image`, {
+        refinements: data.refinements
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      // Update pattern with new image
+      onPatternUpdated(data.pattern);
+      toast({
+        title: "Image Regenerated",
+        description: "Your pattern image has been updated.",
+      });
+      // Close dialog and reset state
+      setImageDialogOpen(false);
+      setImageRefinements('');
+    },
+    onError: () => {
+      toast({
+        title: "Image Regeneration Failed",
+        description: "There was an error regenerating your pattern image.",
+        variant: "destructive",
+      });
+      setImageDialogOpen(false);
     },
   });
 
@@ -185,6 +221,24 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       });
     } finally {
       setIsRegenerating(false);
+    }
+  };
+  
+  // Handle product image regeneration
+  const handleRegenerateImage = async () => {
+    setImageDialogOpen(true);
+  };
+  
+  // Handle the image dialog submit
+  const handleImageRefinementSubmit = async () => {
+    setIsRegeneratingImage(true);
+    try {
+      await regenerateImageMutation.mutateAsync({
+        patternId: pattern.id,
+        refinements: imageRefinements
+      });
+    } finally {
+      setIsRegeneratingImage(false);
     }
   };
 
