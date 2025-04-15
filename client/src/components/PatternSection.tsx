@@ -9,7 +9,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
 interface PatternSectionProps {
-  section: PatternSectionType;
+  section: PatternSectionType & { patternId?: string };
   sectionIndex: number;
   isExpanded: boolean;
   projectType?: string;
