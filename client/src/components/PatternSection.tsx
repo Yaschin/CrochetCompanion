@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PatternSection as PatternSectionType, PatternStep } from '@/lib/types';
-import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon, Trash } from 'lucide-react';
 
 interface PatternSectionProps {
   section: PatternSectionType;
@@ -18,7 +18,11 @@ const StepRow: React.FC<{
   step: PatternStep;
   stepIndex: number;
   onUpdate: (updatedStep: PatternStep) => void;
-}> = ({ step, stepIndex, onUpdate }) => {
+  onDelete: () => void;
+}> = ({ step, stepIndex, onUpdate, onDelete }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedText, setEditedText] = useState(step.text);
+  
   const toggleComplete = () => {
     onUpdate({
       ...step,
@@ -32,16 +36,91 @@ const StepRow: React.FC<{
       count: increment ? step.count + 1 : Math.max(0, step.count - 1)
     });
   };
+  
+  const toggleLock = () => {
+    onUpdate({
+      ...step,
+      locked: !step.locked
+    });
+  };
+  
+  const handleSaveEdit = () => {
+    onUpdate({
+      ...step,
+      text: editedText
+    });
+    setIsEditing(false);
+  };
+  
+  const handleCancelEdit = () => {
+    setEditedText(step.text);
+    setIsEditing(false);
+  };
 
   return (
     <div className="flex items-center justify-between py-1 px-2 border-b border-gray-100 text-sm">
-      <div className={`flex-grow ${step.completed ? 'line-through text-gray-400' : ''}`}>
-        <span className="font-medium text-gray-500 mr-2">{step.id}.</span>
-        {step.text}
-      </div>
-      <div className="flex items-center space-x-2">
+      {isEditing ? (
+        <div className="flex-grow pr-2">
+          <textarea
+            value={editedText}
+            onChange={(e) => setEditedText(e.target.value)}
+            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+            rows={2}
+          />
+        </div>
+      ) : (
+        <div className={`flex-grow ${step.completed ? 'line-through text-gray-400' : ''}`}>
+          <span className="font-medium text-gray-500 mr-2">{step.id}.</span>
+          {step.text}
+        </div>
+      )}
+      
+      <div className="flex items-center space-x-1">
+        {isEditing ? (
+          <>
+            <button
+              onClick={handleSaveEdit}
+              className="text-green-500 hover:text-green-700 p-0.5"
+              title="Save changes"
+            >
+              <Save size={14} />
+            </button>
+            <button
+              onClick={handleCancelEdit}
+              className="text-red-500 hover:text-red-700 p-0.5"
+              title="Cancel"
+            >
+              <X size={14} />
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-gray-400 hover:text-gray-600 p-0.5"
+              title="Edit step"
+            >
+              <Edit size={14} />
+            </button>
+            <button
+              onClick={toggleLock}
+              className={`${step.locked ? 'text-amber-500' : 'text-gray-400'} hover:text-amber-600 p-0.5`}
+              title={step.locked ? "Unlock step" : "Lock step"}
+            >
+              {step.locked ? <Lock size={14} /> : <Unlock size={14} />}
+            </button>
+            <button
+              onClick={onDelete}
+              className="text-gray-400 hover:text-red-500 p-0.5"
+              title="Delete step"
+            >
+              <Trash size={14} />
+            </button>
+          </>
+        )}
+        
         {step.count > 0 && (
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 ml-2">
             <button 
               onClick={() => updateCount(false)}
               className="text-gray-400 hover:text-gray-600 px-1"
@@ -61,7 +140,7 @@ const StepRow: React.FC<{
           type="checkbox" 
           checked={step.completed}
           onChange={toggleComplete}
-          className="h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary"
+          className="h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary ml-1"
         />
       </div>
     </div>
@@ -280,6 +359,7 @@ const PatternSection: React.FC<PatternSectionProps> = ({
                 step={step}
                 stepIndex={stepIndex}
                 onUpdate={(updatedStep) => onUpdateStep(stepIndex, updatedStep)}
+                onDelete={() => onDeleteStep(stepIndex)}
               />
             ))}
           </div>

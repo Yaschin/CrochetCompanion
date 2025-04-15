@@ -161,12 +161,12 @@ const MaterialsList: React.FC<MaterialsListProps> = ({
                       />
                     </>
                   ) : (
-                    <span className="text-sm">
-                      <span className="font-medium text-gray-800">{req.color}</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium text-gray-800">{req.color}</span>
                       {req.volume && (
-                        <span className="text-gray-500 ml-1">({req.volume})</span>
+                        <span className="text-xs text-gray-500 ml-1.5 bg-gray-100 px-1.5 py-0.5 rounded-full">{req.volume}</span>
                       )}
-                    </span>
+                    </div>
                   )}
                 </div>
                 
