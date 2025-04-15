@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import * as fs from 'fs';
 import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
 import { generateImage } from "./api/generateImage";
@@ -422,6 +423,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting project event:", error);
       res.status(500).json({ message: "Failed to delete project event", error: (error as Error).message });
+    }
+  });
+
+  // Add endpoint for uploading step photos
+  app.post("/api/patterns/:patternId/sections/:sectionIndex/steps/:stepIndex/photo", async (req: Request, res: Response) => {
+    try {
+      const { patternId, sectionIndex, stepIndex } = req.params;
+      const sectionIdx = parseInt(sectionIndex, 10);
+      const stepIdx = parseInt(stepIndex, 10);
+      
+      if (isNaN(sectionIdx) || isNaN(stepIdx)) {
+        return res.status(400).json({ message: "Invalid section or step index" });
+      }
+      
+      // Get the pattern
+      const pattern = await patternService.getPattern(patternId);
+      if (!pattern) {
+        return res.status(404).json({ message: "Pattern not found" });
+      }
+      
+      // Get the section
+      const section = pattern.sections[sectionIdx];
+      if (!section) {
+        return res.status(404).json({ message: "Section not found" });
+      }
+      
+      // Get the step
+      const step = section.steps[stepIdx];
+      if (!step) {
+        return res.status(404).json({ message: "Step not found" });
+      }
+
+      if (!req.body.photo) {
+        return res.status(400).json({ message: "Photo data is required" });
+      }
+
+      // Process the base64 encoded photo data
+      const photoData = req.body.photo;
+      
+      // Create a unique filename based on pattern ID, section and step
+      const fileName = `${patternId}_section${sectionIdx}_step${stepIdx}_${Date.now().toString()}.png`;
+      const filePath = `/uploads/${fileName}`;
+      
+      // Extract the base64 data from the data URL
+      const base64Data = photoData.replace(/^data:image\/\w+;base64,/, '');
+      const dataBuffer = Buffer.from(base64Data, 'base64');
+      
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = './client/public/uploads';
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      
+      // Write the file to disk
+      fs.writeFileSync(`${uploadsDir}/${fileName}`, dataBuffer);
+      
+      // Update the step with the photo URL
+      const updatedSections = [...pattern.sections];
+      updatedSections[sectionIdx].steps[stepIdx] = {
+        ...step,
+        photo: `/uploads/${fileName}`
+      };
+      
+      // Update the pattern
+      const updatedPattern = await patternService.updatePattern(patternId, {
+        sections: updatedSections
+      });
+      
+      if (!updatedPattern) {
+        return res.status(500).json({ message: "Failed to update pattern with photo" });
+      }
+      
+      res.json({
+        success: true,
+        photoUrl: `/uploads/${fileName}`,
+        pattern: updatedPattern
+      });
+    } catch (error) {
+      console.error("Error uploading step photo:", error);
+      res.status(500).json({ message: "Failed to upload step photo", error: (error as Error).message });
     }
   });
 
