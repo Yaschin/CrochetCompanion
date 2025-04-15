@@ -312,6 +312,9 @@ export default function YarnStash() {
           <WoolBallIcon className="mr-2 h-6 w-6 text-primary" />
           Yarn & Material Stash
         </h2>
+        <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+          {stashItems.length} items in stash
+        </div>
       </div>
 
       <div className="flex space-x-4 mb-6">
