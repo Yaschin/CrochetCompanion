@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
 import { Sparkles } from 'lucide-react';
@@ -219,23 +220,62 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       let errorDescription = "There was an error generating your pattern. Please try again.";
       const errorString = String(error);
       
-      if (errorString.includes('OPENAI_API_KEY') || errorString.includes('API key') || errorString.includes('authentication')) {
-        errorDescription = "OpenAI API key is missing or invalid. Please add your OpenAI API key to continue with AI-powered pattern generation.";
+      // Check for API key related errors
+      const isApiKeyError = errorString.includes('OPENAI_API_KEY') || 
+                         errorString.includes('API key') || 
+                         errorString.includes('authentication') || 
+                         errorString.includes('Unauthorized');
+      
+      if (isApiKeyError) {
+        // Use the special API warning toast variant for API key issues
+        toast({
+          title: "API Key Required",
+          description: "OpenAI API key is missing or invalid. Please add your OpenAI API key to continue with AI-powered pattern generation.",
+          variant: "apiWarning",
+          action: (
+            <ToastAction altText="Get API Key">
+              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
+                Get API Key
+              </a>
+            </ToastAction>
+          ),
+        });
       } else if (errorString.includes('rate limit') || errorString.includes('429')) {
         errorDescription = "Rate limit exceeded. Please wait a moment and try again.";
+        toast({
+          title: "Generation Failed",
+          description: errorDescription,
+          variant: "destructive"
+        });
       } else if (errorString.includes('network') || errorString.includes('timeout')) {
         errorDescription = "Network error. Please check your connection and try again.";
+        toast({
+          title: "Generation Failed",
+          description: errorDescription,
+          variant: "destructive"
+        });
       } else if (errorString.includes('billing') || errorString.includes('quota')) {
         errorDescription = "OpenAI account quota exceeded. Please check your OpenAI account billing status.";
+        toast({
+          title: "Generation Failed",
+          description: errorDescription,
+          variant: "destructive"
+        });
       } else if (errorString.includes('content policy') || errorString.includes('violates')) {
         errorDescription = "Content policy violation. Please modify your pattern description and try again.";
+        toast({
+          title: "Generation Failed",
+          description: errorDescription,
+          variant: "destructive"
+        });
+      } else {
+        // Default error toast
+        toast({
+          title: "Generation Failed",
+          description: errorDescription,
+          variant: "destructive"
+        });
       }
-      
-      toast({
-        title: "Generation Failed",
-        description: errorDescription,
-        variant: "destructive"
-      });
     } finally {
       setIsGenerating(false);
     }

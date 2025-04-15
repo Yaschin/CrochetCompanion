@@ -15,7 +15,7 @@ export interface ToasterToast {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: React.ReactElement
-  variant?: 'default' | 'destructive'
+  variant?: 'default' | 'destructive' | 'apiWarning'
   className?: string
   open?: boolean
   onOpenChange?: (open: boolean) => void

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ImageIcon, Loader2, SparklesIcon, RefreshCw, X, Pencil } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -86,8 +87,15 @@ const SectionImagePlaceholder: React.FC<SectionImagePlaceholderProps> = ({
           errorMsg.includes('401') || errorMsg.includes('403')) {
         toast({
           title: "API Key Required",
-          description: "An OpenAI API key is needed for image generation. Please check your environment variables.",
-          variant: "destructive",
+          description: "An OpenAI API key is needed for image generation. Please add your OpenAI API key to continue with image generation.",
+          variant: "apiWarning",
+          action: (
+            <ToastAction altText="Get API Key">
+              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
+                Get API Key
+              </a>
+            </ToastAction>
+          ),
         });
       } else if (errorMsg.includes('429') || errorMsg.includes('rate limit')) {
         toast({
