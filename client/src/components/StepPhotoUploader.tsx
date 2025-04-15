@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Camera, Upload, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { getOrdinalSuffix } from '@/lib/dateUtils';
 
 interface StepPhotoUploaderProps {
   patternId: string;
@@ -25,22 +26,6 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  // Helper function to get ordinal suffix for numbers (1st, 2nd, 3rd, etc.)
-  const getOrdinalSuffix = (num: number): string => {
-    const j = num % 10;
-    const k = num % 100;
-    if (j === 1 && k !== 11) {
-      return "st";
-    }
-    if (j === 2 && k !== 12) {
-      return "nd";
-    }
-    if (j === 3 && k !== 13) {
-      return "rd";
-    }
-    return "th";
-  };
   
   // Handle file selection
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

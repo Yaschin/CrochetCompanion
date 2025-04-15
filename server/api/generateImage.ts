@@ -14,7 +14,7 @@ if (!API_KEY_AVAILABLE) {
 
 // Initialize OpenAI only if API key is available and valid
 const openai = (API_KEY_AVAILABLE && API_KEY_VALID_FORMAT) 
-  ? new OpenAI({ apiKey: OPENAI_API_KEY }) 
+  ? new OpenAI({ apiKey: OPENAI_API_KEY.trim() }) 
   : null;
 
 interface ImageGenerationRequest {

@@ -176,3 +176,59 @@ export function getEffectiveCrochetTime(
       return dailyCrochetTime;
   }
 }
+
+/**
+ * Safely format pattern details with robust error handling
+ * @param pattern - Pattern object to format 
+ * @returns Object with formatted pattern details
+ */
+export function getFormattedPatternDetails(pattern: Pattern | undefined | null) {
+  if (!pattern) {
+    return {
+      title: 'No pattern selected',
+      skillLevel: 'N/A',
+      projectType: 'N/A',
+      sections: 0,
+      steps: 0,
+      timeEstimate: 0
+    };
+  }
+  
+  try {
+    // Count total steps
+    let totalSteps = 0;
+    const sectionCount = pattern.sections && Array.isArray(pattern.sections) 
+      ? pattern.sections.length 
+      : 0;
+    
+    if (pattern.sections && Array.isArray(pattern.sections)) {
+      pattern.sections.forEach(section => {
+        if (section && section.steps && Array.isArray(section.steps)) {
+          totalSteps += section.steps.length;
+        }
+      });
+    }
+    
+    // Calculate time estimate
+    const timeEstimate = calculateTimeEstimate(pattern);
+    
+    return {
+      title: pattern.title || 'Untitled Pattern',
+      skillLevel: pattern.skillLevel || 'Not specified',
+      projectType: pattern.projectType || 'Not specified',
+      sections: sectionCount,
+      steps: totalSteps,
+      timeEstimate
+    };
+  } catch (error) {
+    console.error('Error formatting pattern details:', error);
+    return {
+      title: pattern.title || 'Error formatting pattern',
+      skillLevel: 'Error',
+      projectType: 'Error',
+      sections: 0,
+      steps: 0,
+      timeEstimate: 0
+    };
+  }
+}
