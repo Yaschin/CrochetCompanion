@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 
@@ -26,8 +25,8 @@ class ErrorBoundary extends React.Component<Props, State> {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                <span>Something went wrong</span>
+                <AlertTriangle className="h-5 w-5 text-destructive animate-pulse" />
+                <span className="font-semibold">Something went wrong</span>
               </AlertDialogTitle>
             </AlertDialogHeader>
             <p className="text-sm text-muted-foreground">

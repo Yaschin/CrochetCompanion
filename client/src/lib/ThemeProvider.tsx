@@ -28,8 +28,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{
-      primaryColor: theme === 'dark' ? '#86EFAC' : '#0097FB',
-      secondaryColor: theme === 'dark' ? '#4ADE80' : '#97fb00',
+      primaryColor: theme === 'dark' ? 'hsl(142, 76%, 73%)' : 'hsl(204, 100%, 49%)',
+      secondaryColor: theme === 'dark' ? 'hsl(142, 71%, 45%)' : 'hsl(84, 100%, 49%)',
+      accentColor: theme === 'dark' ? 'hsl(316, 73%, 52%)' : 'hsl(316, 100%, 49%)',
       theme,
       setTheme
     }}>

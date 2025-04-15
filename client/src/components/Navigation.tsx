@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { PlusIcon, BookOpenIcon } from 'lucide-react';
 import { WoolBallIcon } from '../icons/WoolIcons';
 
@@ -9,9 +9,9 @@ interface NavigationProps {
 
 const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b">
       <Container>
         <div className="flex justify-between h-16">
           <div className="flex flex-shrink-0">
@@ -37,7 +37,7 @@ const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {
             </button>
           </div>
         </div>
-      </div>
+      </Container>
     </nav>
   );
 };
