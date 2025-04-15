@@ -3,6 +3,8 @@ import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
+import { Key, AlertCircle, ExternalLink } from 'lucide-react';
+import { getOrdinalSuffix } from '@/lib/dateUtils';
 import { Sparkles } from 'lucide-react';
 import { PatternInputFormData, Pattern } from '../lib/types';
 import PatternGenLoader from './PatternGenLoader';
@@ -210,8 +212,9 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       onPatternCreated(savedPattern);
       
       toast({
-        title: "Pattern Generated!",
-        description: `Your "${savedPattern.title}" pattern is ready.`,
+        title: "Pattern Generated Successfully!",
+        description: `Your "${savedPattern.title}" pattern is ready! You can now view the pattern details, instructions, and generate section images.`,
+        duration: 6000,
       });
     } catch (error) {
       console.error('Error generating pattern:', error);
@@ -224,56 +227,81 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       const isApiKeyError = errorString.includes('OPENAI_API_KEY') || 
                          errorString.includes('API key') || 
                          errorString.includes('authentication') || 
-                         errorString.includes('Unauthorized');
+                         errorString.includes('Unauthorized') || 
+                         errorString.includes('401') || 
+                         errorString.includes('403') || 
+                         errorString.includes('key invalid');
       
       if (isApiKeyError) {
         // Use the special API warning toast variant for API key issues
         toast({
-          title: "API Key Required",
-          description: "OpenAI API key is missing or invalid. Please add your OpenAI API key to continue with AI-powered pattern generation.",
+          title: "OpenAI API Key Required",
+          description: "To generate your crochet pattern, please add a valid OpenAI API key in your environment variables.",
           variant: "apiWarning",
-          action: (
-            <ToastAction altText="Get API Key">
-              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
-                Get API Key
-              </a>
-            </ToastAction>
-          ),
+          action: <ToastAction altText="Visit OpenAI" onClick={() => window.open('https://platform.openai.com/account/api-keys', '_blank')}>
+                   <Key className="mr-1 h-4 w-4" />Get API Key
+                </ToastAction>,
+          duration: 10000, // Show for longer (10 seconds)
         });
-      } else if (errorString.includes('rate limit') || errorString.includes('429')) {
-        errorDescription = "Rate limit exceeded. Please wait a moment and try again.";
+      } 
+      // Rate Limit Errors
+      else if (errorString.includes('rate limit') || errorString.includes('429')) {
         toast({
-          title: "Generation Failed",
-          description: errorDescription,
-          variant: "destructive"
+          title: "Rate Limit Reached",
+          description: "OpenAI API rate limit reached for pattern generation. Please try again in a few minutes when your quota resets.",
+          variant: "apiWarning",
+          duration: 8000,
         });
-      } else if (errorString.includes('network') || errorString.includes('timeout')) {
-        errorDescription = "Network error. Please check your connection and try again.";
+      } 
+      // Timeout Errors
+      else if (errorString.includes('timeout') || errorString.includes('timed out')) {
         toast({
-          title: "Generation Failed",
-          description: errorDescription,
-          variant: "destructive"
+          title: "Generation Timed Out",
+          description: "The pattern generation request timed out. Try a simpler description or check your network connection.",
+          variant: "apiWarning",
+          duration: 8000,
         });
-      } else if (errorString.includes('billing') || errorString.includes('quota')) {
-        errorDescription = "OpenAI account quota exceeded. Please check your OpenAI account billing status.";
+      }
+      // Network Errors
+      else if (errorString.includes('network') || errorString.includes('connection') || errorString.includes('ECONNRESET')) {
         toast({
-          title: "Generation Failed",
-          description: errorDescription,
-          variant: "destructive"
+          title: "Network Error",
+          description: "Could not connect to the OpenAI API. Please check your internet connection and try again.",
+          variant: "apiWarning",
+          duration: 8000,
         });
-      } else if (errorString.includes('content policy') || errorString.includes('violates')) {
-        errorDescription = "Content policy violation. Please modify your pattern description and try again.";
+      }
+      // Billing Errors
+      else if (errorString.includes('billing') || errorString.includes('payment') || errorString.includes('quota')) {
         toast({
-          title: "Generation Failed",
-          description: errorDescription,
-          variant: "destructive"
+          title: "OpenAI Billing Issue",
+          description: "There's a billing issue with your OpenAI account. Please check your payment information or usage quota.",
+          variant: "apiWarning",
+          action: <ToastAction altText="Check Billing" onClick={() => window.open('https://platform.openai.com/account/billing', '_blank')}>
+                    <ExternalLink className="mr-1 h-4 w-4" />Check Billing
+                 </ToastAction>,
+          duration: 10000,
         });
-      } else {
-        // Default error toast
+      }
+      // Content Policy Violations
+      else if (errorString.includes('content policy') || errorString.includes('safety') || errorString.includes('violation')) {
         toast({
-          title: "Generation Failed",
-          description: errorDescription,
-          variant: "destructive"
+          title: "Content Policy Violation",
+          description: "Your pattern request may violate OpenAI's content policy. Please ensure your description doesn't contain inappropriate content.",
+          variant: "apiWarning",
+          action: <ToastAction altText="Learn More" onClick={() => window.open('https://openai.com/policies/usage-policies', '_blank')}>
+                    <AlertCircle className="mr-1 h-4 w-4" />Learn More
+                 </ToastAction>,
+          duration: 10000,
+        });
+      } 
+      // Generic Fallback Error
+      else {
+        toast({
+          title: "Pattern Generation Failed",
+          description: `Could not generate your crochet pattern. Error details: ${errorString.substring(0, 50)}${errorString.length > 50 ? '...' : ''}`,
+          variant: "destructive",
+          duration: 6000,
         });
       }
     } finally {
