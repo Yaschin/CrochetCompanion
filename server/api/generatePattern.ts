@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import { generatePartImage } from "./generateImage";
+import { YarnRequirement } from "@shared/schema";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -38,7 +40,7 @@ export async function generatePattern(inputData: PatternInputData) {
     
     ${yarnType 
       ? `The pattern should use ${yarnType} yarn.` 
-      : 'If the user has not provided a yarn colour, please recommend a suitable wool colour for this crochet project and include it within the instructions.'}
+      : 'If the user has not provided a yarn colour, please recommend suitable wool colours for this crochet project and include them within the instructions.'}
     
     ${size ? `The finished item should be approximately ${size}.` : ''}
     
@@ -51,6 +53,8 @@ export async function generatePattern(inputData: PatternInputData) {
       "sections": [
         {
           "name": "Section name (e.g., Head, Body, etc.)",
+          "notes": "",
+          "locked": false,
           "steps": [
             {
               "id": 1,
@@ -60,6 +64,13 @@ export async function generatePattern(inputData: PatternInputData) {
           ]
         },
         ...more sections
+      ],
+      "yarnRequirements": [
+        {
+          "color": "Color name (e.g., Orange, Black)",
+          "volume": "Estimated amount needed (e.g., ~50g or ~80 yards)"
+        },
+        ...more colors
       ]
     }
   `;
@@ -88,17 +99,95 @@ export async function generatePattern(inputData: PatternInputData) {
       response_format: { type: "json_object" }
     });
 
-    const generatedPattern = JSON.parse(response.choices[0].message.content || "{}");
+    let generatedPattern = JSON.parse(response.choices[0].message.content || "{}");
+
+    // If yarn requirements aren't provided, calculate them
+    if (!generatedPattern.yarnRequirements || generatedPattern.yarnRequirements.length === 0) {
+      const yarnRequirements = await calculateYarnRequirements(generatedPattern, projectType);
+      generatedPattern.yarnRequirements = yarnRequirements;
+    }
     
     // For regeneration, merge with locked steps from the original pattern
     if (isRegeneration) {
-      return mergeWithLockedSteps(originalPattern, generatedPattern);
+      generatedPattern = mergeWithLockedSteps(originalPattern, generatedPattern);
+    } else {
+      // Generate part images for each section (only for new patterns)
+      generatedPattern = await generatePartImages(generatedPattern, projectType);
     }
     
     return generatedPattern;
   } catch (error) {
     console.error("Error generating pattern:", error);
     throw new Error("Failed to generate pattern with AI");
+  }
+}
+
+// Function to generate images for each pattern section
+async function generatePartImages(pattern: any, projectType: string): Promise<any> {
+  const updatedPattern = { ...pattern };
+  
+  try {
+    // Generate part images for each section in parallel
+    const sectionPromises = pattern.sections.map(async (section: any) => {
+      const prompt = `A simple illustration of the ${section.name.toLowerCase()} part of a crocheted ${projectType}`;
+      
+      try {
+        const imageUrl = await generatePartImage(prompt, section.name, projectType);
+        return {
+          ...section,
+          partImageUrl: imageUrl
+        };
+      } catch (error) {
+        console.error(`Error generating image for section ${section.name}:`, error);
+        return { ...section, partImageUrl: null };
+      }
+    });
+    
+    updatedPattern.sections = await Promise.all(sectionPromises);
+    return updatedPattern;
+  } catch (error) {
+    console.error("Error generating part images:", error);
+    return pattern; // Return original pattern if image generation fails
+  }
+}
+
+// Calculate yarn requirements based on the pattern
+async function calculateYarnRequirements(pattern: any, projectType: string): Promise<YarnRequirement[]> {
+  try {
+    // Count total steps and extract the pattern structure
+    const totalSteps = pattern.sections.reduce((count: number, section: any) => 
+      count + section.steps.length, 0);
+    
+    const patternSummary = pattern.sections.map((section: any) => {
+      return `${section.name}: ${section.steps.length} steps`;
+    }).join(", ");
+    
+    // Ask the AI to estimate yarn requirements
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert in crochet who can accurately estimate yarn requirements.
+            Given a pattern structure, estimate the amount of yarn needed for each color.
+            Return ONLY a JSON array with color names and volumes.` 
+        },
+        { 
+          role: "user", 
+          content: `For a ${projectType} with ${totalSteps} total steps divided into sections (${patternSummary}),
+            please estimate the yarn requirements. Return the result as a JSON array of objects with 'color' and 'volume' properties.
+            Example: [{"color": "Orange", "volume": "~50g"}, {"color": "Black", "volume": "~20g"}]` 
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+    
+    const result = JSON.parse(response.choices[0].message.content || "{}");
+    return result.yarnRequirements || [];
+  } catch (error) {
+    console.error("Error calculating yarn requirements:", error);
+    // Return a default requirement if calculation fails
+    return [{ color: "Main Color", volume: "~100g" }];
   }
 }
 
@@ -125,7 +214,12 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
   
   // Make sure sections match between original and new
   mergedPattern.sections = mergedPattern.sections.map((newSection: any, sectionIndex: number) => {
-    const originalSection = originalPattern.sections[sectionIndex] || { steps: [] };
+    const originalSection = originalPattern.sections[sectionIndex] || { 
+      steps: [],
+      notes: "",
+      locked: false,
+      partImageUrl: null
+    };
     
     // Merge steps, preserving locked ones from original
     const mergedSteps = newSection.steps.map((newStep: any, stepIndex: number) => {
@@ -145,6 +239,7 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
           count: originalStep.count || 0,
           notes: originalStep.notes || '',
           photo: originalStep.photo || null,
+          aiStepImage: originalStep.aiStepImage || null,
           completed: originalStep.completed || false
         };
       }
@@ -156,18 +251,34 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
         count: 0,
         notes: '',
         photo: null,
+        aiStepImage: null,
         completed: false
       };
     });
     
+    // If the section is locked in the original, preserve all its properties
+    if (originalSection.locked) {
+      return {
+        ...originalSection,
+        steps: mergedSteps
+      };
+    }
+    
+    // Otherwise merge the section data
     return {
       name: newSection.name,
+      notes: originalSection.notes || newSection.notes || "",
+      locked: originalSection.locked || false,
+      partImageUrl: originalSection.partImageUrl || null,
       steps: mergedSteps
     };
   });
   
+  // Merge other pattern properties, preserving original material notes
   return {
     ...originalPattern,
-    ...mergedPattern
+    ...mergedPattern,
+    materialsNotes: originalPattern.materialsNotes || "",
+    yarnRequirements: mergedPattern.yarnRequirements || originalPattern.yarnRequirements || []
   };
 }

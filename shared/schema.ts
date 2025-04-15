@@ -11,11 +11,40 @@ export const patterns = pgTable("patterns", {
   yarnType: text("yarnType"),
   size: text("size"),
   endProductImage: text("endProductImage"),
+  materialsNotes: text("materialsNotes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   sections: jsonb("sections").notNull(),
+  yarnRequirements: jsonb("yarnRequirements"),
 });
 
-// Create a simplified pattern structure for in-memory storage
+// Define yarn requirement
+export interface YarnRequirement {
+  color: string;
+  volume: string; // e.g., "~50g" or "~80 yards"
+}
+
+// Define pattern step with enhanced features
+export interface PatternStep {
+  id: number;
+  text: string;
+  locked: boolean;
+  count: number;
+  notes: string;
+  photo: string | null;
+  aiStepImage?: string | null;
+  completed: boolean;
+}
+
+// Define pattern section with enhanced features
+export interface PatternSection {
+  name: string;
+  notes: string;
+  locked: boolean;
+  partImageUrl?: string | null;
+  steps: PatternStep[];
+}
+
+// Create the pattern schema for validation
 export const patternSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -24,10 +53,14 @@ export const patternSchema = z.object({
   yarnType: z.string().optional(),
   size: z.string().optional(),
   endProductImage: z.string().optional(),
+  materialsNotes: z.string().optional().default(""),
   createdAt: z.string(),
   sections: z.array(
     z.object({
       name: z.string(),
+      notes: z.string().default(""),
+      locked: z.boolean().default(false),
+      partImageUrl: z.string().nullable().optional(),
       steps: z.array(
         z.object({
           id: z.number(),
@@ -42,6 +75,12 @@ export const patternSchema = z.object({
       ),
     })
   ),
+  yarnRequirements: z.array(
+    z.object({
+      color: z.string(),
+      volume: z.string(),
+    })
+  ).optional().default([]),
 });
 
 export const insertPatternSchema = createInsertSchema(patterns).omit({

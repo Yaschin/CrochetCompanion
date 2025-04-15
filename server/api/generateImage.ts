@@ -5,12 +5,13 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 interface ImageGenerationRequest {
   prompt: string;
-  type: "final" | "step";
+  type: "final" | "step" | "part";
   projectType?: string;
   yarnType?: string;
+  partName?: string;
 }
 
-export async function generateImage({ prompt, type, projectType, yarnType }: ImageGenerationRequest): Promise<string> {
+export async function generateImage({ prompt, type, projectType, yarnType, partName }: ImageGenerationRequest): Promise<string> {
   let enhancedPrompt = prompt;
 
   if (type === "final") {
@@ -21,6 +22,13 @@ export async function generateImage({ prompt, type, projectType, yarnType }: Ima
       Include visible crochet stitches and wool textures to clearly show this is a crocheted item. 
       Use a soft, warm lighting and neutral background to highlight the details of the crochet work.
       Make the image detailed enough to show the texture of the yarn.`;
+  } else if (type === "part") {
+    // For part images, create a focused view of just that part
+    enhancedPrompt = `Generate a simplified illustration of the ${partName?.toLowerCase() || prompt} 
+      part of a crocheted ${projectType || "item"}. 
+      Focus only on this specific part, using a simple, clean style with a white or light background.
+      Show the texture and stitches that make it recognizably crocheted.
+      Make the image easy to understand at a small thumbnail size.`;
   } else {
     // For step images, create instructional, diagrammatic visuals
     enhancedPrompt = `Generate a clear, instructional diagram illustrating: '${prompt}' 
@@ -44,4 +52,14 @@ export async function generateImage({ prompt, type, projectType, yarnType }: Ima
     console.error("Error generating image:", error);
     throw new Error("Failed to generate image with AI");
   }
+}
+
+// Generate an image for a specific part of the pattern
+export async function generatePartImage(prompt: string, partName: string, projectType: string): Promise<string> {
+  return generateImage({
+    prompt,
+    type: "part",
+    projectType,
+    partName
+  });
 }
