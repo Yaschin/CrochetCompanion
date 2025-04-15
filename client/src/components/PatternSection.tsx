@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { PatternSection as PatternSectionType, PatternStep } from '@/lib/types';
-import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon, Trash, FileDigit } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon, Trash, FileDigit, RefreshCw, Pencil, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import SectionImagePlaceholder from './SectionImagePlaceholder';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -9,6 +12,7 @@ interface PatternSectionProps {
   section: PatternSectionType;
   sectionIndex: number;
   isExpanded: boolean;
+  projectType?: string;
   onToggleExpand: () => void;
   onUpdateStep: (stepIndex: number, updatedStep: PatternStep) => void;
   onDeleteStep: (stepIndex: number) => void;
@@ -156,6 +160,7 @@ const PatternSection: React.FC<PatternSectionProps> = ({
   section,
   sectionIndex,
   isExpanded,
+  projectType,
   onToggleExpand,
   onUpdateStep,
   onDeleteStep,
@@ -190,6 +195,8 @@ const PatternSection: React.FC<PatternSectionProps> = ({
   // States for diagram generation 
   const { toast } = useToast();
   const [isGeneratingDiagram, setIsGeneratingDiagram] = useState(false);
+  const [isDiagramDialogOpen, setIsDiagramDialogOpen] = useState(false);
+  const [diagramRefinementPrompt, setDiagramRefinementPrompt] = useState('');
   
   // Handle section image generation
   const handleSectionImageGenerated = (imageUrl: string) => {
@@ -199,16 +206,32 @@ const PatternSection: React.FC<PatternSectionProps> = ({
     });
   };
   
+  // Open dialog for diagram refinement
+  const openDiagramRefinementDialog = () => {
+    const basePrompt = `Crochet stitch diagram for the ${section.name} section of a ${projectType || 'crochet project'} - ${section.steps.map(s => s.text).slice(0, 3).join(". ")}`;
+    setDiagramRefinementPrompt(`${basePrompt}. Make sure to include the following specific details and improvements:`);
+    setIsDiagramDialogOpen(true);
+  };
+
+  // Generate diagram with refinements
+  const handleRegenerateDiagramWithRefinements = () => {
+    if (!diagramRefinementPrompt.trim()) return;
+    generateSectionDiagram(diagramRefinementPrompt);
+  };
+
   // Generate stitch diagram for this section
-  const generateSectionDiagram = async () => {
+  const generateSectionDiagram = async (customPrompt?: string) => {
     if (isGeneratingDiagram) return;
     
     setIsGeneratingDiagram(true);
+    setIsDiagramDialogOpen(false);
+    
     try {
       console.log("Generating stitch diagram for section:", section.name);
       const response = await apiRequest('POST', '/api/generate-image', {
-        prompt: `Crochet diagram for ${section.name} section - ${section.steps.map(s => s.text).slice(0, 3).join(". ")}`,
+        prompt: customPrompt || `Crochet stitch diagram for the ${section.name} section of a ${projectType || 'crochet project'} - ${section.steps.map(s => s.text).slice(0, 3).join(". ")}`,
         type: 'diagram',
+        projectType,
       });
       
       const data = await response.json();
@@ -309,7 +332,7 @@ const PatternSection: React.FC<PatternSectionProps> = ({
           
           {/* Diagram button */}
           <button
-            onClick={generateSectionDiagram}
+            onClick={() => generateSectionDiagram()}
             disabled={isGeneratingDiagram}
             className={`p-1 rounded ${
               section.diagramUrl ? 'text-blue-500 hover:bg-blue-50' : 'text-gray-500 hover:bg-gray-100'
@@ -386,24 +409,45 @@ const PatternSection: React.FC<PatternSectionProps> = ({
               sectionName={section.name}
               partImageUrl={section.partImageUrl || null}
               onImageGenerated={handleSectionImageGenerated}
+              projectType={projectType}
             />
           </div>
           
           {/* Section Stitch Diagram Display */}
           {section.diagramUrl && (
             <div className="px-2 mb-3">
-              <div className="border border-gray-200 bg-white p-2 rounded-md">
+              <div className="relative border border-gray-200 bg-white p-2 rounded-md">
                 <h4 className="text-xs font-medium text-secondary-700 mb-1">Stitch Diagram</h4>
-                <img 
-                  src={section.diagramUrl} 
-                  alt={`Stitch diagram for ${section.name}`}
-                  className="w-full rounded"
-                />
-                {isGeneratingDiagram && (
-                  <div className="mt-1 text-xs text-blue-500 text-center">
-                    Generating new diagram...
-                  </div>
-                )}
+                <div className="relative">
+                  <img 
+                    src={section.diagramUrl} 
+                    alt={`Stitch diagram for ${section.name}`}
+                    className="w-full rounded"
+                  />
+                  {!isGeneratingDiagram && (
+                    <div className="absolute bottom-2 right-2 flex space-x-1">
+                      <button
+                        onClick={openDiagramRefinementDialog}
+                        className="p-1 bg-black/70 hover:bg-black/80 text-white rounded-full"
+                        title="Refine and regenerate diagram"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => generateSectionDiagram()}
+                        className="p-1 bg-black/70 hover:bg-black/80 text-white rounded-full"
+                        title="Regenerate diagram"
+                      >
+                        <RefreshCw size={14} />
+                      </button>
+                    </div>
+                  )}
+                  {isGeneratingDiagram && (
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                      <Loader2 className="h-8 w-8 text-white animate-spin" />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
