@@ -22,10 +22,13 @@ const PatternGenLoader: React.FC<PatternGenLoaderProps> = React.memo(({ stage, p
     complete: 100
   };
 
-  const currentProgress = progress > 0 ? progress : stagePercent[stage];
+  const currentProgress = useMemo(() => 
+    progress > 0 ? progress : stagePercent[stage],
+    [progress, stage, stagePercent]
+  );
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 my-4 bg-primary-50 rounded-xl border border-primary-100">
+    <div className="flex flex-col items-center justify-center p-6 my-4 bg-primary-50 rounded-xl border border-primary-100 will-change-transform">
       <div className="relative flex items-center mb-5">
         <YarnIcon className="animate-bounce text-primary h-6 w-6 mr-3" />
         <h3 className="text-lg font-medium text-primary-700">

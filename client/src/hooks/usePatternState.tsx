@@ -121,17 +121,17 @@ export function usePatternState(initialPattern?: Pattern) {
   const calculateProgress = useCallback(() => {
     if (!pattern) return { completedSteps: 0, totalSteps: 0, percentComplete: 0 };
 
-    let completedCount = 0;
-    let totalCount = 0;
-
-    pattern.sections.forEach(section => {
-      section.steps.forEach(step => {
-        totalCount++;
-        if (step.completed) {
-          completedCount++;
-        }
-      });
-    });
+    const counts = pattern.sections.reduce((acc, section) => {
+      const sectionCounts = section.steps.reduce((stepAcc, step) => ({
+        total: stepAcc.total + 1,
+        completed: stepAcc.completed + (step.completed ? 1 : 0)
+      }), { total: 0, completed: 0 });
+      
+      return {
+        total: acc.total + sectionCounts.total,
+        completed: acc.completed + sectionCounts.completed
+      };
+    }, { total: 0, completed: 0 });
 
     return {
       completedSteps: completedCount,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -19,11 +19,20 @@ interface PatternViewerProps {
 
 const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated }) => {
   const { toast } = useToast();
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set([pattern.sections[0]?.name]));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set([pattern.sections[0]?.name]));
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [imageRefinements, setImageRefinements] = useState('');
+  const regenerationTimeoutRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    return () => {
+      if (regenerationTimeoutRef.current) {
+        clearTimeout(regenerationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Format the creation date
   const formattedDate = new Date(pattern.createdAt).toLocaleDateString();
@@ -81,7 +90,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       });
     },
   });
-  
+
   // Regenerate product image mutation
   const regenerateImageMutation = useMutation({
     mutationFn: async (data: { patternId: string; refinements?: string }) => {
@@ -156,7 +165,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const addStep = (sectionIndex: number) => {
     const updatedSections = [...pattern.sections];
     const newStepId = Math.max(...updatedSections[sectionIndex].steps.map(s => s.id), 0) + 1;
-    
+
     updatedSections[sectionIndex] = {
       ...updatedSections[sectionIndex],
       steps: [
@@ -206,7 +215,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     };
 
     updatePatternMutation.mutate(updatedPattern);
-    
+
     // Expand the new section
     setExpandedSections(prev => new Set(prev).add(newSectionName));
   };
@@ -223,12 +232,12 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       setIsRegenerating(false);
     }
   };
-  
+
   // Handle product image regeneration
   const handleRegenerateImage = async () => {
     setImageDialogOpen(true);
   };
-  
+
   // Handle the image dialog submit
   const handleImageRefinementSubmit = async () => {
     setIsRegeneratingImage(true);
@@ -250,17 +259,17 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     exportText += `Skill Level: ${pattern.skillLevel}\n`;
     if (pattern.yarnType) exportText += `Yarn Type: ${pattern.yarnType}\n`;
     if (pattern.size) exportText += `Size: ${pattern.size}\n\n`;
-    
+
     pattern.sections.forEach(section => {
       exportText += `## ${section.name}\n\n`;
-      
+
       section.steps.forEach(step => {
         exportText += `${step.id}. ${step.text}\n`;
         if (step.notes) exportText += `   Notes: ${step.notes}\n`;
         exportText += '\n';
       });
     });
-    
+
     // Create a download link
     const blob = new Blob([exportText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -313,7 +322,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             )}
           </div>
         </div>
-        
+
         <div className="flex space-x-2">
           <button 
             type="button" 
@@ -355,7 +364,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
           </p>
         </div>
       )}
-      
+
       {/* Image Regeneration Dialog */}
       <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -365,7 +374,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
               Provide additional details to refine the image. The AI will generate a new multi-view image (front, side, back) based on your suggestions.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="imageRefinements" className="col-span-4">
@@ -380,7 +389,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
               />
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button 
               type="button" 
