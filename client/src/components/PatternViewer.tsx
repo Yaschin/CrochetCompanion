@@ -334,16 +334,81 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
 
       {/* Final Product Image */}
       {pattern.endProductImage && (
-        <div className="mb-8">
+        <div className="mb-8 relative group">
           <div className="rounded-xl overflow-hidden bg-gray-100 h-64 md:h-80 flex items-center justify-center">
             <img 
               src={pattern.endProductImage} 
               alt={pattern.title} 
               className="object-contain h-full w-full"
             />
+            <button
+              type="button"
+              onClick={handleRegenerateImage}
+              className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+              aria-label="Regenerate image"
+            >
+              <RefreshCw className="h-5 w-5 text-primary" />
+            </button>
           </div>
+          <p className="text-xs text-gray-500 mt-1 text-center">
+            Multi-view crochet pattern visualization (front, side, back)
+          </p>
         </div>
       )}
+      
+      {/* Image Regeneration Dialog */}
+      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Regenerate Pattern Image</DialogTitle>
+            <DialogDescription>
+              Provide additional details to refine the image. The AI will generate a new multi-view image (front, side, back) based on your suggestions.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="imageRefinements" className="col-span-4">
+                Refinements
+              </Label>
+              <Input
+                id="imageRefinements"
+                placeholder="e.g., more texture details, pastel colors, change background to white"
+                className="col-span-4"
+                value={imageRefinements}
+                onChange={(e) => setImageRefinements(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setImageDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isRegeneratingImage} 
+              onClick={handleImageRefinementSubmit}
+            >
+              {isRegeneratingImage ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Image className="h-4 w-4 mr-2" />
+                  Generate Image
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Pattern Progress Bar */}
       <PatternProgressBar sections={pattern.sections} />
