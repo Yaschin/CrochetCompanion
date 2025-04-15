@@ -1,11 +1,11 @@
 import { FC, useState } from 'react';
-import { PlusIcon, BookOpenIcon, PackageIcon } from 'lucide-react';
+import { PlusIcon, BookOpenIcon, PackageIcon, CalendarIcon } from 'lucide-react';
 import { WoolBallIcon } from '../icons/WoolIcons';
 import { cn } from '../lib/utils';
 
 interface NavigationProps {
   activeView: string;
-  onNavigate: (view: 'input' | 'viewer' | 'library' | 'stash') => void;
+  onNavigate: (view: 'input' | 'viewer' | 'library' | 'stash' | 'calendar') => void;
 }
 
 const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {
@@ -54,6 +54,17 @@ const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {
             >
               <PackageIcon className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" />
               <span className="hidden sm:inline font-medium">My Stash</span>
+            </button>
+            <button 
+              onClick={() => onNavigate('calendar')}
+              className={`flex items-center px-2 sm:px-3 py-1 sm:py-2 rounded-full border ${
+                activeView === 'calendar' 
+                  ? 'bg-primary-100 border-primary-300 text-primary' 
+                  : 'border-gray-300 text-gray-600 hover:bg-gray-100'
+              } transition-colors`}
+            >
+              <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" />
+              <span className="hidden sm:inline font-medium">Planner</span>
             </button>
           </div>
         </div>

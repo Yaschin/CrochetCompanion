@@ -121,6 +121,10 @@ function App() {
           {activeView === "stash" && (
             <YarnStash />
           )}
+          
+          {activeView === "calendar" && (
+            <CalendarPlanner />
+          )}
         </main>
       </div>
       <Toaster />
