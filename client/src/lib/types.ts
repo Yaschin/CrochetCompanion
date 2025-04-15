@@ -12,6 +12,7 @@ export interface PatternStep {
   notes: string;
   photo: string | null;
   aiStepImage?: string | null;
+  diagramUrl?: string | null;
   completed: boolean;
 }
 

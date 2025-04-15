@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { PatternSection as PatternSectionType, PatternStep } from '@/lib/types';
-import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon, Trash } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon, Trash, FileDigit } from 'lucide-react';
 import SectionImagePlaceholder from './SectionImagePlaceholder';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 interface PatternSectionProps {
   section: PatternSectionType;
@@ -21,8 +23,46 @@ const StepRow: React.FC<{
   onUpdate: (updatedStep: PatternStep) => void;
   onDelete: () => void;
 }> = ({ step, stepIndex, onUpdate, onDelete }) => {
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(step.text);
+  const [isGeneratingDiagram, setIsGeneratingDiagram] = useState(false);
+  
+  // Function to generate stitch diagram
+  const generateStitchDiagram = async () => {
+    if (isGeneratingDiagram) return;
+    
+    setIsGeneratingDiagram(true);
+    try {
+      const response = await apiRequest('POST', '/api/generate-image', {
+        prompt: step.text,
+        type: 'diagram',
+      });
+      
+      const data = await response.json();
+      
+      if (data.url) {
+        onUpdate({
+          ...step,
+          diagramUrl: data.url
+        });
+        
+        toast({
+          title: "Stitch Diagram Generated",
+          description: "Your diagram has been created successfully.",
+        });
+      }
+    } catch (error) {
+      console.error('Error generating stitch diagram:', error);
+      toast({
+        title: "Diagram Generation Failed",
+        description: "There was an error creating the stitch diagram. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingDiagram(false);
+    }
+  };
   
   const toggleComplete = () => {
     onUpdate({
@@ -70,9 +110,22 @@ const StepRow: React.FC<{
           />
         </div>
       ) : (
-        <div className={`flex-grow ${step.completed ? 'line-through text-gray-400' : ''}`}>
-          <span className="font-medium text-gray-500 mr-2">{step.id}.</span>
-          {step.text}
+        <div className="flex-grow">
+          <div className={`${step.completed ? 'line-through text-gray-400' : ''}`}>
+            <span className="font-medium text-gray-500 mr-2">{step.id}.</span>
+            {step.text}
+          </div>
+          
+          {/* Stitch Diagram Display (only if available) */}
+          {step.diagramUrl && (
+            <div className="mt-2 mb-1">
+              <img 
+                src={step.diagramUrl} 
+                alt={`Diagram for step ${step.id}`}
+                className="max-h-48 rounded border border-gray-200 shadow-sm"
+              />
+            </div>
+          )}
         </div>
       )}
       
@@ -109,6 +162,21 @@ const StepRow: React.FC<{
               title={step.locked ? "Unlock step" : "Lock step"}
             >
               {step.locked ? <Lock size={14} /> : <Unlock size={14} />}
+            </button>
+            <button
+              onClick={generateStitchDiagram}
+              disabled={isGeneratingDiagram}
+              className={`
+                ${step.diagramUrl ? 'text-blue-500' : 'text-gray-400'} 
+                hover:text-blue-600 p-0.5
+                ${isGeneratingDiagram ? 'opacity-50 cursor-not-allowed' : ''}
+              `}
+              title={step.diagramUrl ? "Regenerate stitch diagram" : "Generate stitch diagram"}
+            >
+              <FileDigit size={14} />
+              {isGeneratingDiagram && (
+                <span className="ml-1 text-xs">Generating...</span>
+              )}
             </button>
             <button
               onClick={onDelete}

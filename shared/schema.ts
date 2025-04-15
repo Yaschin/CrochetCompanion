@@ -32,6 +32,7 @@ export interface PatternStep {
   notes: string;
   photo: string | null;
   aiStepImage?: string | null;
+  diagramUrl?: string | null;
   completed: boolean;
 }
 
@@ -70,6 +71,7 @@ export const patternSchema = z.object({
           notes: z.string().default(""),
           photo: z.string().nullable().optional(),
           aiStepImage: z.string().nullable().optional(),
+          diagramUrl: z.string().nullable().optional(),
           completed: z.boolean().default(false),
         })
       ),
