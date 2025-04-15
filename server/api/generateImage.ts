@@ -1,12 +1,14 @@
 import OpenAI from "openai";
 
 // Check if OpenAI API key is available
-if (!process.env.OPENAI_API_KEY) {
-  console.error("ERROR: OPENAI_API_KEY environment variable is not set. Image generation will fail.");
+const API_KEY_AVAILABLE = Boolean(process.env.OPENAI_API_KEY);
+
+if (!API_KEY_AVAILABLE) {
+  console.error("ERROR: OPENAI_API_KEY environment variable is not set. Using fallback placeholders for all images.");
 }
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Initialize OpenAI only if API key is available
+const openai = API_KEY_AVAILABLE ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 interface ImageGenerationRequest {
   prompt: string;
@@ -17,6 +19,12 @@ interface ImageGenerationRequest {
 }
 
 export async function generateImage({ prompt, type, projectType, yarnType, partName }: ImageGenerationRequest): Promise<string> {
+  // If API key is not available, return appropriate placeholder based on image type
+  if (!API_KEY_AVAILABLE) {
+    console.log(`OpenAI API key not available. Returning placeholder for ${type} image.`);
+    return getPlaceholderImage(type, prompt, partName);
+  }
+  
   let enhancedPrompt = prompt;
 
   if (type === "final") {
@@ -69,6 +77,10 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
         await new Promise(resolve => setTimeout(resolve, delayMs));
       }
 
+      if (!openai) {
+        throw new Error("OpenAI client is not initialized - API key missing");
+      }
+
       const response = await openai.images.generate({
         model: "dall-e-3",
         prompt: enhancedPrompt,
@@ -87,14 +99,9 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
       
       // If it's not a rate limit error or this is our last attempt, don't retry
       if (!isRateLimit || attempt === maxRetries - 1) {
-        // For part images, provide a fallback image URL instead of empty string
-        if (type === "part") {
-          console.log("Using fallback for part image due to generation failures");
-          return "https://placehold.co/400x400/f8f9fa/6c757d?text=Image+Generation+Failed"; // Return a placeholder with error text
-        }
-        
-        // For main product images, we need to fail
-        throw new Error("Failed to generate image with AI");
+        // Return appropriate placeholder based on image type
+        console.log(`Using fallback for ${type} image due to generation failures`);
+        return getPlaceholderImage(type, prompt, partName);
       }
       
       // Otherwise, we'll continue to the next iteration and retry
@@ -102,7 +109,27 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
   }
   
   // For type safety, even though this code is unreachable
-  throw new Error("Failed to generate image with AI after retries");
+  return getPlaceholderImage(type, prompt, partName);
+}
+
+/**
+ * Get appropriate placeholder image based on image type
+ */
+function getPlaceholderImage(type: string, prompt: string, partName?: string): string {
+  const baseUrl = "https://placehold.co";
+  
+  switch (type) {
+    case "final":
+      return `${baseUrl}/1024x1024/f2e6ff/6c4ea6?text=Product+Image+Unavailable`;
+    case "part":
+      const partText = partName ? partName.replace(/\s+/g, '+') : 'Part';
+      return `${baseUrl}/400x400/f8f9fa/6c757d?text=${partText}+Image+Unavailable`;
+    case "diagram":
+      return `${baseUrl}/600x600/fffcf0/8a7340?text=Stitch+Diagram+Unavailable`;
+    case "step":
+    default:
+      return `${baseUrl}/600x400/f0f6ff/3a5c8a?text=Step+Instruction+Image+Unavailable`;
+  }
 }
 
 // Generate an image for a specific part of the pattern
