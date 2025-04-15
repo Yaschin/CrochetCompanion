@@ -659,8 +659,16 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
   return {
     title,
     description: `⚠️ AI GENERATION UNAVAILABLE: This is a basic ${skillLevel} level ${projectType} template. 
-    To generate complete custom patterns, please add an OpenAI API key to your environment variables.
-    Visit https://platform.openai.com to obtain an API key.`,
+    To generate complete custom patterns with AI, please follow these steps:
+
+    1. Visit https://platform.openai.com to create an account and obtain an API key
+    2. Add the API key to your environment variables:
+       - In Replit projects: Use the "Secrets" tool in the Tools panel
+       - Add a new secret with the key "OPENAI_API_KEY" and your key as the value
+       - The key should start with "sk-" followed by a string of characters
+    3. Refresh the page once the key is added to activate AI features
+
+    This template pattern will be replaced with a custom AI-generated pattern once a valid API key is added.`,
     projectType,
     skillLevel,
     yarnRequirements,
@@ -674,8 +682,6 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
       { name: "Stitch markers", description: "For marking rounds/sections" }
     ],
     sections,
-    materialsNotes: `NOTE: This is a basic template pattern. For full AI-generated custom patterns with detailed steps, 
-    please add your OpenAI API key to the OPENAI_API_KEY environment variable. This template provides a starting point with a 
-    ${hookSize} hook and worsted weight yarn.`
+    materialsNotes: `⚠️ OpenAI API KEY REQUIRED: This is a template pattern only. For a complete AI-generated pattern with detailed materials list and instructions, please add your OpenAI API key to your environment variables. Once added, regenerate the pattern to unlock all AI features. This template uses a ${hookSize} hook and worsted weight yarn as a starting point.`
   };
 }
