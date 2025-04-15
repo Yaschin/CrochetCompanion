@@ -7,6 +7,13 @@ import { apiRequest } from '@/lib/queryClient';
 export function usePatternState(initialPattern?: Pattern) {
   const { toast } = useToast();
   const [pattern, setPattern] = useState<Pattern | undefined>(initialPattern);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Update pattern in database
   const updatePatternMutation = useMutation({

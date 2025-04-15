@@ -24,8 +24,10 @@ const PatternGenLoader: React.FC<PatternGenLoaderProps> = React.memo(({ stage, p
 
   const currentProgress = useMemo(() => 
     progress > 0 ? progress : stagePercent[stage],
-    [progress, stage, stagePercent]
+    [progress, stage]
   );
+
+  const debouncedProgress = useDebounce(currentProgress, 100);
 
   return (
     <div className="flex flex-col items-center justify-center p-6 my-4 bg-primary-50 rounded-xl border border-primary-100 will-change-transform">
