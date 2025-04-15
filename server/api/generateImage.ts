@@ -5,7 +5,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 interface ImageGenerationRequest {
   prompt: string;
-  type: "final" | "step" | "part";
+  type: "final" | "step" | "part" | "diagram";
   projectType?: string;
   yarnType?: string;
   partName?: string;
@@ -32,6 +32,16 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
       Focus only on this specific part, using a simple, clean style with a white or light background.
       Show the texture and stitches that make it recognizably crocheted.
       Make the image easy to understand at a small thumbnail size.`;
+  } else if (type === "diagram") {
+    // For stitch diagrams, create a technical diagram with standard crochet notation
+    enhancedPrompt = `Create a clear, technical crochet stitch diagram for: "${prompt}".
+      Use standard crochet diagram notation (symbols) on a grid background.
+      Include a legend explaining the symbols used.
+      Make the diagram clean, precise, and professional looking with black symbols on white background.
+      Arrange the stitches to show the pattern repeat clearly.
+      Label the diagram with the stitch name.
+      This should be a top-down technical diagram, not a realistic image of yarn.
+      Add row numbers on the left side if showing multiple rows.`;
   } else {
     // For step images, create instructional, diagrammatic visuals
     enhancedPrompt = `Generate a clear, instructional diagram illustrating: '${prompt}' 
@@ -96,5 +106,13 @@ export async function generatePartImage(prompt: string, partName: string, projec
     type: "part",
     projectType,
     partName
+  });
+}
+
+// Generate a stitch diagram for a crochet step
+export async function generateStitchDiagram(stepText: string): Promise<string> {
+  return generateImage({
+    prompt: stepText,
+    type: "diagram"
   });
 }

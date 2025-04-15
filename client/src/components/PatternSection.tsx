@@ -34,12 +34,14 @@ const StepRow: React.FC<{
     
     setIsGeneratingDiagram(true);
     try {
+      console.log("Generating stitch diagram for:", step.text);
       const response = await apiRequest('POST', '/api/generate-image', {
         prompt: step.text,
         type: 'diagram',
       });
       
       const data = await response.json();
+      console.log("Diagram generation response:", data);
       
       if (data.url) {
         onUpdate({
