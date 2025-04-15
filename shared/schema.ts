@@ -42,6 +42,7 @@ export interface PatternSection {
   notes: string;
   locked: boolean;
   partImageUrl?: string | null;
+  diagramUrl?: string | null;
   steps: PatternStep[];
 }
 
@@ -62,6 +63,7 @@ export const patternSchema = z.object({
       notes: z.string().default(""),
       locked: z.boolean().default(false),
       partImageUrl: z.string().nullable().optional(),
+      diagramUrl: z.string().nullable().optional(),
       steps: z.array(
         z.object({
           id: z.number(),

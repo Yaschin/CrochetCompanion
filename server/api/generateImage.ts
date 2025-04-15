@@ -17,14 +17,15 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
   if (type === "final") {
     // For final product images, create a more detailed prompt that emphasizes crochet aesthetic
     // and includes multiple views (front, side, back)
-    enhancedPrompt = `Generate a digital illustration showing three views (front, side, and back) of ${prompt} ${projectType ? `(a crocheted ${projectType})` : ""} 
-      in a cute, hand-crafted style with warm pastel tones. 
+    enhancedPrompt = `Create a detailed digital illustration showing exactly three views (front, side, and back) of ${prompt} ${projectType ? `(a crocheted ${projectType})` : ""}.
+      Use a cute, hand-crafted style with warm pastel tones and a clean, light background.
       ${yarnType ? `Made with ${yarnType} wool. ` : ""} 
-      Arrange the three views side by side in a single image to show how the item looks from different angles.
-      Label each view discreetly with "Front View", "Side View", and "Back View".
-      Include visible crochet stitches and wool textures to clearly show this is a crocheted item. 
-      Use a soft, warm lighting and neutral background to highlight the details of the crochet work.
-      Make the image detailed enough to show the texture of the yarn.`;
+      Important: Place the three views side by side in this exact order: front view on the left, side view in the middle, and back view on the right.
+      Add clear labels directly below each view saying "Front", "Side", and "Back" respectively.
+      Show detailed crochet stitches and yarn texture to make it obviously a crocheted item.
+      Use consistent lighting across all three views to ensure they look like the same object.
+      Make all three views the exact same scale and from the same distance.
+      Make the image clean, professional, and suitable for a crochet pattern guide.`;
   } else if (type === "part") {
     // For part images, create a focused view of just that part
     enhancedPrompt = `Generate a simplified illustration of the ${partName?.toLowerCase() || prompt} 

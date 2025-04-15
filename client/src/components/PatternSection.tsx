@@ -23,48 +23,8 @@ const StepRow: React.FC<{
   onUpdate: (updatedStep: PatternStep) => void;
   onDelete: () => void;
 }> = ({ step, stepIndex, onUpdate, onDelete }) => {
-  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(step.text);
-  const [isGeneratingDiagram, setIsGeneratingDiagram] = useState(false);
-  
-  // Function to generate stitch diagram
-  const generateStitchDiagram = async () => {
-    if (isGeneratingDiagram) return;
-    
-    setIsGeneratingDiagram(true);
-    try {
-      console.log("Generating stitch diagram for:", step.text);
-      const response = await apiRequest('POST', '/api/generate-image', {
-        prompt: step.text,
-        type: 'diagram',
-      });
-      
-      const data = await response.json();
-      console.log("Diagram generation response:", data);
-      
-      if (data.url) {
-        onUpdate({
-          ...step,
-          diagramUrl: data.url
-        });
-        
-        toast({
-          title: "Stitch Diagram Generated",
-          description: "Your diagram has been created successfully.",
-        });
-      }
-    } catch (error) {
-      console.error('Error generating stitch diagram:', error);
-      toast({
-        title: "Diagram Generation Failed",
-        description: "There was an error creating the stitch diagram. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingDiagram(false);
-    }
-  };
   
   const toggleComplete = () => {
     onUpdate({
@@ -117,17 +77,6 @@ const StepRow: React.FC<{
             <span className="font-medium text-gray-500 mr-2">{step.id}.</span>
             {step.text}
           </div>
-          
-          {/* Stitch Diagram Display (only if available) */}
-          {step.diagramUrl && (
-            <div className="mt-2 mb-1">
-              <img 
-                src={step.diagramUrl} 
-                alt={`Diagram for step ${step.id}`}
-                className="max-h-48 rounded border border-gray-200 shadow-sm"
-              />
-            </div>
-          )}
         </div>
       )}
       
@@ -164,21 +113,6 @@ const StepRow: React.FC<{
               title={step.locked ? "Unlock step" : "Lock step"}
             >
               {step.locked ? <Lock size={14} /> : <Unlock size={14} />}
-            </button>
-            <button
-              onClick={generateStitchDiagram}
-              disabled={isGeneratingDiagram}
-              className={`
-                ${step.diagramUrl ? 'text-blue-500' : 'text-gray-400'} 
-                hover:text-blue-600 p-0.5
-                ${isGeneratingDiagram ? 'opacity-50 cursor-not-allowed' : ''}
-              `}
-              title={step.diagramUrl ? "Regenerate stitch diagram" : "Generate stitch diagram"}
-            >
-              <FileDigit size={14} />
-              {isGeneratingDiagram && (
-                <span className="ml-1 text-xs">Generating...</span>
-              )}
             </button>
             <button
               onClick={onDelete}
@@ -253,12 +187,54 @@ const PatternSection: React.FC<PatternSectionProps> = ({
     setIsEditingNotes(false);
   };
 
+  // States for diagram generation 
+  const { toast } = useToast();
+  const [isGeneratingDiagram, setIsGeneratingDiagram] = useState(false);
+  
   // Handle section image generation
   const handleSectionImageGenerated = (imageUrl: string) => {
     onUpdateSection({
       ...section,
       partImageUrl: imageUrl
     });
+  };
+  
+  // Generate stitch diagram for this section
+  const generateSectionDiagram = async () => {
+    if (isGeneratingDiagram) return;
+    
+    setIsGeneratingDiagram(true);
+    try {
+      console.log("Generating stitch diagram for section:", section.name);
+      const response = await apiRequest('POST', '/api/generate-image', {
+        prompt: `Crochet diagram for ${section.name} section - ${section.steps.map(s => s.text).slice(0, 3).join(". ")}`,
+        type: 'diagram',
+      });
+      
+      const data = await response.json();
+      console.log("Diagram generation response:", data);
+      
+      if (data.url) {
+        onUpdateSection({
+          ...section,
+          diagramUrl: data.url
+        });
+        
+        toast({
+          title: "Stitch Diagram Generated",
+          description: "Diagram for this section has been created successfully.",
+        });
+      }
+    } catch (error) {
+      console.error('Error generating stitch diagram:', error);
+      toast({
+        title: "Diagram Generation Failed",
+        description: "There was an error creating the stitch diagram. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingDiagram(false);
+    }
   };
 
   // Calculate completion stats for this section
@@ -316,7 +292,7 @@ const PatternSection: React.FC<PatternSectionProps> = ({
         </div>
         
         {/* Section Actions */}
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-1 flex-nowrap">
           {/* Notes button */}
           <button 
             className={`p-1 rounded ${
@@ -329,6 +305,18 @@ const PatternSection: React.FC<PatternSectionProps> = ({
             title="Section Notes"
           >
             <StickyNote size={14} />
+          </button>
+          
+          {/* Diagram button */}
+          <button
+            onClick={generateSectionDiagram}
+            disabled={isGeneratingDiagram}
+            className={`p-1 rounded ${
+              section.diagramUrl ? 'text-blue-500 hover:bg-blue-50' : 'text-gray-500 hover:bg-gray-100'
+            } ${isGeneratingDiagram ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title={section.diagramUrl ? "Regenerate Stitch Diagram" : "Generate Stitch Diagram"}
+          >
+            <FileDigit size={14} />
           </button>
           
           {/* Lock/Unlock button */}
@@ -400,6 +388,25 @@ const PatternSection: React.FC<PatternSectionProps> = ({
               onImageGenerated={handleSectionImageGenerated}
             />
           </div>
+          
+          {/* Section Stitch Diagram Display */}
+          {section.diagramUrl && (
+            <div className="px-2 mb-3">
+              <div className="border border-gray-200 bg-white p-2 rounded-md">
+                <h4 className="text-xs font-medium text-secondary-700 mb-1">Stitch Diagram</h4>
+                <img 
+                  src={section.diagramUrl} 
+                  alt={`Stitch diagram for ${section.name}`}
+                  className="w-full rounded"
+                />
+                {isGeneratingDiagram && (
+                  <div className="mt-1 text-xs text-blue-500 text-center">
+                    Generating new diagram...
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="divide-y divide-gray-50">
             {section.steps.map((step, stepIndex) => (

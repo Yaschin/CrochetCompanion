@@ -21,6 +21,7 @@ export interface PatternSection {
   notes: string;
   locked: boolean;
   partImageUrl?: string | null;
+  diagramUrl?: string | null;
   steps: PatternStep[];
   patternId?: string;
 }
