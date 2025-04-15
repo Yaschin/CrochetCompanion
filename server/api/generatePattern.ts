@@ -2,15 +2,21 @@ import OpenAI from "openai";
 import { generatePartImage } from "./generateImage";
 import { YarnRequirement } from "@shared/schema";
 
-// Check if OpenAI API key is available
-const API_KEY_AVAILABLE = Boolean(process.env.OPENAI_API_KEY);
+// Check if OpenAI API key is available and validate its format
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const API_KEY_AVAILABLE = Boolean(OPENAI_API_KEY);
+const API_KEY_VALID_FORMAT = /^sk-[A-Za-z0-9]{32,}$/.test(OPENAI_API_KEY);
 
 if (!API_KEY_AVAILABLE) {
   console.error("ERROR: OPENAI_API_KEY environment variable is not set. Using fallback template for pattern generation.");
+} else if (!API_KEY_VALID_FORMAT) {
+  console.error("ERROR: OPENAI_API_KEY appears to be invalid (should start with 'sk-' followed by at least 32 characters). Using fallback template for pattern generation.");
 }
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = API_KEY_AVAILABLE ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+const openai = (API_KEY_AVAILABLE && API_KEY_VALID_FORMAT) 
+  ? new OpenAI({ apiKey: OPENAI_API_KEY }) 
+  : null;
 
 interface PatternInputData {
   prompt: string;
@@ -35,9 +41,9 @@ export async function generatePattern(inputData: PatternInputData) {
     originalPattern 
   } = inputData;
 
-  // If API key is not available, return a fallback template pattern
-  if (!API_KEY_AVAILABLE) {
-    console.log("OpenAI API key not available. Returning fallback pattern template.");
+  // If API key is not available or invalid, return a fallback template pattern
+  if (!API_KEY_AVAILABLE || !API_KEY_VALID_FORMAT) {
+    console.log("OpenAI API key not available or invalid. Returning fallback pattern template.");
     return getFallbackPatternTemplate(prompt, projectType, skillLevel);
   }
 

@@ -350,10 +350,29 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       console.error('Error in handleRegeneratePattern:', error);
       
       // Display a more user-friendly message if it's an OpenAI API issue
-      if (String(error).includes('API key')) {
+      const errorString = String(error);
+      const isApiKeyError = errorString.includes('API key') || 
+                           errorString.includes('authentication') || 
+                           errorString.includes('401') || 
+                           errorString.includes('403');
+      
+      if (isApiKeyError) {
         toast({
           title: "API Key Required",
-          description: "An OpenAI API key is needed for pattern regeneration. Please check your environment variables.",
+          description: "OpenAI API key is missing or invalid. Please add your OpenAI API key to continue with pattern regeneration.",
+          variant: "apiWarning",
+          action: (
+            <ToastAction altText="Get API Key">
+              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
+                Get API Key
+              </a>
+            </ToastAction>
+          ),
+        });
+      } else if (errorString.includes('429') || errorString.toLowerCase().includes('rate limit')) {
+        toast({
+          title: "Rate Limit Exceeded",
+          description: "The OpenAI API rate limit has been reached. Please try again later.",
           variant: "destructive",
         });
       }

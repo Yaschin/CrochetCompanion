@@ -1,14 +1,20 @@
 import OpenAI from "openai";
 
-// Check if OpenAI API key is available
-const API_KEY_AVAILABLE = Boolean(process.env.OPENAI_API_KEY);
+// Check if OpenAI API key is available and validate its format
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const API_KEY_AVAILABLE = Boolean(OPENAI_API_KEY);
+const API_KEY_VALID_FORMAT = /^sk-[A-Za-z0-9]{32,}$/.test(OPENAI_API_KEY);
 
 if (!API_KEY_AVAILABLE) {
   console.error("ERROR: OPENAI_API_KEY environment variable is not set. Using fallback placeholders for all images.");
+} else if (!API_KEY_VALID_FORMAT) {
+  console.error("ERROR: OPENAI_API_KEY appears to be invalid (should start with 'sk-' followed by at least 32 characters). Using fallback placeholders for all images.");
 }
 
-// Initialize OpenAI only if API key is available
-const openai = API_KEY_AVAILABLE ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+// Initialize OpenAI only if API key is available and valid
+const openai = (API_KEY_AVAILABLE && API_KEY_VALID_FORMAT) 
+  ? new OpenAI({ apiKey: OPENAI_API_KEY }) 
+  : null;
 
 interface ImageGenerationRequest {
   prompt: string;
@@ -19,9 +25,9 @@ interface ImageGenerationRequest {
 }
 
 export async function generateImage({ prompt, type, projectType, yarnType, partName }: ImageGenerationRequest): Promise<string> {
-  // If API key is not available, return appropriate placeholder based on image type
-  if (!API_KEY_AVAILABLE) {
-    console.log(`OpenAI API key not available. Returning placeholder for ${type} image.`);
+  // If API key is not available or invalid, return appropriate placeholder based on image type
+  if (!API_KEY_AVAILABLE || !API_KEY_VALID_FORMAT) {
+    console.log(`OpenAI API key not available or invalid. Returning placeholder for ${type} image.`);
     return getPlaceholderImage(type, prompt, partName);
   }
   
