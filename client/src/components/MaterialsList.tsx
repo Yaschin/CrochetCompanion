@@ -54,7 +54,7 @@ const MaterialsList: React.FC<MaterialsListProps> = ({ materials, notes, onUpdat
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4">
+    <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4">
       <h3 className="text-sm font-medium text-secondary-700 mb-3 flex items-center">
         <YarnIcon className="wool-icon h-5 w-5 mr-1 text-primary-400" />
         Materials
@@ -70,7 +70,7 @@ const MaterialsList: React.FC<MaterialsListProps> = ({ materials, notes, onUpdat
               {editingMaterialIndex === index && editedMaterial ? (
                 // Edit mode
                 <>
-                  <div className="flex-grow grid grid-cols-2 gap-2">
+                  <div className="flex-grow grid grid-cols-1 xs:grid-cols-2 gap-2">
                     <input
                       type="text"
                       className="p-1 text-xs border border-gray-300 rounded"
@@ -107,9 +107,9 @@ const MaterialsList: React.FC<MaterialsListProps> = ({ materials, notes, onUpdat
                 // Display mode
                 <>
                   <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: material.color.toLowerCase() }}></div>
-                  <div className="flex-grow grid grid-cols-2">
-                    <span className="font-medium">{material.color}</span>
-                    <span className="text-gray-600">{material.volume}</span>
+                  <div className="flex-grow grid grid-cols-1 xs:grid-cols-2 gap-0.5 xs:gap-0">
+                    <span className="font-medium truncate">{material.color}</span>
+                    <span className="text-gray-600 truncate">{material.volume}</span>
                   </div>
                   <div className="flex space-x-1">
                     <button

@@ -58,7 +58,7 @@ const ProjectTypeCards: React.FC<ProjectTypeCardsProps> = ({ selectedType, onSel
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
       {PROJECT_TYPES.map((type) => (
         <div
           key={type.id}

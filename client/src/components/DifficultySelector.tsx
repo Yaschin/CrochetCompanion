@@ -49,7 +49,7 @@ const DifficultySelector: React.FC<DifficultySelectorProps> = ({ selectedLevel, 
           <button
             key={level.id}
             type="button"
-            className={`flex items-center px-4 py-2 rounded-full border transition-all duration-200 ${
+            className={`flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border transition-all duration-200 ${
               selectedLevel === level.id
                 ? 'border-primary-500 bg-primary-50 text-primary-800 shadow-sm'
                 : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'

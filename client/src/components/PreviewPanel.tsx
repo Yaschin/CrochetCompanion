@@ -56,7 +56,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ prompt, projectType, yarnTy
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4">
+    <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4">
       <h3 className="text-sm font-medium text-secondary-700 mb-3">Pattern Preview</h3>
       
       {isLoading ? (

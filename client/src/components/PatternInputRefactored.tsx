@@ -192,8 +192,8 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="bg-white shadow-md rounded-2xl p-6 mb-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="bg-white shadow-md rounded-2xl p-4 sm:p-6 mb-8">
         <h2 className="text-2xl font-bold text-secondary-600 font-heading mb-6">Create a New Pattern</h2>
         
         {/* Loading Animation */}
@@ -205,7 +205,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
         <div className={isGenerating ? 'opacity-50 pointer-events-none' : ''}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Input Fields */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               {/* Prompt Input */}
               <div>
                 <label htmlFor="prompt" className="block text-sm font-medium text-secondary-600 mb-2">
