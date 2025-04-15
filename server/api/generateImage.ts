@@ -41,20 +41,52 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
       Show hands performing the stitch if appropriate.`;
   }
 
-  try {
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: enhancedPrompt,
-      n: 1,
-      size: "1024x1024",
-      quality: "standard",
-    });
+  // Retry logic with exponential backoff
+  const maxRetries = 3;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      // If this isn't the first attempt, add a delay with exponential backoff
+      if (attempt > 0) {
+        const delayMs = 1000 * Math.pow(2, attempt); // 2s, 4s, 8s
+        console.log(`Retrying image generation after ${delayMs}ms delay (attempt ${attempt + 1}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
 
-    return response.data[0].url || "";
-  } catch (error) {
-    console.error("Error generating image:", error);
-    throw new Error("Failed to generate image with AI");
+      const response = await openai.images.generate({
+        model: "dall-e-3",
+        prompt: enhancedPrompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "standard",
+      });
+
+      return response.data[0].url || "";
+    } catch (err) {
+      console.error(`Image generation attempt ${attempt + 1}/${maxRetries} failed:`, err);
+      
+      // Convert error to string to check if it's a rate limit issue
+      const errorStr = String(err);
+      const isRateLimit = errorStr.includes('429') || errorStr.toLowerCase().includes('rate limit');
+      
+      // If it's not a rate limit error or this is our last attempt, don't retry
+      if (!isRateLimit || attempt === maxRetries - 1) {
+        // For part images, we can gracefully degrade by returning empty string
+        if (type === "part") {
+          console.log("Using fallback for part image due to generation failures");
+          return ""; // Return empty string for part images, as they're not critical
+        }
+        
+        // For main product images, we need to fail
+        throw new Error("Failed to generate image with AI");
+      }
+      
+      // Otherwise, we'll continue to the next iteration and retry
+    }
   }
+  
+  // For type safety, even though this code is unreachable
+  throw new Error("Failed to generate image with AI after retries");
 }
 
 // Generate an image for a specific part of the pattern

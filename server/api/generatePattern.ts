@@ -137,8 +137,11 @@ async function generatePartImages(pattern: any, projectType: string): Promise<an
   const updatedPattern = { ...pattern };
   
   try {
-    // Generate part images for each section in parallel
-    const sectionPromises = pattern.sections.map(async (section: any) => {
+    // Generate part images sequentially to avoid rate limiting
+    const updatedSections = [];
+    
+    // Process sections one at a time with a delay between each
+    for (const section of pattern.sections) {
       // Extract colors from yarn requirements if available
       const colors = pattern.yarnRequirements 
         ? pattern.yarnRequirements.map((req: any) => req.color).join(", ") 
@@ -149,18 +152,27 @@ async function generatePartImages(pattern: any, projectType: string): Promise<an
       }`;
       
       try {
+        // Add a delay between image generations to avoid rate limits
+        // We'll only delay after the first section
+        if (updatedSections.length > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 second delay between requests
+        }
+        
         const imageUrl = await generatePartImage(prompt, section.name, projectType);
-        return {
+        updatedSections.push({
           ...section,
           partImageUrl: imageUrl
-        };
+        });
       } catch (error) {
         console.error(`Error generating image for section ${section.name}:`, error);
-        return { ...section, partImageUrl: null };
+        updatedSections.push({ 
+          ...section, 
+          partImageUrl: null 
+        });
       }
-    });
+    }
     
-    updatedPattern.sections = await Promise.all(sectionPromises);
+    updatedPattern.sections = updatedSections;
     return updatedPattern;
   } catch (error) {
     console.error("Error generating part images:", error);
