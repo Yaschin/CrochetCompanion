@@ -1,6 +1,45 @@
-import { pgTable, text, varchar, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, jsonb, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// Define stash items table
+export const stashItems = pgTable("stash_items", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  type: text("type").notNull(), // 'yarn', 'hook', 'notion', 'tool'
+  name: text("name").notNull(),
+  color: text("color"),
+  volume: text("volume"),
+  size: text("size"),
+  quantity: integer("quantity").notNull().default(1),
+  description: text("description"),
+  notes: text("notes"),
+});
+
+// Define stash notes table
+export const stashNotes = pgTable("stash_notes", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  content: text("content").default(""),
+});
+
+// Create stash item schema for validation
+export const stashItemSchema = z.object({
+  id: z.string(),
+  type: z.enum(['yarn', 'hook', 'notion', 'tool']),
+  name: z.string(),
+  color: z.string().optional(),
+  volume: z.string().optional(),
+  size: z.string().optional(),
+  quantity: z.number().default(1),
+  description: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export const insertStashItemSchema = createInsertSchema(stashItems).omit({
+  id: true,
+});
+
+export type StashItem = z.infer<typeof stashItemSchema>;
+export type InsertStashItem = z.infer<typeof insertStashItemSchema>;
 
 // Define the pattern schema structure
 export const patterns = pgTable("patterns", {

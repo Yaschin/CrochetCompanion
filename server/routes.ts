@@ -4,7 +4,8 @@ import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
 import { generateImage } from "./api/generateImage";
 import { patternService } from "./patternService";
-import { patternSchema } from "@shared/schema";
+import { stashService } from "./stashService";
+import { patternSchema, stashItemSchema } from "../shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -236,6 +237,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to generate section image", 
         error: (error as Error).message 
       });
+    }
+  });
+
+  // Stash CRUD endpoints
+  app.get("/api/stash", async (_req: Request, res: Response) => {
+    try {
+      const items = await stashService.getAllItems();
+      res.json(items);
+    } catch (error) {
+      console.error("Error getting stash items:", error);
+      res.status(500).json({ message: "Failed to get stash items", error: (error as Error).message });
+    }
+  });
+
+  app.get("/api/stash/:id", async (req: Request, res: Response) => {
+    try {
+      const item = await stashService.getItem(req.params.id);
+      
+      if (!item) {
+        return res.status(404).json({ message: "Stash item not found" });
+      }
+      
+      res.json(item);
+    } catch (error) {
+      console.error("Error getting stash item:", error);
+      res.status(500).json({ message: "Failed to get stash item", error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/stash", async (req: Request, res: Response) => {
+    try {
+      const result = stashItemSchema.omit({ id: true }).safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ message: "Invalid stash item data", errors: result.error.errors });
+      }
+      
+      const item = await stashService.createItem(result.data);
+      res.status(201).json(item);
+    } catch (error) {
+      console.error("Error creating stash item:", error);
+      res.status(500).json({ message: "Failed to create stash item", error: (error as Error).message });
+    }
+  });
+
+  app.put("/api/stash/:id", async (req: Request, res: Response) => {
+    try {
+      const result = stashItemSchema.partial().safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ message: "Invalid stash item data", errors: result.error.errors });
+      }
+      
+      const updatedItem = await stashService.updateItem(req.params.id, result.data);
+      
+      if (!updatedItem) {
+        return res.status(404).json({ message: "Stash item not found" });
+      }
+      
+      res.json(updatedItem);
+    } catch (error) {
+      console.error("Error updating stash item:", error);
+      res.status(500).json({ message: "Failed to update stash item", error: (error as Error).message });
+    }
+  });
+
+  app.delete("/api/stash/:id", async (req: Request, res: Response) => {
+    try {
+      const success = await stashService.deleteItem(req.params.id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Stash item not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting stash item:", error);
+      res.status(500).json({ message: "Failed to delete stash item", error: (error as Error).message });
+    }
+  });
+
+  // Stash notes endpoints
+  app.get("/api/stash/notes", async (_req: Request, res: Response) => {
+    try {
+      const notes = await stashService.getNotes();
+      res.json({ notes });
+    } catch (error) {
+      console.error("Error getting stash notes:", error);
+      res.status(500).json({ message: "Failed to get stash notes", error: (error as Error).message });
+    }
+  });
+
+  app.put("/api/stash/notes", async (req: Request, res: Response) => {
+    try {
+      const { notes } = req.body;
+      
+      if (typeof notes !== 'string') {
+        return res.status(400).json({ message: "Invalid notes data" });
+      }
+      
+      const updatedNotes = await stashService.updateNotes(notes);
+      res.json({ notes: updatedNotes });
+    } catch (error) {
+      console.error("Error updating stash notes:", error);
+      res.status(500).json({ message: "Failed to update stash notes", error: (error as Error).message });
     }
   });
 

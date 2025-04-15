@@ -1,0 +1,80 @@
+Replit Prompt 3: Build Yarn Stash & Material Inventory
+
+> Objective:
+Implement a section where users can manage their yarn and material inventory, automatically suggesting and tracking material usage.
+
+Tasks:
+
+1. Create a new component: YarnStash.jsx:
+
+Allow users to add yarn details (name, color, quantity, weight/volume).
+
+Display each item as a compact row with a crochet-themed icon, the material name, the estimated volume (or weight), and an [Edit] button.
+
+Add one overall “Materials Notes” field for additional comments.
+
+
+
+2. Implement Volume Calculation (Optional):
+
+Hook into your pattern generation logic to calculate approximate yarn usage per project, and display these estimates alongside your inventory items.
+
+This could be a simple function that sums up required yarn volumes based on the pattern steps.
+
+
+
+
+Outcome:
+Users can view and edit their yarn stash in a compact, organized, row-based layout.
+
+Implementation Example:
+
+// YarnStash.jsx
+import React, { useState, useEffect } from 'react';
+
+export default function YarnStash() {
+  const [yarnItems, setYarnItems] = useState([]);
+  const [notes, setNotes] = useState('');
+
+  // Replace this with a call to your DB to fetch saved yarn inventory, if available.
+  useEffect(() => {
+    // Fetch yarn data from DB or initialize with an empty array
+  }, []);
+
+  const handleAddYarn = () => {
+    // Logic to add a new yarn item (trigger a modal or inline form)
+  };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Yarn Stash</h1>
+      <div className="space-y-2">
+        {yarnItems.map((item, index) => (
+          <div key={index} className="flex items-center justify-between bg-white p-2 rounded shadow">
+            <div className="flex items-center">
+              {/* Replace with actual yarn ball icon */}
+              <span role="img" aria-label="yarn">🧶</span>
+              <span className="ml-2">{item.name} ({item.color})</span>
+            </div>
+            <div className="text-sm text-gray-600">{item.volume}</div>
+            <button className="text-blue-500 text-sm">Edit</button>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4">
+        <textarea 
+          className="w-full border p-2 rounded" 
+          rows="2" 
+          placeholder="Additional notes on your materials..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)} 
+        />
+      </div>
+      <button onClick={handleAddYarn} className="mt-2 bg-blue-500 text-white px-4 py-1 rounded">
+        Add Yarn
+      </button>
+    </div>
+  );
+}
+
+Next: Integrate YarnStash into your app’s main navigation so users can switch between pattern projects and materials management.
