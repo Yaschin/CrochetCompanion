@@ -4,27 +4,39 @@ import { YarnIcon } from '../icons/WoolIcons';
 import { YarnRequirement } from '@/lib/types';
 
 interface MaterialsListProps {
-  materials: YarnRequirement[];
-  notes: string;
+  materials?: YarnRequirement[];
+  yarnRequirements?: YarnRequirement[];
+  notes?: string;
+  materialsNotes?: string;
   onUpdate: (updatedMaterials: YarnRequirement[], updatedNotes: string) => void;
 }
 
-const MaterialsList: React.FC<MaterialsListProps> = ({ materials, notes, onUpdate }) => {
+const MaterialsList: React.FC<MaterialsListProps> = ({ 
+  materials, 
+  yarnRequirements, 
+  notes, 
+  materialsNotes, 
+  onUpdate 
+}) => {
+  // Use provided materials/yarnRequirements or empty array
+  const materialItems = materials || yarnRequirements || [];
+  // Use provided notes/materialsNotes or empty string
+  const materialNotes = notes || materialsNotes || "";
   const [editingMaterialIndex, setEditingMaterialIndex] = useState<number | null>(null);
   const [editedMaterial, setEditedMaterial] = useState<YarnRequirement | null>(null);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
-  const [editedNotes, setEditedNotes] = useState(notes);
+  const [editedNotes, setEditedNotes] = useState(materialNotes);
 
   const handleEditMaterial = (index: number) => {
     setEditingMaterialIndex(index);
-    setEditedMaterial({ ...materials[index] });
+    setEditedMaterial({ ...materialItems[index] });
   };
 
   const handleSaveMaterial = () => {
     if (editingMaterialIndex !== null && editedMaterial) {
-      const updatedMaterials = [...materials];
+      const updatedMaterials = [...materialItems];
       updatedMaterials[editingMaterialIndex] = editedMaterial;
-      onUpdate(updatedMaterials, notes);
+      onUpdate(updatedMaterials, materialNotes);
       setEditingMaterialIndex(null);
       setEditedMaterial(null);
     }
