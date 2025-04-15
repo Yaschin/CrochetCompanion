@@ -93,10 +93,42 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         console.error('Error regenerating pattern:', error);
         // Check if it's likely an API key issue
         const errorMsg = String(error);
+        
         if (errorMsg.includes('API key') || errorMsg.includes('authentication') || 
             errorMsg.includes('401') || errorMsg.includes('403')) {
-          throw new Error('OpenAI API key missing or invalid. Please check your API key configuration.');
+          // Use the specialized API warning toast with direct link to OpenAI
+          toast({
+            title: "OpenAI API Key Required",
+            description: "To generate custom patterns, please add a valid OpenAI API key in your environment variables. Visit platform.openai.com to get a key.",
+            variant: "apiWarning",
+            action: <ToastAction altText="Visit OpenAI" onClick={() => window.open('https://platform.openai.com/account/api-keys', '_blank')}>Get API Key</ToastAction>,
+            duration: 10000, // Show for longer (10 seconds)
+          });
+          throw new Error('OpenAI API key missing or invalid. Please add a valid API key to enable pattern generation.');
         }
+        
+        // Handle rate limits specifically
+        if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
+          toast({
+            title: "Rate Limit Reached",
+            description: "OpenAI API rate limit reached. Please try again in a few moments.",
+            variant: "apiWarning",
+            duration: 8000,
+          });
+          throw new Error('OpenAI API rate limit reached. Please try again later.');
+        }
+        
+        // Handle timeout issues
+        if (errorMsg.includes('timeout') || errorMsg.includes('timed out')) {
+          toast({
+            title: "Generation Timed Out",
+            description: "The pattern generation request timed out. Please try again with a simpler prompt.",
+            variant: "apiWarning",
+            duration: 8000,
+          });
+          throw new Error('Pattern generation timed out. Try a simpler prompt or try again later.');
+        }
+        
         throw error;
       }
     },
@@ -135,13 +167,13 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         toast({
           title: "Rate Limit Exceeded",
           description: "The OpenAI API rate limit has been reached. Please try again later.",
-          variant: "destructive",
+          variant: "apiWarning",
         });
       } else if (errorString.includes('timeout') || errorString.includes('timed out')) {
         toast({
           title: "Request Timeout",
           description: "The pattern generation request took too long. Please try again with a simpler prompt.",
-          variant: "destructive",
+          variant: "apiWarning",
         });
       } else {
         toast({
@@ -171,10 +203,42 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         console.error('Error regenerating pattern image:', error);
         // Check if it's likely an API key issue
         const errorMsg = String(error);
+        
         if (errorMsg.includes('API key') || errorMsg.includes('authentication') || 
             errorMsg.includes('401') || errorMsg.includes('403')) {
-          throw new Error('OpenAI API key missing or invalid. Please check your API key configuration.');
+          // Use the specialized API warning toast instead of throwing
+          toast({
+            title: "OpenAI API Key Required",
+            description: "To generate custom images, please add a valid OpenAI API key in your environment variables. Visit platform.openai.com to get a key.",
+            variant: "apiWarning",
+            action: <ToastAction altText="Visit OpenAI" onClick={() => window.open('https://platform.openai.com/account/api-keys', '_blank')}>Get API Key</ToastAction>,
+            duration: 10000, // Show for longer (10 seconds)
+          });
+          throw new Error('OpenAI API key missing or invalid. Please add a valid API key to enable image generation.');
         }
+        
+        // Handle rate limits specifically
+        if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
+          toast({
+            title: "Rate Limit Reached",
+            description: "OpenAI API rate limit reached. Please try again in a few moments.",
+            variant: "apiWarning",
+            duration: 8000,
+          });
+          throw new Error('OpenAI API rate limit reached. Please try again later.');
+        }
+        
+        // Handle timeout issues
+        if (errorMsg.includes('timeout') || errorMsg.includes('timed out')) {
+          toast({
+            title: "Generation Timed Out",
+            description: "The image generation request timed out. Please try again with a simpler prompt.",
+            variant: "apiWarning",
+            duration: 8000,
+          });
+          throw new Error('Image generation timed out. Try a simpler prompt or try again later.');
+        }
+        
         throw error;
       }
     },

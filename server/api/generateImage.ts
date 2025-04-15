@@ -169,15 +169,15 @@ function getPlaceholderImage(type: string, prompt: string, partName?: string): s
   
   switch (type) {
     case "final":
-      return `${baseUrl}/1024x1024/f2e6ff/6c4ea6?text=AI+Image+Generation+Unavailable%0AAdd+OpenAI+API+Key+for+Custom+Images`;
+      return `${baseUrl}/1024x1024/f2e6ff/6c4ea6?text=AI+Image+Generation+Unavailable%0AAdd+OpenAI+API+Key+to+Enable%0AVisit+platform.openai.com`;
     case "part":
       const partText = partName ? partName.replace(/\s+/g, '+') : 'Part';
-      return `${baseUrl}/400x400/f8f9fa/6c757d?text=${partText}+Image%0AAdd+OpenAI+API+Key`;
+      return `${baseUrl}/400x400/f8f9fa/6c757d?text=${partText}+Image%0AAdd+Valid+OpenAI+API+Key%0A(See+Secret+Environment+Variables)`;
     case "diagram":
-      return `${baseUrl}/600x600/fffcf0/8a7340?text=Stitch+Diagram%0AAdd+OpenAI+API+Key+to+Enable`;
+      return `${baseUrl}/600x600/fffcf0/8a7340?text=Stitch+Diagram%0AAdd+OpenAI+API+Key+to+Enable%0AGet+Key+at+platform.openai.com`;
     case "step":
     default:
-      return `${baseUrl}/600x400/f0f6ff/3a5c8a?text=Step+Image+Unavailable%0AAdd+OpenAI+API+Key+for+Generation`;
+      return `${baseUrl}/600x400/f0f6ff/3a5c8a?text=Step+Image+Unavailable%0AAdd+OpenAI+API+Key+to+Enable%0ACheck+Your+Environment+Variables`;
   }
 }
 
