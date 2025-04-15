@@ -1,0 +1,123 @@
+Objective:
+Enhance your existing Crochet Companion application by implementing the following improvements:
+
+AI-Powered Pattern Generation with Wool Colour Recommendation:
+
+Modify the pattern input workflow so that if the user does not specify a yarn (wool) colour, your AI prompt instructs GPT‑4 to recommend a wool colour. The recommended colour must be incorporated into the generated pattern instructions.
+
+The prompt to GPT‑4 should explicitly mention: “If the user has not provided a yarn colour, please recommend a suitable wool colour for this crochet project and include it within the instructions.”
+
+AI-Generated Visuals for Pattern End Product and Key Steps:
+
+Integrate OpenAI’s DALL·E (or another image-generation service like Stable Diffusion) to generate:
+
+A final product image (a digital illustration of the finished item) with a prompt such as:
+
+“Generate a digital illustration of a baby tiger plushie with warm pastel tones, featuring a hand-crafted crochet style and wool textures.”
+
+Optionally, generate images for key steps (e.g., a diagram of the “magic ring” step).
+
+Update your data model to include new fields:
+
+endProductImage to store the final product image URL.
+
+aiStepImage on each step (if generated).
+
+Theming & Iconography:
+
+Update your UI components (PatternInput, PatternViewer, etc.) to use crochet–themed icons and imagery. For example, use a small yarn ball icon for the Yarn Type selector and a crochet hook icon for Project Type.
+
+Choose a pastel colour palette (beige, soft peach, lavender) with rounded corners and subtle shadows for a warm, handcrafted aesthetic.
+
+Refinement in Pattern Editing & Regeneration:
+
+In your PatternViewer, implement editing and “lock” functionality so that users can lock steps or sections they want to keep unchanged. When regenerating, send only unlocked sections back to the AI for updated instructions and visuals.
+
+Database Integration with Replit DB:
+
+Ensure that the complete pattern object (including text instructions, AI-generated images, metadata, and progress tracking data) is persistently saved using your existing patternService.js.
+
+Update CRUD functions, if needed, to handle the extended data model.
+
+Technical Requirements & Guidance:
+
+Front End: Use React and TailwindCSS. Ensure your components are modular:
+
+PatternInput.js: Enhance the input box to include a metadata selector (with crochet icons) for Project Type, Skill Level, Yarn Type, and Target Size.
+
+PatternViewer.js and PatternStepCard.js: Display AI-generated images (final product and per-step visuals) along with existing step data (text, lock toggle, counters, notes, and photo uploads).
+
+PatternProgressBar.js: Reflect progress based on completed steps.
+
+PatternLibrary.js: Optionally list saved patterns with improved UI.
+
+Back End:
+
+/api/generatePattern.js: Modify the API endpoint to create a detailed AI prompt that includes wool colour recommendation if Yarn Type is blank.
+
+/api/generateImage.js: Implement a call to OpenAI’s image-generation API to obtain the URL of the generated illustration.
+
+Database (Replit DB):
+
+Update your data model (see example below) so that the pattern object now includes fields for images:
+
+js
+Copy
+{
+  id: "uuid",
+  title: "Baby Tiger",
+  projectType: "Plushie",
+  skillLevel: "Beginner",
+  yarnType: "Alize Velluto" || "Recommended: Warm Peach",
+  size: "15 cm",
+  endProductImage: "https://generated-image-url.com/final.jpg",
+  createdAt: "2024-04-15T14:00:00",
+  sections: [
+    {
+      name: "Head",
+      steps: [
+        {
+          id: 1,
+          text: "Make a magic ring with 6 SC.",
+          locked: false,
+          count: 0,
+          notes: "",
+          photo: null,
+          aiStepImage: "https://generated-image-url.com/step1.jpg",
+          completed: false
+        },
+        // Additional steps...
+      ]
+    },
+    // Additional sections...
+  ]
+}
+Iconography: Ensure that all icons in metadata selectors and navigation use imagery related to wool, yarn, and crochet.
+
+Flow Recap:
+
+Pattern Creation:
+
+User inputs prompt and metadata in a unified box.
+
+If Yarn Type is omitted, the AI suggests a wool colour.
+
+On submit, call /api/generatePattern to get the structured text pattern.
+
+In parallel, call /api/generateImage for the final product image (and key step images as desired).
+
+Merge and save the pattern using Replit DB.
+
+Pattern Editing & Viewer:
+
+Allow users to view the pattern, complete with sectioned steps and inline AI images.
+
+Users can edit steps, lock certain parts, adjust counters, add notes, and upload photos.
+
+Regeneration:
+
+Provide a regeneration flow that re-generates only the unlocked parts when requested.
+
+Persistence & Library:
+
+Save all patterns, allow user access via a pattern library, and enable deletion.

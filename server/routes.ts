@@ -35,13 +35,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate image endpoint
   app.post("/api/generate-image", async (req: Request, res: Response) => {
     try {
-      const { prompt, type } = req.body;
+      const { prompt, type, projectType, yarnType } = req.body;
       
       if (!prompt || !type) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
-      const imageUrl = await generateImage({ prompt, type });
+      const imageUrl = await generateImage({ prompt, type, projectType, yarnType });
       res.json({ url: imageUrl });
     } catch (error) {
       console.error("Error in generate-image endpoint:", error);

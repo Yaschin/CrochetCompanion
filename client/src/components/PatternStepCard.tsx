@@ -1,6 +1,9 @@
 import { useState } from 'react';
-import { Lock, Unlock, Edit, Trash, Minus, Plus } from 'lucide-react';
+import { Lock, Unlock, Edit, Trash, Minus, Plus, Image, Loader2 } from 'lucide-react';
 import { PatternStep } from '../lib/types';
+import { useMutation } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 interface PatternStepCardProps {
   step: PatternStep;
@@ -15,11 +18,58 @@ const PatternStepCard: React.FC<PatternStepCardProps> = ({
   onUpdate,
   onDelete
 }) => {
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(step.text);
+  const [generatingImage, setGeneratingImage] = useState(false);
+
+  // Generate step image mutation
+  const generateStepImageMutation = useMutation({
+    mutationFn: async (stepText: string) => {
+      const res = await apiRequest('POST', '/api/generate-image', {
+        prompt: stepText,
+        type: 'step'
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      onUpdate({ ...step, aiStepImage: data.url });
+      toast({
+        title: "Step Image Generated",
+        description: "A visual guide for this step has been created.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Image Generation Failed",
+        description: "There was an error creating the step image.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle generating a step image
+  const handleGenerateStepImage = async () => {
+    if (generatingImage) return;
+    
+    setGeneratingImage(true);
+    try {
+      await generateStepImageMutation.mutateAsync(step.text);
+    } finally {
+      setGeneratingImage(false);
+    }
+  };
 
   const toggleLock = () => {
     onUpdate({ ...step, locked: !step.locked });
+    
+    // Show feedback about lock status
+    toast({
+      title: step.locked ? "Step Unlocked" : "Step Locked",
+      description: step.locked 
+        ? "This step can now be changed by regeneration." 
+        : "This step will remain unchanged during regeneration.",
+    });
   };
 
   const toggleCompleted = () => {
@@ -111,18 +161,40 @@ const PatternStepCard: React.FC<PatternStepCardProps> = ({
           <p className="text-secondary-700 mb-4">{step.text}</p>
         )}
 
-        {step.aiStepImage && (
-          <div className="flex mb-4">
+        {/* Step image or image generation button */}
+        {step.aiStepImage ? (
+          <div className="flex mb-4 bg-gray-50 rounded-lg p-2">
             <div className="flex-1">
-              <p className="text-secondary-700">{step.text}</p>
+              <p className="text-xs text-secondary-500 mb-1">Visual Guide</p>
+              <p className="text-secondary-700 text-sm">{step.text}</p>
             </div>
             <div className="ml-4 flex-shrink-0">
               <img
                 src={step.aiStepImage}
                 alt={`Crochet step ${stepNumber}`}
-                className="h-16 w-16 rounded-md object-cover"
+                className="h-24 w-24 rounded-md object-cover border border-gray-200"
               />
             </div>
+          </div>
+        ) : (
+          <div className="mb-4">
+            <button
+              onClick={handleGenerateStepImage}
+              disabled={generatingImage}
+              className="flex items-center text-sm px-3 py-2 border border-gray-200 rounded-md text-secondary-600 hover:bg-gray-50 transition-colors"
+            >
+              {generatingImage ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating step image...
+                </>
+              ) : (
+                <>
+                  <Image className="h-4 w-4 mr-2" />
+                  Generate visual guide for this step
+                </>
+              )}
+            </button>
           </div>
         )}
 

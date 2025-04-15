@@ -51,10 +51,12 @@ const PatternInput: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
 
   // Generate image mutation
   const generateImageMutation = useMutation({
-    mutationFn: async (prompt: string) => {
+    mutationFn: async (data: { prompt: string, projectType: string, yarnType?: string }) => {
       const res = await apiRequest('POST', '/api/generate-image', {
-        prompt,
-        type: 'final'
+        prompt: data.prompt,
+        type: 'final',
+        projectType: data.projectType,
+        yarnType: data.yarnType
       });
       return res.json();
     }
@@ -86,8 +88,12 @@ const PatternInput: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
       const generatedPatternData = await generatePatternMutation.mutateAsync(formData);
       
       // Generate an image for the pattern
-      const imagePrompt = `${generatedPatternData.title || formData.prompt} ${formData.projectType}`;
-      const imageResponse = await generateImageMutation.mutateAsync(imagePrompt);
+      const imagePrompt = `${generatedPatternData.title || formData.prompt}`;
+      const imageResponse = await generateImageMutation.mutateAsync({
+        prompt: imagePrompt,
+        projectType: formData.projectType,
+        yarnType: formData.yarnType
+      });
 
       // Prepare pattern for saving
       const patternToSave = {

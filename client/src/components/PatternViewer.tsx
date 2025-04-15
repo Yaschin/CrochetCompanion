@@ -46,7 +46,12 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const regenerateStepsMutation = useMutation({
     mutationFn: async (data: { patternId: string; unlockedStepsOnly: boolean }) => {
       const res = await apiRequest('POST', '/api/generate-pattern', {
+        prompt: pattern.title, // Use the title as a base prompt for regeneration
         patternId: data.patternId,
+        projectType: pattern.projectType,
+        skillLevel: pattern.skillLevel,
+        yarnType: pattern.yarnType,
+        size: pattern.size,
         unlockedStepsOnly: true,
         originalPattern: pattern
       });

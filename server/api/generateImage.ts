@@ -6,15 +6,28 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 interface ImageGenerationRequest {
   prompt: string;
   type: "final" | "step";
+  projectType?: string;
+  yarnType?: string;
 }
 
-export async function generateImage({ prompt, type }: ImageGenerationRequest): Promise<string> {
+export async function generateImage({ prompt, type, projectType, yarnType }: ImageGenerationRequest): Promise<string> {
   let enhancedPrompt = prompt;
 
   if (type === "final") {
-    enhancedPrompt = `Generate a digital illustration of ${prompt} in a cute, hand-crafted style with warm pastel tones. Include crochet and wool textures to emphasize it's a crocheted item.`;
+    // For final product images, create a more detailed prompt that emphasizes crochet aesthetic
+    enhancedPrompt = `Generate a digital illustration of ${prompt} ${projectType ? `(a crocheted ${projectType})` : ""} 
+      in a cute, hand-crafted style with warm pastel tones. 
+      ${yarnType ? `Made with ${yarnType} wool. ` : ""} 
+      Include visible crochet stitches and wool textures to clearly show this is a crocheted item. 
+      Use a soft, warm lighting and neutral background to highlight the details of the crochet work.
+      Make the image detailed enough to show the texture of the yarn.`;
   } else {
-    enhancedPrompt = `Generate an image illustrating: '${prompt}' in a diagrammatic, cute style. Make it clear and instructional for crochet pattern steps.`;
+    // For step images, create instructional, diagrammatic visuals
+    enhancedPrompt = `Generate a clear, instructional diagram illustrating: '${prompt}' 
+      for a crochet pattern step. Use a simple, clean style with clear outlines. 
+      Include arrows or numbering if needed to show the sequence of actions.
+      Focus on making the technique clearly visible and easy to understand for a beginner.
+      Show hands performing the stitch if appropriate.`;
   }
 
   try {
