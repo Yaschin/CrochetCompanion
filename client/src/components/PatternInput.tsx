@@ -165,7 +165,7 @@ const PatternInput: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
   };
 
   return (
-    <div className="bg-white shadow-md rounded-2xl p-6 mb-8">
+    <div className="bg-background/95 backdrop-blur-sm border shadow-lg rounded-2xl p-6 mb-8">
       <h2 className="text-2xl font-bold text-secondary-600 font-heading mb-6">Create a New Pattern</h2>
       
       {/* Prompt Input */}
