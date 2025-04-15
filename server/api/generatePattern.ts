@@ -118,7 +118,9 @@ export async function generatePattern(inputData: PatternInputData) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       if (attempt > 0) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+        const delayMs = 1000 * Math.pow(2, attempt); // 2s, 4s, 8s
+        console.log(`Retrying pattern generation after ${delayMs}ms delay (attempt ${attempt + 1}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
       }
       
       if (!openai) {
@@ -134,7 +136,23 @@ export async function generatePattern(inputData: PatternInputData) {
         response_format: { type: "json_object" }
       });
 
-      let generatedPattern = JSON.parse(response.choices[0].message.content || "{}");
+      // Validate the response
+      if (!response.choices || !response.choices[0] || !response.choices[0].message || !response.choices[0].message.content) {
+        throw new Error("OpenAI returned an invalid response format");
+      }
+
+      let generatedPattern;
+      try {
+        generatedPattern = JSON.parse(response.choices[0].message.content || "{}");
+      } catch (parseError) {
+        console.error("Failed to parse OpenAI response as JSON:", parseError);
+        throw new Error("Failed to parse AI response as valid JSON");
+      }
+
+      // Validate required pattern fields
+      if (!generatedPattern.title || !generatedPattern.sections || !Array.isArray(generatedPattern.sections)) {
+        throw new Error("Generated pattern is missing required fields (title, sections)");
+      }
 
       // If yarn requirements aren't provided, calculate them
       if (!generatedPattern.yarnRequirements || generatedPattern.yarnRequirements.length === 0) {
@@ -151,10 +169,32 @@ export async function generatePattern(inputData: PatternInputData) {
 
       return generatedPattern;
     } catch (error) {
-      console.error("Error generating pattern:", error);
-      throw new Error("Failed to generate pattern with AI");
+      lastError = error;
+      console.error(`Error generating pattern (attempt ${attempt + 1}/${maxRetries}):`, error);
+      
+      // Check if this is a rate limit error
+      const errorMsg = String(error);
+      const isRateLimit = errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate limit');
+      
+      // If it's not a rate limit error or this is our last attempt, don't retry
+      if (!isRateLimit && attempt === maxRetries - 1) {
+        // Provide a more specific error message based on the type of error
+        if (errorMsg.includes('API key')) {
+          throw new Error("OpenAI API key is missing or invalid. Please check your environment variables.");
+        } else if (errorMsg.includes('parse')) {
+          throw new Error("Failed to parse response from AI service. The AI may have returned an invalid format.");
+        } else {
+          throw new Error(`Failed to generate pattern with AI: ${errorMsg}`);
+        }
+      }
+      
+      // For rate limit or other retryable errors, continue to next iteration
     }
   }
+  
+  // If we've exhausted all retries
+  throw new Error(`Failed to generate pattern after ${maxRetries} attempts: ${lastError}`);
+}
   
   // Function to generate images for each pattern section
   async function generatePartImages(pattern: any, projectType: string): Promise<any> {
@@ -318,7 +358,6 @@ export async function generatePattern(inputData: PatternInputData) {
       return generateDefaultYarnRequirements(pattern, projectType, complexityScore);
     }
   }
-}
 
 // Helper function to calculate pattern complexity (0-10 scale)
 function calculatePatternComplexity(pattern: any, projectType: string): number {
@@ -501,14 +540,19 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
 
 /**
  * Provides a fallback template pattern when OpenAI API key is not available
+ * This template includes a clear message for the user explaining why AI generation failed
+ * and provides basic pattern structure based on the project type selected
+ * 
  * @param prompt User's prompt for pattern
  * @param projectType Type of crochet project
  * @param skillLevel Skill level (beginner, intermediate, advanced)
- * @returns Basic pattern template
+ * @returns Basic pattern template with a notice about missing API key
  */
 function getFallbackPatternTemplate(prompt: string, projectType: string, skillLevel: string) {
-  // Create a title based on prompt and project type
-  const title = `${prompt} ${projectType.charAt(0).toUpperCase() + projectType.slice(1)}`;
+  console.warn("⚠️ Using fallback pattern template because OpenAI API key is not available");
+  
+  // Create a title that indicates this is a template
+  const title = `Template: ${prompt} ${projectType.charAt(0).toUpperCase() + projectType.slice(1)}`;
   
   // Determine appropriate hook size based on project type
   let hookSize = "5.0mm (H/8)";
