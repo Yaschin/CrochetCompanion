@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { PatternSection as PatternSectionType, PatternStep } from '@/lib/types';
-import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon, Trash, FileDigit, RefreshCw, Pencil, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon, Trash, FileDigit, RefreshCw, Pencil, Loader2, Camera } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import SectionImagePlaceholder from './SectionImagePlaceholder';
+import StepPhotoUploader from './StepPhotoUploader';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
@@ -24,11 +25,14 @@ interface PatternSectionProps {
 const StepRow: React.FC<{
   step: PatternStep;
   stepIndex: number;
+  sectionIndex: number;
+  patternId: string;
   onUpdate: (updatedStep: PatternStep) => void;
   onDelete: () => void;
-}> = ({ step, stepIndex, onUpdate, onDelete }) => {
+}> = ({ step, stepIndex, sectionIndex, patternId, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(step.text);
+  const [isShowingPhoto, setIsShowingPhoto] = useState(false);
   
   const toggleComplete = () => {
     onUpdate({
@@ -64,94 +68,125 @@ const StepRow: React.FC<{
     setIsEditing(false);
   };
 
+  // Handler for photo uploads
+  const handlePhotoUpdated = (photoUrl: string) => {
+    onUpdate({
+      ...step,
+      photo: photoUrl
+    });
+  };
+
   return (
-    <div className="flex items-center justify-between py-1 px-2 border-b border-gray-100 text-sm">
-      {isEditing ? (
-        <div className="flex-grow pr-2">
-          <textarea
-            value={editedText}
-            onChange={(e) => setEditedText(e.target.value)}
-            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
-            rows={2}
-          />
-        </div>
-      ) : (
-        <div className="flex-grow">
-          <div className={`${step.completed ? 'line-through text-gray-400' : ''}`}>
-            <span className="font-medium text-gray-500 mr-2">{step.id}.</span>
-            {step.text}
-          </div>
-        </div>
-      )}
-      
-      <div className="flex items-center space-x-1">
+    <div className="flex flex-col border-b border-gray-100 text-sm">
+      {/* Step content */}
+      <div className="flex items-center justify-between py-1 px-2">
         {isEditing ? (
-          <>
-            <button
-              onClick={handleSaveEdit}
-              className="text-green-500 hover:text-green-700 p-0.5"
-              title="Save changes"
-            >
-              <Save size={14} />
-            </button>
-            <button
-              onClick={handleCancelEdit}
-              className="text-red-500 hover:text-red-700 p-0.5"
-              title="Cancel"
-            >
-              <X size={14} />
-            </button>
-          </>
+          <div className="flex-grow pr-2">
+            <textarea
+              value={editedText}
+              onChange={(e) => setEditedText(e.target.value)}
+              className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+              rows={2}
+            />
+          </div>
         ) : (
-          <>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="text-gray-400 hover:text-gray-600 p-0.5"
-              title="Edit step"
-            >
-              <Edit size={14} />
-            </button>
-            <button
-              onClick={toggleLock}
-              className={`${step.locked ? 'text-amber-500' : 'text-gray-400'} hover:text-amber-600 p-0.5`}
-              title={step.locked ? "Unlock step" : "Lock step"}
-            >
-              {step.locked ? <Lock size={14} /> : <Unlock size={14} />}
-            </button>
-            <button
-              onClick={onDelete}
-              className="text-gray-400 hover:text-red-500 p-0.5"
-              title="Delete step"
-            >
-              <Trash size={14} />
-            </button>
-          </>
+          <div className="flex-grow">
+            <div className={`${step.completed ? 'line-through text-gray-400' : ''}`}>
+              <span className="font-medium text-gray-500 mr-2">{step.id}.</span>
+              {step.text}
+            </div>
+          </div>
         )}
         
-        {step.count > 0 && (
-          <div className="flex items-center space-x-1 ml-2">
-            <button 
-              onClick={() => updateCount(false)}
-              className="text-gray-400 hover:text-gray-600 px-1"
-            >
-              -
-            </button>
-            <span className="text-xs bg-gray-100 rounded-full px-2 py-0.5">{step.count}</span>
-            <button 
-              onClick={() => updateCount(true)}
-              className="text-gray-400 hover:text-gray-600 px-1"
-            >
-              +
-            </button>
-          </div>
-        )}
-        <input 
-          type="checkbox" 
-          checked={step.completed}
-          onChange={toggleComplete}
-          className="h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary ml-1"
-        />
+        <div className="flex items-center space-x-1">
+          {isEditing ? (
+            <>
+              <button
+                onClick={handleSaveEdit}
+                className="text-green-500 hover:text-green-700 p-0.5"
+                title="Save changes"
+              >
+                <Save size={14} />
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                className="text-red-500 hover:text-red-700 p-0.5"
+                title="Cancel"
+              >
+                <X size={14} />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-gray-400 hover:text-gray-600 p-0.5"
+                title="Edit step"
+              >
+                <Edit size={14} />
+              </button>
+              <button
+                onClick={toggleLock}
+                className={`${step.locked ? 'text-amber-500' : 'text-gray-400'} hover:text-amber-600 p-0.5`}
+                title={step.locked ? "Unlock step" : "Lock step"}
+              >
+                {step.locked ? <Lock size={14} /> : <Unlock size={14} />}
+              </button>
+              <button
+                onClick={() => setIsShowingPhoto(!isShowingPhoto)}
+                className={`${step.photo ? 'text-blue-500' : 'text-gray-400'} hover:text-blue-600 p-0.5`}
+                title={step.photo ? "Show/hide photo" : "Add photo"}
+              >
+                <Camera size={14} />
+              </button>
+              <button
+                onClick={onDelete}
+                className="text-gray-400 hover:text-red-500 p-0.5"
+                title="Delete step"
+              >
+                <Trash size={14} />
+              </button>
+            </>
+          )}
+          
+          {step.count > 0 && (
+            <div className="flex items-center space-x-1 ml-2">
+              <button 
+                onClick={() => updateCount(false)}
+                className="text-gray-400 hover:text-gray-600 px-1"
+              >
+                -
+              </button>
+              <span className="text-xs bg-gray-100 rounded-full px-2 py-0.5">{step.count}</span>
+              <button 
+                onClick={() => updateCount(true)}
+                className="text-gray-400 hover:text-gray-600 px-1"
+              >
+                +
+              </button>
+            </div>
+          )}
+          <input 
+            type="checkbox" 
+            checked={step.completed}
+            onChange={toggleComplete}
+            className="h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary ml-1"
+          />
+        </div>
       </div>
+      
+      {/* Photo uploader - only shown when expanded */}
+      {isShowingPhoto && (
+        <div className="px-3 pb-2">
+          <StepPhotoUploader
+            patternId={patternId}
+            sectionIndex={sectionIndex}
+            stepIndex={stepIndex}
+            currentPhoto={step.photo || null}
+            onPhotoUpdated={handlePhotoUpdated}
+          />
+        </div>
+      )}
     </div>
   );
 };
@@ -461,6 +496,8 @@ const PatternSection: React.FC<PatternSectionProps> = ({
                 key={`step-${step.id}`}
                 step={step}
                 stepIndex={stepIndex}
+                sectionIndex={sectionIndex}
+                patternId={section.patternId || ""}
                 onUpdate={(updatedStep) => onUpdateStep(stepIndex, updatedStep)}
                 onDelete={() => onDeleteStep(stepIndex)}
               />
