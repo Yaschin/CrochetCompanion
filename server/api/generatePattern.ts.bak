@@ -398,7 +398,6 @@ function extractColorMentions(pattern: any): string[] {
     ...(pattern.sections || []).map((s: any) => s.name || '')
   ].join(' ').toLowerCase();
   
-  
   // Find color mentions
   return commonColors.filter(color => 
     new RegExp(`\\b${color}\\b`, 'i').test(textToSearch)
