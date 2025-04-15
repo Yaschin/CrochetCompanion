@@ -310,7 +310,9 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
 
       {/* Pattern Sections (Accordion) */}
       <div className="space-y-4">
-        {pattern.sections.map((section, sectionIndex) => (
+        {pattern.sections
+          .filter(section => section.name.toLowerCase() !== "materials") // Filter out the Materials section
+          .map((section, sectionIndex) => (
           <PatternSection
             key={`section-${sectionIndex}`}
             section={section}
