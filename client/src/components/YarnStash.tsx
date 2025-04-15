@@ -11,6 +11,7 @@ import { Textarea } from './ui/textarea';
 import { apiRequest } from '../lib/queryClient';
 import { useToast } from '../hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { StashUsageIndicator } from './StashUsageIndicator';
 
 export default function YarnStash() {
   const { toast } = useToast();
