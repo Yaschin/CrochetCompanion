@@ -182,7 +182,11 @@ function calculateCompletionDate(
   return completionDate;
 }
 
-export default function CalendarPlanner() {
+interface CalendarPlannerProps {
+  onNavigate?: (view: 'input' | 'viewer' | 'library' | 'stash' | 'calendar') => void;
+}
+
+export default function CalendarPlanner(props: CalendarPlannerProps = {}) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -381,7 +385,8 @@ export default function CalendarPlanner() {
     const completionDate = calculateCompletionDate(
       new Date(), 
       timeEstimate, 
-      dailyCrochetTime
+      dailyCrochetTime,
+      dayAvailability // Pass the day availability map for accurate estimates
     );
     
     return `Expected completion: ${completionDate.toLocaleDateString()}`;
@@ -586,7 +591,12 @@ export default function CalendarPlanner() {
                       <Button 
                         variant="link" 
                         className="mt-2 text-primary"
-                        onClick={() => window.location.hash = '#/library'}
+                        onClick={() => {
+                          // Use consistent navigation pattern with App's navigateToView
+                          if (typeof props.onNavigate === 'function') {
+                            props.onNavigate('library');
+                          }
+                        }}
                       >
                         Go to Pattern Library
                       </Button>

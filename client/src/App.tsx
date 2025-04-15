@@ -123,7 +123,7 @@ function App() {
           )}
           
           {activeView === "calendar" && (
-            <CalendarPlanner />
+            <CalendarPlanner onNavigate={navigateToView} />
           )}
         </main>
       </div>
