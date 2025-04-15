@@ -1,5 +1,6 @@
 import React from 'react';
-import { Loader2, Sparkles, Yarn } from 'lucide-react';
+import { Loader2, Sparkles, LifeBuoy } from 'lucide-react';
+import { YarnIcon } from '../icons/WoolIcons';
 
 interface PatternGenLoaderProps {
   stage: 'prompt' | 'pattern' | 'images' | 'complete'; 
@@ -26,7 +27,7 @@ const PatternGenLoader: React.FC<PatternGenLoaderProps> = ({ stage, progress = 0
   return (
     <div className="flex flex-col items-center justify-center p-6 my-4 bg-primary-50 rounded-xl border border-primary-100">
       <div className="relative flex items-center mb-5">
-        <Yarn className="animate-bounce text-primary h-6 w-6 mr-3" />
+        <YarnIcon className="animate-bounce text-primary h-6 w-6 mr-3" />
         <h3 className="text-lg font-medium text-primary-700">
           {stageLabels[stage]}
         </h3>

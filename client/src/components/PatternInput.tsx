@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Eye, Sparkles } from 'lucide-react';
 import { PatternInputFormData, Pattern, projectTypes, skillLevels } from '../lib/types';
 import { CrochetHookIcon, PatternIcon, YarnIcon, SizeIcon } from '../icons/WoolIcons';
+import PatternGenLoader from './PatternGenLoader';
 
 interface PatternInputProps {
   onPatternCreated: (pattern: Pattern) => void;
@@ -21,6 +22,7 @@ const PatternInput: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
   });
   const [file, setFile] = useState<File | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStage, setGenerationStage] = useState<'prompt' | 'pattern' | 'images' | 'complete'>('prompt');
 
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -82,12 +84,15 @@ const PatternInput: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
     }
 
     setIsGenerating(true);
+    setGenerationStage('prompt');
 
     try {
       // Generate the pattern
+      setGenerationStage('pattern');
       const generatedPatternData = await generatePatternMutation.mutateAsync(formData);
       
       // Generate an image for the pattern
+      setGenerationStage('images');
       const imagePrompt = `${generatedPatternData.title || formData.prompt}`;
       const imageResponse = await generateImageMutation.mutateAsync({
         prompt: imagePrompt,
@@ -125,6 +130,12 @@ const PatternInput: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
 
       // Save the pattern
       const savedPattern = await savePatternMutation.mutateAsync(patternToSave);
+      
+      // Set the completion stage
+      setGenerationStage('complete');
+      
+      // Give a short delay to show the completion animation
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Pass the saved pattern to the parent component
       onPatternCreated(savedPattern);
@@ -297,6 +308,11 @@ const PatternInput: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
           </div>
         </div>
       </div>
+
+      {/* Loading Animation */}
+      {isGenerating && (
+        <PatternGenLoader stage={generationStage} />
+      )}
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
