@@ -43,11 +43,11 @@ function App() {
         
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Tabbed navigation for view switching */}
-          <div className="mb-8 border-b border-gray-200">
-            <div className="flex space-x-8">
+          <div className="mb-6 sm:mb-8 border-b border-gray-200">
+            <div className="flex justify-between sm:justify-start sm:space-x-8">
               <button 
                 onClick={() => navigateToView("input")}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`flex-1 sm:flex-initial whitespace-nowrap py-3 sm:py-4 text-center border-b-2 font-medium text-xs sm:text-sm ${
                   activeView === "input" 
                     ? "border-primary text-primary" 
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -57,7 +57,7 @@ function App() {
               </button>
               <button 
                 onClick={() => navigateToView("viewer")}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`flex-1 sm:flex-initial whitespace-nowrap py-3 sm:py-4 text-center border-b-2 font-medium text-xs sm:text-sm ${
                   activeView === "viewer" 
                     ? "border-primary text-primary" 
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -67,7 +67,7 @@ function App() {
               </button>
               <button 
                 onClick={() => navigateToView("library")}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`flex-1 sm:flex-initial whitespace-nowrap py-3 sm:py-4 text-center border-b-2 font-medium text-xs sm:text-sm ${
                   activeView === "library" 
                     ? "border-primary text-primary" 
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
