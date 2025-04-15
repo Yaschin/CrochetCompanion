@@ -27,7 +27,7 @@ export async function generatePattern(inputData: PatternInputData) {
     unlockedStepsOnly, 
     originalPattern 
   } = inputData;
-  
+
   // Determine if we're regenerating only specific parts of an existing pattern
   const isRegeneration = unlockedStepsOnly && originalPattern;
 
@@ -37,13 +37,13 @@ export async function generatePattern(inputData: PatternInputData) {
     ${isRegeneration 
       ? `You are updating an existing pattern while keeping some steps exactly as they are.` 
       : `Generate a complete crochet pattern for a ${projectType} with a ${skillLevel} skill level.`}
-    
+
     ${yarnType 
       ? `The pattern should use ${yarnType} yarn.` 
       : 'If the user has not provided a yarn colour, please recommend suitable wool colours for this crochet project and include them within the instructions.'}
-    
+
     ${size ? `The finished item should be approximately ${size}.` : ''}
-    
+
     Include ALL materials needed for the project, including:
     1. Yarn/wool (colors and amounts)
     2. Hook size(s) required
@@ -51,12 +51,12 @@ export async function generatePattern(inputData: PatternInputData) {
     4. Safety eyes, buttons, or other embellishments
     5. Accessories like zippers, handles, etc. if needed
     6. Any special tools required (tapestry needle, stitch markers, etc.)
-    
+
     Be comprehensive with materials to ensure the crafter has everything needed before starting.
-    
+
     Use standard crochet terms: SC (Single Crochet), MR (Magic Ring), INC (Increase), DEC (Decrease).
-    Organize the pattern into logical sections (e.g., Head, Body, Arms, etc.) with clear, numbered steps.
-    
+    Organize the pattern into logical sections (e.g., Head, Body, etc.) with clear, numbered steps.
+
     Return the response in JSON format with the following structure:
     {
       "title": "Name of the pattern",
@@ -91,9 +91,9 @@ export async function generatePattern(inputData: PatternInputData) {
     systemPrompt += `
       IMPORTANT: You are regenerating a pattern while keeping certain steps exactly as they are.
       The following steps are locked and MUST remain unchanged in your output:
-      
+
       ${lockedStepsInfo}
-      
+
       Only rewrite steps that are NOT listed above. Keep the same section structure.
       Your response MUST follow the exact format of the original pattern.
     `;
@@ -116,14 +116,14 @@ export async function generatePattern(inputData: PatternInputData) {
       const yarnRequirements = await calculateYarnRequirements(generatedPattern, projectType);
       generatedPattern.yarnRequirements = yarnRequirements;
     }
-    
+
     // For regeneration, merge with locked steps from the original pattern
     if (isRegeneration) {
       generatedPattern = mergeWithLockedSteps(originalPattern, generatedPattern);
     } 
   // We're no longer auto-generating section images
   // Instead, they'll be generated on-demand when requested
-    
+
     return generatedPattern;
   } catch (error) {
     console.error("Error generating pattern:", error);
@@ -134,29 +134,29 @@ export async function generatePattern(inputData: PatternInputData) {
 // Function to generate images for each pattern section
 async function generatePartImages(pattern: any, projectType: string): Promise<any> {
   const updatedPattern = { ...pattern };
-  
+
   try {
     // Generate part images sequentially to avoid rate limiting
     const updatedSections = [];
-    
+
     // Process sections one at a time with a delay between each
     for (const section of pattern.sections) {
       // Extract colors from yarn requirements if available
       const colors = pattern.yarnRequirements 
         ? pattern.yarnRequirements.map((req: any) => req.color).join(", ") 
         : "";
-        
+
       const prompt = `A detailed illustration of the ${section.name.toLowerCase()} part of a crocheted ${projectType}${
         colors ? ` using these colors: ${colors}` : ""
       }`;
-      
+
       try {
         // Add a delay between image generations to avoid rate limits
         // We'll only delay after the first section
         if (updatedSections.length > 0) {
           await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 second delay between requests
         }
-        
+
         const imageUrl = await generatePartImage(prompt, section.name, projectType);
         updatedSections.push({
           ...section,
@@ -170,7 +170,7 @@ async function generatePartImages(pattern: any, projectType: string): Promise<an
         });
       }
     }
-    
+
     updatedPattern.sections = updatedSections;
     return updatedPattern;
   } catch (error) {
@@ -185,11 +185,11 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
     // Count total steps and extract the pattern structure
     const totalSteps = pattern.sections.reduce((count: number, section: any) => 
       count + section.steps.length, 0);
-    
+
     const patternSummary = pattern.sections.map((section: any) => {
       return `${section.name}: ${section.steps.length} steps`;
     }).join(", ");
-    
+
     // Ask the AI to estimate yarn requirements
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -213,7 +213,7 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
           content: `For a ${projectType} with ${totalSteps} total steps divided into sections (${patternSummary}),
             please estimate the yarn requirements. Return the result in the exact format I specified, with a 'yarnRequirements' array 
             containing objects that have 'color' and 'volume' properties.
-            
+
             Important: Make sure to return the response in this exact format:
             {
               "yarnRequirements": [
@@ -225,10 +225,10 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
       ],
       response_format: { type: "json_object" }
     });
-    
+
     const result = JSON.parse(response.choices[0].message.content || "{}");
     console.log("Yarn requirements API response:", result);
-    
+
     // Handle different response formats from the AI
     if (Array.isArray(result)) {
       return result;
@@ -241,7 +241,7 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
         if (key !== 'yarnRequirements') {
           const colorMatch = key.match(/color|yarn|wool/i);
           const volumeMatch = key.match(/volume|amount|quantity|yards|grams/i);
-          
+
           if (colorMatch) {
             requirements.push({
               color: result[key],
@@ -250,42 +250,42 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
           }
         }
       }
-      
+
       if (requirements.length > 0) {
         return requirements;
       }
     }
-    
+
     // Default fallback if we couldn't parse the response properly
-    return [{ color: "Main Color", volume: "~100g" }];
+    throw new Error("Failed to calculate yarn requirements");
   } catch (error) {
     console.error("Error calculating yarn requirements:", error);
     // Return a default requirement if calculation fails
-    return [{ color: "Main Color", volume: "~100g" }];
+    throw new Error("Failed to calculate yarn requirements");
   }
 }
 
 // Helper function to extract information about locked steps
 function extractLockedStepsInfo(originalPattern: any): string {
   let lockedStepsInfo = '';
-  
+
   originalPattern.sections.forEach((section: any, sectionIndex: number) => {
     lockedStepsInfo += `Section: ${section.name}\n`;
-    
+
     section.steps.forEach((step: any) => {
       if (step.locked) {
         lockedStepsInfo += `  - Step ID ${step.id}: "${step.text}"\n`;
       }
     });
   });
-  
+
   return lockedStepsInfo;
 }
 
 // Helper function to merge regenerated pattern with original locked steps
 function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any {
   const mergedPattern = { ...generatedPattern };
-  
+
   // Make sure sections match between original and new
   mergedPattern.sections = mergedPattern.sections.map((newSection: any, sectionIndex: number) => {
     const originalSection = originalPattern.sections[sectionIndex] || { 
@@ -294,16 +294,16 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
       locked: false,
       partImageUrl: null
     };
-    
+
     // Merge steps, preserving locked ones from original
     const mergedSteps = newSection.steps.map((newStep: any, stepIndex: number) => {
       const originalStep = originalSection.steps.find((s: any) => s.id === newStep.id);
-      
+
       // If the step was locked in the original, keep it exactly as it was
       if (originalStep && originalStep.locked) {
         return originalStep;
       }
-      
+
       // For new or unlocked steps, use the newly generated content
       // but preserve completion status from original if it exists
       if (originalStep) {
@@ -317,7 +317,7 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
           completed: originalStep.completed || false
         };
       }
-      
+
       // Completely new step
       return {
         ...newStep,
@@ -329,7 +329,7 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
         completed: false
       };
     });
-    
+
     // If the section is locked in the original, preserve all its properties
     if (originalSection.locked) {
       return {
@@ -337,7 +337,7 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
         steps: mergedSteps
       };
     }
-    
+
     // Otherwise merge the section data
     return {
       name: newSection.name,
@@ -347,7 +347,7 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
       steps: mergedSteps
     };
   });
-  
+
   // Merge other pattern properties, preserving original material notes
   return {
     ...originalPattern,

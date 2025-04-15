@@ -127,8 +127,15 @@ export const reducer = (state: State, action: Action): State => {
 }
 
 const listeners: Array<(state: State) => void> = []
-
 let memoryState: State = { toasts: [] }
+
+// Cleanup function
+export function removeToastListener(listener: (state: State) => void) {
+  const index = listeners.indexOf(listener);
+  if (index > -1) {
+    listeners.splice(index, 1);
+  }
+}
 
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action)
