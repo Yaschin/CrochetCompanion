@@ -1,0 +1,58 @@
+Perform a detailed code audit of the Crochet Companion app to identify and report:
+
+1. Functional Errors & Bugs:
+
+Check for syntax errors, runtime errors, and logic bugs that might impact functionality.
+
+Verify that all features (pattern input, viewer/editor, library, progress tracking, yarn stash, calendar/planner, etc.) are working as expected.
+
+
+
+2. Optimization Opportunities:
+
+Identify any performance bottlenecks (e.g., inefficient loops, unnecessary re-renders, or heavy computations in the client).
+
+Look for opportunities to optimize the use of resources (e.g., lazy loading components, memoization, or API request optimizations).
+
+
+
+3. Code Improvement Areas:
+
+Check overall code quality and maintainability, including proper modularity and separation of concerns.
+
+Identify duplicated code, unnecessary redundancies (for example, repetitive logic or unused variables/functions), and areas that could benefit from refactoring.
+
+Review use of modern React practices (e.g., hooks and functional components) and TailwindCSS best practices.
+
+
+
+4. Readability & Documentation:
+
+Assess if the code is well-organized and appropriately commented.
+
+Suggest improvements for naming conventions, folder/file structure, and overall code clarity.
+
+
+
+
+Instructions:
+
+Step 1: Review all files in the project (including App.js, components, DB interactions in patternService.js, API endpoints, etc.).
+
+Step 2: For each of the following categories—Functional Errors, Optimization, Code Improvement, and Redundancies—provide a detailed report with:
+
+A list of identified issues or potential improvements.
+
+Recommended changes for each issue.
+
+
+Step 3: Prioritize and rank these improvements based on:
+
+Critical (must-fix): Errors or issues that prevent core functionality or cause crashes.
+
+High Priority: Improvements that significantly enhance performance, maintainability, or user experience.
+
+Medium Priority: Refactoring or documentation improvements that would streamline the codebase.
+
+Low Priority: Minor optimizations or cosmetic improvements.
+
