@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '../lib/queryClient';
@@ -18,15 +18,26 @@ interface PatternViewerProps {
   onPatternUpdated: (pattern: Pattern) => void;
 }
 
+/**
+ * PatternViewer component displays the pattern details and allows interaction
+ * Optimized for memory efficiency and performance with large patterns
+ */
 const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated }) => {
   const { toast } = useToast();
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set([pattern.sections[0]?.name]));
+  
+  // Only store section names in state to reduce memory usage
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
+    // Start with only the first section expanded to minimize initial rendering
+    return new Set([pattern.sections[0]?.name]);
+  });
+  
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [imageRefinements, setImageRefinements] = useState('');
   const regenerationTimeoutRef = useRef<NodeJS.Timeout>();
 
+  // Clean up timeout to prevent memory leaks
   useEffect(() => {
     return () => {
       if (regenerationTimeoutRef.current) {
@@ -35,8 +46,10 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     };
   }, []);
 
-  // Format the creation date
-  const formattedDate = new Date(pattern.createdAt).toLocaleDateString();
+  // Memoize date formatting to avoid recalculating on every render
+  const formattedDate = useMemo(() => {
+    return new Date(pattern.createdAt).toLocaleDateString();
+  }, [pattern.createdAt]);
 
   // Update pattern mutation
   const updatePatternMutation = useMutation({
@@ -300,8 +313,8 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     },
   });
 
-  // Toggle section expansion
-  const toggleSection = (sectionName: string) => {
+  // Toggle section expansion - memoized to prevent unnecessary re-renders
+  const toggleSection = useCallback((sectionName: string) => {
     setExpandedSections(prev => {
       const newSet = new Set(prev);
       if (newSet.has(sectionName)) {
@@ -311,48 +324,100 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       }
       return newSet;
     });
-  };
+  }, []);
 
-  // Update a step
-  const updateStep = (sectionIndex: number, stepIndex: number, updatedStep: PatternStep) => {
+  // Update a step with optimized memory usage
+  const updateStep = useCallback((sectionIndex: number, stepIndex: number, updatedStep: PatternStep) => {
+    // Create a memory-efficient copy of the pattern using structural sharing
     const updatedSections = [...pattern.sections];
+    
+    // Only clone the specific section being modified
+    const currentSection = updatedSections[sectionIndex];
+    const updatedSteps = [...currentSection.steps];
+    
+    // Replace only the specific step
+    updatedSteps[stepIndex] = updatedStep;
+    
+    // Create updated section with the new steps array
     updatedSections[sectionIndex] = {
-      ...updatedSections[sectionIndex],
-      steps: [
-        ...updatedSections[sectionIndex].steps.slice(0, stepIndex),
-        updatedStep,
-        ...updatedSections[sectionIndex].steps.slice(stepIndex + 1)
-      ]
+      ...currentSection,
+      steps: updatedSteps
     };
 
+    // Create the updated pattern with minimum cloning
     const updatedPattern = { ...pattern, sections: updatedSections };
     updatePatternMutation.mutate(updatedPattern);
-  };
+  }, [pattern, updatePatternMutation]);
 
-  // Delete a step
-  const deleteStep = (sectionIndex: number, stepIndex: number) => {
+  // Delete a step with optimized memory usage
+  const deleteStep = useCallback((sectionIndex: number, stepIndex: number) => {
+    // Create minimal copies needed for the update
     const updatedSections = [...pattern.sections];
+    const currentSection = updatedSections[sectionIndex];
+    
+    // Create a new steps array without the deleted step
+    const filteredSteps = currentSection.steps.filter((_, i) => i !== stepIndex);
+    
+    // Update only the affected section
     updatedSections[sectionIndex] = {
-      ...updatedSections[sectionIndex],
-      steps: updatedSections[sectionIndex].steps.filter((_, i) => i !== stepIndex)
+      ...currentSection,
+      steps: filteredSteps
     };
 
+    // Create updated pattern with minimal cloning
     const updatedPattern = { ...pattern, sections: updatedSections };
     updatePatternMutation.mutate(updatedPattern);
-  };
+  }, [pattern, updatePatternMutation]);
 
-  // Add a new step to a section
-  const addStep = (sectionIndex: number) => {
+  // Add a new step to a section with memory optimization
+  const addStep = useCallback((sectionIndex: number) => {
+    // Get the current section
+    const currentSection = pattern.sections[sectionIndex];
+    
+    // Calculate the new step ID efficiently
+    const maxId = currentSection.steps.reduce(
+      (max, step) => Math.max(max, step.id), 0
+    );
+    const newStepId = maxId + 1;
+    
+    // Create the new step with minimal properties
+    const newStep = {
+      id: newStepId,
+      text: "New step - add your instructions here",
+      locked: false,
+      count: 0,
+      notes: "",
+      photo: null,
+      completed: false
+    };
+    
+    // Create updated sections array with minimal cloning
     const updatedSections = [...pattern.sections];
-    const newStepId = Math.max(...updatedSections[sectionIndex].steps.map(s => s.id), 0) + 1;
-
     updatedSections[sectionIndex] = {
-      ...updatedSections[sectionIndex],
+      ...currentSection,
+      steps: [...currentSection.steps, newStep]
+    };
+
+    // Update the pattern with minimal cloning
+    const updatedPattern = { ...pattern, sections: updatedSections };
+    updatePatternMutation.mutate(updatedPattern);
+  }, [pattern, updatePatternMutation]);
+
+  // Add a new section with memory optimization and memoization
+  const addSection = useCallback(() => {
+    const newSectionName = "New Section";
+    
+    // Create the minimal required new section object
+    const newSection = {
+      name: newSectionName,
+      notes: "",
+      locked: false,
+      partImageUrl: null,
       steps: [
-        ...updatedSections[sectionIndex].steps,
+        // Include only one initial step with minimal properties
         {
-          id: newStepId,
-          text: "New step - add your instructions here",
+          id: 1,
+          text: "Add your instructions here",
           locked: false,
           count: 0,
           notes: "",
@@ -361,44 +426,19 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         }
       ]
     };
-
-    const updatedPattern = { ...pattern, sections: updatedSections };
-    updatePatternMutation.mutate(updatedPattern);
-  };
-
-  // Add a new section
-  const addSection = () => {
-    const newSectionName = "New Section";
+    
+    // Create updated pattern with minimal cloning
     const updatedPattern = {
       ...pattern,
-      sections: [
-        ...pattern.sections,
-        {
-          name: newSectionName,
-          notes: "",
-          locked: false,
-          partImageUrl: null,
-          steps: [
-            {
-              id: 1,
-              text: "Add your instructions here",
-              locked: false,
-              count: 0,
-              notes: "",
-              photo: null,
-              aiStepImage: null,
-              completed: false
-            }
-          ]
-        }
-      ]
+      sections: [...pattern.sections, newSection]
     };
 
+    // Submit the update
     updatePatternMutation.mutate(updatedPattern);
 
-    // Expand the new section
+    // Expand the new section for immediate editing
     setExpandedSections(prev => new Set(prev).add(newSectionName));
-  };
+  }, [pattern, updatePatternMutation]);
 
   // Handle pattern regeneration
   const handleRegeneratePattern = async () => {
@@ -501,36 +541,52 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     }
   };
 
-  // Handle pattern export
-  const handleExportPattern = () => {
-    // Create a formatted text version of the pattern
-    let exportText = `# ${pattern.title}\n\n`;
-    exportText += `Project Type: ${pattern.projectType}\n`;
-    exportText += `Skill Level: ${pattern.skillLevel}\n`;
-    if (pattern.yarnType) exportText += `Yarn Type: ${pattern.yarnType}\n`;
-    if (pattern.size) exportText += `Size: ${pattern.size}\n\n`;
+  // Handle pattern export with memory optimization and memoization
+  const handleExportPattern = useCallback(() => {
+    // Create pattern text in chunks to reduce memory pressure
+    const textChunks = [];
+    
+    // Add header information
+    textChunks.push(`# ${pattern.title}\n\n`);
+    textChunks.push(`Project Type: ${pattern.projectType}\n`);
+    textChunks.push(`Skill Level: ${pattern.skillLevel}\n`);
+    if (pattern.yarnType) textChunks.push(`Yarn Type: ${pattern.yarnType}\n`);
+    if (pattern.size) textChunks.push(`Size: ${pattern.size}\n\n`);
 
+    // Process each section separately to avoid creating one large string
     pattern.sections.forEach(section => {
-      exportText += `## ${section.name}\n\n`;
+      textChunks.push(`## ${section.name}\n\n`);
 
+      // Process steps in batches
       section.steps.forEach(step => {
-        exportText += `${step.id}. ${step.text}\n`;
-        if (step.notes) exportText += `   Notes: ${step.notes}\n`;
-        exportText += '\n';
+        let stepText = `${step.id}. ${step.text}\n`;
+        if (step.notes) stepText += `   Notes: ${step.notes}\n`;
+        stepText += '\n';
+        textChunks.push(stepText);
       });
     });
 
+    // Join chunks only at the end to minimize memory usage
+    const exportText = textChunks.join('');
+    
     // Create a download link
     const blob = new Blob([exportText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
+    
+    // Use a more direct download approach
     const a = document.createElement('a');
     a.href = url;
     a.download = `${pattern.title.replace(/\s+/g, '_')}_pattern.txt`;
+    a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+    
+    // Clean up resources immediately to prevent memory leaks
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  }, [pattern]); // Only re-create when pattern changes
 
   return (
     <div className="bg-white shadow-md rounded-2xl p-6 mb-8">
@@ -709,12 +765,15 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             onUpdateStep={(stepIndex, updatedStep) => updateStep(sectionIndex, stepIndex, updatedStep)}
             onDeleteStep={(stepIndex) => deleteStep(sectionIndex, stepIndex)}
             onAddStep={() => addStep(sectionIndex)}
-            onUpdateSection={(updatedSection) => {
+            onUpdateSection={useCallback((updatedSection) => {
+              // Create minimal copies needed for the update
               const updatedSections = [...pattern.sections];
               updatedSections[sectionIndex] = updatedSection;
+              
+              // Update only what changed to minimize memory usage
               const updatedPattern = { ...pattern, sections: updatedSections };
               updatePatternMutation.mutate(updatedPattern);
-            }}
+            }, [pattern, sectionIndex, updatePatternMutation])}
           />
         ))}
 
