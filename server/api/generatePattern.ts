@@ -1055,3 +1055,4 @@ The template suggests using ${yarnWeight} yarn with a ${hookSize} hook as a star
 Once you add your API key, you can regenerate this pattern to get detailed, accurate material requirements customized to your project.`
   };
 }
+}

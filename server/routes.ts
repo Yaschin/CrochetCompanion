@@ -505,6 +505,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to upload step photo", error: (error as Error).message });
     }
   });
+  
+  // Add endpoint for uploading section photos
+  app.post("/api/patterns/:patternId/sections/:sectionIndex/photo", async (req: Request, res: Response) => {
+    try {
+      const { patternId, sectionIndex } = req.params;
+      const sectionIdx = parseInt(sectionIndex, 10);
+      
+      if (isNaN(sectionIdx)) {
+        return res.status(400).json({ message: "Invalid section index" });
+      }
+      
+      // Get the pattern
+      const pattern = await patternService.getPattern(patternId);
+      if (!pattern) {
+        return res.status(404).json({ message: "Pattern not found" });
+      }
+      
+      // Get the section
+      const section = pattern.sections[sectionIdx];
+      if (!section) {
+        return res.status(404).json({ message: "Section not found" });
+      }
+
+      if (!req.body.photo) {
+        return res.status(400).json({ message: "Photo data is required" });
+      }
+
+      // Process the base64 encoded photo data
+      const photoData = req.body.photo;
+      
+      // Create a unique filename based on pattern ID and section
+      const fileName = `${patternId}_section${sectionIdx}_${Date.now().toString()}.png`;
+      
+      // Extract the base64 data from the data URL
+      const base64Data = photoData.replace(/^data:image\/\\w+;base64,/, '');
+      const dataBuffer = Buffer.from(base64Data, 'base64');
+      
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = './client/public/uploads';
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      
+      // Write the file to disk
+      fs.writeFileSync(`${uploadsDir}/${fileName}`, dataBuffer);
+      
+      // Update the section with the photo URL
+      const updatedSections = [...pattern.sections];
+      updatedSections[sectionIdx] = {
+        ...section,
+        partImageUrl: `/uploads/${fileName}`
+      };
+      
+      // Update the pattern
+      const updatedPattern = await patternService.updatePattern(patternId, {
+        sections: updatedSections
+      });
+      
+      if (!updatedPattern) {
+        return res.status(500).json({ message: "Failed to update pattern with section photo" });
+      }
+      
+      res.json({
+        success: true,
+        photoUrl: `/uploads/${fileName}`,
+        pattern: updatedPattern
+      });
+    } catch (error) {
+      console.error("Error uploading section photo:", error);
+      res.status(500).json({ message: "Failed to upload section photo", error: String(error) });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
