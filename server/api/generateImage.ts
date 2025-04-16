@@ -163,22 +163,33 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
 }
 
 /**
- * Get appropriate placeholder image based on image type
+ * Get appropriate placeholder image based on image type with improved messaging
+ * @param type - The type of image being generated
+ * @param prompt - The original prompt for context
+ * @param partName - Optional part name for part-specific placeholders
+ * @returns URL to an appropriate placeholder image
  */
 function getPlaceholderImage(type: string, prompt: string, partName?: string): string {
   const baseUrl = "https://placehold.co";
   
+  // Create a truncated prompt for display (if relevant)
+  const shortPrompt = prompt && prompt.length > 20 
+    ? prompt.substring(0, 20).replace(/\s+/g, '+') + '...' 
+    : (prompt || '').replace(/\s+/g, '+');
+    
+  // Format part name for URL if provided
+  const partText = partName ? partName.replace(/\s+/g, '+') : 'Part';
+  
   switch (type) {
     case "final":
-      return `${baseUrl}/1024x1024/f2e6ff/6c4ea6?text=AI+Image+Generation+Unavailable%0AAdd+OpenAI+API+Key+to+Enable%0AVisit+platform.openai.com`;
+      return `${baseUrl}/1024x1024/f2e6ff/6c4ea6?text=Pattern+Image+Unavailable%0A%0ATo+enable+AI+image+generation:%0A1.+Get+OpenAI+API+key+at+platform.openai.com%0A2.+Add+key+to+environment+variables`;
     case "part":
-      const partText = partName ? partName.replace(/\s+/g, '+') : 'Part';
-      return `${baseUrl}/400x400/f8f9fa/6c757d?text=${partText}+Image%0AAdd+Valid+OpenAI+API+Key%0A(See+Secret+Environment+Variables)`;
+      return `${baseUrl}/400x400/f8f9fa/6c757d?text=${partText}+Image%0A%0ATo+generate+this+image:%0A1.+Add+a+valid+OpenAI+API+key%0A2.+Check+environment+variables`;
     case "diagram":
-      return `${baseUrl}/600x600/fffcf0/8a7340?text=Stitch+Diagram%0AAdd+OpenAI+API+Key+to+Enable%0AGet+Key+at+platform.openai.com`;
+      return `${baseUrl}/600x600/fffcf0/8a7340?text=Stitch+Diagram+Unavailable%0A%0ATo+enable+stitch+diagrams:%0A1.+Get+OpenAI+API+key%0A2.+Add+to+your+environment+variables`;
     case "step":
     default:
-      return `${baseUrl}/600x400/f0f6ff/3a5c8a?text=Step+Image+Unavailable%0AAdd+OpenAI+API+Key+to+Enable%0ACheck+Your+Environment+Variables`;
+      return `${baseUrl}/600x400/f0f6ff/3a5c8a?text=Step+Image+Unavailable%0A%0ATo+enable+step+images:%0A1.+Get+OpenAI+API+key+at+platform.openai.com%0A2.+Add+to+environment+variables`;
   }
 }
 
