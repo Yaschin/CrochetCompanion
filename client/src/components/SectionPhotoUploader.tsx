@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Camera, ImageIcon, Upload, X } from 'lucide-react';
+import { Camera, ImageIcon, Upload, X, RefreshCw, CheckCircle, Percent } from 'lucide-react';
 import axios from 'axios';
 
 interface SectionPhotoUploaderProps {
@@ -10,6 +10,7 @@ interface SectionPhotoUploaderProps {
   sectionIndex: number;
   currentPhoto: string | null;
   onPhotoUpdated: (photoUrl: string) => void;
+  onRequestPatternRegeneration?: () => void;
 }
 
 // Define response types for API calls
@@ -29,7 +30,8 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
   patternId,
   sectionIndex,
   currentPhoto,
-  onPhotoUpdated
+  onPhotoUpdated,
+  onRequestPatternRegeneration
 }) => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -62,6 +64,11 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
     });
   };
 
+  // State for alignment check
+  const [isAlignmentChecking, setIsAlignmentChecking] = useState(false);
+  const [alignmentScore, setAlignmentScore] = useState<number | null>(null);
+  const [showRegenerateOption, setShowRegenerateOption] = useState(false);
+
   // Handle upload
   const handleUpload = async () => {
     if (!selectedFile) {
@@ -93,6 +100,9 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
         // Update state
         onPhotoUpdated(response.data.photoUrl);
         
+        // Ask if user wants to regenerate pattern based on new image
+        setShowRegenerateOption(true);
+        
         // Reset component state
         setSelectedFile(null);
         setPreviewUrl(null);
@@ -109,6 +119,53 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+  
+  // Handle pattern regeneration request
+  const handleRegeneratePattern = () => {
+    if (onRequestPatternRegeneration) {
+      toast({
+        title: 'Regenerating pattern',
+        description: 'Updating pattern to match your new image...',
+      });
+      onRequestPatternRegeneration();
+      setShowRegenerateOption(false);
+    }
+  };
+  
+  // Check alignment between pattern and image
+  const checkAlignment = async () => {
+    try {
+      setIsAlignmentChecking(true);
+      
+      // Call API endpoint to check alignment
+      const response = await axios.post(`/api/patterns/${patternId}/sections/${sectionIndex}/alignment-check`);
+      
+      if (response.data.success && response.data.alignmentScore !== undefined) {
+        setAlignmentScore(response.data.alignmentScore);
+        
+        // Recommend regeneration if score is low
+        if (response.data.alignmentScore < 70) {
+          setShowRegenerateOption(true);
+        }
+        
+        toast({
+          title: 'Alignment Check Complete',
+          description: `Your pattern matches the image by approximately ${response.data.alignmentScore}%`,
+        });
+      } else {
+        throw new Error('Alignment check failed');
+      }
+    } catch (error) {
+      console.error('Alignment check error:', error);
+      toast({
+        title: 'Alignment check failed',
+        description: 'Could not determine pattern-image alignment. Try again later.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsAlignmentChecking(false);
     }
   };
 
@@ -194,6 +251,44 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
           <ImageIcon className="h-3.5 w-3.5 mr-1" />
           Add Section Photo
         </Button>
+      )}
+      
+      {/* Photo action buttons (alignment check and regenerate) */}
+      {currentPhoto && (
+        <div className="flex mt-2 space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={checkAlignment}
+            disabled={isAlignmentChecking}
+            className="flex items-center gap-1 text-xs"
+          >
+            <Percent className="h-3.5 w-3.5 mr-1" />
+            {isAlignmentChecking ? 'Checking...' : 'Check Pattern Match'}
+          </Button>
+          
+          {showRegenerateOption && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRegeneratePattern}
+              className="flex items-center gap-1 text-xs bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200"
+            >
+              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+              Regenerate Pattern
+            </Button>
+          )}
+          
+          {alignmentScore !== null && (
+            <div className="flex items-center text-xs font-medium ml-2">
+              <span className={alignmentScore >= 80 ? "text-green-600" : 
+                alignmentScore >= 60 ? "text-amber-600" : "text-red-600"}>
+                {alignmentScore}% match
+              </span>
+              {alignmentScore >= 80 && <CheckCircle className="h-3.5 w-3.5 ml-1 text-green-600" />}
+            </div>
+          )}
+        </div>
       )}
 
       {/* Upload dialog */}

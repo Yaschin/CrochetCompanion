@@ -447,6 +447,41 @@ const PatternSection: React.FC<PatternSectionProps> = ({
               sectionIndex={sectionIndex}
               currentPhoto={section.partImageUrl || null}
               onPhotoUpdated={handleSectionImageGenerated}
+              onRequestPatternRegeneration={() => {
+                // Request pattern regeneration based on the new image
+                toast({
+                  title: "Regenerating Pattern",
+                  description: "Updating pattern to match your new image...",
+                });
+                
+                // Call the API to regenerate the pattern
+                if (section.patternId) {
+                  apiRequest('POST', `/api/patterns/${section.patternId}/regenerate`, {
+                    sectionIndex,
+                    basedOnImage: true
+                  })
+                  .then(async (response) => {
+                    const data = await response.json();
+                    if (data.success) {
+                      toast({
+                        title: "Pattern Updated",
+                        description: "Pattern has been updated based on your image.",
+                      });
+                      // The full pattern will be updated through the API response
+                    } else {
+                      throw new Error("Pattern regeneration failed");
+                    }
+                  })
+                  .catch(error => {
+                    console.error("Error regenerating pattern:", error);
+                    toast({
+                      title: "Regeneration Failed",
+                      description: "There was a problem updating the pattern. Please try again.",
+                      variant: "destructive",
+                    });
+                  });
+                }
+              }}
             />
           </div>
           
