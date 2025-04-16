@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Camera, ImageIcon, Upload, X } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import axios from 'axios';
 
 interface SectionPhotoUploaderProps {
   patternId: string;
@@ -80,19 +80,18 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
       const base64Data = await fileToBase64(selectedFile);
       
       // Send to server
-      const response = await apiRequest(`/api/patterns/${patternId}/sections/${sectionIndex}/photo`, {
-        method: 'POST',
-        data: { photo: base64Data }
+      const response = await axios.post(`/api/patterns/${patternId}/sections/${sectionIndex}/photo`, {
+        photo: base64Data
       });
       
-      if (response.success && response.photoUrl) {
+      if (response.data.success && response.data.photoUrl) {
         toast({
           title: 'Photo uploaded',
           description: 'Your section photo has been successfully uploaded',
         });
         
         // Update state
-        onPhotoUpdated(response.photoUrl);
+        onPhotoUpdated(response.data.photoUrl);
         
         // Reset component state
         setSelectedFile(null);
@@ -137,18 +136,16 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
       setIsUploading(true);
       
       // Call the API endpoint to generate an image for this section
-      const response = await apiRequest(`/api/patterns/${patternId}/sections/${sectionIndex}/image`, {
-        method: 'POST'
-      });
+      const response = await axios.post(`/api/patterns/${patternId}/sections/${sectionIndex}/image`);
       
-      if (response.success && response.imageUrl) {
+      if (response.data.success && response.data.imageUrl) {
         toast({
           title: 'Image generated',
           description: 'AI has generated a new image for this section',
         });
         
         // Update state
-        onPhotoUpdated(response.imageUrl);
+        onPhotoUpdated(response.data.imageUrl);
       } else {
         throw new Error('Generation failed');
       }
