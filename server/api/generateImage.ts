@@ -39,22 +39,21 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
     const extractedColors = prompt.match(/colors?:?\s*([^.]+)/i);
     const recommendedColors = extractedColors ? extractedColors[1].trim() : "";
     
-    // For final product images, create a detailed prompt that shows multi-view realistic photos
-    enhancedPrompt = `Generate a high-quality, real-life photographic image of a crocheted ${projectType || "item"} based on the pattern: ${prompt}. 
+    // For final product images, create a detailed prompt focusing on just the front view
+    enhancedPrompt = `Generate a high-quality, real-life photographic image showing a single front view of a crocheted ${projectType || "item"} based on the pattern: ${prompt}. 
       The project is crafted using ${yarnType || "appropriate"} yarn${recommendedColors ? `, with recommended colors being ${recommendedColors}` : ""}.
       
-      Create a composite image that displays four distinct views arranged horizontally: left view, front view, back view, and right view. 
-      Each view should be clearly distinguishable and seamlessly integrated in a continuous horizontal layout.
+      Display only the front view at a straight-on angle to show the most defining features of the pattern.
       
       Use a simple, neutral background and professional lighting to emphasize the detailed texture and true colors of the piece. 
       The style should be natural and realistic, not stylized as cartoon, and reflect the actual design and wool type used in the pattern.
       
-      Show the fine details of the crochet stitches, texture patterns, and any special features like embellishments or color changes.
+      Show fine details of the crochet stitches, texture patterns, and any special features like embellishments or color changes.
       
-      Add subtle labels for "Front", "Back", "Left Side", and "Right Side" to help identify each view.
+      The image should realistically capture the texture, colors, and look of the finished piece as it would appear in real life - 
+      similar to a professional product photograph that would be used in a pattern book or craft store display.
       
-      The image should realistically capture the texture, colors, and look of the finished piece as it would appear in real life.
-      It should fully be based on the generated pattern details.`;
+      It should fully be based on the generated pattern details and be suitable for a pattern thumbnail.`;
   } else if (type === "part") {
     // For part images, create a focused view of just that part
     enhancedPrompt = `Generate a simplified illustration of the ${partName?.toLowerCase() || prompt} 
