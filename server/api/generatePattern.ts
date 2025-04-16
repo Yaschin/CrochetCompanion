@@ -460,27 +460,55 @@ function extractColorMentions(pattern: any): string[] {
 }
 
 // Generate default yarn requirements when AI fails
-function generateDefaultYarnRequirements(pattern: any, projectType: string, complexityScore: number): YarnRequirement[] {
+/**
+ * Generates default yarn requirements based on project type and complexity
+ * 
+ * @param pattern - The pattern object (for color detection)
+ * @param projectType - Type of crochet project
+ * @param complexityScore - Complexity score (0-10)
+ * @param yarnWeight - Optional yarn weight information to include in the volume description
+ * @returns Array of YarnRequirement objects
+ */
+function generateDefaultYarnRequirements(
+  pattern: any, 
+  projectType: string, 
+  complexityScore: number = 5,
+  yarnWeight: string = ''
+): YarnRequirement[] {
   // Extract potential colors or use defaults
-  const detectedColors = extractColorMentions(pattern);
+  const detectedColors = pattern && typeof pattern === 'object' ? extractColorMentions(pattern) : [];
   const colors = detectedColors.length > 0 ? detectedColors : ['Main Color', 'Contrast Color'];
   
   // Estimate volume based on project type and complexity
   let mainVolume = '';
+  let contrastVolume = '';
   
+  // Determine appropriate yarn amounts based on project type
   if (/blanket|afghan|throw/i.test(projectType)) {
     mainVolume = complexityScore > 7 ? '~800g (8 skeins)' : '~500g (5 skeins)';
-  } else if (/sweater|cardigan|jumper/i.test(projectType)) {
+    contrastVolume = '~200g (2 skeins)';
+  } else if (/sweater|cardigan|jumper|garment/i.test(projectType)) {
     mainVolume = complexityScore > 7 ? '~500g (5 skeins)' : '~400g (4 skeins)';
+    contrastVolume = '~100g (1 skein)';
   } else if (/amigurumi|plush|toy/i.test(projectType)) {
     mainVolume = complexityScore > 7 ? '~150g' : '~100g';
+    contrastVolume = '~50g (1/2 skein)';
   } else if (/hat|beanie/i.test(projectType)) {
     mainVolume = '~100g (1 skein)';
+    contrastVolume = '~50g (1/2 skein)';
   } else if (/scarf|cowl/i.test(projectType)) {
     mainVolume = '~200g (2 skeins)';
+    contrastVolume = '~50g (1/2 skein)';
   } else {
     // Default for unknown project types
     mainVolume = '~200g (2 skeins)';
+    contrastVolume = '~50g (1/2 skein)';
+  }
+  
+  // Add yarn weight information if provided
+  if (yarnWeight) {
+    mainVolume += ` of ${yarnWeight}`;
+    contrastVolume += ` of ${yarnWeight}`;
   }
   
   // Create requirements list
@@ -488,12 +516,14 @@ function generateDefaultYarnRequirements(pattern: any, projectType: string, comp
     { color: colors[0], volume: mainVolume }
   ];
   
-  // Add contrast colors if detected
+  // Add contrast colors if available
   if (colors.length > 1) {
-    for (let i = 1; i < colors.length && i < 3; i++) {
+    // Only add up to 2 contrast colors to prevent excessive requirements
+    const maxContrastColors = Math.min(colors.length - 1, 2);
+    for (let i = 1; i <= maxContrastColors; i++) {
       requirements.push({
         color: colors[i],
-        volume: '~50g (1/2 skein)'
+        volume: contrastVolume
       });
     }
   }
@@ -640,23 +670,15 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
     yarnWeight = "Medium (4) - Worsted weight";
   }
   
-  // Generate appropriate yarn requirements based on project type
-  const yarnRequirements = [
-    { 
-      color: "Main Color", 
-      volume: /blanket|afghan|throw/i.test(projectType) 
-        ? `~500g (5 skeins) of ${yarnWeight}` 
-        : /garment|sweater|cardigan/i.test(projectType)
-        ? `~300g (3 skeins) of ${yarnWeight}`
-        : `~100g (1 skein) of ${yarnWeight}` 
-    },
-    { 
-      color: "Contrast Color", 
-      volume: /blanket|afghan|throw/i.test(projectType)
-        ? "~200g (2 skeins)"
-        : "~50g (1/2 skein)" 
-    }
-  ];
+  // Generate appropriate yarn requirements using the shared utility function
+  // Create a minimal pattern object with just enough structure for the function to work
+  const templatePattern = { 
+    title: cleanPrompt,
+    description: `${cleanPrompt} ${projectType}`,
+    sections: []
+  };
+  // Use the shared utility function to generate consistent yarn requirements
+  const yarnRequirements = generateDefaultYarnRequirements(templatePattern, projectType, 5, yarnWeight);
   
   // Generate appropriate sections based on project type
   const sections = [];
