@@ -265,12 +265,11 @@ const SectionImagePlaceholder: React.FC<SectionImagePlaceholderProps> = ({
           </p>
           <p className="text-xs text-gray-500 mb-3 text-center max-w-[90%]">
             Generate an AI illustration of the {sectionName.toLowerCase()} part of your {projectType || 'pattern'}.
-            {!process.env.OPENAI_API_KEY && (
-              <span className="block mt-1 text-amber-600">
-                <Key className="h-3 w-3 inline mr-1" />
-                OpenAI API key required
-              </span>
-            )}
+            {/* API key check is now handled by the error handling in the generateImage function */}
+            <span className="block mt-1 text-xs text-gray-400">
+              <Key className="h-3 w-3 inline mr-1" />
+              Requires OpenAI API key
+            </span>
           </p>
           <button
             onClick={() => generateImage()}
