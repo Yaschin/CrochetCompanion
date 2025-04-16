@@ -508,7 +508,7 @@ function generateDefaultYarnRequirements(
   let mainVolume = '';
   let contrastVolume = '';
   
-  // Determine appropriate yarn amounts based on project type
+  // Determine yarn requirements based on project type and complexity
   if (/blanket|afghan|throw/i.test(projectType)) {
     mainVolume = complexityScore > 7 ? '~800g (8 skeins)' : '~500g (5 skeins)';
     contrastVolume = '~200g (2 skeins)';
@@ -516,18 +516,130 @@ function generateDefaultYarnRequirements(
     mainVolume = complexityScore > 7 ? '~500g (5 skeins)' : '~400g (4 skeins)';
     contrastVolume = '~100g (1 skein)';
   } else if (/amigurumi|plush|toy/i.test(projectType)) {
-    mainVolume = complexityScore > 7 ? '~150g' : '~100g';
+    mainVolume = complexityScore > 7 ? '~150g (1-2 skeins)' : '~100g (1 skein)';
     contrastVolume = '~50g (1/2 skein)';
-  } else if (/hat|beanie/i.test(projectType)) {
+  } else if (/hat|beanie|cap/i.test(projectType)) {
     mainVolume = '~100g (1 skein)';
     contrastVolume = '~50g (1/2 skein)';
   } else if (/scarf|cowl/i.test(projectType)) {
     mainVolume = '~200g (2 skeins)';
     contrastVolume = '~50g (1/2 skein)';
+  } else if (/bag|tote|purse/i.test(projectType)) {
+    mainVolume = complexityScore > 7 ? '~300g (3 skeins)' : '~200g (2 skeins)';
+    contrastVolume = '~100g (1 skein)';
+  } else if (/shawl|wrap/i.test(projectType)) {
+    mainVolume = complexityScore > 7 ? '~400g (4 skeins)' : '~300g (3 skeins)';
+    contrastVolume = '~100g (1 skein)';
   } else {
     // Default for unknown project types
     mainVolume = '~200g (2 skeins)';
     contrastVolume = '~50g (1/2 skein)';
+  }
+
+/**
+ * Calculate appropriate yarn amounts based on project type, size, and complexity
+ * @param projectType - Type of crochet project
+ * @param complexityScore - Complexity score (1-10)
+ * @returns Object with mainVolume and contrastVolume
+ */
+function calculateYarnRequirements(projectType: string, complexityScore: number) {
+  let mainVolume = '';
+  let contrastVolume = '';
+  
+  // Adjust complexity for estimating yarn volume (on a 1-3 scale)
+  const complexityFactor = Math.max(1, Math.min(3, Math.ceil(complexityScore / 3)));
+  
+  // Determine appropriate yarn amounts based on project type
+  if (/blanket|afghan|throw/i.test(projectType)) {
+    // Blankets require the most yarn
+    const baseAmount = 500; // 500g base for a small blanket
+    const sizeMultiplier = {
+      1: 1,    // Small throw - base amount
+      2: 1.5,  // Medium afghan - 1.5x base
+      3: 2.5   // Large blanket - 2.5x base
+    }[complexityFactor] || 1;
+    
+    const totalGrams = Math.round(baseAmount * sizeMultiplier / 100) * 100; // Round to nearest 100g
+    const skeins = Math.ceil(totalGrams / 100);
+    
+    mainVolume = `~${totalGrams}g (${skeins} skeins)`;
+    contrastVolume = `~${Math.ceil(totalGrams * 0.2)}g (${Math.ceil(totalGrams * 0.2 / 100)} skeins)`;
+  } else if (/sweater|cardigan|jumper|garment/i.test(projectType)) {
+    // Garments depend on size and complexity
+    const baseAmount = 300; // 300g base for a simple adult small sweater
+    const sizeMultiplier = {
+      1: 1,    // Small/simple
+      2: 1.4,  // Medium/moderate
+      3: 1.8   // Large/complex
+    }[complexityFactor] || 1;
+    
+    const totalGrams = Math.round(baseAmount * sizeMultiplier / 50) * 50; // Round to nearest 50g
+    const skeins = Math.ceil(totalGrams / 100);
+    
+    mainVolume = `~${totalGrams}g (${skeins} skeins)`;
+    contrastVolume = `~${Math.ceil(totalGrams * 0.15 / 50) * 50}g (${Math.ceil(totalGrams * 0.15 / 100)} skeins)`;
+  } else if (/amigurumi|plush|toy/i.test(projectType)) {
+    // Amigurumi by size
+    const baseAmounts = {
+      1: 50,   // Small amigurumi (keychain size)
+      2: 100,  // Medium toy
+      3: 200   // Large plush
+    };
+    const totalGrams = baseAmounts[complexityFactor] || 100;
+    
+    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} ${totalGrams <= 100 ? 'skein' : 'skeins'})`;
+    contrastVolume = `~${Math.ceil(totalGrams * 0.3)}g (${totalGrams * 0.3 <= 50 ? '1/2' : '1'} skein)`;
+  } else if (/hat|beanie|cap/i.test(projectType)) {
+    // Hats are generally one skein projects
+    const baseAmounts = {
+      1: 70,   // Simple beanie
+      2: 100,  // Textured hat
+      3: 150   // Complex hat with cables/colorwork
+    };
+    const totalGrams = baseAmounts[complexityFactor] || 100;
+    
+    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} skein${totalGrams > 100 ? 's' : ''})`;
+    contrastVolume = `~${Math.ceil(totalGrams * 0.25)}g (${totalGrams * 0.25 <= 50 ? '1/2' : '1'} skein)`;
+  } else if (/scarf|cowl/i.test(projectType)) {
+    // Scarves vary by length/width/pattern
+    const baseAmounts = {
+      1: 150,  // Simple scarf
+      2: 200,  // Moderate width/texture
+      3: 300   // Wide/long/textured
+    };
+    const totalGrams = baseAmounts[complexityFactor] || 200;
+    
+    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} skeins)`;
+    contrastVolume = `~${Math.ceil(totalGrams * 0.2)}g (${Math.ceil(totalGrams * 0.2 / 100)} skein)`;
+  } else if (/bag|tote|purse/i.test(projectType)) {
+    // Bags often require less than garments but more than accessories
+    const baseAmounts = {
+      1: 150,  // Small bag/purse
+      2: 250,  // Medium tote
+      3: 400   // Large or structured bag
+    };
+    const totalGrams = baseAmounts[complexityFactor] || 250;
+    
+    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} skeins)`;
+    contrastVolume = `~${Math.ceil(totalGrams * 0.2)}g (${Math.ceil(totalGrams * 0.2 / 100)} skein)`;
+  } else if (/shawl|wrap/i.test(projectType)) {
+    // Shawls vary greatly in size
+    const baseAmounts = {
+      1: 200,  // Small/simple shawl
+      2: 400,  // Medium shawl
+      3: 600   // Large complex wrap
+    };
+    const totalGrams = baseAmounts[complexityFactor] || 400;
+    
+    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} skeins)`;
+    contrastVolume = `~${Math.ceil(totalGrams * 0.15)}g (${Math.ceil(totalGrams * 0.15 / 100)} skein)`;
+  } else {
+    // Default for unknown project types
+    const baseAmount = 200;
+    const totalGrams = baseAmount * complexityFactor;
+    
+    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} skeins)`;
+    contrastVolume = `~${Math.ceil(totalGrams * 0.25)}g (${Math.ceil(totalGrams * 0.25 / 100)} skein)`;
   }
   
   // Add yarn weight information if provided
@@ -858,13 +970,29 @@ The template below provides basic guidance but lacks the customization and detai
     notionsRequirements: [
       { name: "Tapestry needle", description: "For weaving in ends", quantity: 1 },
       { name: "Stitch markers", description: "For marking rounds/sections", quantity: 4 },
-      { name: "Safety eyes", description: "12mm - if making a plushie/amigurumi", quantity: 2 }
+      ...(/amigurumi|toy|plush|stuffed/i.test(projectType) ? [
+        { name: "Safety eyes", description: "12mm - for plushie/amigurumi", quantity: 2 },
+        { name: "Embroidery floss", description: "Black - for facial features", quantity: 1 }
+      ] : []),
+      ...(/garment|sweater|cardigan/i.test(projectType) ? [
+        { name: "Buttons", description: "1 inch (25mm) - if making a cardigan", quantity: 5 }
+      ] : []),
+      ...(/bag|tote|purse/i.test(projectType) ? [
+        { name: "Magnetic snap closure", description: "For bag opening", quantity: 1 },
+        { name: "Bag handles", description: "Optional - wood or leather", quantity: 2 }
+      ] : [])
     ],
     toolRequirements: [
       { name: "Tape measure", description: "For checking gauge and measurements" },
-      { name: "Scissors", description: "For cutting yarn" }
+      { name: "Scissors", description: "For cutting yarn" },
+      ...(/garment|sweater|cardigan/i.test(projectType) ? [
+        { name: "Blocking pins", description: "For blocking garment pieces" }
+      ] : []),
+      ...(/amigurumi|toy|plush|stuffed/i.test(projectType) ? [
+        { name: "Stuffing tool", description: "For inserting stuffing in small areas" }
+      ] : [])
     ],
-    needsStuffing: /amigurumi|toy|plush|stuffed/i.test(projectType) ? "Polyester fiberfill stuffing" : "",
+    needsStuffing: /amigurumi|toy|plush|stuffed/i.test(projectType) ? "Polyester fiberfill stuffing (approximately 100g)" : "",
     sections,
     materialsNotes: `⚠️ This is a basic template with estimated materials only. For accurate, custom material calculations based on your specific ${projectType} and requirements, please add your OpenAI API key to your environment variables.
 
