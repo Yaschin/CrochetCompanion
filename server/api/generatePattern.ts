@@ -549,7 +549,7 @@ function generateDefaultYarnRequirements(
  * @param complexityScore - Complexity score (1-10)
  * @returns Object with mainVolume and contrastVolume
  */
-function calculateYarnRequirements(projectType: string, complexityScore: number) {
+function calculateYarnRequirements(projectType: string, complexityScore: number): { mainVolume: string, contrastVolume: string } {
   let mainVolume = '';
   let contrastVolume = '';
   
@@ -560,11 +560,11 @@ function calculateYarnRequirements(projectType: string, complexityScore: number)
   if (/blanket|afghan|throw/i.test(projectType)) {
     // Blankets require the most yarn
     const baseAmount = 500; // 500g base for a small blanket
-    const sizeMultiplier = {
+    const sizeMultiplier = ({
       1: 1,    // Small throw - base amount
       2: 1.5,  // Medium afghan - 1.5x base
       3: 2.5   // Large blanket - 2.5x base
-    }[complexityFactor] || 1;
+    } as Record<number, number>)[complexityFactor] || 1;
     
     const totalGrams = Math.round(baseAmount * sizeMultiplier / 100) * 100; // Round to nearest 100g
     const skeins = Math.ceil(totalGrams / 100);
@@ -574,11 +574,11 @@ function calculateYarnRequirements(projectType: string, complexityScore: number)
   } else if (/sweater|cardigan|jumper|garment/i.test(projectType)) {
     // Garments depend on size and complexity
     const baseAmount = 300; // 300g base for a simple adult small sweater
-    const sizeMultiplier = {
+    const sizeMultiplier = ({
       1: 1,    // Small/simple
       2: 1.4,  // Medium/moderate
       3: 1.8   // Large/complex
-    }[complexityFactor] || 1;
+    } as Record<number, number>)[complexityFactor] || 1;
     
     const totalGrams = Math.round(baseAmount * sizeMultiplier / 50) * 50; // Round to nearest 50g
     const skeins = Math.ceil(totalGrams / 100);
@@ -587,7 +587,7 @@ function calculateYarnRequirements(projectType: string, complexityScore: number)
     contrastVolume = `~${Math.ceil(totalGrams * 0.15 / 50) * 50}g (${Math.ceil(totalGrams * 0.15 / 100)} skeins)`;
   } else if (/amigurumi|plush|toy/i.test(projectType)) {
     // Amigurumi by size
-    const baseAmounts = {
+    const baseAmounts: Record<number, number> = {
       1: 50,   // Small amigurumi (keychain size)
       2: 100,  // Medium toy
       3: 200   // Large plush
@@ -598,7 +598,7 @@ function calculateYarnRequirements(projectType: string, complexityScore: number)
     contrastVolume = `~${Math.ceil(totalGrams * 0.3)}g (${totalGrams * 0.3 <= 50 ? '1/2' : '1'} skein)`;
   } else if (/hat|beanie|cap/i.test(projectType)) {
     // Hats are generally one skein projects
-    const baseAmounts = {
+    const baseAmounts: Record<number, number> = {
       1: 70,   // Simple beanie
       2: 100,  // Textured hat
       3: 150   // Complex hat with cables/colorwork
@@ -609,7 +609,7 @@ function calculateYarnRequirements(projectType: string, complexityScore: number)
     contrastVolume = `~${Math.ceil(totalGrams * 0.25)}g (${totalGrams * 0.25 <= 50 ? '1/2' : '1'} skein)`;
   } else if (/scarf|cowl/i.test(projectType)) {
     // Scarves vary by length/width/pattern
-    const baseAmounts = {
+    const baseAmounts: Record<number, number> = {
       1: 150,  // Simple scarf
       2: 200,  // Moderate width/texture
       3: 300   // Wide/long/textured
@@ -620,7 +620,7 @@ function calculateYarnRequirements(projectType: string, complexityScore: number)
     contrastVolume = `~${Math.ceil(totalGrams * 0.2)}g (${Math.ceil(totalGrams * 0.2 / 100)} skein)`;
   } else if (/bag|tote|purse/i.test(projectType)) {
     // Bags often require less than garments but more than accessories
-    const baseAmounts = {
+    const baseAmounts: Record<number, number> = {
       1: 150,  // Small bag/purse
       2: 250,  // Medium tote
       3: 400   // Large or structured bag
@@ -631,7 +631,7 @@ function calculateYarnRequirements(projectType: string, complexityScore: number)
     contrastVolume = `~${Math.ceil(totalGrams * 0.2)}g (${Math.ceil(totalGrams * 0.2 / 100)} skein)`;
   } else if (/shawl|wrap/i.test(projectType)) {
     // Shawls vary greatly in size
-    const baseAmounts = {
+    const baseAmounts: Record<number, number> = {
       1: 200,  // Small/simple shawl
       2: 400,  // Medium shawl
       3: 600   // Large complex wrap
