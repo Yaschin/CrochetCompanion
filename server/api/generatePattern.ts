@@ -28,6 +28,7 @@ interface PatternInputData {
   patternId?: string;
   unlockedStepsOnly?: boolean;
   originalPattern?: any;
+  sectionImageFocus?: number; // Index of section whose image should influence regeneration
 }
 
 export async function generatePattern(inputData: PatternInputData) {
@@ -39,7 +40,8 @@ export async function generatePattern(inputData: PatternInputData) {
     size, 
     patternId, 
     unlockedStepsOnly, 
-    originalPattern 
+    originalPattern,
+    sectionImageFocus
   } = inputData;
 
   // If API key is not available or invalid, return a fallback template pattern
