@@ -179,23 +179,70 @@ export async function generatePattern(inputData: PatternInputData) {
       lastError = error;
       console.error(`Error generating pattern (attempt ${attempt + 1}/${maxRetries}):`, error);
       
-      // Check if this is a rate limit error
+      // Convert error to string for pattern matching
       const errorMsg = String(error);
-      const isRateLimit = errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate limit');
       
-      // If it's not a rate limit error or this is our last attempt, don't retry
-      if (!isRateLimit && attempt === maxRetries - 1) {
-        // Provide a more specific error message based on the type of error
-        if (errorMsg.includes('API key')) {
-          throw new Error("OpenAI API key is missing or invalid. Please check your environment variables.");
-        } else if (errorMsg.includes('parse')) {
-          throw new Error("Failed to parse response from AI service. The AI may have returned an invalid format.");
+      // Classify error types for better handling
+      const isRateLimit = errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate limit');
+      const isNetworkError = errorMsg.includes('ECONNREFUSED') || 
+                            errorMsg.includes('ETIMEDOUT') || 
+                            errorMsg.includes('network') ||
+                            errorMsg.includes('socket hang up');
+      const isAuthError = errorMsg.includes('401') || 
+                          errorMsg.includes('authentication') || 
+                          errorMsg.includes('API key') || 
+                          errorMsg.includes('auth');
+      const isBillingError = errorMsg.includes('billing') || 
+                            errorMsg.includes('quota') || 
+                            errorMsg.includes('payment required') ||
+                            errorMsg.includes('insufficient_quota');
+      const isContentPolicyError = errorMsg.includes('content policy') || 
+                                  errorMsg.includes('content_policy') || 
+                                  errorMsg.includes('violat');
+      const isParseError = errorMsg.includes('parse') || 
+                          errorMsg.includes('JSON') || 
+                          errorMsg.includes('unexpected token');
+      const isTimeoutError = errorMsg.includes('timeout') || errorMsg.includes('timed out');
+      
+      // Log more specific error details for debugging
+      if (isAuthError) {
+        console.error("Authentication error with OpenAI API. Check API key.");
+      } else if (isRateLimit) {
+        console.error(`Rate limit reached on attempt ${attempt + 1}. Will retry with backoff.`);
+      } else if (isNetworkError) {
+        console.error(`Network error detected on attempt ${attempt + 1}.`);
+      } else if (isBillingError) {
+        console.error("OpenAI billing error or quota exceeded.");
+      } else if (isContentPolicyError) {
+        console.error("Content policy violation - prompt may violate OpenAI content policies.");
+      } else if (isTimeoutError) {
+        console.error(`Request timed out after ${attempt + 1} attempts.`);
+      }
+      
+      // Determine if we should retry based on error type
+      const isRetryableError = isRateLimit || isNetworkError || isTimeoutError;
+      
+      // If it's not a retryable error or this is our last attempt, don't retry
+      if ((!isRetryableError && attempt === maxRetries - 1) || attempt === maxRetries - 1) {
+        // Provide a specific error message based on the error type for better user experience
+        if (isAuthError) {
+          throw new Error("OpenAI API key is missing, invalid, or expired. Please check your environment variables and ensure your API key is correct.");
+        } else if (isBillingError) {
+          throw new Error("OpenAI API quota exceeded or billing issue. Please check your account at platform.openai.com.");
+        } else if (isContentPolicyError) {
+          throw new Error("Your pattern request may contain content that violates OpenAI's content policy. Please modify your prompt.");
+        } else if (isParseError) {
+          throw new Error("Failed to parse response from AI service. The AI may have returned an invalid format. Try regenerating or simplifying your prompt.");
+        } else if (isTimeoutError) {
+          throw new Error("The request to OpenAI timed out. Please try again later when the service might be less busy.");
+        } else if (isNetworkError) {
+          throw new Error("Network error while connecting to OpenAI. Please check your internet connection and try again.");
         } else {
           throw new Error(`Failed to generate pattern with AI: ${errorMsg}`);
         }
       }
       
-      // For rate limit or other retryable errors, continue to next iteration
+      // For retryable errors, continue to next iteration
     }
   }
   
