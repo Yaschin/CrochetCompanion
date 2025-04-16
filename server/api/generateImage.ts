@@ -35,17 +35,26 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
   let enhancedPrompt = prompt;
 
   if (type === "final") {
-    // For final product images, create a more detailed prompt that emphasizes crochet aesthetic
-    // and includes multiple views (front, side, back)
-    enhancedPrompt = `Create a detailed digital illustration showing exactly three views (front, side, and back) of ${prompt} ${projectType ? `(a crocheted ${projectType})` : ""}.
-      Use a cute, hand-crafted style with warm pastel tones and a clean, light background.
-      ${yarnType ? `Made with ${yarnType} wool. ` : ""} 
-      Important: Place the three views side by side in this exact order: front view on the left, side view in the middle, and back view on the right.
-      Add clear labels directly below each view saying "Front", "Side", and "Back" respectively.
-      Show detailed crochet stitches and yarn texture to make it obviously a crocheted item.
-      Use consistent lighting across all three views to ensure they look like the same object.
-      Make all three views the exact same scale and from the same distance.
-      Make the image clean, professional, and suitable for a crochet pattern guide.`;
+    // Extract color information from the pattern if available
+    const extractedColors = prompt.match(/colors?:?\s*([^.]+)/i);
+    const recommendedColors = extractedColors ? extractedColors[1].trim() : "";
+    
+    // For final product images, create a detailed prompt that shows multi-view realistic photos
+    enhancedPrompt = `Generate a high-quality, real-life photographic image of a crocheted ${projectType || "item"} based on the pattern: ${prompt}. 
+      The project is crafted using ${yarnType || "appropriate"} yarn${recommendedColors ? `, with recommended colors being ${recommendedColors}` : ""}.
+      
+      Create a composite image that displays four distinct views arranged horizontally: left view, front view, back view, and right view. 
+      Each view should be clearly distinguishable and seamlessly integrated in a continuous horizontal layout.
+      
+      Use a simple, neutral background and professional lighting to emphasize the detailed texture and true colors of the piece. 
+      The style should be natural and realistic, not stylized as cartoon, and reflect the actual design and wool type used in the pattern.
+      
+      Show the fine details of the crochet stitches, texture patterns, and any special features like embellishments or color changes.
+      
+      Add subtle labels for "Front", "Back", "Left Side", and "Right Side" to help identify each view.
+      
+      The image should realistically capture the texture, colors, and look of the finished piece as it would appear in real life.
+      It should fully be based on the generated pattern details.`;
   } else if (type === "part") {
     // For part images, create a focused view of just that part
     enhancedPrompt = `Generate a simplified illustration of the ${partName?.toLowerCase() || prompt} 

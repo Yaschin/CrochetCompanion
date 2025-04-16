@@ -674,25 +674,38 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
   // Create a clear title that indicates this is a template
   const title = `🧶 ${cleanPrompt} ${cleanProjectType} (Template)`;
   
-  // Determine appropriate hook size based on project type
+  // Determine appropriate hook size and yarn weight based on project type
   let hookSize = "5.0mm (H/8)";
   let yarnWeight = "Medium (4) - Worsted weight";
+  let extraHooks = [];
   
   if (/blanket|afghan|throw/i.test(projectType)) {
     hookSize = "6.0mm (J/10)";
     yarnWeight = "Medium (4) - Worsted or Aran weight";
+    // For blankets, sometimes a larger hook is needed for the border
+    extraHooks.push({ size: "6.5mm (K/10.5)", quantity: 1, note: "Optional - for border" });
   } else if (/amigurumi|toy|plush/i.test(projectType)) {
     hookSize = "3.5mm (E/4)";
     yarnWeight = "Light (3) - DK weight";
+    // For amigurumi, sometimes a smaller hook is needed for tight stitches
+    extraHooks.push({ size: "2.75mm (C/2)", quantity: 1, note: "Optional - for finer details" });
   } else if (/hat|beanie/i.test(projectType)) {
     hookSize = "5.5mm (I/9)";
     yarnWeight = "Medium (4) - Worsted weight";
+    // For hats, sometimes multiple hook sizes are used
+    extraHooks.push({ size: "5.0mm (H/8)", quantity: 1, note: "For ribbing" });
   } else if (/scarf|cowl/i.test(projectType)) {
     hookSize = "5.0mm (H/8)";
     yarnWeight = "Medium (4) - Worsted weight";
   } else if (/garment|sweater|cardigan/i.test(projectType)) {
     hookSize = "5.0mm (H/8)";
     yarnWeight = "Medium (4) - Worsted weight";
+    // For garments, multiple hook sizes are common
+    extraHooks.push({ size: "4.5mm (G/7)", quantity: 1, note: "For ribbing and edges" });
+  } else if (/bag|tote|purse/i.test(projectType)) {
+    hookSize = "4.0mm (G/6)";
+    yarnWeight = "Medium (4) - Worsted weight";
+    extraHooks.push({ size: "3.5mm (E/4)", quantity: 1, note: "For firm base and structure" });
   }
   
   // Generate appropriate yarn requirements using the shared utility function
@@ -839,15 +852,19 @@ The template below provides basic guidance but lacks the customization and detai
     skillLevel,
     yarnRequirements,
     hookRequirements: [
-      { size: hookSize, quantity: 1, note: "Or size needed to obtain gauge" }
+      { size: hookSize, quantity: 1, note: "Or size needed to obtain gauge" },
+      ...extraHooks
     ],
     notionsRequirements: [
       { name: "Tapestry needle", description: "For weaving in ends", quantity: 1 },
-      { name: "Stitch markers", description: "For marking rounds/sections", quantity: 4 }
+      { name: "Stitch markers", description: "For marking rounds/sections", quantity: 4 },
+      { name: "Safety eyes", description: "12mm - if making a plushie/amigurumi", quantity: 2 }
     ],
     toolRequirements: [
-      { name: "Tape measure", description: "For checking gauge and measurements" }
+      { name: "Tape measure", description: "For checking gauge and measurements" },
+      { name: "Scissors", description: "For cutting yarn" }
     ],
+    needsStuffing: /amigurumi|toy|plush|stuffed/i.test(projectType) ? "Polyester fiberfill stuffing" : "",
     sections,
     materialsNotes: `⚠️ This is a basic template with estimated materials only. For accurate, custom material calculations based on your specific ${projectType} and requirements, please add your OpenAI API key to your environment variables.
 
