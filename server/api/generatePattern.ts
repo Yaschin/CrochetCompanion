@@ -101,7 +101,32 @@ export async function generatePattern(inputData: PatternInputData) {
           "volume": "Estimated amount needed (e.g., ~50g or ~80 yards)"
         },
         ...more colors
-      ]
+      ],
+      "hookRequirements": [
+        {
+          "size": "Hook size (e.g., 5.0mm or G/6)",
+          "quantity": 1,
+          "note": "Optional note about this hook"
+        },
+        ...more hooks if needed
+      ],
+      "notionsRequirements": [
+        {
+          "name": "Item name (e.g., Safety eyes)",
+          "description": "Description (e.g., 12mm black)",
+          "quantity": 2
+        },
+        ...more notions if needed
+      ],
+      "toolRequirements": [
+        {
+          "name": "Tool name (e.g., Tapestry needle)",
+          "description": "Description or purpose",
+          "quantity": 1
+        },
+        ...more tools if needed
+      ],
+      "needsStuffing": "Polyester Fiberfill Stuffing" // include this for amigurumi/plushies, or empty string if not needed
     }
   `;
 
