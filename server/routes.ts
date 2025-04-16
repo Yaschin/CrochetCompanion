@@ -676,7 +676,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Call pattern generation with the original pattern for reference
       const regeneratedPattern = await generatePattern({
-        prompt: originalPattern.description,
+        prompt: originalPattern.title, // Use title since description might not exist
         projectType: originalPattern.projectType,
         skillLevel: originalPattern.skillLevel,
         yarnType: originalPattern.yarnType,
