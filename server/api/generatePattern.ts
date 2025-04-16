@@ -76,6 +76,13 @@ export async function generatePattern(inputData: PatternInputData) {
 
     Use standard crochet terms: SC (Single Crochet), MR (Magic Ring), INC (Increase), DEC (Decrease).
     Organize the pattern into logical sections (e.g., Head, Body, etc.) with clear, numbered steps.
+    
+    For patterns with multiple parts (like amigurumi, stuffed animals, dolls, or multi-piece garments), 
+    ALWAYS include an "Assembly and Finishing" section at the end with detailed steps on:
+    1. How to join the separate parts together
+    2. Where to add stuffing, embellishments, or decorative elements
+    3. How to weave in ends and finish the project properly
+    4. Any blocking or shaping instructions if applicable
 
     Return the response in JSON format with the following structure:
     {
@@ -854,6 +861,53 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
           { id: 5, text: "Round 1: sc in each st around (18)", locked: false, count: 0, notes: "", photo: null, completed: false },
           { id: 6, text: "Round 2: [2 sc, inc] around (24)", locked: false, count: 0, notes: "", photo: null, completed: false },
           { id: 7, text: "Rounds 3-5: sc in each st around (24)", locked: false, count: 0, notes: "", photo: null, completed: false }
+        ]
+      },
+      {
+        name: "Legs (make 4)",
+        notes: "Make 4 identical legs. For a complete custom pattern with detailed instructions for each part, add your OpenAI API key.",
+        locked: false,
+        steps: [
+          { id: 8, text: "Start with a magic ring", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 9, text: "Rounds 1-3: 6 sc in ring, then sc around for 2 more rounds (6)", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 10, text: "Fasten off, leaving long tail for sewing", locked: false, count: 0, notes: "", photo: null, completed: false }
+        ]
+      },
+      {
+        name: "Ears (make 2)",
+        notes: "Make 2 identical ears. Shape will depend on your specific animal design.",
+        locked: false,
+        steps: [
+          { id: 11, text: "Start with a magic ring", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 12, text: "Round 1: 6 sc in ring (6)", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 13, text: "Round 2: [inc] around (12)", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 14, text: "Fasten off, leaving long tail for sewing", locked: false, count: 0, notes: "", photo: null, completed: false }
+        ]
+      },
+      {
+        name: "Tail",
+        notes: "For the tail of your amigurumi animal.",
+        locked: false,
+        steps: [
+          { id: 15, text: "Start with a magic ring", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 16, text: "Round 1: 6 sc in ring (6)", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 17, text: "Rounds 2-4: sc around (6)", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 18, text: "Fasten off, leaving long tail for sewing", locked: false, count: 0, notes: "", photo: null, completed: false }
+        ]
+      },
+      {
+        name: "Assembly and Finishing",
+        notes: "Follow these steps to assemble all parts of your amigurumi.",
+        locked: false,
+        steps: [
+          { id: 19, text: "Stuff head and body firmly with fiberfill", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 20, text: "Sew head to body securely", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 21, text: "Attach legs to bottom of body, evenly spaced", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 22, text: "Sew ears to top of head", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 23, text: "Attach tail to back of body", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 24, text: "Embroider facial features using black yarn", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 25, text: "Add safety eyes if using, or embroider eyes", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 26, text: "Weave in all remaining ends", locked: false, count: 0, notes: "", photo: null, completed: false }
         ]
       }
     );
