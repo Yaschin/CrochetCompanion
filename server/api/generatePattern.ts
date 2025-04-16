@@ -552,6 +552,12 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
  * and provides basic pattern structure based on the project type selected
  * 
  * @param prompt User's prompt for pattern
+/**
+ * Provides a fallback template pattern when OpenAI API key is not available
+ * This template includes a clear message for the user explaining why AI generation failed
+ * and provides basic pattern structure based on the project type selected
+ * 
+ * @param prompt User's prompt for pattern
  * @param projectType Type of crochet project
  * @param skillLevel Skill level (beginner, intermediate, advanced)
  * @returns Basic pattern template with a notice about missing API key
@@ -559,33 +565,60 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
 function getFallbackPatternTemplate(prompt: string, projectType: string, skillLevel: string) {
   console.warn("⚠️ Using fallback pattern template because OpenAI API key is not available");
   
-  // Create a title that indicates this is a template
-  const title = `Template: ${prompt} ${projectType.charAt(0).toUpperCase() + projectType.slice(1)}`;
+  // Clean and capitalize the prompt and project type for the title
+  const cleanPrompt = prompt.trim().replace(/^[a-z]/, c => c.toUpperCase());
+  const cleanProjectType = projectType.charAt(0).toUpperCase() + projectType.slice(1).toLowerCase();
+  
+  // Create a clear title that indicates this is a template
+  const title = `🧶 ${cleanPrompt} ${cleanProjectType} (Template)`;
   
   // Determine appropriate hook size based on project type
   let hookSize = "5.0mm (H/8)";
-  if (/blanket|afghan/i.test(projectType)) {
+  let yarnWeight = "Medium (4) - Worsted weight";
+  
+  if (/blanket|afghan|throw/i.test(projectType)) {
     hookSize = "6.0mm (J/10)";
-  } else if (/amigurumi|toy/i.test(projectType)) {
+    yarnWeight = "Medium (4) - Worsted or Aran weight";
+  } else if (/amigurumi|toy|plush/i.test(projectType)) {
     hookSize = "3.5mm (E/4)";
+    yarnWeight = "Light (3) - DK weight";
   } else if (/hat|beanie/i.test(projectType)) {
     hookSize = "5.5mm (I/9)";
+    yarnWeight = "Medium (4) - Worsted weight";
+  } else if (/scarf|cowl/i.test(projectType)) {
+    hookSize = "5.0mm (H/8)";
+    yarnWeight = "Medium (4) - Worsted weight";
+  } else if (/garment|sweater|cardigan/i.test(projectType)) {
+    hookSize = "5.0mm (H/8)";
+    yarnWeight = "Medium (4) - Worsted weight";
   }
   
-  // Generate yarn requirements based on project type
+  // Generate appropriate yarn requirements based on project type
   const yarnRequirements = [
-    { color: "Main Color", volume: /blanket|afghan/i.test(projectType) ? "~500g (5 skeins)" : "~100g (1 skein)" },
-    { color: "Contrast Color", volume: "~50g (1/2 skein)" }
+    { 
+      color: "Main Color", 
+      volume: /blanket|afghan|throw/i.test(projectType) 
+        ? `~500g (5 skeins) of ${yarnWeight}` 
+        : /garment|sweater|cardigan/i.test(projectType)
+        ? `~300g (3 skeins) of ${yarnWeight}`
+        : `~100g (1 skein) of ${yarnWeight}` 
+    },
+    { 
+      color: "Contrast Color", 
+      volume: /blanket|afghan|throw/i.test(projectType)
+        ? "~200g (2 skeins)"
+        : "~50g (1/2 skein)" 
+    }
   ];
   
   // Generate appropriate sections based on project type
   const sections = [];
   
-  if (/amigurumi|toy/i.test(projectType)) {
+  if (/amigurumi|toy|plush/i.test(projectType)) {
     sections.push(
       {
         name: "Head",
-        notes: "Work in continuous rounds, do not join. ⚠️ NOTE: This is a template pattern - add OpenAI API key for custom patterns.",
+        notes: "Work in continuous rounds, do not join. ⚠️ ADD API KEY: This is a template pattern with basic instructions only. Get your OpenAI API key to generate a complete custom pattern.",
         locked: false,
         steps: [
           { id: 1, text: "Start with a magic ring", locked: false, count: 0, notes: "", photo: null, completed: false },
@@ -596,7 +629,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
       },
       {
         name: "Body",
-        notes: "Continue working in rounds. For a complete custom pattern, add your OpenAI API key to environment variables.",
+        notes: "Continue working in rounds. For a complete custom pattern and step-by-step instructions, add your OpenAI API key to environment variables.",
         locked: false,
         steps: [
           { id: 5, text: "Round 1: sc in each st around (18)", locked: false, count: 0, notes: "", photo: null, completed: false },
@@ -609,7 +642,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
     sections.push(
       {
         name: "Crown",
-        notes: "Work in continuous rounds. ⚠️ This is a basic template - add your OpenAI API key for a complete custom pattern.",
+        notes: "Work in continuous rounds. ⚠️ ADD API KEY: This is a basic template - add your OpenAI API key for a complete custom pattern with full instructions for your specific pattern.",
         locked: false,
         steps: [
           { id: 1, text: "Start with a magic ring", locked: false, count: 0, notes: "", photo: null, completed: false },
@@ -622,11 +655,34 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
       },
       {
         name: "Body",
-        notes: "Work even for desired length. Visit platform.openai.com to obtain an API key for detailed custom patterns.",
+        notes: "Work even for desired length. Visit platform.openai.com to obtain an API key for a complete custom pattern with images.",
         locked: false,
         steps: [
           { id: 7, text: "Rounds 6-15: sc in each st around (30)", locked: false, count: 0, notes: "", photo: null, completed: false },
           { id: 8, text: "Rounds 16-20: [3 sc, dec] around for ribbing effect (24)", locked: false, count: 0, notes: "", photo: null, completed: false }
+        ]
+      }
+    );
+  } else if (/garment|sweater|cardigan/i.test(projectType)) {
+    sections.push(
+      {
+        name: "Gauge Swatch",
+        notes: "Make a gauge swatch before starting. ⚠️ ADD API KEY: Add your OpenAI API key to generate a complete custom pattern with measurements and sizing options.",
+        locked: false,
+        steps: [
+          { id: 1, text: "Chain 25", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 2, text: "Row 1: sc in 2nd ch from hook and in each ch across (24 sc)", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 3, text: "Rows 2-15: ch 1, turn, sc in each sc across (24 sc)", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 4, text: "Block swatch and measure: 4 inches should equal approximately 16 sts and 18 rows", locked: false, count: 0, notes: "", photo: null, completed: false }
+        ]
+      },
+      {
+        name: "Body (Sample Instructions)",
+        notes: "These are very basic steps. Add your OpenAI API key for complete instructions customized to your needs and skill level.",
+        locked: false,
+        steps: [
+          { id: 5, text: "Chain foundation row to desired width", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 6, text: "Work even in pattern stitch until desired length", locked: false, count: 0, notes: "", photo: null, completed: false }
         ]
       }
     );
@@ -635,7 +691,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
     sections.push(
       {
         name: "Main Section",
-        notes: "⚠️ API KEY REQUIRED: This is a basic template pattern. Add an OpenAI API key to your environment variables for a complete custom pattern with detailed instructions.",
+        notes: "⚠️ API KEY REQUIRED: This is a basic template pattern. Add an OpenAI API key to generate a complete custom pattern with detailed instructions specifically for your project.",
         locked: false,
         steps: [
           { id: 1, text: "Chain 20 (or desired width)", locked: false, count: 0, notes: "", photo: null, completed: false },
@@ -645,7 +701,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
         ]
       },
       {
-        name: "Border",
+        name: "Border (Optional)",
         notes: "Optional finishing touch. For AI-generated custom patterns, add your OpenAI API key to environment variables.",
         locked: false,
         steps: [
@@ -656,33 +712,53 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
     );
   }
   
-  // Create the pattern object with clear messaging about the missing API key
+  // Create the pattern object with clear, actionable messaging about the missing API key
   return {
     title,
-    description: `⚠️ AI GENERATION UNAVAILABLE: This is a basic ${skillLevel} level ${projectType} template. 
-    To generate complete custom patterns with AI, please follow these steps:
+    description: `⚠️ AI PATTERN GENERATION UNAVAILABLE
 
-    1. Visit https://platform.openai.com to create an account and obtain an API key
-    2. Add the API key to your environment variables:
-       - In Replit projects: Use the "Secrets" tool in the Tools panel
-       - Add a new secret with the key "OPENAI_API_KEY" and your key as the value
-       - The key should start with "sk-" followed by a string of characters
-    3. Refresh the page once the key is added to activate AI features
+This is a basic ${skillLevel} level ${projectType} template only. To generate a complete custom pattern based on your specific request, please follow these steps:
 
-    This template pattern will be replaced with a custom AI-generated pattern once a valid API key is added.`,
+1. Get an OpenAI API key:
+   • Visit https://platform.openai.com to create an account
+   • Navigate to the API keys section and create a new secret key
+   • Copy the key (starts with "sk-" followed by a string of characters)
+
+2. Add the API key to your environment variables:
+   • In the Tools panel, select "Secrets"
+   • Add a new secret with:
+     - Key: OPENAI_API_KEY
+     - Value: your OpenAI key (starting with sk-)
+   • Click "Add Secret"
+   
+3. Refresh the page after adding the key
+
+Your custom AI-generated pattern will include:
+• Detailed step-by-step instructions for your specific ${projectType}
+• Custom sizing and measurements
+• Accurate material calculations
+• Section illustrations and diagrams
+• Helpful notes and tips
+
+The template below provides basic guidance but lacks the customization and detail of AI-generated patterns.`,
     projectType,
     skillLevel,
     yarnRequirements,
     hookRequirements: [
-      { size: hookSize, quantity: 1 }
+      { size: hookSize, quantity: 1, note: "Or size needed to obtain gauge" }
     ],
     notionsRequirements: [
-      { name: "Tapestry needle", description: "For weaving in ends", quantity: 1 }
+      { name: "Tapestry needle", description: "For weaving in ends", quantity: 1 },
+      { name: "Stitch markers", description: "For marking rounds/sections", quantity: 4 }
     ],
     toolRequirements: [
-      { name: "Stitch markers", description: "For marking rounds/sections" }
+      { name: "Tape measure", description: "For checking gauge and measurements" }
     ],
     sections,
-    materialsNotes: `⚠️ OpenAI API KEY REQUIRED: This is a template pattern only. For a complete AI-generated pattern with detailed materials list and instructions, please add your OpenAI API key to your environment variables. Once added, regenerate the pattern to unlock all AI features. This template uses a ${hookSize} hook and worsted weight yarn as a starting point.`
+    materialsNotes: `⚠️ This is a basic template with estimated materials only. For accurate, custom material calculations based on your specific ${projectType} and requirements, please add your OpenAI API key to your environment variables.
+
+The template suggests using ${yarnWeight} yarn with a ${hookSize} hook as a starting point, but your actual project may require different materials depending on your specific design and preferences.
+
+Once you add your API key, you can regenerate this pattern to get detailed, accurate material requirements customized to your project.`
   };
 }
