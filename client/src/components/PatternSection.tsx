@@ -442,13 +442,11 @@ const PatternSection: React.FC<PatternSectionProps> = ({
         <div className="pt-1 pb-2">
           {/* Section Image */}
           <div className="px-2 mb-2">
-            <SectionImagePlaceholder
+            <SectionPhotoUploader
               patternId={section.patternId || ""}
               sectionIndex={sectionIndex}
-              sectionName={section.name}
-              partImageUrl={section.partImageUrl || null}
-              onImageGenerated={handleSectionImageGenerated}
-              projectType={projectType}
+              currentPhoto={section.partImageUrl || null}
+              onPhotoUpdated={handleSectionImageGenerated}
             />
           </div>
           
