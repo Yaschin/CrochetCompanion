@@ -75,19 +75,7 @@ export interface Pattern {
   yarnType?: string;
   size?: string;
   endProductImage?: string;
-}
-
-export interface ProjectEvent {
-  id: string;
-  title: string;
-  patternId?: string;
-  patternTitle?: string;
-  date: Date | string;
-  description?: string;
-  completed: boolean;
-  timeEstimate?: number; // in minutes
-  createdAt?: string;
-  updatedAt?: string;
+  favorite?: boolean;
 }
 
 export interface StashItem {
@@ -110,11 +98,6 @@ export interface StashItem {
   usedIn?: string[];
   createdAt?: string;
   updatedAt?: string;
-}
-
-export interface DayAvailability {
-  date: string;
-  status: 'blocked' | 'half' | 'full';
 }
 
 export type ViewType = "input" | "viewer" | "library" | "stash";
