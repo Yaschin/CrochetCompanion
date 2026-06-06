@@ -7,7 +7,8 @@ import PatternSection from './PatternSection';
 import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
 import StitchCounter from './StitchCounter';
-import { RefreshCw, Download, Plus, Image, Hash } from 'lucide-react';
+import { cn } from '../lib/utils';
+import { RefreshCw, Download, Plus, Image, Hash, Heart } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
@@ -636,6 +637,17 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             )}
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => updatePatternMutation.mutate({ ...pattern, favorite: !pattern.favorite })}
+          aria-label={pattern.favorite ? 'Remove from favorites' : 'Add to favorites'}
+          aria-pressed={!!pattern.favorite}
+          title={pattern.favorite ? 'Remove from favorites' : 'Add to favorites'}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100"
+        >
+          <Heart className={cn('h-5 w-5', pattern.favorite ? 'fill-primary text-primary' : '')} />
+        </button>
       </div>
 
       {/* Final Product Image */}
