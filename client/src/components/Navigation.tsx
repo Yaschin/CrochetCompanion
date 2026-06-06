@@ -13,7 +13,7 @@ interface NavigationProps {
 const NAV_ITEMS: { view: View; label: string; icon: typeof PlusIcon }[] = [
   { view: 'input', label: 'New Pattern', icon: PlusIcon },
   { view: 'library', label: 'My Patterns', icon: BookOpenIcon },
-  { view: 'stash', label: 'My Stash', icon: PackageIcon },
+  { view: 'stash', label: 'Materials', icon: PackageIcon },
 ];
 
 const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {

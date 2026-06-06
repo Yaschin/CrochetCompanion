@@ -78,26 +78,19 @@ export interface Pattern {
   favorite?: boolean;
 }
 
+export type StashItemType = 'yarn' | 'hook' | 'notion' | 'tool';
+
+// Matches the database/API shape (shared/schema.ts stashItemSchema).
 export interface StashItem {
   id: string;
+  type: StashItemType;
   name: string;
-  brand: string;
-  colorName: string;
-  colorCode?: string;
-  type: string;
-  weight: string;
-  fiberContent?: string;
-  yardage?: number;
-  grams?: number;
+  color?: string;
+  volume?: string;
+  size?: string;
   quantity: number;
-  purchaseDate?: string;
-  location?: string;
-  imageUrl?: string;
+  description?: string;
   notes?: string;
-  inUse: boolean;
-  usedIn?: string[];
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export type ViewType = "input" | "viewer" | "library" | "stash";
