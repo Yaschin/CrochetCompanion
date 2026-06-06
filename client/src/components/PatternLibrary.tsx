@@ -94,8 +94,8 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
   };
 
   return (
-    <div className="bg-white shadow-md rounded-2xl p-6 mb-8">
-      <h2 className="text-2xl font-bold text-secondary-600 font-heading mb-6">My Pattern Library</h2>
+    <div className="surface-card mb-8 p-5 sm:p-7">
+      <h2 className="mb-6 font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">My Pattern Library</h2>
       
       {isLoading ? (
         <div className="flex justify-center py-8">
