@@ -6,7 +6,7 @@ import { Pattern, PatternSection as PatternSectionType, PatternStep } from '../l
 import PatternSection from './PatternSection';
 import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
-import { Edit, Save, RefreshCw, Download, Plus, Image } from 'lucide-react';
+import { RefreshCw, Download, Plus, Image } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
@@ -589,10 +589,10 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   }, [pattern]); // Only re-create when pattern changes
 
   return (
-    <div className="bg-white shadow-md rounded-2xl p-6 mb-8">
+    <div className="surface-card mb-8 p-5 sm:p-7">
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-secondary-600 font-heading">
+          <h2 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             {pattern.title}
           </h2>
           <div className="flex flex-wrap gap-2 mt-2">
@@ -627,23 +627,6 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
               </span>
             )}
           </div>
-        </div>
-
-        <div className="flex space-x-2">
-          <button 
-            type="button" 
-            className="inline-flex items-center px-3 py-2 border border-transparent rounded-full text-sm font-medium text-secondary-600 hover:bg-secondary-100"
-            aria-label="Edit pattern"
-          >
-            <Edit className="h-5 w-5" />
-          </button>
-          <button 
-            type="button" 
-            className="inline-flex items-center px-3 py-2 border border-transparent rounded-full text-sm font-medium text-secondary-600 hover:bg-secondary-100"
-            aria-label="Save pattern"
-          >
-            <Save className="h-5 w-5" />
-          </button>
         </div>
       </div>
 
