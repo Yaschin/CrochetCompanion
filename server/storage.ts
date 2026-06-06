@@ -2,7 +2,6 @@ import { Pattern, patterns as patternsTable } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
-import { SQL } from "drizzle-orm";
 
 // Storage interface with CRUD methods
 export interface IStorage {
@@ -13,37 +12,62 @@ export interface IStorage {
   deletePattern(id: string): Promise<boolean>;
 }
 
+// Map a raw database row to the Pattern domain type.
+// jsonb columns are typed loosely by Drizzle, so we cast them to the
+// shapes declared in the shared schema.
+function rowToPattern(row: typeof patternsTable.$inferSelect): Pattern {
+  const createdAt = row.createdAt instanceof Date
+    ? row.createdAt.toISOString()
+    : (row.createdAt as unknown as string);
+
+  return {
+    id: row.id,
+    title: row.title,
+    projectType: row.projectType,
+    skillLevel: row.skillLevel,
+    yarnType: row.yarnType || undefined,
+    size: row.size || undefined,
+    endProductImage: row.endProductImage || undefined,
+    materialsNotes: row.materialsNotes || "",
+    createdAt,
+    sections: (row.sections ?? []) as Pattern["sections"],
+    yarnRequirements: (row.yarnRequirements ?? []) as Pattern["yarnRequirements"],
+    hookRequirements: (row.hookRequirements ?? []) as Pattern["hookRequirements"],
+    notionsRequirements: (row.notionsRequirements ?? []) as Pattern["notionsRequirements"],
+    toolRequirements: (row.toolRequirements ?? []) as Pattern["toolRequirements"],
+    needsStuffing: row.needsStuffing || undefined,
+  };
+}
+
+// Build the set of columns to persist from a (partial) Pattern.
+// Centralised so create and update keep the full material set in sync.
+function patternToColumns(pattern: Partial<Pattern>) {
+  const columns: Record<string, unknown> = {};
+  if (pattern.title !== undefined) columns.title = pattern.title;
+  if (pattern.projectType !== undefined) columns.projectType = pattern.projectType;
+  if (pattern.skillLevel !== undefined) columns.skillLevel = pattern.skillLevel;
+  if (pattern.yarnType !== undefined) columns.yarnType = pattern.yarnType || null;
+  if (pattern.size !== undefined) columns.size = pattern.size || null;
+  if (pattern.endProductImage !== undefined) columns.endProductImage = pattern.endProductImage || null;
+  if (pattern.materialsNotes !== undefined) columns.materialsNotes = pattern.materialsNotes || "";
+  if (pattern.sections !== undefined) columns.sections = pattern.sections;
+  if (pattern.yarnRequirements !== undefined) columns.yarnRequirements = pattern.yarnRequirements || [];
+  if (pattern.hookRequirements !== undefined) columns.hookRequirements = pattern.hookRequirements || [];
+  if (pattern.notionsRequirements !== undefined) columns.notionsRequirements = pattern.notionsRequirements || [];
+  if (pattern.toolRequirements !== undefined) columns.toolRequirements = pattern.toolRequirements || [];
+  if (pattern.needsStuffing !== undefined) columns.needsStuffing = pattern.needsStuffing || null;
+  return columns;
+}
+
 // Database storage implementation
 export class DatabaseStorage implements IStorage {
   async getPattern(id: string): Promise<Pattern | undefined> {
     try {
       const result = await db.select().from(patternsTable).where(eq(patternsTable.id, id));
-      
       if (result.length === 0) {
         return undefined;
       }
-      
-      const pattern = result[0];
-      
-      // Convert createdAt to ISO string if it's a Date object
-      const createdAt = pattern.createdAt instanceof Date 
-        ? pattern.createdAt.toISOString() 
-        : pattern.createdAt as string;
-      
-      // Map database record to Pattern type
-      return {
-        id: pattern.id,
-        title: pattern.title,
-        projectType: pattern.projectType,
-        skillLevel: pattern.skillLevel,
-        yarnType: pattern.yarnType || undefined,
-        size: pattern.size || undefined,
-        endProductImage: pattern.endProductImage || undefined,
-        materialsNotes: pattern.materialsNotes || "",
-        yarnRequirements: pattern.yarnRequirements || [],
-        createdAt,
-        sections: pattern.sections as Pattern["sections"]
-      };
+      return rowToPattern(result[0]);
     } catch (error) {
       console.error("Error getting pattern:", error);
       return undefined;
@@ -53,28 +77,7 @@ export class DatabaseStorage implements IStorage {
   async getAllPatterns(): Promise<Pattern[]> {
     try {
       const result = await db.select().from(patternsTable);
-      
-      return result.map(pattern => {
-        // Convert createdAt to ISO string if it's a Date object
-        const createdAt = pattern.createdAt instanceof Date 
-          ? pattern.createdAt.toISOString() 
-          : pattern.createdAt as string;
-        
-        // Map database record to Pattern type
-        return {
-          id: pattern.id,
-          title: pattern.title,
-          projectType: pattern.projectType,
-          skillLevel: pattern.skillLevel,
-          yarnType: pattern.yarnType || undefined,
-          size: pattern.size || undefined,
-          endProductImage: pattern.endProductImage || undefined,
-          materialsNotes: pattern.materialsNotes || "",
-          yarnRequirements: pattern.yarnRequirements || [],
-          createdAt,
-          sections: pattern.sections as Pattern["sections"]
-        };
-      });
+      return result.map(rowToPattern);
     } catch (error) {
       console.error("Error getting all patterns:", error);
       return [];
@@ -84,49 +87,19 @@ export class DatabaseStorage implements IStorage {
   async createPattern(pattern: Omit<Pattern, "id" | "createdAt">): Promise<Pattern> {
     try {
       const id = uuidv4();
-      
-      // Prepare the database record
+
       const dbRecord = {
         id,
-        title: pattern.title,
-        projectType: pattern.projectType,
-        skillLevel: pattern.skillLevel,
-        yarnType: pattern.yarnType || null,
-        size: pattern.size || null,
-        endProductImage: pattern.endProductImage || null,
-        materialsNotes: pattern.materialsNotes || "",
-        yarnRequirements: pattern.yarnRequirements || [],
-        sections: pattern.sections
+        ...patternToColumns(pattern),
+        // sections is required (NOT NULL) — ensure it is always present
+        sections: pattern.sections ?? [],
       };
-      
-      // Insert into database
-      const result = await db.insert(patternsTable).values(dbRecord).returning();
-      
+
+      const result = await db.insert(patternsTable).values(dbRecord as any).returning();
       if (result.length === 0) {
         throw new Error("Failed to create pattern");
       }
-      
-      const created = result[0];
-      
-      // Convert createdAt to ISO string if it's a Date object
-      const createdAt = created.createdAt instanceof Date 
-        ? created.createdAt.toISOString() 
-        : created.createdAt as string;
-      
-      // Map database record to Pattern type
-      return {
-        id: created.id,
-        title: created.title,
-        projectType: created.projectType,
-        skillLevel: created.skillLevel,
-        yarnType: created.yarnType || undefined,
-        size: created.size || undefined,
-        endProductImage: created.endProductImage || undefined,
-        materialsNotes: created.materialsNotes || "",
-        yarnRequirements: created.yarnRequirements || [],
-        createdAt,
-        sections: created.sections as Pattern["sections"]
-      };
+      return rowToPattern(result[0]);
     } catch (error) {
       console.error("Error creating pattern:", error);
       throw error;
@@ -139,52 +112,18 @@ export class DatabaseStorage implements IStorage {
       if (!existingPattern) {
         return undefined;
       }
-      
-      // Prepare the database update record
-      const dbUpdate: any = {};
-      
-      // Only include fields that are present in the update
-      if (patternUpdate.title !== undefined) dbUpdate.title = patternUpdate.title;
-      if (patternUpdate.projectType !== undefined) dbUpdate.projectType = patternUpdate.projectType;
-      if (patternUpdate.skillLevel !== undefined) dbUpdate.skillLevel = patternUpdate.skillLevel;
-      if (patternUpdate.yarnType !== undefined) dbUpdate.yarnType = patternUpdate.yarnType || null;
-      if (patternUpdate.size !== undefined) dbUpdate.size = patternUpdate.size || null;
-      if (patternUpdate.endProductImage !== undefined) dbUpdate.endProductImage = patternUpdate.endProductImage || null;
-      if (patternUpdate.materialsNotes !== undefined) dbUpdate.materialsNotes = patternUpdate.materialsNotes || "";
-      if (patternUpdate.yarnRequirements !== undefined) dbUpdate.yarnRequirements = patternUpdate.yarnRequirements || [];
-      if (patternUpdate.sections !== undefined) dbUpdate.sections = patternUpdate.sections;
-      
-      // Update the database
+
+      const dbUpdate = patternToColumns(patternUpdate);
+
       const result = await db.update(patternsTable)
-        .set(dbUpdate)
+        .set(dbUpdate as any)
         .where(eq(patternsTable.id, id))
         .returning();
-      
+
       if (result.length === 0) {
         return undefined;
       }
-      
-      const updated = result[0];
-      
-      // Convert createdAt to ISO string if it's a Date object
-      const createdAt = updated.createdAt instanceof Date 
-        ? updated.createdAt.toISOString() 
-        : updated.createdAt as string;
-      
-      // Map database record to Pattern type
-      return {
-        id: updated.id,
-        title: updated.title,
-        projectType: updated.projectType,
-        skillLevel: updated.skillLevel,
-        yarnType: updated.yarnType || undefined,
-        size: updated.size || undefined,
-        endProductImage: updated.endProductImage || undefined,
-        materialsNotes: updated.materialsNotes || "",
-        yarnRequirements: updated.yarnRequirements || [],
-        createdAt,
-        sections: updated.sections as Pattern["sections"]
-      };
+      return rowToPattern(result[0]);
     } catch (error) {
       console.error("Error updating pattern:", error);
       return undefined;
@@ -196,7 +135,6 @@ export class DatabaseStorage implements IStorage {
       const result = await db.delete(patternsTable)
         .where(eq(patternsTable.id, id))
         .returning();
-      
       return result.length > 0;
     } catch (error) {
       console.error("Error deleting pattern:", error);

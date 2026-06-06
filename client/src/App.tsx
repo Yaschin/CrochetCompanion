@@ -3,6 +3,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import Navigation from "./components/Navigation";
+import ErrorBoundary from "./components/ErrorBoundary";
 import PatternInputRefactored from "./components/PatternInputRefactored";
 import PatternViewer from "./components/PatternViewer";
 import PatternLibrary from "./components/PatternLibrary";
@@ -96,32 +97,36 @@ function App() {
             </div>
           </div>
 
-          {/* Conditional content based on active view */}
-          {activeView === "input" && (
-            <PatternInputRefactored onPatternCreated={handlePatternCreated} />
-          )}
-          
-          {activeView === "viewer" && currentPattern && (
-            <PatternViewer 
-              pattern={currentPattern} 
-              onPatternUpdated={setCurrentPattern}
-            />
-          )}
-          
-          {activeView === "library" && (
-            <PatternLibrary 
-              onPatternSelected={handlePatternLoaded} 
-              onCreateNew={() => navigateToView("input")}
-            />
-          )}
-          
-          {activeView === "stash" && (
-            <YarnStash />
-          )}
-          
-          {activeView === "calendar" && (
-            <CalendarPlannerRefactored onNavigate={navigateToView} />
-          )}
+          {/* Conditional content based on active view.
+              Wrapped in an ErrorBoundary (keyed by view) so a crash in one
+              screen surfaces a recoverable dialog instead of blanking the app. */}
+          <ErrorBoundary key={activeView} componentName={activeView}>
+            {activeView === "input" && (
+              <PatternInputRefactored onPatternCreated={handlePatternCreated} />
+            )}
+
+            {activeView === "viewer" && currentPattern && (
+              <PatternViewer
+                pattern={currentPattern}
+                onPatternUpdated={setCurrentPattern}
+              />
+            )}
+
+            {activeView === "library" && (
+              <PatternLibrary
+                onPatternSelected={handlePatternLoaded}
+                onCreateNew={() => navigateToView("input")}
+              />
+            )}
+
+            {activeView === "stash" && (
+              <YarnStash />
+            )}
+
+            {activeView === "calendar" && (
+              <CalendarPlannerRefactored onNavigate={navigateToView} />
+            )}
+          </ErrorBoundary>
         </main>
       </div>
       <Toaster />
