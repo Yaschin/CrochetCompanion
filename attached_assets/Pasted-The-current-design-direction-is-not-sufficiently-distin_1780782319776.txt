@@ -1,0 +1,501 @@
+The current design direction is not sufficiently distinctive. The application should not look like a generic dashboard with flat cartoon crochet icons placed inside pastel tiles.
+
+We need to establish the correct visual system and technical architecture before implementation.
+
+Do not modify code yet.
+Do not install libraries yet.
+Do not rewrite the application.
+Do not create final assets yet.
+
+First inspect the existing codebase and produce a technical design-system implementation plan.
+
+Save the output as:
+
+`docs/CROCHET_TIME_VISUAL_SYSTEM_TECHNICAL_PLAN.md`
+
+---
+
+# 1. Target Visual Direction
+
+The application should feel like:
+
+> A premium, tactile and slightly magical crochet studio built especially for Larissa, with photorealistic handmade amigurumi companions, warm textile surfaces, visible wool fibres, soft shadows, yarn trails, stitched details and carefully controlled animation.
+
+The visual quality should feel closer to:
+
+* A beautifully photographed artisan crochet collection
+* A premium handcrafted stationery brand
+* A cosy creative studio brought gently to life
+
+It should not feel like:
+
+* A generic SaaS dashboard
+* A grid of identical pastel cards
+* A children’s app
+* Flat vector clip art
+* A social-media feed
+* A sterile minimalist interface
+* An interface covered indiscriminately in decorative wool textures
+
+Crochet should shape the interface language, not merely decorate it.
+
+---
+
+# 2. Character System
+
+The amigurumi characters are central to the experience.
+
+They should appear as **photorealistic handmade crochet toys**, not flat cartoon icons.
+
+Use:
+
+* Visible crochet stitches
+* Soft wool fibres
+* Dimensional construction
+* Soft editorial lighting
+* Natural shadows
+* Tactile material realism
+* Consistent proportions and art direction
+* Slightly expressive poses
+* Premium handmade quality
+
+Avoid:
+
+* Flat vector mascots
+* Generic iconography
+* Plastic-looking 3D rendering
+* Cartoon faces
+* Excessively childish styling
+* Identical pastel tiles for every character
+
+## Character roles
+
+| Character | Role                                                                                                     |
+| --------- | -------------------------------------------------------------------------------------------------------- |
+| **Aloo**  | Larissa’s project companion: active projects, saving progress and gentle encouragement                   |
+| **Yala**  | Larissa’s creative guide: AI pattern generation, editing, selective regeneration and the pattern library |
+| **Ashi**  | Community explorer: Community Crochet Library, discovery and submission flows                            |
+| **Bee**   | Celebration friend: milestones and project-completion moments                                            |
+| **Sheep** | Yarn expert: materials, yarn and colour recommendations                                                  |
+
+## Character hierarchy
+
+Aloo and Yala are the primary characters. They should appear more prominently and more frequently.
+
+Ashi is an important secondary character.
+
+Bee and Sheep should be supporting characters used selectively.
+
+Do not treat all five characters as equal-weight dashboard tiles.
+
+---
+
+# 3. Visual Composition Rules
+
+Use a layered visual system.
+
+## Foundation layer
+
+Use:
+
+* Warm cream and oatmeal surfaces
+* Subtle textile grain
+* Restrained stitched borders
+* Clean spacing
+* Strong typography hierarchy
+* Legible utility screens
+
+## Signature component layer
+
+Use:
+
+* Fabric-patch cards
+* Granny-square-inspired modular tiles
+* Textile labels
+* Loose yarn-thread separators
+* Crochet-flower accents
+* Stitch-based progress indicators
+* Basket and yarn motifs where relevant
+
+## Emotional layer
+
+Use:
+
+* Photorealistic character assets
+* Magical but brief animation
+* Personal microcopy
+* Warm illustrations and photography
+* Small moments of surprise and delight
+
+Do not give every component heavy textile treatment. Establish a hierarchy:
+
+1. Clean utility components
+2. Lightly crochet-themed components
+3. High-character signature components
+
+---
+
+# 4. Recommended Technical Architecture
+
+Inspect the current codebase and recommend the minimum-change implementation approach.
+
+Assume the preferred direction below unless the existing stack provides a strong reason to adjust it.
+
+## A. Existing application framework
+
+Preserve the current React-based framework if it is stable.
+
+If the app already uses:
+
+* Next.js: retain Next.js
+* Vite with React: retain Vite
+* TypeScript: retain TypeScript
+* Tailwind CSS: retain Tailwind and extend it
+* CSS modules or another maintainable styling approach: assess whether migration is necessary before proposing one
+
+Do not migrate frameworks merely to achieve the visual redesign.
+
+## B. Design tokens
+
+Create a proper token architecture using CSS custom properties as the base layer.
+
+Define tokens for:
+
+* Colour
+* Surface
+* Typography
+* Spacing
+* Border radius
+* Border treatment
+* Shadow
+* Texture intensity
+* Motion duration
+* Easing
+* Z-index
+* Breakpoints
+* Character accents
+* Community-library accents
+
+If Tailwind is already used, map the tokens into the Tailwind theme rather than hard-coding values throughout the application.
+
+## C. Interface animation
+
+Use **Motion for React** as the default animation layer for:
+
+* Button press states
+* Card lift
+* Hover and focus treatment
+* Page transitions
+* Drawer and modal transitions
+* Textile-label movement
+* Yarn-trail progress
+* Heart-patch favourites
+* Stitch-based progress indicators
+* Gentle character movement
+* Layout transitions
+
+Do not use heavy animation libraries for interactions that CSS or Motion for React can handle cleanly.
+
+## D. Signature animated assets
+
+Use **Rive selectively** for a small number of memorable interactive animation assets:
+
+* Yarn-drawn Crochet Time logo
+* Crochet-hook looping loader
+* Yarn-trail guidance where a state machine adds real value
+* Bee-led milestone celebration
+* Interactive AI-generation sequence only if product logic genuinely requires it
+
+Use **dotLottie** instead of Rive for short, lightweight, pre-authored animations that do not need interactive state logic.
+
+Do not use Rive merely because animation is visually attractive. Use it only where interactivity or reusable state logic justifies the additional complexity.
+
+## E. Photorealistic character assets
+
+Use optimised image assets for:
+
+* Aloo
+* Yala
+* Ashi
+* Bee
+* Sheep
+
+Recommended formats:
+
+* AVIF or WebP for most assets
+* Transparent WebP or PNG where layering requires transparency
+* Multiple responsive sizes
+* Mobile-specific variants where needed
+* Lazy loading for off-screen assets
+
+Use layered static images plus restrained Motion-for-React effects for gentle character movement.
+
+Do not convert the characters into flat vectors simply to animate them.
+
+## F. SVG assets
+
+Use SVG for:
+
+* Yarn trails
+* Stitched separators
+* Simple crochet-hook icons
+* Pattern-grid diagrams
+* Granny-square line motifs
+* Decorative borders
+* Small utility icons where vector clarity matters
+
+Animate SVG paths selectively using Motion for React or Rive.
+
+---
+
+# 5. Animation Hierarchy
+
+Use animation extensively but with clear discipline.
+
+## Tier 1: Signature moments
+
+Use sparingly:
+
+* Yarn draws the Crochet Time logo
+* AI-generated pattern gradually appears stitch-by-stitch
+* Bee-led celebration when a project is completed
+
+## Tier 2: Journey guidance
+
+Use selectively:
+
+* Woven page transitions
+* Yarn trail through AI pattern creation
+* Stitched progress indicator across multi-step flows
+
+## Tier 3: Functional feedback
+
+Use often where helpful:
+
+* Crochet-hook loading animation
+* Heart patch attaching when adding a favourite
+* Progress bar filling row-by-row
+* Lock and unlock controls visibly stitching or unstitching
+* Save confirmation using Aloo
+
+## Tier 4: Everyday tactility
+
+Use subtly:
+
+* Fabric-like button compression
+* Gentle card lift
+* Soft focus states
+* Small textile-label movement
+* Light character breathing or bobbing on selected screens
+
+Do not animate:
+
+* Every card simultaneously
+* Long paragraphs
+* Dense forms unnecessarily
+* Pattern-reading content while the user is actively working
+* Rapid stitch-counter taps
+* Mobile navigation excessively
+
+---
+
+# 6. Opening Experience
+
+The app should open with a short magical moment and transition quickly into Larissa’s practical crochet workbench.
+
+Target sequence:
+
+1. A loose yarn thread appears
+2. The thread stitches or draws the Crochet Time logo
+3. The thread gently guides the eye into the main studio
+4. Larissa’s crochet workbench becomes usable immediately
+5. Aloo and Yala appear subtly in the workbench composition
+
+Requirements:
+
+* The full animation should be brief
+* Returning users should not repeatedly wait through it
+* Provide a skip or fast path
+* Use a static or simplified alternative on constrained devices
+* Respect reduced-motion settings
+* Avoid a slow splash-screen experience
+
+Recommend:
+
+* Duration
+* First-visit behaviour
+* Returning-user behaviour
+* Mobile behaviour
+* Reduced-motion behaviour
+* Technical implementation option
+
+---
+
+# 7. Home Workbench Composition
+
+The home screen should not be a conventional dashboard grid.
+
+It should feel like Larissa’s organised crochet studio.
+
+Use a balanced workbench with:
+
+* A prominent **Continue your project** area guided by Aloo
+* A prominent **Create with Yala** area for AI pattern generation
+* A visible **Larissa’s Favorites** area
+* A small active-project summary
+* Carefully placed baskets of yarn, textile labels and loose threads
+* A warm cream textile backdrop
+* Clear usability beneath the visual richness
+
+Aloo and Yala should be integrated as emotional anchors, not displayed as isolated icons.
+
+Use visual hierarchy:
+
+* One primary focal area
+* Two or three secondary actions
+* Supporting crochet motifs
+* Sufficient breathing room
+* No generic equal-weight card grid
+
+---
+
+# 8. Utility Screen Restraint
+
+Pattern-reading, editing and stitch-counting screens must remain highly usable.
+
+## Pattern-reading screen
+
+Prioritise:
+
+* Legible typography
+* Clear hierarchy
+* Easy section navigation
+* Lock and unlock controls
+* Obvious editable versus fixed sections
+* Minimal distraction
+* Strong mobile usability
+
+## Stitch and row counter
+
+Prioritise:
+
+* Large tap targets
+* One-handed mobile use
+* Instant response
+* Clear decrement control
+* Reset protection
+* Optional haptic feedback where supported
+* Minimal decorative motion during repeated use
+
+The app can remain visually crochet-based without turning functional screens into decorative scenes.
+
+---
+
+# 9. Performance Requirements
+
+Produce a performance strategy covering:
+
+* Image compression
+* Responsive image sizing
+* Lazy loading
+* Code splitting
+* Dynamic import of heavier animation libraries
+* Avoiding unnecessary animation on lower-powered devices
+* Limiting simultaneous animation
+* Pausing off-screen animation
+* Mobile-first testing
+* Reduced-motion alternatives
+* Avoiding layout shift
+* Caching of character assets
+
+Set clear budgets for:
+
+* Initial page-load weight
+* Largest character assets
+* Animation file sizes
+* Number of simultaneously active animations
+* Mobile performance targets
+
+Where the current framework provides native image optimisation, use it.
+
+---
+
+# 10. Accessibility Requirements
+
+Every animation must have a reduced-motion alternative.
+
+Respect:
+
+* Browser `prefers-reduced-motion`
+* Motion-for-React reduced-motion settings
+* Keyboard navigation
+* Visible focus states
+* Contrast requirements
+* Tap-target sizing
+* Screen-reader labels
+* Animation pause or disable options where relevant
+
+Reduced-motion mode should:
+
+* Replace woven page transitions with simple fades
+* Replace yarn-drawing sequences with static logos
+* Replace celebratory movement with static success illustrations
+* Keep all functionality intact
+
+---
+
+# 11. Required Output
+
+Produce a technical plan with:
+
+1. Executive summary
+2. Current frontend stack assessment
+3. Recommended minimum-change architecture
+4. Existing libraries to retain
+5. Libraries to add later, with justification
+6. Libraries to avoid, with justification
+7. Design-token architecture
+8. Component architecture
+9. Asset architecture
+10. Character-asset strategy
+11. Animation architecture
+12. Performance strategy
+13. Responsive strategy
+14. Accessibility and reduced-motion strategy
+15. Risk assessment
+16. Prototype recommendation
+17. Decisions required from Yash
+
+For each proposed technology, include:
+
+| Technology | Use case | Why it is needed | Alternative considered | Recommendation | Risk | Install now? |
+
+Classify each recommendation as:
+
+* Essential
+* Useful
+* Optional
+* Avoid
+
+Do not install anything yet.
+
+---
+
+# 12. Prototype Recommendation
+
+After the technical plan is approved, recommend building **one prototype only**:
+
+> Larissa’s home crochet workbench, including the short opening transition, core navigation, Aloo and Yala integration, active-project area, AI-creation entry point and Larissa’s Favorites.
+
+The prototype should validate:
+
+* Visual quality
+* Character integration
+* Textile surfaces
+* Design tokens
+* Motion hierarchy
+* Mobile performance
+* Reduced-motion support
+* Whether the interface feels premium rather than gimmicky
+
+Do not roll the design out across the application until the prototype has been reviewed and approved.
