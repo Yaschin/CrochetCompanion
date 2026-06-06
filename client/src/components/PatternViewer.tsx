@@ -6,7 +6,8 @@ import { Pattern, PatternSection as PatternSectionType, PatternStep } from '../l
 import PatternSection from './PatternSection';
 import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
-import { RefreshCw, Download, Plus, Image } from 'lucide-react';
+import StitchCounter from './StitchCounter';
+import { RefreshCw, Download, Plus, Image, Hash } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
@@ -35,6 +36,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [imageRefinements, setImageRefinements] = useState('');
+  const [counterOpen, setCounterOpen] = useState(false);
   const regenerationTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Clean up timeout to prevent memory leaks
@@ -590,6 +592,12 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
 
   return (
     <div className="surface-card mb-8 p-5 sm:p-7">
+      <StitchCounter
+        open={counterOpen}
+        onClose={() => setCounterOpen(false)}
+        patternId={pattern.id}
+        patternTitle={pattern.title}
+      />
       <div className="flex justify-between items-start mb-6">
         <div>
           <h2 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -772,8 +780,16 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
 
       {/* Action Buttons */}
       <div className="mt-8 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
-        <button 
-          type="button" 
+        <button
+          type="button"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-sm hover:bg-secondary-600 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          onClick={() => setCounterOpen(true)}
+        >
+          <Hash className="h-5 w-5" />
+          Stitch Counter
+        </button>
+        <button
+          type="button"
           className="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-primary bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           onClick={handleExportPattern}
         >
