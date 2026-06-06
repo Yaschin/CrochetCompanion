@@ -1,9 +1,8 @@
 import { FC } from 'react';
-import { PlusIcon, BookOpenIcon, PackageIcon } from 'lucide-react';
-import { WoolBallIcon } from '../icons/WoolIcons';
+import { PlusIcon, BookOpenIcon, PackageIcon, HomeIcon } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-type View = 'input' | 'viewer' | 'library' | 'stash';
+type View = 'home' | 'input' | 'viewer' | 'library' | 'stash';
 
 interface NavigationProps {
   activeView: string;
@@ -11,6 +10,7 @@ interface NavigationProps {
 }
 
 const NAV_ITEMS: { view: View; label: string; icon: typeof PlusIcon }[] = [
+  { view: 'home', label: 'Home', icon: HomeIcon },
   { view: 'input', label: 'New Pattern', icon: PlusIcon },
   { view: 'library', label: 'My Patterns', icon: BookOpenIcon },
   { view: 'stash', label: 'Materials', icon: PackageIcon },
@@ -22,17 +22,26 @@ const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-3 sm:px-6 lg:px-8">
         {/* Brand */}
         <button
-          onClick={() => onNavigate('input')}
+          onClick={() => onNavigate('home')}
           className="flex min-w-0 shrink-0 items-center gap-2 rounded-full focus-visible:outline-none"
-          aria-label="Crochet Time — new pattern"
+          aria-label="Crochet Time — home"
         >
-          <WoolBallIcon className="h-8 w-8 shrink-0 text-primary motion-safe:animate-yarn-float sm:h-9 sm:w-9" />
-          <span className="truncate font-heading text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-            Crochet&nbsp;Time
+          <span
+            className="shrink-0 leading-none select-none"
+            style={{
+              fontFamily: "'Dancing Script', cursive",
+              fontSize: '1.75rem',
+              fontWeight: 700,
+              color: '#6B3A4A',
+              lineHeight: 1,
+            }}
+          >
+            Crochet Time
+            <span style={{ color: '#C24E6B' }}>♥</span>
           </span>
         </button>
 
-        {/* Nav — scrolls horizontally on small screens instead of overlapping */}
+        {/* Nav */}
         <div className="ml-auto flex min-w-0 items-center gap-1.5 overflow-x-auto sm:gap-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {NAV_ITEMS.map(({ view, label, icon: Icon }) => {
             const active = activeView === view;

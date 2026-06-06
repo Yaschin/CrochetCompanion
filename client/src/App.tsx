@@ -5,28 +5,27 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import Navigation from "./components/Navigation";
 import ErrorBoundary from "./components/ErrorBoundary";
+import HomeWorkbench from "./components/HomeWorkbench";
 import PatternInputRefactored from "./components/PatternInputRefactored";
 import PatternViewer from "./components/PatternViewer";
 import PatternLibrary from "./components/PatternLibrary";
 import MaterialsInventory from "./components/MaterialsInventory";
 import { Pattern, ViewType } from "./lib/types";
+import { AnimatePresence, motion } from "framer-motion";
 
 function App() {
-  const [activeView, setActiveView] = useState<ViewType>("input");
+  const [activeView, setActiveView] = useState<ViewType>("home");
   const [currentPattern, setCurrentPattern] = useState<Pattern | null>(null);
 
-  // Handle view changes
   const navigateToView = (view: ViewType) => {
     setActiveView(view);
   };
 
-  // Handle pattern creation/editing
   const handlePatternCreated = (pattern: Pattern) => {
     setCurrentPattern(pattern);
     setActiveView("viewer");
   };
 
-  // Handle loading a pattern from library
   const handlePatternLoaded = (pattern: Pattern) => {
     setCurrentPattern(pattern);
     setActiveView("viewer");
@@ -38,8 +37,6 @@ function App() {
         <Navigation onNavigate={navigateToView} activeView={activeView} />
 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          {/* The viewer is reached by opening a pattern, so it has no top-nav
-              entry — give it an explicit way back to the library. */}
           {activeView === "viewer" && (
             <button
               onClick={() => navigateToView("library")}
@@ -50,30 +47,41 @@ function App() {
             </button>
           )}
 
-          {/* Conditional content based on active view.
-              Wrapped in an ErrorBoundary (keyed by view) so a crash in one
-              screen surfaces a recoverable dialog instead of blanking the app. */}
-          <ErrorBoundary key={activeView} componentName={activeView}>
-            {activeView === "input" && (
-              <PatternInputRefactored onPatternCreated={handlePatternCreated} />
-            )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeView}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <ErrorBoundary key={activeView} componentName={activeView}>
+                {activeView === "home" && (
+                  <HomeWorkbench onNavigate={navigateToView} />
+                )}
 
-            {activeView === "viewer" && currentPattern && (
-              <PatternViewer
-                pattern={currentPattern}
-                onPatternUpdated={setCurrentPattern}
-              />
-            )}
+                {activeView === "input" && (
+                  <PatternInputRefactored onPatternCreated={handlePatternCreated} />
+                )}
 
-            {activeView === "library" && (
-              <PatternLibrary
-                onPatternSelected={handlePatternLoaded}
-                onCreateNew={() => navigateToView("input")}
-              />
-            )}
+                {activeView === "viewer" && currentPattern && (
+                  <PatternViewer
+                    pattern={currentPattern}
+                    onPatternUpdated={setCurrentPattern}
+                  />
+                )}
 
-            {activeView === "stash" && <MaterialsInventory />}
-          </ErrorBoundary>
+                {activeView === "library" && (
+                  <PatternLibrary
+                    onPatternSelected={handlePatternLoaded}
+                    onCreateNew={() => navigateToView("input")}
+                  />
+                )}
+
+                {activeView === "stash" && <MaterialsInventory />}
+              </ErrorBoundary>
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
       <Toaster />

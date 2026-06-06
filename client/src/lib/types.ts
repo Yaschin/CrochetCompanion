@@ -93,4 +93,4 @@ export interface StashItem {
   notes?: string;
 }
 
-export type ViewType = "input" | "viewer" | "library" | "stash";
+export type ViewType = "home" | "input" | "viewer" | "library" | "stash";
