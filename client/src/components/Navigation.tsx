@@ -1,9 +1,9 @@
 import { FC } from 'react';
-import { PlusIcon, BookOpenIcon, PackageIcon, CalendarIcon } from 'lucide-react';
+import { PlusIcon, BookOpenIcon, PackageIcon } from 'lucide-react';
 import { WoolBallIcon } from '../icons/WoolIcons';
 import { cn } from '../lib/utils';
 
-type View = 'input' | 'viewer' | 'library' | 'stash' | 'calendar';
+type View = 'input' | 'viewer' | 'library' | 'stash';
 
 interface NavigationProps {
   activeView: string;
@@ -14,7 +14,6 @@ const NAV_ITEMS: { view: View; label: string; icon: typeof PlusIcon }[] = [
   { view: 'input', label: 'New Pattern', icon: PlusIcon },
   { view: 'library', label: 'My Patterns', icon: BookOpenIcon },
   { view: 'stash', label: 'My Stash', icon: PackageIcon },
-  { view: 'calendar', label: 'Planner', icon: CalendarIcon },
 ];
 
 const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {

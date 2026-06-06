@@ -117,4 +117,4 @@ export interface DayAvailability {
   status: 'blocked' | 'half' | 'full';
 }
 
-export type ViewType = "input" | "viewer" | "library" | "stash" | "calendar";
+export type ViewType = "input" | "viewer" | "library" | "stash";

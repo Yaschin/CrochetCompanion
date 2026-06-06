@@ -8,6 +8,7 @@ import { getOrdinalSuffix } from '@/lib/dateUtils';
 import { Sparkles } from 'lucide-react';
 import { PatternInputFormData, Pattern } from '../lib/types';
 import PatternGenLoader from './PatternGenLoader';
+import ThreadDivider from './ThreadDivider';
 import ProjectTypeCards from './ProjectTypeCards';
 import SizeSlider from './SizeSlider';
 import DifficultySelector from './DifficultySelector';
@@ -310,10 +311,18 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6">
-      <div className="bg-white shadow-md rounded-2xl p-4 sm:p-6 mb-8">
-        <h2 className="text-2xl font-bold text-secondary-600 font-heading mb-6">Create a New Pattern</h2>
-        
+    <div className="mx-auto max-w-5xl">
+      <header className="mb-6 text-center sm:mb-8">
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          Let&rsquo;s make something lovely
+        </h1>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground sm:text-base">
+          Describe what you&rsquo;d like to crochet and we&rsquo;ll spin up a full pattern&nbsp;&mdash; stitches, sections and materials.
+        </p>
+        <ThreadDivider animated className="mx-auto mt-4 max-w-[16rem]" />
+      </header>
+
+      <div className="surface-card mb-8 p-4 sm:p-7">
         {/* Loading Animation */}
         {isGenerating && (
           <PatternGenLoader stage={generationStage} />
@@ -438,14 +447,14 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
           <div className="mt-8 flex justify-center">
             <button
               type="button"
-              className={`inline-flex justify-center items-center px-8 py-3 border border-transparent rounded-full shadow-sm text-base font-medium text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 ${
-                isGenerating ? 'opacity-75 cursor-not-allowed' : ''
+              className={`inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary-600 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-safe:hover:-translate-y-0.5 ${
+                isGenerating ? 'cursor-not-allowed opacity-75' : ''
               }`}
               onClick={handleGeneratePattern}
               disabled={isGenerating}
             >
-              <Sparkles className="h-5 w-5 mr-2" />
-              {isGenerating ? 'Generating...' : 'Generate Pattern'}
+              <Sparkles className="h-5 w-5" />
+              {isGenerating ? 'Generating…' : 'Generate Pattern'}
             </button>
           </div>
         </div>

@@ -9,7 +9,6 @@ import PatternInputRefactored from "./components/PatternInputRefactored";
 import PatternViewer from "./components/PatternViewer";
 import PatternLibrary from "./components/PatternLibrary";
 import YarnStash from "./components/YarnStash";
-import CalendarPlannerRefactored from "./components/calendar/CalendarPlannerRefactored";
 import { Pattern, ViewType } from "./lib/types";
 
 function App() {
@@ -74,10 +73,6 @@ function App() {
             )}
 
             {activeView === "stash" && <YarnStash />}
-
-            {activeView === "calendar" && (
-              <CalendarPlannerRefactored onNavigate={navigateToView} />
-            )}
           </ErrorBoundary>
         </main>
       </div>
