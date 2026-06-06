@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { PatternSection as PatternSectionType, PatternStep } from '@/lib/types';
-import { ChevronDown, ChevronRight, Plus, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon, Trash, FileDigit, RefreshCw, Pencil, Loader2, Camera } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Minus, Check, Lock, Unlock, StickyNote, Edit, Save, X, ImageIcon, Trash, FileDigit, RefreshCw, Pencil, Loader2, Camera } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import SectionImagePlaceholder from './SectionImagePlaceholder';
 import StepPhotoUploader from './StepPhotoUploader';
 import SectionPhotoUploader from './SectionPhotoUploader';
@@ -78,105 +79,84 @@ const StepRow: React.FC<{
   };
 
   return (
-    <div className="flex flex-col border-b border-gray-100 text-sm">
-      {/* Step content */}
-      <div className="flex items-center justify-between py-1 px-2">
-        {isEditing ? (
-          <div className="flex-grow pr-2">
+    <div className="border-b border-gray-100 text-sm">
+      <div className="flex items-start gap-2 px-2 py-2">
+        {/* Complete — primary action, comfortable tap target */}
+        <button
+          onClick={toggleComplete}
+          role="checkbox"
+          aria-checked={step.completed}
+          aria-label={step.completed ? 'Mark step incomplete' : 'Mark step complete'}
+          className={cn(
+            'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-colors',
+            step.completed
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-gray-300 bg-background hover:border-primary-300',
+          )}
+        >
+          {step.completed && <Check className="h-4 w-4" />}
+        </button>
+
+        <div className="min-w-0 flex-1">
+          {isEditing ? (
             <textarea
               value={editedText}
               onChange={(e) => setEditedText(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+              className="w-full rounded-lg border border-input bg-background px-2 py-1 text-sm focus-visible:ring-2 focus-visible:ring-ring"
               rows={2}
             />
-          </div>
-        ) : (
-          <div className="flex-grow">
-            <div className={`${step.completed ? 'line-through text-gray-400' : ''}`}>
-              <span className="font-medium text-gray-500 mr-2">{step.id}.</span>
+          ) : (
+            <div className={cn('leading-snug', step.completed && 'text-gray-400 line-through')}>
+              <span className="mr-1.5 font-medium text-gray-400">{step.id}.</span>
               {step.text}
             </div>
-          </div>
-        )}
-        
-        <div className="flex items-center space-x-1">
-          {isEditing ? (
-            <>
-              <button
-                onClick={handleSaveEdit}
-                className="text-green-500 hover:text-green-700 p-0.5"
-                title="Save changes"
-              >
-                <Save size={14} />
-              </button>
-              <button
-                onClick={handleCancelEdit}
-                className="text-red-500 hover:text-red-700 p-0.5"
-                title="Cancel"
-              >
-                <X size={14} />
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="text-gray-400 hover:text-gray-600 p-0.5"
-                title="Edit step"
-              >
-                <Edit size={14} />
-              </button>
-              <button
-                onClick={toggleLock}
-                className={`${step.locked ? 'text-amber-500' : 'text-gray-400'} hover:text-amber-600 p-0.5`}
-                title={step.locked ? "Unlock step" : "Lock step"}
-              >
-                {step.locked ? <Lock size={14} /> : <Unlock size={14} />}
-              </button>
-              <button
-                onClick={() => setIsShowingPhoto(!isShowingPhoto)}
-                className={`${step.photo ? 'text-blue-500' : 'text-gray-400'} hover:text-blue-600 p-0.5`}
-                title={step.photo ? "Show/hide photo" : "Add photo"}
-              >
-                <Camera size={14} />
-              </button>
-              <button
-                onClick={onDelete}
-                className="text-gray-400 hover:text-red-500 p-0.5"
-                title="Delete step"
-              >
-                <Trash size={14} />
-              </button>
-            </>
           )}
-          
-          {step.count > 0 && (
-            <div className="flex items-center space-x-1 ml-2">
-              <button 
-                onClick={() => updateCount(false)}
-                className="text-gray-400 hover:text-gray-600 px-1"
-              >
-                -
+
+          {/* Controls — wrap on small screens, comfortable tap targets */}
+          <div className="mt-1.5 flex flex-wrap items-center gap-1">
+            {/* Per-step counter — always available (was hidden at 0, so it could never start) */}
+            <div className="inline-flex items-center rounded-full border border-border">
+              <button onClick={() => updateCount(false)} aria-label="Decrease count" className="flex h-8 w-8 items-center justify-center rounded-l-full text-gray-500 hover:bg-gray-100">
+                <Minus className="h-4 w-4" />
               </button>
-              <span className="text-xs bg-gray-100 rounded-full px-2 py-0.5">{step.count}</span>
-              <button 
-                onClick={() => updateCount(true)}
-                className="text-gray-400 hover:text-gray-600 px-1"
-              >
-                +
+              <span className="min-w-[2ch] px-1 text-center text-sm tabular-nums text-foreground">{step.count}</span>
+              <button onClick={() => updateCount(true)} aria-label="Increase count" className="flex h-8 w-8 items-center justify-center rounded-r-full text-gray-500 hover:bg-gray-100">
+                <Plus className="h-4 w-4" />
               </button>
             </div>
-          )}
-          <input 
-            type="checkbox" 
-            checked={step.completed}
-            onChange={toggleComplete}
-            className="h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary ml-1"
-          />
+
+            <span className="flex-1" />
+
+            {isEditing ? (
+              <>
+                <button onClick={handleSaveEdit} title="Save changes" aria-label="Save changes" className="flex h-8 w-8 items-center justify-center rounded-full text-secondary-600 hover:bg-secondary-50">
+                  <Save className="h-[18px] w-[18px]" />
+                </button>
+                <button onClick={handleCancelEdit} title="Cancel" aria-label="Cancel edit" className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100">
+                  <X className="h-[18px] w-[18px]" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => setIsEditing(true)} title="Edit step" aria-label="Edit step" className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                  <Edit className="h-[18px] w-[18px]" />
+                </button>
+                <button onClick={toggleLock} title={step.locked ? 'Unlock step' : 'Lock step'} aria-label={step.locked ? 'Unlock step' : 'Lock step'} className={cn('flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100', step.locked ? 'text-amber-500' : 'text-gray-400 hover:text-gray-600')}>
+                  {step.locked ? <Lock className="h-[18px] w-[18px]" /> : <Unlock className="h-[18px] w-[18px]" />}
+                </button>
+                <button onClick={() => setIsShowingPhoto(!isShowingPhoto)} title={step.photo ? 'Show/hide photo' : 'Add photo'} aria-label={step.photo ? 'Show or hide photo' : 'Add photo'} className={cn('flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100', step.photo ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600')}>
+                  <Camera className="h-[18px] w-[18px]" />
+                </button>
+                <button onClick={onDelete} title="Delete step" aria-label="Delete step" className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-destructive">
+                  <Trash className="h-[18px] w-[18px]" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
-      
-      {/* Photo uploader - only shown when expanded */}
+
+      {/* Photo uploader - only shown when toggled */}
       {isShowingPhoto && (
         <div className="px-3 pb-2">
           <StepPhotoUploader
