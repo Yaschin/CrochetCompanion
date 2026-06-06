@@ -36,6 +36,7 @@ function rowToPattern(row: typeof patternsTable.$inferSelect): Pattern {
     notionsRequirements: (row.notionsRequirements ?? []) as Pattern["notionsRequirements"],
     toolRequirements: (row.toolRequirements ?? []) as Pattern["toolRequirements"],
     needsStuffing: row.needsStuffing || undefined,
+    favorite: row.favorite ?? false,
   };
 }
 
@@ -56,6 +57,7 @@ function patternToColumns(pattern: Partial<Pattern>) {
   if (pattern.notionsRequirements !== undefined) columns.notionsRequirements = pattern.notionsRequirements || [];
   if (pattern.toolRequirements !== undefined) columns.toolRequirements = pattern.toolRequirements || [];
   if (pattern.needsStuffing !== undefined) columns.needsStuffing = pattern.needsStuffing || null;
+  if (pattern.favorite !== undefined) columns.favorite = pattern.favorite;
   return columns;
 }
 

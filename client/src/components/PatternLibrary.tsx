@@ -3,7 +3,8 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Pattern } from '../lib/types';
-import { FolderOpen, Trash, Calendar, Plus, Search } from 'lucide-react';
+import { cn } from '../lib/utils';
+import { FolderOpen, Trash, Calendar, Plus, Search, Heart } from 'lucide-react';
 
 interface PatternLibraryProps {
   onPatternSelected: (pattern: Pattern) => void;
@@ -31,6 +32,7 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [sort, setSort] = useState<SortKey>('newest');
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
 
   // Fetch all patterns with better error handling and retry logic
   const { data: patterns, isLoading, isError } = useQuery({
@@ -74,6 +76,22 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
     },
   });
 
+  // Toggle Larissa's Favorites
+  const favoriteMutation = useMutation({
+    mutationFn: async ({ id, favorite }: { id: string; favorite: boolean }) => {
+      const res = await apiRequest('PUT', `/api/patterns/${id}`, { favorite });
+      if (!res.ok) throw new Error('Failed to update favorite');
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['/api/patterns'] }),
+    onError: () => toast({ title: 'Could not update favorite', variant: 'destructive' }),
+  });
+
+  const toggleFavorite = (pattern: Pattern, event: React.MouseEvent) => {
+    event.stopPropagation();
+    favoriteMutation.mutate({ id: pattern.id, favorite: !pattern.favorite });
+  };
+
   const handleDeletePattern = (patternId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     if (window.confirm("Are you sure you want to delete this pattern? This action cannot be undone.")) {
@@ -110,6 +128,10 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
       list = list.filter((p) => p.projectType === typeFilter);
     }
 
+    if (favoritesOnly) {
+      list = list.filter((p) => p.favorite);
+    }
+
     list.sort((a, b) => {
       switch (sort) {
         case 'oldest':
@@ -125,7 +147,7 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
     });
 
     return list;
-  }, [patterns, search, typeFilter, sort]);
+  }, [patterns, search, typeFilter, sort, favoritesOnly]);
 
   const hasPatterns = !!patterns && patterns.length > 0;
   const selectClass =
@@ -168,6 +190,18 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
                 className="w-full rounded-full border border-input bg-background py-2 pl-9 pr-4 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
+            <button
+              type="button"
+              onClick={() => setFavoritesOnly((v) => !v)}
+              aria-pressed={favoritesOnly}
+              className={cn(
+                'inline-flex items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium transition-colors',
+                favoritesOnly ? 'border-primary-200 bg-primary-50 text-primary-700' : 'border-input text-gray-600 hover:bg-gray-100',
+              )}
+            >
+              <Heart className={cn('h-4 w-4', favoritesOnly && 'fill-primary text-primary')} />
+              Favorites
+            </button>
             <select aria-label="Filter by type" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={selectClass}>
               <option value="all">All types</option>
               {projectTypes.map((t) => (
@@ -192,7 +226,7 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
                     className="cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-card shadow-sm transition-shadow hover:shadow-md"
                     onClick={() => onPatternSelected(pattern)}
                   >
-                    <div className="h-48 overflow-hidden bg-gray-100">
+                    <div className="relative h-48 overflow-hidden bg-gray-100">
                       {pattern.endProductImage ? (
                         <img src={pattern.endProductImage} alt={pattern.title} className="h-full w-full object-cover" />
                       ) : (
@@ -200,6 +234,15 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
                           <span>No image available</span>
                         </div>
                       )}
+                      <button
+                        type="button"
+                        onClick={(e) => toggleFavorite(pattern, e)}
+                        aria-label={pattern.favorite ? 'Remove from favorites' : 'Add to favorites'}
+                        aria-pressed={!!pattern.favorite}
+                        className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/85 shadow-sm backdrop-blur transition-colors hover:bg-white"
+                      >
+                        <Heart className={cn('h-5 w-5', pattern.favorite ? 'fill-primary text-primary' : 'text-gray-500')} />
+                      </button>
                     </div>
                     <div className="p-4">
                       <h3 className="font-heading text-lg font-semibold text-foreground">{pattern.title}</h3>

@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, timestamp, jsonb, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, jsonb, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -58,6 +58,7 @@ export const patterns = pgTable("patterns", {
   notionsRequirements: jsonb("notionsRequirements"),
   toolRequirements: jsonb("toolRequirements"),
   needsStuffing: text("needsStuffing"),
+  favorite: boolean("favorite").notNull().default(false),
 });
 
 // Define yarn requirement
@@ -180,6 +181,9 @@ export const patternSchema = z.object({
   
   // Stuffing requirement
   needsStuffing: z.string().optional(),
+
+  // Larissa's Favorites
+  favorite: z.boolean().optional().default(false),
 });
 
 export const insertPatternSchema = createInsertSchema(patterns).omit({
@@ -189,40 +193,3 @@ export const insertPatternSchema = createInsertSchema(patterns).omit({
 
 export type InsertPattern = z.infer<typeof insertPatternSchema>;
 export type Pattern = z.infer<typeof patternSchema>;
-
-// Define project events table
-export const projectEvents = pgTable("project_events", {
-  id: varchar("id", { length: 36 }).primaryKey(),
-  title: text("title").notNull(),
-  patternId: varchar("pattern_id", { length: 36 }),
-  patternTitle: text("pattern_title"),
-  date: timestamp("date").notNull().defaultNow(),
-  description: text("description"),
-  completed: integer("completed").notNull().default(0),
-  timeEstimate: integer("time_estimate"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Create project event schema for validation
-export const projectEventSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  patternId: z.string().optional(),
-  patternTitle: z.string().optional(),
-  date: z.date().or(z.string()),
-  description: z.string().optional(),
-  completed: z.boolean().default(false),
-  timeEstimate: z.number().optional(),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
-});
-
-export const insertProjectEventSchema = createInsertSchema(projectEvents).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export type ProjectEvent = z.infer<typeof projectEventSchema>;
-export type InsertProjectEvent = z.infer<typeof insertProjectEventSchema>;
