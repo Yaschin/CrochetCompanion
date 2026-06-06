@@ -33,6 +33,34 @@ export async function uploadBuffer(
   return `/api/media/${key}`;
 }
 
+export async function uploadBufferWithKey(
+  key: string,
+  buffer: Buffer,
+  contentType: string
+): Promise<string> {
+  const { bucketName, prefix } = getPublicBucketAndPrefix();
+  const objectName = prefix ? `${prefix}/media/${key}` : `media/${key}`;
+
+  const bucket = objectStorageClient.bucket(bucketName);
+  const file = bucket.file(objectName);
+
+  await file.save(buffer, {
+    metadata: { contentType },
+    resumable: false,
+  });
+
+  return `/api/media/${key}`;
+}
+
+export async function objectExists(key: string): Promise<boolean> {
+  const { bucketName, prefix } = getPublicBucketAndPrefix();
+  const objectName = prefix ? `${prefix}/media/${key}` : `media/${key}`;
+  const bucket = objectStorageClient.bucket(bucketName);
+  const file = bucket.file(objectName);
+  const [exists] = await file.exists();
+  return exists;
+}
+
 export async function uploadFromUrl(sourceUrl: string): Promise<string> {
   const response = await fetch(sourceUrl);
   if (!response.ok) {

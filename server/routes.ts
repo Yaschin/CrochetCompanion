@@ -7,7 +7,7 @@ import { patternService } from "./patternService";
 import { stashService } from "./stashService";
 import { patternSchema, stashItemSchema } from "../shared/schema";
 import { z } from "zod";
-import { uploadBuffer, streamObject } from "./objectStorage";
+import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve stored media objects from object storage
@@ -63,6 +63,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ─── Character companion routes ─────────────────────────────────────────────
+
+  const CHARACTER_DEFS: Record<string, { prompt: string }> = {
+    aloo: {
+      prompt:
+        "Photorealistic studio product photo of a handcrafted amigurumi crochet dog plushie. Small plump round body, big round head, floppy rounded ears, tiny black button eyes, subtle embroidered smile. Made entirely from soft dusty rose pink cotton yarn showing beautiful crochet stitch texture. Sitting upright on a smooth warm cream linen surface. Soft bokeh cream background. Professional product photography lighting, macro detail, extremely lifelike crochet texture, no humans, plain background.",
+    },
+    yala: {
+      prompt:
+        "Photorealistic studio product photo of a handcrafted amigurumi crochet elephant plushie. Chunky round body, oversized round floppy ears, short curved trunk, small tail, tiny black button eyes, embroidered smile. Made entirely from soft lavender purple cotton yarn showing beautiful crochet stitch texture. Sitting upright on a smooth warm cream linen surface. Soft bokeh cream background. Professional product photography lighting, macro detail, extremely lifelike crochet texture, no humans, plain background.",
+    },
+    ashi: {
+      prompt:
+        "Photorealistic studio product photo of a handcrafted amigurumi crochet dog plushie. Compact round body, large droopy ears, short snout, tiny black button eyes, embroidered nose and smile. Made entirely from soft teal blue-green cotton yarn showing beautiful crochet stitch texture. Sitting upright on a smooth warm cream linen surface. Soft bokeh cream background. Professional product photography lighting, macro detail, extremely lifelike crochet texture, no humans, plain background.",
+    },
+    bee: {
+      prompt:
+        "Photorealistic studio product photo of a handcrafted amigurumi crochet bee plushie. Chubby round striped body, tiny white crocheted wings, small antennae with round tips, tiny black button eyes, subtle embroidered smile. Body made from golden yellow cotton yarn with dark brown stripe details and white yarn accents. Sitting upright on a smooth warm cream linen surface. Soft bokeh cream background. Professional product photography lighting, macro detail, extremely lifelike crochet texture, no humans, plain background.",
+    },
+    sheep: {
+      prompt:
+        "Photorealistic studio product photo of a handcrafted amigurumi crochet sheep plushie. Fluffy bumpy round body, small round head with cream-coloured face, small ears, four tiny legs, tiny black button eyes, embroidered smile. Body made from loopy sage green textured bouclé-style cotton yarn, face and legs in smooth cream yarn. Sitting upright on a smooth warm cream linen surface. Soft bokeh cream background. Professional product photography lighting, macro detail, extremely lifelike crochet texture, no humans, plain background.",
+    },
+  };
+
+  // GET /api/characters — return stored image URLs for each character
+  app.get("/api/characters", async (_req: Request, res: Response) => {
+    try {
+      const result: Record<string, string | null> = {};
+      await Promise.all(
+        Object.keys(CHARACTER_DEFS).map(async (id) => {
+          const key = `char-${id}`;
+          const exists = await objectExists(key);
+          result[id] = exists ? `/api/media/${key}` : null;
+        })
+      );
+      res.json(result);
+    } catch (error) {
+      console.error("Error checking character images:", error);
+      res.status(500).json({ message: "Failed to check character images" });
+    }
+  });
+
+  // POST /api/characters/generate — generate a single character image
+  app.post("/api/characters/generate", async (req: Request, res: Response) => {
+    try {
+      const { characterId } = req.body;
+      if (!characterId || !CHARACTER_DEFS[characterId]) {
+        return res.status(400).json({ message: "Invalid characterId" });
+      }
+
+      const key = `char-${characterId}`;
+      // Return cached version if it already exists
+      if (await objectExists(key)) {
+        return res.json({ url: `/api/media/${key}` });
+      }
+
+      const OpenAI = (await import("openai")).default;
+      const apiKey = process.env.OPENAI_API_KEY?.trim();
+      if (!apiKey) {
+        return res.status(503).json({ message: "OpenAI API key not configured" });
+      }
+
+      const openai = new OpenAI({ apiKey });
+      const response = await openai.images.generate({
+        model: "dall-e-3",
+        prompt: CHARACTER_DEFS[characterId].prompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "standard",
+      });
+
+      const openaiUrl = response.data[0].url;
+      if (!openaiUrl) throw new Error("No image URL returned");
+
+      // Download and store permanently with a fixed key
+      const imgRes = await fetch(openaiUrl);
+      if (!imgRes.ok) throw new Error("Failed to fetch generated image");
+      const contentType = imgRes.headers.get("content-type") || "image/png";
+      const buffer = Buffer.from(await imgRes.arrayBuffer());
+      const url = await uploadBufferWithKey(key, buffer, contentType);
+
+      res.json({ url });
+    } catch (error) {
+      console.error("Error generating character image:", error);
+      res.status(500).json({ message: "Failed to generate character image", error: (error as Error).message });
+    }
+  });
+
+  // ─── Pattern CRUD endpoints ──────────────────────────────────────────────────
   // Pattern CRUD endpoints
   app.post("/api/patterns", async (req: Request, res: Response) => {
     try {
