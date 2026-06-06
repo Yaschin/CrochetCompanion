@@ -8,7 +8,7 @@ import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
 import StitchCounter from './StitchCounter';
 import { cn } from '../lib/utils';
-import { RefreshCw, Download, Plus, Image, Hash, Heart } from 'lucide-react';
+import { RefreshCw, Download, Plus, Image, Hash, Heart, CheckCircle2, Play } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
@@ -605,6 +605,12 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             {pattern.title}
           </h2>
           <div className="flex flex-wrap gap-2 mt-2">
+            {pattern.status === 'active' && (
+              <span className="inline-flex items-center rounded-full bg-honey-100 px-3 py-1 text-xs font-medium text-honey-700">In progress</span>
+            )}
+            {pattern.status === 'finished' && (
+              <span className="inline-flex items-center rounded-full bg-secondary-100 px-3 py-1 text-xs font-medium text-secondary-800">Finished</span>
+            )}
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
               <svg className="wool-icon h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 9l-7 7-7-7M5 15l7 7 7-7"/>
@@ -792,6 +798,34 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
 
       {/* Action Buttons */}
       <div className="mt-8 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
+        {pattern.status === 'active' ? (
+          <button
+            type="button"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground shadow-sm hover:bg-secondary-600 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            onClick={() => updatePatternMutation.mutate({ ...pattern, status: 'finished', finishedAt: new Date().toISOString() })}
+          >
+            <CheckCircle2 className="h-5 w-5" />
+            Mark finished
+          </button>
+        ) : pattern.status === 'finished' ? (
+          <button
+            type="button"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+            onClick={() => updatePatternMutation.mutate({ ...pattern, status: 'active', finishedAt: null })}
+          >
+            <RefreshCw className="h-5 w-5" />
+            Reopen project
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-600 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            onClick={() => updatePatternMutation.mutate({ ...pattern, status: 'active', startedAt: new Date().toISOString() })}
+          >
+            <Play className="h-5 w-5" />
+            Start project
+          </button>
+        )}
         <button
           type="button"
           className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-sm hover:bg-secondary-600 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

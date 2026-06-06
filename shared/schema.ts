@@ -59,6 +59,9 @@ export const patterns = pgTable("patterns", {
   toolRequirements: jsonb("toolRequirements"),
   needsStuffing: text("needsStuffing"),
   favorite: boolean("favorite").notNull().default(false),
+  status: text("status").notNull().default("pattern"),
+  startedAt: timestamp("started_at"),
+  finishedAt: timestamp("finished_at"),
 });
 
 // Define yarn requirement
@@ -184,6 +187,11 @@ export const patternSchema = z.object({
 
   // Larissa's Favorites
   favorite: z.boolean().optional().default(false),
+
+  // Project lifecycle: a pattern becomes an active, then finished, project
+  status: z.enum(["pattern", "active", "finished"]).optional().default("pattern"),
+  startedAt: z.string().nullable().optional(),
+  finishedAt: z.string().nullable().optional(),
 });
 
 export const insertPatternSchema = createInsertSchema(patterns).omit({
