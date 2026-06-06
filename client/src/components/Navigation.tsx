@@ -1,72 +1,58 @@
-import { FC, useState } from 'react';
-import { PlusIcon, BookOpenIcon, PackageIcon, CalendarIcon } from 'lucide-react';
+import { FC } from 'react';
+import { PlusIcon, BookOpenIcon, PackageIcon } from 'lucide-react';
 import { WoolBallIcon } from '../icons/WoolIcons';
 import { cn } from '../lib/utils';
 
+type View = 'input' | 'viewer' | 'library' | 'stash';
+
 interface NavigationProps {
   activeView: string;
-  onNavigate: (view: 'input' | 'viewer' | 'library' | 'stash' | 'calendar') => void;
+  onNavigate: (view: View) => void;
 }
 
-const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const NAV_ITEMS: { view: View; label: string; icon: typeof PlusIcon }[] = [
+  { view: 'input', label: 'New Pattern', icon: PlusIcon },
+  { view: 'library', label: 'My Patterns', icon: BookOpenIcon },
+  { view: 'stash', label: 'My Stash', icon: PackageIcon },
+];
 
+const Navigation: FC<NavigationProps> = ({ activeView, onNavigate }) => {
   return (
-    <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b">
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex flex-shrink-0">
-            <div className="flex-shrink-0 flex items-center">
-              <WoolBallIcon className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
-              <h1 className="ml-1 sm:ml-2 text-xl sm:text-2xl font-bold text-primary font-heading truncate">Crochet Time</h1>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <button 
-              onClick={() => onNavigate('input')}
-              className={`flex items-center px-2 sm:px-3 py-1 sm:py-2 rounded-full border ${
-                activeView === 'input' 
-                  ? 'bg-primary-100 border-primary-300 text-primary' 
-                  : 'border-gray-300 text-gray-600 hover:bg-gray-100'
-              } transition-colors`}
-            >
-              <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" />
-              <span className="hidden sm:inline font-medium">New Pattern</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('library')}
-              className={`flex items-center px-2 sm:px-3 py-1 sm:py-2 rounded-full border ${
-                activeView === 'library' 
-                  ? 'bg-primary-100 border-primary-300 text-primary' 
-                  : 'border-gray-300 text-gray-600 hover:bg-gray-100'
-              } transition-colors`}
-            >
-              <BookOpenIcon className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" />
-              <span className="hidden sm:inline font-medium">My Patterns</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('stash')}
-              className={`flex items-center px-2 sm:px-3 py-1 sm:py-2 rounded-full border ${
-                activeView === 'stash' 
-                  ? 'bg-primary-100 border-primary-300 text-primary' 
-                  : 'border-gray-300 text-gray-600 hover:bg-gray-100'
-              } transition-colors`}
-            >
-              <PackageIcon className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" />
-              <span className="hidden sm:inline font-medium">My Stash</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('calendar')}
-              className={`flex items-center px-2 sm:px-3 py-1 sm:py-2 rounded-full border ${
-                activeView === 'calendar' 
-                  ? 'bg-primary-100 border-primary-300 text-primary' 
-                  : 'border-gray-300 text-gray-600 hover:bg-gray-100'
-              } transition-colors`}
-            >
-              <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" />
-              <span className="hidden sm:inline font-medium">Planner</span>
-            </button>
-          </div>
+    <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/65">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-3 sm:px-6 lg:px-8">
+        {/* Brand */}
+        <button
+          onClick={() => onNavigate('input')}
+          className="flex min-w-0 shrink-0 items-center gap-2 rounded-full focus-visible:outline-none"
+          aria-label="Crochet Time — new pattern"
+        >
+          <WoolBallIcon className="h-8 w-8 shrink-0 text-primary motion-safe:animate-yarn-float sm:h-9 sm:w-9" />
+          <span className="truncate font-heading text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+            Crochet&nbsp;Time
+          </span>
+        </button>
+
+        {/* Nav — scrolls horizontally on small screens instead of overlapping */}
+        <div className="ml-auto flex min-w-0 items-center gap-1.5 overflow-x-auto sm:gap-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {NAV_ITEMS.map(({ view, label, icon: Icon }) => {
+            const active = activeView === view;
+            return (
+              <button
+                key={view}
+                onClick={() => onNavigate(view)}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-sm font-medium transition-colors sm:px-3.5',
+                  active
+                    ? 'border-primary-200 bg-primary-50 text-primary-700'
+                    : 'border-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-800',
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0 sm:h-[18px] sm:w-[18px]" />
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </nav>
