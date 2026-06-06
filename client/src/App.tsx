@@ -9,6 +9,7 @@ import PatternInputRefactored from "./components/PatternInputRefactored";
 import PatternViewer from "./components/PatternViewer";
 import PatternLibrary from "./components/PatternLibrary";
 import MaterialsInventory from "./components/MaterialsInventory";
+import ProjectsView from "./components/ProjectsView";
 import { Pattern, ViewType } from "./lib/types";
 
 function App() {
@@ -73,6 +74,13 @@ function App() {
             )}
 
             {activeView === "stash" && <MaterialsInventory />}
+
+            {activeView === "projects" && (
+              <ProjectsView
+                onPatternSelected={handlePatternLoaded}
+                onBrowse={() => navigateToView("library")}
+              />
+            )}
           </ErrorBoundary>
         </main>
       </div>

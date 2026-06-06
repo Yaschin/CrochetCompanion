@@ -76,6 +76,10 @@ export interface Pattern {
   size?: string;
   endProductImage?: string;
   favorite?: boolean;
+  // Project lifecycle
+  status?: 'pattern' | 'active' | 'finished';
+  startedAt?: string | null;
+  finishedAt?: string | null;
 }
 
 export type StashItemType = 'yarn' | 'hook' | 'notion' | 'tool';
@@ -93,4 +97,4 @@ export interface StashItem {
   notes?: string;
 }
 
-export type ViewType = "input" | "viewer" | "library" | "stash";
+export type ViewType = "input" | "viewer" | "library" | "stash" | "projects";
