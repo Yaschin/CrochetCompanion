@@ -1,6 +1,5 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import * as fs from 'fs';
 import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
 import { generateImage } from "./api/generateImage";
@@ -8,8 +7,21 @@ import { patternService } from "./patternService";
 import { stashService } from "./stashService";
 import { patternSchema, stashItemSchema } from "../shared/schema";
 import { z } from "zod";
+import { uploadBuffer, streamObject } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve stored media objects from object storage
+  app.get("/api/media/:key", async (req: Request, res: Response) => {
+    try {
+      await streamObject(req.params.key, res);
+    } catch (error) {
+      console.error("Error serving media:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: "Failed to serve media" });
+      }
+    }
+  });
+
   // Generate pattern endpoint
   app.post("/api/generate-pattern", async (req: Request, res: Response) => {
     try {
@@ -382,29 +394,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Process the base64 encoded photo data
       const photoData = req.body.photo;
-      
-      // Create a unique filename based on pattern ID, section and step
-      const fileName = `${patternId}_section${sectionIdx}_step${stepIdx}_${Date.now().toString()}.png`;
-      const filePath = `/uploads/${fileName}`;
-      
-      // Extract the base64 data from the data URL
+
+      // Extract the base64 data from the data URL and detect content type
+      const mimeMatch = photoData.match(/^data:(image\/\w+);base64,/);
+      const contentType = mimeMatch ? mimeMatch[1] : "image/png";
       const base64Data = photoData.replace(/^data:image\/\w+;base64,/, '');
       const dataBuffer = Buffer.from(base64Data, 'base64');
-      
-      // Create uploads directory if it doesn't exist
-      const uploadsDir = './client/public/uploads';
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-      
-      // Write the file to disk
-      fs.writeFileSync(`${uploadsDir}/${fileName}`, dataBuffer);
-      
+
+      // Upload to object storage
+      const photoUrl = await uploadBuffer(dataBuffer, contentType);
+
       // Update the step with the photo URL
       const updatedSections = [...pattern.sections];
       updatedSections[sectionIdx].steps[stepIdx] = {
         ...step,
-        photo: `/uploads/${fileName}`
+        photo: photoUrl
       };
       
       // Update the pattern
@@ -418,7 +422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        photoUrl: `/uploads/${fileName}`,
+        photoUrl,
         pattern: updatedPattern
       });
     } catch (error) {
@@ -455,28 +459,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Process the base64 encoded photo data
       const photoData = req.body.photo;
-      
-      // Create a unique filename based on pattern ID and section
-      const fileName = `${patternId}_section${sectionIdx}_${Date.now().toString()}.png`;
-      
-      // Extract the base64 data from the data URL
-      const base64Data = photoData.replace(/^data:image\/\\w+;base64,/, '');
+
+      // Extract the base64 data from the data URL and detect content type
+      const mimeMatch = photoData.match(/^data:(image\/\w+);base64,/);
+      const contentType = mimeMatch ? mimeMatch[1] : "image/png";
+      const base64Data = photoData.replace(/^data:image\/\w+;base64,/, '');
       const dataBuffer = Buffer.from(base64Data, 'base64');
-      
-      // Create uploads directory if it doesn't exist
-      const uploadsDir = './client/public/uploads';
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-      
-      // Write the file to disk
-      fs.writeFileSync(`${uploadsDir}/${fileName}`, dataBuffer);
-      
+
+      // Upload to object storage
+      const photoUrl = await uploadBuffer(dataBuffer, contentType);
+
       // Update the section with the photo URL
       const updatedSections = [...pattern.sections];
       updatedSections[sectionIdx] = {
         ...section,
-        partImageUrl: `/uploads/${fileName}`
+        partImageUrl: photoUrl
       };
       
       // Update the pattern
@@ -490,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        photoUrl: `/uploads/${fileName}`,
+        photoUrl,
         pattern: updatedPattern
       });
     } catch (error) {

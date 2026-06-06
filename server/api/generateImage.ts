@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { uploadFromUrl } from "../objectStorage";
 
 // Check if OpenAI API key is available and validate its format
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
@@ -116,7 +117,9 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
         timeout(requestTimeout)
       ]);
 
-      return response.data[0].url || "";
+      const openaiUrl = response.data[0].url;
+      if (!openaiUrl) return "";
+      return await uploadFromUrl(openaiUrl);
     } catch (err) {
       console.error(`Image generation attempt ${attempt + 1}/${maxRetries} failed:`, err);
       
