@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { generatePartImage } from "./generateImage";
 import { YarnRequirement } from "@shared/schema";
 
 // Check if OpenAI API key is available and validate its format
@@ -15,8 +14,8 @@ if (!API_KEY_AVAILABLE) {
 }
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = (API_KEY_AVAILABLE && API_KEY_VALID_FORMAT) 
-  ? new OpenAI({ apiKey: OPENAI_API_KEY }) 
+const openai = (API_KEY_AVAILABLE && API_KEY_VALID_FORMAT)
+  ? new OpenAI({ apiKey: OPENAI_API_KEY })
   : null;
 
 interface PatternInputData {
@@ -32,16 +31,14 @@ interface PatternInputData {
 }
 
 export async function generatePattern(inputData: PatternInputData) {
-  const { 
-    prompt, 
-    projectType, 
-    skillLevel, 
-    yarnType, 
-    size, 
-    patternId, 
-    unlockedStepsOnly, 
+  const {
+    prompt,
+    projectType,
+    skillLevel,
+    yarnType,
+    size,
+    unlockedStepsOnly,
     originalPattern,
-    sectionImageFocus
   } = inputData;
 
   // If API key is not available or invalid, return a fallback template pattern
@@ -56,12 +53,12 @@ export async function generatePattern(inputData: PatternInputData) {
   // Construct a detailed system prompt for generating crochet patterns
   let systemPrompt = `
     You are an expert crochet pattern designer with years of experience creating clear, detailed patterns.
-    ${isRegeneration 
-      ? `You are updating an existing pattern while keeping some steps exactly as they are.` 
+    ${isRegeneration
+      ? `You are updating an existing pattern while keeping some steps exactly as they are.`
       : `Generate a complete crochet pattern for a ${projectType} with a ${skillLevel} skill level.`}
 
-    ${yarnType 
-      ? `The pattern should use ${yarnType} yarn.` 
+    ${yarnType
+      ? `The pattern should use ${yarnType} yarn.`
       : 'If the user has not provided a yarn colour, please recommend suitable wool colours for this crochet project and include them within the instructions.'}
 
     ${size ? `The finished item should be approximately ${size}.` : ''}
@@ -78,8 +75,8 @@ export async function generatePattern(inputData: PatternInputData) {
 
     Use standard crochet terms: SC (Single Crochet), MR (Magic Ring), INC (Increase), DEC (Decrease).
     Organize the pattern into logical sections (e.g., Head, Body, etc.) with clear, numbered steps.
-    
-    For patterns with multiple parts (like amigurumi, stuffed animals, dolls, or multi-piece garments), 
+
+    For patterns with multiple parts (like amigurumi, stuffed animals, dolls, or multi-piece garments),
     ALWAYS include an "Assembly and Finishing" section at the end with detailed steps on:
     1. How to join the separate parts together
     2. Where to add stuffing, embellishments, or decorative elements
@@ -155,7 +152,7 @@ export async function generatePattern(inputData: PatternInputData) {
 
   const maxRetries = 3;
   let lastError;
-  
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       if (attempt > 0) {
@@ -163,11 +160,11 @@ export async function generatePattern(inputData: PatternInputData) {
         console.log(`Retrying pattern generation after ${delayMs}ms delay (attempt ${attempt + 1}/${maxRetries})...`);
         await new Promise(resolve => setTimeout(resolve, delayMs));
       }
-      
+
       if (!openai) {
         throw new Error("OpenAI client is not initialized - API key missing");
       }
-      
+
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -204,40 +201,40 @@ export async function generatePattern(inputData: PatternInputData) {
       // For regeneration, merge with locked steps from the original pattern
       if (isRegeneration) {
         generatedPattern = mergeWithLockedSteps(originalPattern, generatedPattern);
-      } 
-      // We're no longer auto-generating section images
-      // Instead, they'll be generated on-demand when requested
+      }
+      // Section images are no longer auto-generated here; they are generated
+      // on-demand when explicitly requested by the client.
 
       return generatedPattern;
     } catch (error) {
       lastError = error;
       console.error(`Error generating pattern (attempt ${attempt + 1}/${maxRetries}):`, error);
-      
+
       // Convert error to string for pattern matching
       const errorMsg = String(error);
-      
+
       // Classify error types for better handling
       const isRateLimit = errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate limit');
-      const isNetworkError = errorMsg.includes('ECONNREFUSED') || 
-                            errorMsg.includes('ETIMEDOUT') || 
+      const isNetworkError = errorMsg.includes('ECONNREFUSED') ||
+                            errorMsg.includes('ETIMEDOUT') ||
                             errorMsg.includes('network') ||
                             errorMsg.includes('socket hang up');
-      const isAuthError = errorMsg.includes('401') || 
-                          errorMsg.includes('authentication') || 
-                          errorMsg.includes('API key') || 
+      const isAuthError = errorMsg.includes('401') ||
+                          errorMsg.includes('authentication') ||
+                          errorMsg.includes('API key') ||
                           errorMsg.includes('auth');
-      const isBillingError = errorMsg.includes('billing') || 
-                            errorMsg.includes('quota') || 
+      const isBillingError = errorMsg.includes('billing') ||
+                            errorMsg.includes('quota') ||
                             errorMsg.includes('payment required') ||
                             errorMsg.includes('insufficient_quota');
-      const isContentPolicyError = errorMsg.includes('content policy') || 
-                                  errorMsg.includes('content_policy') || 
+      const isContentPolicyError = errorMsg.includes('content policy') ||
+                                  errorMsg.includes('content_policy') ||
                                   errorMsg.includes('violat');
-      const isParseError = errorMsg.includes('parse') || 
-                          errorMsg.includes('JSON') || 
+      const isParseError = errorMsg.includes('parse') ||
+                          errorMsg.includes('JSON') ||
                           errorMsg.includes('unexpected token');
       const isTimeoutError = errorMsg.includes('timeout') || errorMsg.includes('timed out');
-      
+
       // Log more specific error details for debugging
       if (isAuthError) {
         console.error("Authentication error with OpenAI API. Check API key.");
@@ -252,10 +249,10 @@ export async function generatePattern(inputData: PatternInputData) {
       } else if (isTimeoutError) {
         console.error(`Request timed out after ${attempt + 1} attempts.`);
       }
-      
+
       // Determine if we should retry based on error type
       const isRetryableError = isRateLimit || isNetworkError || isTimeoutError;
-      
+
       // If it's not a retryable error or this is our last attempt, don't retry
       if ((!isRetryableError && attempt === maxRetries - 1) || attempt === maxRetries - 1) {
         // Provide a specific error message based on the error type for better user experience
@@ -275,198 +272,151 @@ export async function generatePattern(inputData: PatternInputData) {
           throw new Error(`Failed to generate pattern with AI: ${errorMsg}`);
         }
       }
-      
+
       // For retryable errors, continue to next iteration
     }
   }
-  
+
   // If we've exhausted all retries
   throw new Error(`Failed to generate pattern after ${maxRetries} attempts: ${lastError}`);
 }
-  
-  // Function to generate images for each pattern section
-  async function generatePartImages(pattern: any, projectType: string): Promise<any> {
-    const updatedPattern = { ...pattern };
 
-    try {
-      // Generate part images sequentially to avoid rate limiting
-      const updatedSections = [];
+// Calculate yarn requirements based on the pattern, asking the AI for an
+// estimate and falling back to heuristic defaults on failure.
+async function calculateYarnRequirements(pattern: any, projectType: string): Promise<YarnRequirement[]> {
+  try {
+    // Extract pattern summary and complexity metrics for better estimation
+    const totalSteps = pattern.sections.reduce((count: number, section: any) =>
+      count + section.steps.length, 0);
+    const complexityScore = calculatePatternComplexity(pattern, projectType);
 
-      // Process sections one at a time with a delay between each
-      for (const section of pattern.sections) {
-        // Extract colors from yarn requirements if available
-        const colors = pattern.yarnRequirements 
-          ? pattern.yarnRequirements.map((req: any) => req.color).join(", ") 
-          : "";
+    // Create a detailed summary of the pattern including section names and steps
+    const patternSummary = pattern.sections.map((section: any) => {
+      return `${section.name}: ${section.steps.length} steps`;
+    }).join(", ");
 
-        const prompt = `A detailed illustration of the ${section.name.toLowerCase()} part of a crocheted ${projectType}${
-          colors ? ` using these colors: ${colors}` : ""
-        }`;
+    // Extract potential color mentions from pattern title and description
+    const colorMentions = extractColorMentions(pattern);
+    const colorMentionsText = colorMentions.length > 0
+      ? `I found these potential colors mentioned in the pattern: ${colorMentions.join(", ")}.`
+      : "";
 
-        try {
-          // Add a delay between image generations to avoid rate limits
-          // We'll only delay after the first section
-          if (updatedSections.length > 0) {
-            await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 second delay between requests
-          }
+    console.log(`Calculating yarn requirements for ${projectType} with ${totalSteps} steps (complexity: ${complexityScore})...`);
+    console.log(`Detected colors: ${colorMentions.join(", ") || "None detected"}`);
 
-          const imageUrl = await generatePartImage(prompt, section.name, projectType);
-          updatedSections.push({
-            ...section,
-            partImageUrl: imageUrl
-          });
-        } catch (error) {
-          console.error(`Error generating image for section ${section.name}:`, error);
-          updatedSections.push({ 
-            ...section, 
-            partImageUrl: null 
-          });
-        }
-      }
-
-      updatedPattern.sections = updatedSections;
-      return updatedPattern;
-    } catch (error) {
-      console.error("Error generating part images:", error);
-      return pattern; // Return original pattern if image generation fails
+    // Ask the AI to estimate yarn requirements with enhanced context
+    if (!openai) {
+      throw new Error("OpenAI client is not initialized - API key missing");
     }
-  }
 
-  // Calculate yarn requirements based on the pattern
-  async function calculateYarnRequirements(pattern: any, projectType: string): Promise<YarnRequirement[]> {
-    try {
-      // Extract pattern summary and complexity metrics for better estimation
-      const totalSteps = pattern.sections.reduce((count: number, section: any) => 
-        count + section.steps.length, 0);
-      const complexityScore = calculatePatternComplexity(pattern, projectType);
-      
-      // Create a detailed summary of the pattern including section names and steps
-      const patternSummary = pattern.sections.map((section: any) => {
-        return `${section.name}: ${section.steps.length} steps`;
-      }).join(", ");
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert in crochet who can accurately estimate yarn requirements.
+            Given a pattern structure, estimate the amount of yarn needed for each color.
+            Be specific about weights and measurements:
+            - For small amigurumi: use grams (usually 10-50g per color)
+            - For wearables: use both grams and yards/meters (e.g., "~200g/400yds")
+            - For blankets: specify using grams or skeins (e.g., "~400g (4 skeins)")
 
-      // Extract potential color mentions from pattern title and description
-      const colorMentions = extractColorMentions(pattern);
-      const colorMentionsText = colorMentions.length > 0 
-        ? `I found these potential colors mentioned in the pattern: ${colorMentions.join(", ")}.` 
-        : "";
+            Specify yarn weight when relevant (e.g., "~100g worsted weight" or "~50g fingering weight").
 
-      console.log(`Calculating yarn requirements for ${projectType} with ${totalSteps} steps (complexity: ${complexityScore})...`);
-      console.log(`Detected colors: ${colorMentions.join(", ") || "None detected"}`);
+            Return a JSON object with a 'yarnRequirements' property that contains an array of objects.
+            Each object must have 'color' and 'volume' properties.
+            Example response format:
+            {
+              "yarnRequirements": [
+                {"color": "Orange", "volume": "~50g fingering weight"},
+                {"color": "Black", "volume": "~20g (1/4 skein)"}
+              ]
+            }`
+        },
+        {
+          role: "user",
+          content: `For a ${projectType} with ${totalSteps} total steps divided into sections (${patternSummary}).
+            The pattern has a complexity score of ${complexityScore}/10 (higher means more complex).
+            ${colorMentionsText}
 
-      // Ask the AI to estimate yarn requirements with enhanced context
-      if (!openai) {
-        throw new Error("OpenAI client is not initialized - API key missing");
-      }
-      
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { 
-            role: "system", 
-            content: `You are an expert in crochet who can accurately estimate yarn requirements.
-              Given a pattern structure, estimate the amount of yarn needed for each color.
-              Be specific about weights and measurements:
-              - For small amigurumi: use grams (usually 10-50g per color)
-              - For wearables: use both grams and yards/meters (e.g., "~200g/400yds")
-              - For blankets: specify using grams or skeins (e.g., "~400g (4 skeins)")
-              
-              Specify yarn weight when relevant (e.g., "~100g worsted weight" or "~50g fingering weight").
-              
-              Return a JSON object with a 'yarnRequirements' property that contains an array of objects.
-              Each object must have 'color' and 'volume' properties.
-              Example response format:
-              {
-                "yarnRequirements": [
-                  {"color": "Orange", "volume": "~50g fingering weight"},
-                  {"color": "Black", "volume": "~20g (1/4 skein)"}
-                ]
-              }` 
-          },
-          { 
-            role: "user", 
-            content: `For a ${projectType} with ${totalSteps} total steps divided into sections (${patternSummary}).
-              The pattern has a complexity score of ${complexityScore}/10 (higher means more complex).
-              ${colorMentionsText}
-              
-              Please estimate the yarn requirements with specific weights and measurements.
-              For larger projects, include both weight and yardage estimations.
-              Return the result with a 'yarnRequirements' array containing objects with 'color' and 'volume' properties.
+            Please estimate the yarn requirements with specific weights and measurements.
+            For larger projects, include both weight and yardage estimations.
+            Return the result with a 'yarnRequirements' array containing objects with 'color' and 'volume' properties.
 
-              Important: Make sure your response follows this exact format:
-              {
-                "yarnRequirements": [
-                  {"color": "Orange", "volume": "~50g fingering weight"},
-                  {"color": "Black", "volume": "~20g worsted weight (1/4 skein)"}
-                ]
-              }` 
-          }
-        ],
-        response_format: { type: "json_object" }
-      });
-
-      const result = JSON.parse(response.choices[0].message.content || "{}");
-      console.log("Enhanced yarn requirements API response:", result);
-
-      // Handle different response formats from the AI
-      if (Array.isArray(result)) {
-        return result;
-      } else if (result.yarnRequirements && Array.isArray(result.yarnRequirements)) {
-        return result.yarnRequirements;
-      } else if (typeof result === 'object') {
-        // Convert flat object to array if needed
-        const requirements = [];
-        for (const key in result) {
-          if (key !== 'yarnRequirements') {
-            const colorMatch = key.match(/color|yarn|wool/i);
-            const volumeMatch = key.match(/volume|amount|quantity|yards|grams/i);
-
-            if (colorMatch) {
-              requirements.push({
-                color: result[key],
-                volume: volumeMatch && result[volumeMatch[0]] ? result[volumeMatch[0]] : "~100g"
-              });
-            }
-          }
+            Important: Make sure your response follows this exact format:
+            {
+              "yarnRequirements": [
+                {"color": "Orange", "volume": "~50g fingering weight"},
+                {"color": "Black", "volume": "~20g worsted weight (1/4 skein)"}
+              ]
+            }`
         }
+      ],
+      response_format: { type: "json_object" }
+    });
 
-        if (requirements.length > 0) {
-          return requirements;
+    const result = JSON.parse(response.choices[0].message.content || "{}");
+    console.log("Enhanced yarn requirements API response:", result);
+
+    // Handle different response formats from the AI
+    if (Array.isArray(result)) {
+      return result;
+    } else if (result.yarnRequirements && Array.isArray(result.yarnRequirements)) {
+      return result.yarnRequirements;
+    } else if (typeof result === 'object') {
+      // Convert flat object to array if needed
+      const requirements: YarnRequirement[] = [];
+      for (const key in result) {
+        if (key !== 'yarnRequirements') {
+          const colorMatch = key.match(/color|yarn|wool/i);
+          const volumeMatch = key.match(/volume|amount|quantity|yards|grams/i);
+
+          if (colorMatch) {
+            requirements.push({
+              color: result[key],
+              volume: volumeMatch && result[volumeMatch[0]] ? result[volumeMatch[0]] : "~100g"
+            });
+          }
         }
       }
 
-      // Default fallback with estimated requirements based on project type
-      console.warn("AI response parsing failed, using default estimates");
-      return generateDefaultYarnRequirements(pattern, projectType, complexityScore);
-      
-    } catch (error) {
-      console.error("Error calculating yarn requirements:", error);
-      // Return estimated requirements instead of throwing an error
-      const complexityScore = calculatePatternComplexity(pattern, projectType);
-      return generateDefaultYarnRequirements(pattern, projectType, complexityScore);
+      if (requirements.length > 0) {
+        return requirements;
+      }
     }
+
+    // Default fallback with estimated requirements based on project type
+    console.warn("AI response parsing failed, using default estimates");
+    return generateDefaultYarnRequirements(pattern, projectType, complexityScore);
+
+  } catch (error) {
+    console.error("Error calculating yarn requirements:", error);
+    // Return estimated requirements instead of throwing an error
+    const complexityScore = calculatePatternComplexity(pattern, projectType);
+    return generateDefaultYarnRequirements(pattern, projectType, complexityScore);
   }
+}
 
 // Helper function to calculate pattern complexity (0-10 scale)
 function calculatePatternComplexity(pattern: any, projectType: string): number {
   // Base complexity based on project type
   let baseComplexity = 5;
-  
+
   // Adjust based on project type
   if (/blanket|afghan|throw/i.test(projectType)) baseComplexity = 7;
   else if (/amigurumi|plush|toy/i.test(projectType)) baseComplexity = 6;
   else if (/hat|beanie/i.test(projectType)) baseComplexity = 4;
   else if (/scarf|cowl/i.test(projectType)) baseComplexity = 3;
-  
+
   // Count total steps
   const totalSteps = pattern.sections.reduce((total: number, section: any) => total + section.steps.length, 0);
-  
+
   // Factor in number of steps (more steps = higher complexity)
   const stepComplexity = Math.min(3, Math.floor(totalSteps / 20));
-  
+
   // Factor in number of sections (more sections = higher complexity)
   const sectionComplexity = Math.min(2, Math.floor(pattern.sections.length / 3));
-  
+
   // Calculate final score (clamped between 1-10)
   return Math.max(1, Math.min(10, baseComplexity + stepComplexity + sectionComplexity));
 }
@@ -474,29 +424,28 @@ function calculatePatternComplexity(pattern: any, projectType: string): number {
 // Extract color mentions from pattern text
 function extractColorMentions(pattern: any): string[] {
   const commonColors = [
-    'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 
-    'white', 'gray', 'grey', 'brown', 'beige', 'cream', 'teal', 'navy', 
+    'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black',
+    'white', 'gray', 'grey', 'brown', 'beige', 'cream', 'teal', 'navy',
     'turquoise', 'maroon', 'olive', 'mint', 'coral', 'indigo', 'violet'
   ];
-  
+
   // Text to search for color mentions
   const textToSearch = [
     pattern.title || '',
     pattern.description || '',
     ...(pattern.sections || []).map((s: any) => s.name || '')
   ].join(' ').toLowerCase();
-  
-  
+
   // Find color mentions
-  return commonColors.filter(color => 
+  return commonColors.filter(color =>
     new RegExp(`\\b${color}\\b`, 'i').test(textToSearch)
   );
 }
 
-// Generate default yarn requirements when AI fails
 /**
- * Generates default yarn requirements based on project type and complexity
- * 
+ * Generates default yarn requirements based on project type and complexity.
+ * Used as a fallback when the AI estimate is unavailable.
+ *
  * @param pattern - The pattern object (for color detection)
  * @param projectType - Type of crochet project
  * @param complexityScore - Complexity score (0-10)
@@ -504,19 +453,19 @@ function extractColorMentions(pattern: any): string[] {
  * @returns Array of YarnRequirement objects
  */
 function generateDefaultYarnRequirements(
-  pattern: any, 
-  projectType: string, 
+  pattern: any,
+  projectType: string,
   complexityScore: number = 5,
   yarnWeight: string = ''
 ): YarnRequirement[] {
   // Extract potential colors or use defaults
   const detectedColors = pattern && typeof pattern === 'object' ? extractColorMentions(pattern) : [];
   const colors = detectedColors.length > 0 ? detectedColors : ['Main Color', 'Contrast Color'];
-  
+
   // Estimate volume based on project type and complexity
   let mainVolume = '';
   let contrastVolume = '';
-  
+
   // Determine yarn requirements based on project type and complexity
   if (/blanket|afghan|throw/i.test(projectType)) {
     mainVolume = complexityScore > 7 ? '~800g (8 skeins)' : '~500g (5 skeins)';
@@ -545,123 +494,17 @@ function generateDefaultYarnRequirements(
     contrastVolume = '~50g (1/2 skein)';
   }
 
-/**
- * Calculate appropriate yarn amounts based on project type, size, and complexity
- * @param projectType - Type of crochet project
- * @param complexityScore - Complexity score (1-10)
- * @returns Object with mainVolume and contrastVolume
- */
-function calculateYarnRequirements(projectType: string, complexityScore: number): { mainVolume: string, contrastVolume: string } {
-  let mainVolume = '';
-  let contrastVolume = '';
-  
-  // Adjust complexity for estimating yarn volume (on a 1-3 scale)
-  const complexityFactor = Math.max(1, Math.min(3, Math.ceil(complexityScore / 3)));
-  
-  // Determine appropriate yarn amounts based on project type
-  if (/blanket|afghan|throw/i.test(projectType)) {
-    // Blankets require the most yarn
-    const baseAmount = 500; // 500g base for a small blanket
-    const sizeMultiplier = ({
-      1: 1,    // Small throw - base amount
-      2: 1.5,  // Medium afghan - 1.5x base
-      3: 2.5   // Large blanket - 2.5x base
-    } as Record<number, number>)[complexityFactor] || 1;
-    
-    const totalGrams = Math.round(baseAmount * sizeMultiplier / 100) * 100; // Round to nearest 100g
-    const skeins = Math.ceil(totalGrams / 100);
-    
-    mainVolume = `~${totalGrams}g (${skeins} skeins)`;
-    contrastVolume = `~${Math.ceil(totalGrams * 0.2)}g (${Math.ceil(totalGrams * 0.2 / 100)} skeins)`;
-  } else if (/sweater|cardigan|jumper|garment/i.test(projectType)) {
-    // Garments depend on size and complexity
-    const baseAmount = 300; // 300g base for a simple adult small sweater
-    const sizeMultiplier = ({
-      1: 1,    // Small/simple
-      2: 1.4,  // Medium/moderate
-      3: 1.8   // Large/complex
-    } as Record<number, number>)[complexityFactor] || 1;
-    
-    const totalGrams = Math.round(baseAmount * sizeMultiplier / 50) * 50; // Round to nearest 50g
-    const skeins = Math.ceil(totalGrams / 100);
-    
-    mainVolume = `~${totalGrams}g (${skeins} skeins)`;
-    contrastVolume = `~${Math.ceil(totalGrams * 0.15 / 50) * 50}g (${Math.ceil(totalGrams * 0.15 / 100)} skeins)`;
-  } else if (/amigurumi|plush|toy/i.test(projectType)) {
-    // Amigurumi by size
-    const baseAmounts: Record<number, number> = {
-      1: 50,   // Small amigurumi (keychain size)
-      2: 100,  // Medium toy
-      3: 200   // Large plush
-    };
-    const totalGrams = baseAmounts[complexityFactor] || 100;
-    
-    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} ${totalGrams <= 100 ? 'skein' : 'skeins'})`;
-    contrastVolume = `~${Math.ceil(totalGrams * 0.3)}g (${totalGrams * 0.3 <= 50 ? '1/2' : '1'} skein)`;
-  } else if (/hat|beanie|cap/i.test(projectType)) {
-    // Hats are generally one skein projects
-    const baseAmounts: Record<number, number> = {
-      1: 70,   // Simple beanie
-      2: 100,  // Textured hat
-      3: 150   // Complex hat with cables/colorwork
-    };
-    const totalGrams = baseAmounts[complexityFactor] || 100;
-    
-    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} skein${totalGrams > 100 ? 's' : ''})`;
-    contrastVolume = `~${Math.ceil(totalGrams * 0.25)}g (${totalGrams * 0.25 <= 50 ? '1/2' : '1'} skein)`;
-  } else if (/scarf|cowl/i.test(projectType)) {
-    // Scarves vary by length/width/pattern
-    const baseAmounts: Record<number, number> = {
-      1: 150,  // Simple scarf
-      2: 200,  // Moderate width/texture
-      3: 300   // Wide/long/textured
-    };
-    const totalGrams = baseAmounts[complexityFactor] || 200;
-    
-    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} skeins)`;
-    contrastVolume = `~${Math.ceil(totalGrams * 0.2)}g (${Math.ceil(totalGrams * 0.2 / 100)} skein)`;
-  } else if (/bag|tote|purse/i.test(projectType)) {
-    // Bags often require less than garments but more than accessories
-    const baseAmounts: Record<number, number> = {
-      1: 150,  // Small bag/purse
-      2: 250,  // Medium tote
-      3: 400   // Large or structured bag
-    };
-    const totalGrams = baseAmounts[complexityFactor] || 250;
-    
-    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} skeins)`;
-    contrastVolume = `~${Math.ceil(totalGrams * 0.2)}g (${Math.ceil(totalGrams * 0.2 / 100)} skein)`;
-  } else if (/shawl|wrap/i.test(projectType)) {
-    // Shawls vary greatly in size
-    const baseAmounts: Record<number, number> = {
-      1: 200,  // Small/simple shawl
-      2: 400,  // Medium shawl
-      3: 600   // Large complex wrap
-    };
-    const totalGrams = baseAmounts[complexityFactor] || 400;
-    
-    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} skeins)`;
-    contrastVolume = `~${Math.ceil(totalGrams * 0.15)}g (${Math.ceil(totalGrams * 0.15 / 100)} skein)`;
-  } else {
-    // Default for unknown project types
-    const baseAmount = 200;
-    const totalGrams = baseAmount * complexityFactor;
-    
-    mainVolume = `~${totalGrams}g (${Math.ceil(totalGrams / 100)} skeins)`;
-    contrastVolume = `~${Math.ceil(totalGrams * 0.25)}g (${Math.ceil(totalGrams * 0.25 / 100)} skein)`;
-  }
-  
   // Add yarn weight information if provided
   if (yarnWeight) {
     mainVolume += ` of ${yarnWeight}`;
     contrastVolume += ` of ${yarnWeight}`;
   }
-  
+
   // Create requirements list
   const requirements: YarnRequirement[] = [
     { color: colors[0], volume: mainVolume }
   ];
-  
+
   // Add contrast colors if available
   if (colors.length > 1) {
     // Only add up to 2 contrast colors to prevent excessive requirements
@@ -673,7 +516,7 @@ function calculateYarnRequirements(projectType: string, complexityScore: number)
       });
     }
   }
-  
+
   return requirements;
 }
 
@@ -681,7 +524,7 @@ function calculateYarnRequirements(projectType: string, complexityScore: number)
 function extractLockedStepsInfo(originalPattern: any): string {
   let lockedStepsInfo = '';
 
-  originalPattern.sections.forEach((section: any, sectionIndex: number) => {
+  originalPattern.sections.forEach((section: any) => {
     lockedStepsInfo += `Section: ${section.name}\n`;
 
     section.steps.forEach((step: any) => {
@@ -700,7 +543,7 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
 
   // Make sure sections match between original and new
   mergedPattern.sections = mergedPattern.sections.map((newSection: any, sectionIndex: number) => {
-    const originalSection = originalPattern.sections[sectionIndex] || { 
+    const originalSection = originalPattern.sections[sectionIndex] || {
       steps: [],
       notes: "",
       locked: false,
@@ -708,7 +551,7 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
     };
 
     // Merge steps, preserving locked ones from original
-    const mergedSteps = newSection.steps.map((newStep: any, stepIndex: number) => {
+    const mergedSteps = newSection.steps.map((newStep: any) => {
       const originalStep = originalSection.steps.find((s: any) => s.id === newStep.id);
 
       // If the step was locked in the original, keep it exactly as it was
@@ -770,36 +613,30 @@ function mergeWithLockedSteps(originalPattern: any, generatedPattern: any): any 
 }
 
 /**
- * Provides a fallback template pattern when OpenAI API key is not available
- * This template includes a clear message for the user explaining why AI generation failed
- * and provides basic pattern structure based on the project type selected
- * 
- * @param prompt User's prompt for pattern
-/**
- * Provides a fallback template pattern when OpenAI API key is not available
- * This template includes a clear message for the user explaining why AI generation failed
- * and provides basic pattern structure based on the project type selected
- * 
+ * Provides a fallback template pattern when OpenAI API key is not available.
+ * This template includes a clear message for the user explaining why AI generation
+ * failed and provides a basic pattern structure based on the project type selected.
+ *
  * @param prompt User's prompt for pattern
  * @param projectType Type of crochet project
  * @param skillLevel Skill level (beginner, intermediate, advanced)
- * @returns Basic pattern template with a notice about missing API key
+ * @returns Basic pattern template with a notice about the missing API key
  */
 function getFallbackPatternTemplate(prompt: string, projectType: string, skillLevel: string) {
   console.warn("⚠️ Using fallback pattern template because OpenAI API key is not available");
-  
+
   // Clean and capitalize the prompt and project type for the title
   const cleanPrompt = prompt.trim().replace(/^[a-z]/, c => c.toUpperCase());
   const cleanProjectType = projectType.charAt(0).toUpperCase() + projectType.slice(1).toLowerCase();
-  
+
   // Create a clear title that indicates this is a template
   const title = `🧶 ${cleanPrompt} ${cleanProjectType} (Template)`;
-  
+
   // Determine appropriate hook size and yarn weight based on project type
   let hookSize = "5.0mm (H/8)";
   let yarnWeight = "Medium (4) - Worsted weight";
   let extraHooks = [];
-  
+
   if (/blanket|afghan|throw/i.test(projectType)) {
     hookSize = "6.0mm (J/10)";
     yarnWeight = "Medium (4) - Worsted or Aran weight";
@@ -828,20 +665,20 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
     yarnWeight = "Medium (4) - Worsted weight";
     extraHooks.push({ size: "3.5mm (E/4)", quantity: 1, note: "For firm base and structure" });
   }
-  
-  // Generate appropriate yarn requirements using the shared utility function
-  // Create a minimal pattern object with just enough structure for the function to work
-  const templatePattern = { 
+
+  // Generate appropriate yarn requirements using the shared utility function.
+  // Create a minimal pattern object with just enough structure for the function to work.
+  const templatePattern = {
     title: cleanPrompt,
     description: `${cleanPrompt} ${projectType}`,
     sections: []
   };
   // Use the shared utility function to generate consistent yarn requirements
   const yarnRequirements = generateDefaultYarnRequirements(templatePattern, projectType, 5, yarnWeight);
-  
+
   // Generate appropriate sections based on project type
   const sections = [];
-  
+
   if (/amigurumi|toy|plush/i.test(projectType)) {
     sections.push(
       {
@@ -925,7 +762,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
           { id: 3, text: "Round 2: [inc] around (12)", locked: false, count: 0, notes: "", photo: null, completed: false },
           { id: 4, text: "Round 3: [1 sc, inc] around (18)", locked: false, count: 0, notes: "", photo: null, completed: false },
           { id: 5, text: "Round 4: [2 sc, inc] around (24)", locked: false, count: 0, notes: "", photo: null, completed: false },
-          { id: 6, text: "Round 5: [3 sc, inc] around (30)", locked: false, count: 0, notes: "", photo: null, completed: false },
+          { id: 6, text: "Round 5: [3 sc, inc] around (30)", locked: false, count: 0, notes: "", photo: null, completed: false }
         ]
       },
       {
@@ -986,7 +823,7 @@ function getFallbackPatternTemplate(prompt: string, projectType: string, skillLe
       }
     );
   }
-  
+
   // Create the pattern object with clear, actionable messaging about the missing API key
   return {
     title,
@@ -1005,7 +842,7 @@ This is a basic ${skillLevel} level ${projectType} template only. To generate a 
      - Key: OPENAI_API_KEY
      - Value: your OpenAI key (starting with sk-)
    • Click "Add Secret"
-   
+
 3. Refresh the page after adding the key
 
 Your custom AI-generated pattern will include:
@@ -1056,5 +893,4 @@ The template suggests using ${yarnWeight} yarn with a ${hookSize} hook as a star
 
 Once you add your API key, you can regenerate this pattern to get detailed, accurate material requirements customized to your project.`
   };
-}
 }
