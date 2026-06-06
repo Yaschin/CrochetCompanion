@@ -1,0 +1,23 @@
+Add durable object storage for all images in this app. It's a React + Vite + Express + Drizzle/Neon app.
+
+Today images are NOT durable:
+- server/api/generateImage.ts returns the raw OpenAI DALL·E URL (response.data[0].url), which expires after ~1 hour.
+- server/routes.ts writes uploaded photos (base64) to ./client/public/uploads on local disk, which does not survive redeploys/autoscale.
+
+Goal: store every image in Replit Object Storage and serve it from a stable app URL, WITHOUT changing any API response shapes — the frontend relies on the existing responses ({ url } from /api/generate-image, and { success, photoUrl, pattern } from the photo-upload routes).
+
+Tasks:
+1. Enable Replit Object Storage for this Repl and install @replit/object-storage.
+2. Create server/objectStorage.ts exporting:
+   - uploadBuffer(buffer: Buffer, contentType: string): Promise<string> — store under a uuid key, return a stable URL of the form "/api/media/<key>".
+   - uploadFromUrl(sourceUrl: string): Promise<string> — fetch the remote image (e.g. the DALL·E URL) and store it via uploadBuffer; return the stable URL.
+   - a helper to read/stream an object by key.
+3. Add an Express route GET /api/media/:key in server/routes.ts that streams the object from the bucket with the correct Content-Type and a long Cache-Control.
+4. In server/api/generateImage.ts: when OpenAI returns a real image, pass its URL through uploadFromUrl(...) and return THAT stable URL instead of the raw OpenAI URL. Leave the placehold.co fallbacks unchanged. Keep the function's return type (a string URL) identical.
+5. In server/routes.ts, update the two photo-upload handlers
+   (/api/patterns/:patternId/sections/:sectionIndex/photo and
+    /api/patterns/:patternId/sections/:sectionIndex/steps/:stepIndex/photo):
+   decode the base64 and store it via uploadBuffer(...), set the section/step photo URL to the returned "/api/media/..." URL, and REMOVE the ./client/public/uploads disk writes. Keep the JSON response shape exactly the same.
+6. Do not modify the client or any unrelated files.
+
+Verify before finishing: `npm run check` (tsc) passes with 0 errors, `npm run build` succeeds, and a freshly generated pattern's image still loads (served from /api/media/...) and survives a refresh.
