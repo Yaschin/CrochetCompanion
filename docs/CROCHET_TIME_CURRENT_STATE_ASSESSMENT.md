@@ -454,6 +454,19 @@ Priority: **P0** core broken/undermined · **P1** high-impact for the upgrade ·
 
 > You mentioned you're happy to kill whole parts and rebuild where things don't make sense — that materially lowers the preservation bar and is reflected in the recommendations below. Each item has a recommendation; please confirm or override.
 
+### Decisions confirmed by Yash (2026-06-06)
+
+| # | Decision | Choice |
+|---|---|---|
+| D3 | First-release scope | **Everything** — ambitious release: AI generation/edit core + a real Projects entity + Sharing + a light Materials inventory |
+| D4 | Visual style | **Premium handcrafted blend** — warm naturals + one vivid yarn accent, tactile knit/linen textures, a signature "thread" motif, restrained delight |
+| D6 | Stash & Calendar | **Drop the Calendar/scheduler; keep a *light* Materials inventory** (simplified, types fixed, folded toward the pattern materials list) |
+| D7 | Data | **Wipe & start clean** on a redesigned schema (confirm nothing in the current DB needs migrating) |
+
+**Reconciliation note.** D3 ("Everything") + D6 ("keep a light Materials idea, drop the Calendar") together mean: pursue a broad first release **but cut the Calendar**, and reduce the Stash to a lightweight materials inventory. Even with broad scope, delivery must be **phased** to protect quality and mobile performance — scope ≠ a single big-bang drop. This supersedes the narrower "core spine first" recommendation in §10.3.
+
+**Remaining items** (sensible defaults assumed unless overridden): **D1** keep personal-for-Larissa with a minimal identity seam for later multi-user; **D2** generation-first hero journey; **D5** one signature animation + useful micro-interactions, reduced-motion aware; **D8** private/family sharing first; **D9** re-evaluate to current AI models and either make reference-image input real (vision) or remove it.
+
 **D1 — Personal app vs future product.**
 Options: (a) Stay a private app for Larissa; (b) Build multi-user now; (c) Single private app *architected* to add accounts later.
 **Recommend (c).** Keep it private and personal (and finally make it *feel* built for Larissa), but introduce a minimal identity/profile seam so multi-user is a later addition, not a rewrite.
