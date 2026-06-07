@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import {
-  Home, Wand2, BookOpen, Heart, Users, User, Settings,
+  Home, Wand2, BookOpen, Heart, Users, User, Settings, Sparkles,
 } from "lucide-react";
 import { ViewType } from "../lib/types";
 import { getStreak } from "../lib/activityLog";
@@ -19,9 +19,10 @@ const PRIMARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Hom
 ];
 
 const SECONDARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Home }[] = [
-  { id: "community", view: "community", label: "Community Library", icon: Users },
-  { id: "profile",   view: "home",      label: "My Profile",        icon: User },
-  { id: "settings",  view: "settings",  label: "Settings",          icon: Settings },
+  { id: "community", view: "community",  label: "Community Library", icon: Users },
+  { id: "yarn-recs", view: "yarn-recs",  label: "Yarn Recs",         icon: Sparkles },
+  { id: "profile",   view: "home",       label: "My Profile",        icon: User },
+  { id: "settings",  view: "settings",   label: "Settings",          icon: Settings },
 ];
 
 function resolveActiveId(view: ViewType): string {
@@ -31,6 +32,7 @@ function resolveActiveId(view: ViewType): string {
   if (view === "favorites") return "favorites";
   if (view === "stash" || view === "projects") return "projects";
   if (view === "community" || view === "community-detail" || view === "community-submit") return "community";
+  if (view === "yarn-recs") return "yarn-recs";
   if (view === "settings") return "settings";
   return "home";
 }

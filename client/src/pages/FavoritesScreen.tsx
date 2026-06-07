@@ -1,4 +1,4 @@
-import { Heart, MoreHorizontal } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Pattern, ViewType } from "../lib/types";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -41,10 +41,6 @@ export default function FavoritesScreen({ onNavigate, onPatternSelected }: Favor
             Larissa's Favorites
           </h1>
         </div>
-        <button className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-          style={{ color: "#9A7868" }}>
-          <MoreHorizontal className="h-5 w-5" />
-        </button>
       </div>
 
       {/* Grid */}

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Search, Bell, Loader2, ChevronRight, MoreHorizontal,
+  Search, Bell, Loader2, ChevronRight,
   Heart, Wand2, FolderOpen, Trophy, ChevronRight as ChevRight,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
@@ -639,7 +639,7 @@ function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) =
   );
 }
 
-function UpcomingMilestoneSection({ projectsCount }: { projectsCount: number }) {
+function UpcomingMilestoneSection({ projectsCount, onNavigate }: { projectsCount: number; onNavigate: (v: ViewType) => void }) {
   const next = Math.ceil((projectsCount + 1) / 5) * 5;
   const need = next - projectsCount;
   const filled = 5 - need;
@@ -651,7 +651,7 @@ function UpcomingMilestoneSection({ projectsCount }: { projectsCount: number }) 
           Upcoming Milestone
         </span>
       </div>
-      <div className="craft-card craft-card-honey p-3 flex items-center gap-3">
+      <button onClick={() => onNavigate("progress")} className="craft-card craft-card-honey p-3 flex items-center gap-3 w-full text-left hover:opacity-90 transition-opacity">
         {/* Amigurumi bee character */}
         <img
           src="/characters/char-bee-transparent.png"
@@ -675,7 +675,7 @@ function UpcomingMilestoneSection({ projectsCount }: { projectsCount: number }) 
 
         {/* Chevron */}
         <ChevRight className="flex-shrink-0 h-4 w-4" style={{ color: "#D4921A", opacity: 0.7 }} />
-      </div>
+      </button>
     </div>
   );
 }
@@ -683,8 +683,8 @@ function UpcomingMilestoneSection({ projectsCount }: { projectsCount: number }) 
 // ─── Stats bar ────────────────────────────────────────────────────────────────
 
 function StatsBar({
-  projectsCount, favoritesCount, milestonesCount,
-}: { projectsCount: number; favoritesCount: number; milestonesCount: number }) {
+  projectsCount, favoritesCount, milestonesCount, onNavigate,
+}: { projectsCount: number; favoritesCount: number; milestonesCount: number; onNavigate: (v: ViewType) => void }) {
   const STATS = [
     { value: projectsCount,   label: "Projects",
       icon: <svg viewBox="0 0 22 22" width="20" height="20"><circle cx="11" cy="11" r="8" fill="none" stroke="rgba(255,200,120,0.8)" strokeWidth="1.5" strokeDasharray="4,2.5"/><circle cx="11" cy="11" r="3.5" fill="rgba(255,200,120,0.6)"/><ellipse cx="11" cy="11" rx="5.5" ry="2.5" fill="none" stroke="rgba(255,200,120,0.5)" strokeWidth="0.9"/></svg>
@@ -723,7 +723,9 @@ function StatsBar({
           </div>
         ))}
       </div>
-      <button className="hidden sm:flex items-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-bold transition-all hover:opacity-90"
+      <button
+        onClick={() => onNavigate("progress")}
+        className="hidden sm:flex items-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-bold transition-all hover:opacity-90 active:scale-95"
         style={{
           background: "linear-gradient(135deg, #D4921A, #E8A830)",
           color: "white",
@@ -772,13 +774,7 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
           <span className="font-heading font-semibold text-[13px]" style={{ color: "#3D2318" }}>
             Active Project
           </span>
-          <div className="flex items-center gap-2">
-            <FolderOpen className="h-4 w-4" style={{ color: "#9A7868" }} />
-            <button className="flex items-center justify-center w-5 h-5 rounded-full hover:opacity-70"
-              style={{ color: "#9A7868" }}>
-              <MoreHorizontal className="h-4 w-4" />
-            </button>
-          </div>
+          <FolderOpen className="h-4 w-4" style={{ color: "#9A7868" }} />
         </div>
         {active ? (
           <div>
@@ -980,15 +976,15 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWor
                 style={{ background: "#C24E6B" }}>{unreadCount > 9 ? "9+" : unreadCount}</span>
             )}
           </button>
-          {/* Avatar + chevron */}
-          <div className="flex items-center gap-1 cursor-pointer group">
+          {/* Avatar + chevron → Settings */}
+          <button onClick={() => onNavigate("settings")} className="flex items-center gap-1 cursor-pointer group">
             <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center font-script text-lg"
               style={{ background: "linear-gradient(135deg,#E0A0B0,#C24E6B)", color: "white", fontWeight: 700,
                 boxShadow: "0 2px 8px rgba(194,78,107,0.3)" }}>
               L
             </div>
             <ChevronRight className="h-3.5 w-3.5 rotate-90 group-hover:opacity-70 transition-opacity" style={{ color: "#9A7868" }} />
-          </div>
+          </button>
         </div>
       </div>
 
@@ -1063,7 +1059,7 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWor
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 mb-4">
           <RecentPatternsSection patterns={recentPatterns} onNavigate={onNavigate} />
           <CommunitySpotlightSection onNavigate={onNavigate} />
-          <UpcomingMilestoneSection projectsCount={projectsCount} />
+          <UpcomingMilestoneSection projectsCount={projectsCount} onNavigate={onNavigate} />
         </div>
       </div>
 
@@ -1073,6 +1069,7 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWor
           projectsCount={projectsCount}
           favoritesCount={favoritesCount}
           milestonesCount={milestonesCount}
+          onNavigate={onNavigate}
         />
       </div>
     </div>
