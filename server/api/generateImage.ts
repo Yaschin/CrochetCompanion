@@ -117,7 +117,7 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
         timeout(requestTimeout)
       ]);
 
-      const openaiUrl = response.data[0].url;
+      const openaiUrl = response.data?.[0]?.url;
       if (!openaiUrl) return "";
       return await uploadFromUrl(openaiUrl);
     } catch (err) {

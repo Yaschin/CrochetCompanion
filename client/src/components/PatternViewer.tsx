@@ -8,7 +8,7 @@ import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
 import StitchCounter from './StitchCounter';
 import { cn } from '../lib/utils';
-import { RefreshCw, Download, Plus, Image, Hash, Heart } from 'lucide-react';
+import { RefreshCw, Download, Plus, Image, Hash, Heart, CheckCircle2, Play } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
@@ -612,6 +612,12 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             {pattern.title}
           </h2>
           <div className="flex flex-wrap gap-1.5 mt-2">
+            {pattern.status === 'active' && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-100 text-yellow-700">In progress</span>
+            )}
+            {pattern.status === 'finished' && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700">Finished ✓</span>
+            )}
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary">
               {pattern.projectType}
             </span>

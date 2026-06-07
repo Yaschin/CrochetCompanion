@@ -37,6 +37,9 @@ function rowToPattern(row: typeof patternsTable.$inferSelect): Pattern {
     toolRequirements: (row.toolRequirements ?? []) as Pattern["toolRequirements"],
     needsStuffing: row.needsStuffing || undefined,
     favorite: row.favorite ?? false,
+    status: (row.status as Pattern["status"]) ?? "pattern",
+    startedAt: row.startedAt instanceof Date ? row.startedAt.toISOString() : undefined,
+    finishedAt: row.finishedAt instanceof Date ? row.finishedAt.toISOString() : undefined,
   };
 }
 
@@ -58,6 +61,9 @@ function patternToColumns(pattern: Partial<Pattern>) {
   if (pattern.toolRequirements !== undefined) columns.toolRequirements = pattern.toolRequirements || [];
   if (pattern.needsStuffing !== undefined) columns.needsStuffing = pattern.needsStuffing || null;
   if (pattern.favorite !== undefined) columns.favorite = pattern.favorite;
+  if (pattern.status !== undefined) columns.status = pattern.status;
+  if (pattern.startedAt !== undefined) columns.startedAt = pattern.startedAt ? new Date(pattern.startedAt) : null;
+  if (pattern.finishedAt !== undefined) columns.finishedAt = pattern.finishedAt ? new Date(pattern.finishedAt) : null;
   return columns;
 }
 

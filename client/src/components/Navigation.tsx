@@ -13,6 +13,7 @@ const NAV_ITEMS: { view: View; label: string; icon: typeof PlusIcon }[] = [
   { view: 'home', label: 'Home', icon: HomeIcon },
   { view: 'input', label: 'New Pattern', icon: PlusIcon },
   { view: 'library', label: 'My Patterns', icon: BookOpenIcon },
+  { view: 'projects', label: 'Projects', icon: ListChecks },
   { view: 'stash', label: 'Materials', icon: PackageIcon },
 ];
 
