@@ -5,6 +5,7 @@ import { Pattern, ViewType } from "../lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import StashCoverage from "../components/StashCoverage";
 
 interface PatternDetailScreenProps {
   pattern: Pattern;
@@ -153,6 +154,9 @@ export default function PatternDetailScreen({ pattern, onNavigate }: PatternDeta
             </div>
           ))}
         </div>
+
+        {/* Can I make this? — real stash coverage */}
+        <StashCoverage pattern={pattern} onOpenStash={() => onNavigate("stash")} />
 
         {/* Action buttons */}
         <div className="flex flex-col gap-3">
