@@ -109,4 +109,5 @@ export type ViewType =
   | "progress"
   | "photo-upload"
   | "stitch-counter"
-  | "yarn-recs";
+  | "yarn-recs"
+  | "pattern-detail";

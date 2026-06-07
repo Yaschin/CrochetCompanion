@@ -140,6 +140,12 @@ export default function YarnRecsScreen({ onNavigate }: YarnRecsScreenProps) {
         </div>
 
         {/* Yarn cards */}
+        {/* View Colour Palettes */}
+        <button className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13px] transition-all hover:opacity-90"
+          style={{ background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.35)" }}>
+          🎨 View Colour Palettes
+        </button>
+
         {YARN_RECS.map((yarn, i) => {
           const colorIdx = activeColor[yarn.id] ?? 0;
           const isExpanded = expandedId === yarn.id;

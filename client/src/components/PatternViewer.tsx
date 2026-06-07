@@ -18,13 +18,14 @@ import { Label } from './ui/label';
 interface PatternViewerProps {
   pattern: Pattern;
   onPatternUpdated: (pattern: Pattern) => void;
+  onNavigate?: (view: string) => void;
 }
 
 /**
  * PatternViewer component displays the pattern details and allows interaction
  * Optimized for memory efficiency and performance with large patterns
  */
-const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated }) => {
+const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated, onNavigate }) => {
   const { toast } = useToast();
   
   // Only store section names in state to reduce memory usage
@@ -38,6 +39,10 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [imageRefinements, setImageRefinements] = useState('');
   const [counterOpen, setCounterOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "pattern" | "notes">("overview");
+  const [regenSection, setRegenSection] = useState<number | null>(null);
+  const [regenNote, setRegenNote] = useState("");
+  const [notes, setNotes] = useState("");
   const regenerationTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Clean up timeout to prevent memory leaks
@@ -592,241 +597,343 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   }, [pattern]); // Only re-create when pattern changes
 
   return (
-    <div className="surface-card mb-8 p-5 sm:p-7">
+    <div className="mb-8 flex flex-col gap-4">
       <StitchCounter
         open={counterOpen}
         onClose={() => setCounterOpen(false)}
         patternId={pattern.id}
         patternTitle={pattern.title}
       />
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h2 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <h2 className="font-heading text-xl font-bold leading-tight" style={{ color: "#3D2318" }}>
             {pattern.title}
           </h2>
-          <div className="flex flex-wrap gap-2 mt-2">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-              <svg className="wool-icon h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19 9l-7 7-7-7M5 15l7 7 7-7"/>
-              </svg>
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary">
               {pattern.projectType}
             </span>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              <svg className="wool-icon h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-              </svg>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700">
               {pattern.skillLevel}
             </span>
             {pattern.yarnType && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                <svg className="wool-icon h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor">
-                  <circle cx="12" cy="12" r="8" opacity="0.2"/>
-                  <path d="M12 20a8 8 0 100-16 8 8 0 000 16z" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M12 14a2 2 0 100-4 2 2 0 000 4z" fill="currentColor"/>
-                </svg>
-                {pattern.yarnType}
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-100 text-yellow-700">
+                🧶 {pattern.yarnType}
               </span>
             )}
             {pattern.size && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                <svg className="wool-icon h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/>
-                </svg>
-                {pattern.size}
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700">
+                📐 {pattern.size}
               </span>
             )}
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => updatePatternMutation.mutate({ ...pattern, favorite: !pattern.favorite })}
-          aria-label={pattern.favorite ? 'Remove from favorites' : 'Add to favorites'}
-          aria-pressed={!!pattern.favorite}
-          title={pattern.favorite ? 'Remove from favorites' : 'Add to favorites'}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100"
-        >
-          <Heart className={cn('h-5 w-5', pattern.favorite ? 'fill-primary text-primary' : '')} />
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-[10px] font-medium hidden sm:block" style={{ color: "#B0908A" }}>
+            Saved just now
+          </span>
+          <button
+            type="button"
+            onClick={() => updatePatternMutation.mutate({ ...pattern, favorite: !pattern.favorite })}
+            aria-label={pattern.favorite ? 'Remove from favorites' : 'Add to favorites'}
+            className="flex h-9 w-9 items-center justify-center rounded-full transition-all hover:scale-110"
+            style={{
+              background: pattern.favorite ? "rgba(194,78,107,0.12)" : "rgba(140,100,55,0.08)",
+              border: `1.5px solid ${pattern.favorite ? "rgba(194,78,107,0.3)" : "rgba(140,100,55,0.18)"}`,
+            }}
+          >
+            <Heart className={cn('h-4.5 w-4.5', pattern.favorite ? 'fill-primary text-primary' : '')} style={{ width: 18, height: 18 }} />
+          </button>
+        </div>
       </div>
 
-      {/* Final Product Image */}
-      {pattern.endProductImage && (
-        <div className="mb-8 relative group">
-          <div className="rounded-xl overflow-hidden bg-gray-100 h-64 md:h-80 flex items-center justify-center">
-            <img 
-              src={pattern.endProductImage} 
-              alt={pattern.title} 
-              className="object-contain h-full w-full"
-            />
-            <button
-              type="button"
-              onClick={handleRegenerateImage}
-              className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
-              aria-label="Regenerate image"
-            >
-              <RefreshCw className="h-5 w-5 text-primary" />
-            </button>
+      {/* ── Tab bar ── */}
+      <div className="flex gap-1 p-1 rounded-xl" style={{ background: "rgba(140,100,55,0.08)" }}>
+        {(["overview", "pattern", "notes"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className="flex-1 py-2 rounded-lg text-[12.5px] font-semibold capitalize transition-all"
+            style={{
+              background: activeTab === tab ? "white" : "transparent",
+              color: activeTab === tab ? "#C24E6B" : "#9A7868",
+              boxShadow: activeTab === tab ? "0 1px 6px rgba(0,0,0,0.1)" : "none",
+            }}
+          >
+            {tab === "overview" ? "Overview" : tab === "pattern" ? "Pattern" : "Notes"}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Overview tab ── */}
+      {activeTab === "overview" && (
+        <div className="flex flex-col gap-4">
+
+          {/* Image + specs card */}
+          <div className="surface-card p-4">
+            <div className="flex gap-4">
+              {pattern.endProductImage ? (
+                <div className="relative flex-shrink-0 group">
+                  <img
+                    src={pattern.endProductImage}
+                    alt={pattern.title}
+                    className="w-32 h-32 rounded-xl object-cover"
+                  />
+                  <button
+                    onClick={handleRegenerateImage}
+                    className="absolute bottom-1.5 right-1.5 p-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Regenerate image"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 text-primary" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-32 h-32 rounded-xl flex items-center justify-center flex-shrink-0 text-4xl"
+                  style={{ background: "rgba(140,100,55,0.08)" }}>
+                  🧶
+                </div>
+              )}
+              <div className="flex-1 flex flex-col justify-between min-w-0">
+                <div className="space-y-1.5">
+                  {[
+                    { label: "Type",  value: pattern.projectType },
+                    { label: "Level", value: pattern.skillLevel },
+                    { label: "Yarn",  value: pattern.yarnType },
+                    { label: "Size",  value: pattern.size },
+                    { label: "Created", value: formattedDate },
+                  ].filter(r => r.value).map(({ label, value }) => (
+                    <div key={label} className="flex items-center gap-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider w-14 flex-shrink-0"
+                        style={{ color: "#B0908A" }}>{label}</span>
+                      <span className="text-[12px] font-medium truncate" style={{ color: "#3D2318" }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  <button
+                    onClick={handleExportPattern}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
+                    style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B", border: "1px solid rgba(194,78,107,0.2)" }}
+                  >
+                    <Download className="h-3 w-3" /> Download
+                  </button>
+                  <button
+                    onClick={handleRegenerateImage}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
+                    style={{ background: "rgba(132,147,79,0.1)", color: "#84934F", border: "1px solid rgba(132,147,79,0.2)" }}
+                  >
+                    <RefreshCw className="h-3 w-3" /> New Image
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-gray-500 mt-1 text-center">
-            Multi-view crochet pattern visualization (front, side, back)
-          </p>
+
+          {/* Progress bar */}
+          <PatternProgressBar sections={pattern.sections} />
+
+          {/* Tools grid */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { emoji: "🧮", label: "Row Counter",  action: () => setCounterOpen(true),         color: "#7C5FA8" },
+              { emoji: "📊", label: "Progress",      action: () => onNavigate?.("progress"),    color: "#84934F" },
+              { emoji: "📷", label: "Photos",         action: () => onNavigate?.("photo-upload"),color: "#3D8FA3" },
+              { emoji: "🧶", label: "Yarn Info",     action: () => onNavigate?.("yarn-recs"),   color: "#D4921A" },
+            ].map(({ emoji, label, action, color }) => (
+              <button
+                key={label}
+                onClick={action}
+                className="flex items-center gap-3 p-3.5 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{ background: `${color}10`, border: `1.5px solid ${color}28` }}
+              >
+                <span style={{ fontSize: 22 }}>{emoji}</span>
+                <span className="font-heading font-semibold text-[13px]" style={{ color }}>{label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Materials */}
+          <EnhancedMaterialsList
+            yarnRequirements={pattern.yarnRequirements || []}
+            hookRequirements={pattern.hookRequirements || []}
+            notionsRequirements={pattern.notionsRequirements || []}
+            toolRequirements={pattern.toolRequirements || []}
+            needsStuffing={pattern.needsStuffing || ""}
+            materialsNotes={pattern.materialsNotes || ""}
+            onUpdate={(updatedMaterials) => {
+              updatePatternMutation.mutate({
+                ...pattern,
+                yarnRequirements: updatedMaterials.yarnRequirements,
+                hookRequirements: updatedMaterials.hookRequirements,
+                notionsRequirements: updatedMaterials.notionsRequirements,
+                toolRequirements: updatedMaterials.toolRequirements,
+                needsStuffing: updatedMaterials.needsStuffing,
+                materialsNotes: updatedMaterials.materialsNotes,
+              });
+            }}
+          />
         </div>
       )}
 
-      {/* Image Regeneration Dialog */}
+      {/* ── Pattern tab ── */}
+      {activeTab === "pattern" && (
+        <div className="flex flex-col gap-4">
+          {pattern.sections
+            .filter(section => section.name.toLowerCase() !== "materials")
+            .map((section, sectionIndex) => (
+            <div key={`section-${sectionIndex}`} className="flex flex-col gap-1.5">
+              <PatternSection
+                section={{...section, patternId: pattern.id}}
+                projectType={pattern.projectType}
+                sectionIndex={sectionIndex}
+                isExpanded={expandedSections.has(section.name)}
+                onToggleExpand={() => toggleSection(section.name)}
+                onUpdateStep={(stepIndex, updatedStep) => updateStep(sectionIndex, stepIndex, updatedStep)}
+                onDeleteStep={(stepIndex) => deleteStep(sectionIndex, stepIndex)}
+                onAddStep={() => addStep(sectionIndex)}
+                onUpdateSection={(updatedSection) => {
+                  const updatedSections = [...pattern.sections];
+                  updatedSections[sectionIndex] = updatedSection;
+                  updatePatternMutation.mutate({ ...pattern, sections: updatedSections });
+                }}
+              />
+              {/* Inline section regen */}
+              {regenSection === sectionIndex ? (
+                <div className="p-3 rounded-2xl" style={{ background: "rgba(124,95,168,0.08)", border: "1px dashed rgba(124,95,168,0.3)" }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <img src="/characters/char-yala-transparent.png" alt="Yala"
+                      style={{ width: 28, height: 28, objectFit: "contain" }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    <span className="text-[11px] font-semibold" style={{ color: "#7C5FA8" }}>Yala's regen tips</span>
+                  </div>
+                  <textarea
+                    rows={2}
+                    placeholder="Any specific instructions for this section? (optional)"
+                    value={regenNote}
+                    onChange={(e) => setRegenNote(e.target.value)}
+                    className="w-full p-2.5 rounded-xl text-[12px] outline-none resize-none mb-2"
+                    style={{ background: "rgba(255,255,255,0.85)", border: "1px solid rgba(124,95,168,0.25)", color: "#3D2318" }}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { handleRegeneratePattern(); setRegenSection(null); }}
+                      className="flex-1 py-2 rounded-xl text-[12px] font-semibold"
+                      style={{ background: "linear-gradient(135deg, #7C5FA8, #5C3F88)", color: "white" }}
+                    >
+                      ⚡ Regenerate
+                    </button>
+                    <button
+                      onClick={() => setRegenSection(null)}
+                      className="px-3 py-2 rounded-xl text-[12px]"
+                      style={{ color: "#9A7868" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setRegenSection(sectionIndex); setRegenNote(""); }}
+                  className="py-2 rounded-xl text-[11.5px] font-semibold transition-all hover:opacity-80"
+                  style={{ background: "rgba(124,95,168,0.07)", color: "#7C5FA8", border: "1px dashed rgba(124,95,168,0.22)" }}
+                >
+                  ⚡ Regenerate this section
+                </button>
+              )}
+            </div>
+          ))}
+
+          <button
+            className="w-full flex items-center justify-center p-4 border border-dashed border-gray-300 rounded-xl text-secondary-500 hover:text-secondary-700 hover:border-secondary-400 transition-colors"
+            onClick={addSection}
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            <span>Add New Section</span>
+          </button>
+
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-2">
+            <button
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-sm hover:bg-secondary-600"
+              onClick={() => setCounterOpen(true)}
+            >
+              <Hash className="h-5 w-5" /> Stitch Counter
+            </button>
+            <button
+              className={`inline-flex justify-center items-center px-4 py-2 rounded-full shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark ${isRegenerating ? 'opacity-75 cursor-not-allowed' : ''}`}
+              onClick={handleRegeneratePattern}
+              disabled={isRegenerating}
+            >
+              {isRegenerating ? (
+                <><RefreshCw className="h-5 w-5 mr-2 animate-spin" />Regenerating…</>
+              ) : (
+                <><RefreshCw className="h-5 w-5 mr-2" />Regenerate All</>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Notes tab ── */}
+      {activeTab === "notes" && (
+        <div className="surface-card p-4">
+          <p className="font-heading font-semibold text-[13px] mb-3" style={{ color: "#5C3A28" }}>
+            Pattern Notes
+          </p>
+          <textarea
+            rows={10}
+            placeholder="Add your notes, modifications, tips or reminders for this pattern…"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="w-full p-3.5 rounded-xl text-[13px] leading-relaxed outline-none resize-none"
+            style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.2)", color: "#3D2318" }}
+          />
+          <div className="flex justify-end mt-3">
+            <button
+              className="px-5 py-2 rounded-xl font-semibold text-[12.5px] transition-all hover:opacity-90"
+              style={{ background: "#C24E6B", color: "white" }}
+              onClick={() => toast({ title: "Notes saved!", description: "Your notes have been saved." })}
+            >
+              Save Notes
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Image Regeneration Dialog ── */}
       <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Regenerate Pattern Image</DialogTitle>
             <DialogDescription>
-              Provide additional details to refine the image. The AI will generate a new multi-view image (front, side, back) based on your suggestions.
+              Provide additional details to refine the image.
             </DialogDescription>
           </DialogHeader>
-
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="imageRefinements" className="col-span-4">
-                Refinements
-              </Label>
+              <Label htmlFor="imageRefinements" className="col-span-4">Refinements</Label>
               <Input
                 id="imageRefinements"
-                placeholder="e.g., more texture details, pastel colors, change background to white"
+                placeholder="e.g., more texture details, pastel colors"
                 className="col-span-4"
                 value={imageRefinements}
                 onChange={(e) => setImageRefinements(e.target.value)}
               />
             </div>
           </div>
-
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setImageDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isRegeneratingImage} 
-              onClick={handleImageRefinementSubmit}
-            >
+            <Button type="button" variant="outline" onClick={() => setImageDialogOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={isRegeneratingImage} onClick={handleImageRefinementSubmit}>
               {isRegeneratingImage ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
-                </>
+                <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Generating...</>
               ) : (
-                <>
-                  <Image className="h-4 w-4 mr-2" />
-                  Generate Image
-                </>
+                <><Image className="h-4 w-4 mr-2" />Generate Image</>
               )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Pattern Progress Bar */}
-      <PatternProgressBar sections={pattern.sections} />
-
-      {/* Materials Section */}
-      <EnhancedMaterialsList 
-        yarnRequirements={pattern.yarnRequirements || []}
-        hookRequirements={pattern.hookRequirements || []}
-        notionsRequirements={pattern.notionsRequirements || []}
-        toolRequirements={pattern.toolRequirements || []}
-        needsStuffing={pattern.needsStuffing || ""}
-        materialsNotes={pattern.materialsNotes || ""}
-        onUpdate={(updatedMaterials) => {
-          const updatedPattern = {
-            ...pattern,
-            yarnRequirements: updatedMaterials.yarnRequirements,
-            hookRequirements: updatedMaterials.hookRequirements,
-            notionsRequirements: updatedMaterials.notionsRequirements,
-            toolRequirements: updatedMaterials.toolRequirements,
-            needsStuffing: updatedMaterials.needsStuffing,
-            materialsNotes: updatedMaterials.materialsNotes
-          };
-          updatePatternMutation.mutate(updatedPattern);
-        }}
-      />
-
-      {/* Pattern Sections (Accordion) */}
-      <div className="space-y-4">
-        {pattern.sections
-          .filter(section => section.name.toLowerCase() !== "materials") // Filter out the Materials section
-          .map((section, sectionIndex) => (
-          <PatternSection
-            key={`section-${sectionIndex}`}
-            section={{...section, patternId: pattern.id}}
-            projectType={pattern.projectType}
-            sectionIndex={sectionIndex}
-            isExpanded={expandedSections.has(section.name)}
-            onToggleExpand={() => toggleSection(section.name)}
-            onUpdateStep={(stepIndex, updatedStep) => updateStep(sectionIndex, stepIndex, updatedStep)}
-            onDeleteStep={(stepIndex) => deleteStep(sectionIndex, stepIndex)}
-            onAddStep={() => addStep(sectionIndex)}
-            onUpdateSection={useCallback((updatedSection) => {
-              // Create minimal copies needed for the update
-              const updatedSections = [...pattern.sections];
-              updatedSections[sectionIndex] = updatedSection;
-              
-              // Update only what changed to minimize memory usage
-              const updatedPattern = { ...pattern, sections: updatedSections };
-              updatePatternMutation.mutate(updatedPattern);
-            }, [pattern, sectionIndex, updatePatternMutation])}
-          />
-        ))}
-
-        {/* Add Section Button */}
-        <button 
-          className="w-full flex items-center justify-center p-4 border border-dashed border-gray-300 rounded-xl text-secondary-500 hover:text-secondary-700 hover:border-secondary-400 transition-colors"
-          onClick={addSection}
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          <span>Add New Section</span>
-        </button>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="mt-8 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
-        <button
-          type="button"
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-sm hover:bg-secondary-600 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          onClick={() => setCounterOpen(true)}
-        >
-          <Hash className="h-5 w-5" />
-          Stitch Counter
-        </button>
-        <button
-          type="button"
-          className="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-primary bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-          onClick={handleExportPattern}
-        >
-          <Download className="h-5 w-5 mr-2" />
-          Export Pattern
-        </button>
-        <button 
-          type="button" 
-          className={`inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark ${isRegenerating ? 'opacity-75 cursor-not-allowed' : ''}`}
-          onClick={handleRegeneratePattern}
-          disabled={isRegenerating}
-        >
-          {isRegenerating ? (
-            <>
-              <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-              Regenerating...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="h-5 w-5 mr-2" />
-              Regenerate Pattern
-            </>
-          )}
-        </button>
-      </div>
     </div>
   );
 };

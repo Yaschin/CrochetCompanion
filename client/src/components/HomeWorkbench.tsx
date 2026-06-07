@@ -953,6 +953,49 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
           </div>
         </div>
 
+        {/* Active Projects — mobile main column (desktop has right panel) */}
+        {activePattern && (
+          <div className="block md:hidden mt-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-heading font-bold text-[15px]" style={{ color: "#3D2318" }}>Active Project</h3>
+              <button onClick={() => onNavigate("library")}
+                className="text-[11px] font-semibold" style={{ color: "#9A7868" }}>
+                All projects →
+              </button>
+            </div>
+            <div className="craft-card p-4 flex gap-3 items-center"
+              style={{ cursor: "pointer" }}
+              onClick={() => onPatternSelected?.(activePattern)}>
+              {activePattern.endProductImage ? (
+                <img src={activePattern.endProductImage} alt={activePattern.title}
+                  className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl"
+                  style={{ background: "rgba(194,78,107,0.08)" }}>🧶</div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-heading font-bold text-[14px] truncate" style={{ color: "#3D2318" }}>
+                  {activePattern.title}
+                </p>
+                <p className="text-[11px] mt-0.5" style={{ color: "#9A7868" }}>
+                  {activePattern.projectType} · {activePattern.skillLevel}
+                </p>
+                <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(140,100,55,0.15)" }}>
+                  <div className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${Math.round(
+                        (activePattern.sections.reduce((a, s) => a + s.steps.filter(st => st.completed).length, 0) /
+                        Math.max(1, activePattern.sections.reduce((a, s) => a + s.steps.length, 0))) * 100
+                      )}%`,
+                      background: "linear-gradient(90deg, #C24E6B, #A83050)",
+                    }} />
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "#9A7868" }} />
+            </div>
+          </div>
+        )}
+
         {/* Bottom sections — 3 col */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 mb-4">
           <RecentPatternsSection patterns={recentPatterns} onNavigate={onNavigate} />

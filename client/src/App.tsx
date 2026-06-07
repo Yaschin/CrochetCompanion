@@ -21,6 +21,7 @@ import FavoritesScreen from "./pages/FavoritesScreen";
 import CommunityScreen from "./pages/CommunityScreen";
 import CommunityDetailScreen from "./pages/CommunityDetailScreen";
 import CommunitySubmitScreen from "./pages/CommunitySubmitScreen";
+import PatternDetailScreen from "./pages/PatternDetailScreen";
 import { Pattern, ViewType } from "./lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -106,7 +107,7 @@ function App() {
 
               {activeView === "viewer" && currentPattern && (
                 <div className="flex flex-col h-full overflow-y-auto px-4 md:px-6 py-4 pb-20 md:pb-6">
-                  <div className="flex flex-wrap items-center gap-2 mb-4">
+                  <div className="flex items-center justify-between mb-4">
                     <button
                       onClick={() => navigateToView("library")}
                       className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
@@ -115,30 +116,18 @@ function App() {
                       <ChevronLeft className="h-3.5 w-3.5" />
                       Patterns
                     </button>
-                    <button onClick={() => navigateToView("progress")}
+                    <button
+                      onClick={() => navigateToView("pattern-detail")}
                       className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
-                      style={{ color: "#84934F", background: "rgba(132,147,79,0.08)", border: "1px solid rgba(132,147,79,0.2)" }}>
-                      📊 Progress
-                    </button>
-                    <button onClick={() => navigateToView("stitch-counter")}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
-                      style={{ color: "#7C5FA8", background: "rgba(124,95,168,0.08)", border: "1px solid rgba(124,95,168,0.2)" }}>
-                      🧮 Counter
-                    </button>
-                    <button onClick={() => navigateToView("yarn-recs")}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
-                      style={{ color: "#D4921A", background: "rgba(212,146,26,0.08)", border: "1px solid rgba(212,146,26,0.2)" }}>
-                      🧶 Yarn
-                    </button>
-                    <button onClick={() => navigateToView("photo-upload")}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
-                      style={{ color: "#3D8FA3", background: "rgba(60,143,163,0.08)", border: "1px solid rgba(60,143,163,0.2)" }}>
-                      📷 Photos
+                      style={{ color: "#84934F", background: "rgba(132,147,79,0.08)", border: "1px solid rgba(132,147,79,0.2)" }}
+                    >
+                      Details →
                     </button>
                   </div>
                   <PatternViewer
                     pattern={currentPattern}
                     onPatternUpdated={setCurrentPattern}
+                    onNavigate={navigateToView}
                   />
                 </div>
               )}
@@ -216,6 +205,13 @@ function App() {
 
               {activeView === "yarn-recs" && (
                 <YarnRecsScreen onNavigate={navigateToView} />
+              )}
+
+              {activeView === "pattern-detail" && currentPattern && (
+                <PatternDetailScreen
+                  pattern={currentPattern}
+                  onNavigate={navigateToView}
+                />
               )}
 
             </ErrorBoundary>

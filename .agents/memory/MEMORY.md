@@ -1,1 +1,3 @@
 - [Crochet Time app structure](crochet-time-structure.md) — key files, character paths, ViewType navigation map, and CSS conventions for this project.
+- [PatternViewer tabs design](patternviewer-tabs.md) — viewer now has Overview/Pattern/Notes tabs; onNavigate prop added; inline per-section regen panel.
+- [PatternInput wizard](patternInput-wizard.md) — 5-step wizard replaced JSX-only (mutations kept); stale old return block required manual sed deletion.

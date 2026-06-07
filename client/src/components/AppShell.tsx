@@ -15,7 +15,7 @@ const TABS = [
   { view: "input"     as ViewType, label: "Create",    Icon: Wand2 },
   { view: "library"   as ViewType, label: "Library",   Icon: BookOpen },
   { view: "favorites" as ViewType, label: "Favorites", Icon: Heart },
-  { view: "community" as ViewType, label: "Community", Icon: FolderOpen },
+  { view: "stash"     as ViewType, label: "Projects",  Icon: FolderOpen },
 ];
 
 export default function AppShell({ activeView, onNavigate, rightPanel, children }: AppShellProps) {
