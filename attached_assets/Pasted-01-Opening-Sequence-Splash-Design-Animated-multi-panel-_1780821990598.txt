@@ -1,0 +1,89 @@
+01 – Opening Sequence (Splash)
+
+Design: Animated multi-panel sequence (yarn ball → yarn writes "Crochet Time" → final hero with Aloo + Yala on a cozy wooden shelf full of crochet supplies, "Enter Your Studio" button)
+Current: Static screen with yarn ball, character row at bottom
+Gap: Final splash panel should show a rich photorealistic hero scene of Aloo + Yala on a shelf — not a row of circular thumbnails
+02 – Home Workbench
+
+Design: "Good morning, Larissa!" header, 3 action cards (Continue / Create with Yala / Larissa's Favorites), then Active Projects list below with thumbnail + progress bar + percentage, Aloo sitting left / yarn basket on right
+Current: Action cards exist, stats bar exists, no Active Projects section
+Gap: Active Projects section below cards; decorative side characters
+03 – AI Pattern Creation Studio (Input)
+
+Design: 5-step wizard progress bar at top (Item → Details → Yarn & Colours → Inspiration → Review), category icon buttons (Toys / Wearables / Home Decor / Accessories / Other), Yala character floating right
+Current: Single-form layout, no wizard steps, no category icons
+Gap: Full multi-step wizard UI
+04 – AI Generation Loading
+
+Design: Crochet-in-progress photo, row-by-row emoji progress indicators, "Generating Body – Round 12 of 20", "Tip from Yala" box with Yala character image
+Current: Has loading but different visual
+Gap: Emoji step indicators, Yala tip card with character
+05 – Generated Pattern Result (Viewer)
+
+Design: Overview / Pattern / Details tabs, pattern image left + summary specs right (skill level, size, hook, yarn weight, time estimate), "Edit Pattern" + "Add to Favorites" buttons
+Current: Has tabs/viewer but different layout
+Gap: Clean two-column overview card; Add to Favorites button
+06 – Pattern Edit Workspace
+
+Design: Section sidebar (Head/Body/Arms/Legs/Ears/Details with lock icons), "Last saved just now", Pattern/Edit/Notes tabs, Preview button
+Current: Has sections but different structure
+Gap: "Last saved" status, Preview button, cleaner sidebar
+07 – Selective Regeneration
+
+Design: Same sidebar, selected section shows current text + "Regenerate this section" card with Yala notes input + Regenerate button
+Current: Exists but different layout
+Gap: Inline regeneration panel per section
+08 – Pattern Library
+
+Design: "My Patterns" header + search bar + All filter dropdown, 3-column image grid, each card has image, name, type, difficulty
+Current: List-style layout
+Gap: 3-column image grid layout
+09 – Search & Filter
+
+Design: Search input, filter pills (All Types / Skill Level / Yarn / Size), Sort selector, list-style results with thumbnail + heart icon
+Current: Exists
+Gap: Filter pill row, Sort selector, heart on each result
+10 – Larissa's Favorites ❌ MISSING SCREEN
+
+Design: Dedicated favorites screen with "♥ Larissa's Favorites" header, same 3-column grid as library
+Current: Does not exist at all
+Gap: Entire screen needs building
+11 – Pattern Detail ❌ MISSING SCREEN
+
+Design: Hero image, tag pills (Wearable / Easy / Beginner Friendly), description with Show More, Download + Copy Pattern buttons
+Current: Does not exist
+Gap: Entire screen needs building
+12 – Active Project Workspace (Viewer)
+
+Design: Overview / Pattern / Notes / Photos tabs, project image + progress stats side by side, Tools grid (Row Counter / Notes / Photos / Yarn Info)
+Current: Has viewer but no tools grid, different layout
+Gap: Tools shortcut grid, side-by-side image+stats layout
+13 – Project Progress Tracking
+
+Design: Line chart ("Progress Over Time" May→Today), Achievements section with badge + Bee character
+Current: Basic progress screen
+Gap: Line chart, Achievements section with character
+14 – Progress Photo Upload
+
+Design: Modal style with dashed upload area, Recent Photos 3-column grid
+Current: Exists
+Gap: Recent Photos grid, cleaner modal layout
+15 – Stitch & Row Counter
+
+Design: Large "– 38 +" row counter, smaller "– 24 +" stitch counter below, Reset + History buttons, soft textured background
+Current: Dot-grid scoreboard (2×10 dots)
+Gap: Completely different design — big number display needed
+16 – Yarn & Colour Recommendations
+
+Design: "Sheep's Yarn Picks" header with Sheep character top-right, yarn brand list each with color dot swatches, "View Colour Palettes" green button
+Current: Different layout
+Gap: Sheep's Yarn Picks branding, color swatch dots per brand
+17 – Community Crochet Library ❌ NEW SCREEN
+18 – Community Pattern Detail ❌ NEW SCREEN
+19 – Community Submission Flow ❌ NEW SCREEN
+
+Bottom Nav Change:
+
+Design shows: Home / Create / Library / Favorites / Projects
+Current: Home / Create / Library / Search / Stash
+Gap: "Search" → "Favorites" tab, "Stash" → "Projects" tab, Search becomes a built-in feature of Library
