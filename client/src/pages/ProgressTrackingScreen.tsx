@@ -1,6 +1,7 @@
 import { ChevronLeft, Trophy, Clock, CalendarDays } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Pattern, ViewType } from "../lib/types";
+import StreakCard from "../components/StreakCard";
 
 interface ProgressTrackingScreenProps {
   pattern: Pattern | null;
@@ -51,6 +52,7 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 py-4 pb-20 md:pb-4 flex flex-col gap-4">
+        <StreakCard />
         {!pattern ? (
           <div className="craft-card p-6 flex flex-col items-center text-center gap-3">
             <p className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>No project selected</p>

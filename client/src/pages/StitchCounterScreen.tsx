@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { ChevronLeft, RotateCcw, History, Plus, Minus, Volume2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronLeft, RotateCcw, History, Plus, Minus, Volume2, Mic } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ViewType } from "../lib/types";
+import { recordActivity } from "../lib/activityLog";
 
 interface StitchCounterScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -42,6 +43,7 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadState().history);
   const [showHistory, setShowHistory] = useState(false);
   const [sound, setSound] = useState(true);
+  const [voice, setVoice] = useState(false);
 
   // Persist counts + history across sessions.
   useEffect(() => {
@@ -67,6 +69,7 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
   const buzz = () => { if (sound) { try { navigator.vibrate?.(8); } catch { /* ignore */ } } };
 
   const addEntry = (type: "stitch" | "row", delta: number, value: number) => {
+    if (delta > 0) recordActivity();
     const now = new Date();
     const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, "0")}`;
     setHistory(h => [{ id: Date.now().toString(), type, delta, value, time }, ...h.slice(0, 19)]);
@@ -95,6 +98,34 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
     setHistory([]);
   };
 
+  // Latest handlers for the voice recognizer (avoids stale closures / effect churn).
+  const handlersRef = useRef({ changeRows, changeStitches, reset });
+  handlersRef.current = { changeRows, changeStitches, reset };
+
+  // Hands-free voice control: say "next"/"row" (+1 row), "stitch" (+1 stitch),
+  // "back"/"undo" (−1 row), "reset". Uses the Web Speech API where available.
+  useEffect(() => {
+    if (!voice) return;
+    const SR = (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).SpeechRecognition
+      || (window as unknown as { webkitSpeechRecognition?: any }).webkitSpeechRecognition;
+    if (!SR) { setVoice(false); return; }
+    const rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = false;
+    rec.lang = "en-US";
+    rec.onresult = (e: any) => {
+      const t = String(e.results[e.results.length - 1][0].transcript || "").toLowerCase();
+      const h = handlersRef.current;
+      if (/(reset|clear)/.test(t)) h.reset();
+      else if (/(back|undo|minus|down)/.test(t)) h.changeRows(-1);
+      else if (/(stitch)/.test(t)) h.changeStitches(1);
+      else if (/(next|row|up|plus|count|done)/.test(t)) h.changeRows(1);
+    };
+    rec.onend = () => { try { rec.start(); } catch { /* already stopped */ } };
+    try { rec.start(); } catch { /* needs user gesture / unsupported */ }
+    return () => { rec.onend = null; try { rec.stop(); } catch { /* ignore */ } };
+  }, [voice]);
+
   const stitchesInRow = counts.stitches % MAX_STITCHES_PER_ROW;
 
   return (
@@ -117,6 +148,13 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
         </div>
         <div className="flex gap-2">
           <button
+            onClick={() => setVoice(v => !v)}
+            title="Hands-free voice counting"
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
+            style={{ background: voice ? "rgba(194,78,107,0.15)" : "rgba(255,252,245,0.9)", color: voice ? "#C24E6B" : "#9A7868", border: "1px solid rgba(140,100,55,0.2)" }}>
+            <Mic className="h-4 w-4" />
+          </button>
+          <button
             onClick={() => setSound(s => !s)}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
             style={{ background: sound ? "rgba(132,147,79,0.12)" : "rgba(180,160,140,0.1)", color: sound ? "#84934F" : "#B0908A" }}>
@@ -133,6 +171,18 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 py-5 pb-20 md:pb-5 flex flex-col gap-5">
+
+        {/* Big hands-free tap target — count a row without precise tapping */}
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          onClick={() => changeRows(1)}
+          className="w-full rounded-3xl flex flex-col items-center justify-center gap-1"
+          style={{ minHeight: 92, background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 6px 20px rgba(132,147,79,0.4)" }}>
+          <span className="font-heading font-bold text-[18px]">Tap to count a row</span>
+          <span className="text-[11px] opacity-85">
+            {voice ? "🎙️ Listening — say “next”, “stitch”, “back”" : "or turn on 🎙️ voice for hands-free"}
+          </span>
+        </motion.button>
 
         {/* Row counter — primary big counter */}
         <div className="craft-card craft-card-sage p-6">

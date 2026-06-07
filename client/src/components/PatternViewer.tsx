@@ -7,6 +7,8 @@ import PatternSection from './PatternSection';
 import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
 import StitchCounter from './StitchCounter';
+import CelebrationOverlay from './CelebrationOverlay';
+import { recordActivity } from '../lib/activityLog';
 import { cn } from '../lib/utils';
 import { RefreshCw, Download, Plus, Image, Hash, Heart, CheckCircle2, Play, Share2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
@@ -43,6 +45,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const [regenSection, setRegenSection] = useState<number | null>(null);
   const [regenNote, setRegenNote] = useState("");
   const [notes, setNotes] = useState("");
+  const [showCelebration, setShowCelebration] = useState(false);
   const regenerationTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Clean up timeout to prevent memory leaks
@@ -75,6 +78,11 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     },
     onSuccess: (data) => {
       onPatternUpdated(data);
+      // Celebrate the moment a project is finished (transition into "finished").
+      if (data?.status === "finished" && pattern.status !== "finished") {
+        recordActivity();
+        setShowCelebration(true);
+      }
       toast({
         title: "Pattern Updated",
         description: "Your pattern has been saved successfully.",
@@ -621,6 +629,11 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
 
   return (
     <div className="mb-8 flex flex-col gap-4">
+      <CelebrationOverlay
+        show={showCelebration}
+        onDone={() => setShowCelebration(false)}
+        subtitle={`"${pattern.title}" is finished ♡`}
+      />
       <StitchCounter
         open={counterOpen}
         onClose={() => setCounterOpen(false)}
