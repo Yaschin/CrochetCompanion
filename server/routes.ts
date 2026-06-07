@@ -1,5 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import { existsSync } from "fs";
+import { resolve } from "path";
 import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
 import { generateImage } from "./api/generateImage";
@@ -94,6 +96,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result: Record<string, string | null> = {};
       await Promise.all(
         Object.keys(CHARACTER_DEFS).map(async (id) => {
+          // Prefer static public file (instant load) over object storage streaming
+          const staticPath = resolve(`client/public/characters/char-${id}.png`);
+          if (existsSync(staticPath)) {
+            result[id] = `/characters/char-${id}.png`;
+            return;
+          }
           const key = `char-${id}`;
           const exists = await objectExists(key);
           result[id] = exists ? `/api/media/${key}` : null;
@@ -103,6 +111,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error checking character images:", error);
       res.status(500).json({ message: "Failed to check character images" });
+    }
+  });
+
+  // POST /api/characters/store-file — store a locally generated PNG into object storage
+  app.post("/api/characters/store-file", async (req: Request, res: Response) => {
+    try {
+      const { characterId, filePath } = req.body;
+      if (!characterId || !CHARACTER_DEFS[characterId] || !filePath) {
+        return res.status(400).json({ message: "Invalid characterId or filePath" });
+      }
+      const fs = await import("fs/promises");
+      const path = await import("path");
+      const absPath = path.resolve(process.cwd(), filePath);
+      const buffer = await fs.readFile(absPath);
+      const key = `char-${characterId}`;
+      const url = await uploadBufferWithKey(key, buffer, "image/png");
+      res.json({ url });
+    } catch (error) {
+      console.error("Error storing character file:", error);
+      res.status(500).json({ message: "Failed to store character file", error: (error as Error).message });
     }
   });
 

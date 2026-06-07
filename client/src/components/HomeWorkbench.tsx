@@ -81,6 +81,24 @@ function CharacterOval({
 }) {
   const c = CHAR[charKey];
   const br = "50% 50% 46% 46% / 54% 54% 46% 46%";
+  // Try static path first (instant load), fall back to API url, then to placeholder
+  const staticUrl = `/characters/char-${charKey}.png`;
+  const [src, setSrc] = useState<string | null>(staticUrl);
+  const [failed, setFailed] = useState(false);
+
+  // If static url fails, fall back to the API-provided url
+  const handleError = () => {
+    if (src === staticUrl && imageUrl) {
+      setSrc(imageUrl);
+    } else {
+      setSrc(null);
+      setFailed(true);
+    }
+  };
+
+  const showImage = src && !failed;
+  const showSpinner = isGenerating && !showImage;
+
   return (
     <div
       className="relative overflow-hidden flex-shrink-0 flex items-center justify-center"
@@ -89,15 +107,15 @@ function CharacterOval({
         borderRadius: br,
         border: `2.5px solid ${c.color}55`,
         boxShadow: `0 16px 48px ${c.color}30, 0 4px 12px ${c.color}18, inset 0 1px 0 rgba(255,255,255,0.7)`,
-        background: imageUrl
+        background: showImage
           ? undefined
           : `radial-gradient(ellipse at 40% 32%, white 0%, ${c.light} 28%, ${c.mid} 70%, ${c.color}40 100%)`,
       }}
     >
-      {imageUrl ? (
-        <img src={imageUrl} alt={c.label}
+      {showImage ? (
+        <img src={src} alt={c.label} onError={handleError}
           className="w-full h-full object-cover" style={{ borderRadius: br }} />
-      ) : isGenerating ? (
+      ) : showSpinner ? (
         <Loader2 className="animate-spin" style={{ color: c.color, width: 26, height: 26 }} />
       ) : (
         <>
@@ -686,7 +704,8 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
   const { data: patterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
   const { data: characterImages = {} } = useQuery<Record<string, string | null>>({
     queryKey: ["/api/characters"],
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   const [generatingIds, setGeneratingIds] = useState(new Set<string>());
