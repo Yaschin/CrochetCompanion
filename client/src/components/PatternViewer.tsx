@@ -10,7 +10,7 @@ import StitchCounter from './StitchCounter';
 import CelebrationOverlay from './CelebrationOverlay';
 import { recordActivity } from '../lib/activityLog';
 import { cn } from '../lib/utils';
-import { RefreshCw, Download, Plus, Image, Hash, Heart, CheckCircle2, Play, Share2 } from 'lucide-react';
+import { RefreshCw, Download, Plus, Image, Hash, Heart, CheckCircle2, Play, Share2, Scissors, Shuffle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
@@ -46,6 +46,11 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const [regenNote, setRegenNote] = useState("");
   const [notes, setNotes] = useState("");
   const [showCelebration, setShowCelebration] = useState(false);
+  const [adaptOpen, setAdaptOpen] = useState(false);
+  const [adaptMode, setAdaptMode] = useState<"resize" | "substitute">("resize");
+  const [adaptInstruction, setAdaptInstruction] = useState("");
+  const [alignmentResults, setAlignmentResults] = useState<Record<number, { score: number; feedback: string }>>({});
+  const [alignmentLoading, setAlignmentLoading] = useState<Record<number, boolean>>({});
   const regenerationTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Clean up timeout to prevent memory leaks
@@ -126,6 +131,50 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     },
     onError: () => toast({ title: 'Could not share pattern', variant: 'destructive' }),
   });
+
+  // Adapt pattern — resize or yarn substitute (creates a new pattern, non-destructive)
+  const adaptMutation = useMutation({
+    mutationFn: async ({ mode, instruction }: { mode: "resize" | "substitute"; instruction: string }) => {
+      const endpoint = mode === "resize" ? "resize" : "substitute";
+      const res = await apiRequest("POST", `/api/patterns/${pattern.id}/${endpoint}`, { instruction });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Adaptation failed");
+      }
+      return res.json() as Promise<Pattern>;
+    },
+    onSuccess: (newPattern) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/patterns"] });
+      setAdaptOpen(false);
+      setAdaptInstruction("");
+      toast({
+        title: "Adapted pattern created ✨",
+        description: `"${newPattern.title}" is now in your library.`,
+        action: <ToastAction altText="View" onClick={() => onPatternUpdated(newPattern)}>View it</ToastAction>,
+      });
+    },
+    onError: (err) => {
+      toast({ title: "Adaptation failed", description: (err as Error).message, variant: "destructive" });
+    },
+  });
+
+  // Alignment check — AI compares a section photo against the pattern instructions
+  const checkAlignment = async (sectionIndex: number) => {
+    setAlignmentLoading(prev => ({ ...prev, [sectionIndex]: true }));
+    try {
+      const res = await apiRequest("POST", `/api/patterns/${pattern.id}/sections/${sectionIndex}/alignment-check`, {});
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Alignment check failed");
+      }
+      const data = await res.json();
+      setAlignmentResults(prev => ({ ...prev, [sectionIndex]: { score: data.alignmentScore, feedback: data.feedback } }));
+    } catch (err) {
+      toast({ title: "Alignment check failed", description: (err as Error).message, variant: "destructive" });
+    } finally {
+      setAlignmentLoading(prev => ({ ...prev, [sectionIndex]: false }));
+    }
+  };
 
   // Regenerate steps mutation
   const regenerateStepsMutation = useMutation({
@@ -835,6 +884,58 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             ))}
           </div>
 
+          {/* Adapt this pattern */}
+          <div className="surface-card p-4">
+            <button
+              onClick={() => setAdaptOpen(v => !v)}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-[18px]">✂️</span>
+                <span className="font-heading font-semibold text-[13px]" style={{ color: "#3D2318" }}>Adapt this Pattern</span>
+              </div>
+              <span className="text-[11px] font-semibold" style={{ color: "#C24E6B" }}>
+                {adaptOpen ? "Close ▲" : "Open ▼"}
+              </span>
+            </button>
+            {adaptOpen && (
+              <div className="flex flex-col gap-3 mt-3">
+                <p className="text-[11.5px]" style={{ color: "#9A7868" }}>
+                  Creates a brand-new pattern — your original is kept safe.
+                </p>
+                <div className="flex gap-2">
+                  {(["resize", "substitute"] as const).map((m) => (
+                    <button key={m} onClick={() => setAdaptMode(m)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold transition-all"
+                      style={{
+                        background: adaptMode === m ? "#C24E6B" : "rgba(140,100,55,0.08)",
+                        color: adaptMode === m ? "white" : "#9A7868",
+                        border: adaptMode === m ? "none" : "1px solid rgba(140,100,55,0.18)",
+                      }}>
+                      {m === "resize" ? <><Scissors className="h-3.5 w-3.5" /> Resize</> : <><Shuffle className="h-3.5 w-3.5" /> Swap Yarn</>}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  rows={2}
+                  placeholder={adaptMode === "resize" ? "e.g. 30% bigger, baby size, adult large…" : "e.g. DK weight, chunky cotton, fingering…"}
+                  value={adaptInstruction}
+                  onChange={(e) => setAdaptInstruction(e.target.value)}
+                  className="w-full p-3 rounded-xl text-[12.5px] outline-none resize-none"
+                  style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.2)", color: "#3D2318" }}
+                />
+                <button
+                  onClick={() => adaptMutation.mutate({ mode: adaptMode, instruction: adaptInstruction })}
+                  disabled={!adaptInstruction.trim() || adaptMutation.isPending}
+                  className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90 disabled:opacity-40"
+                  style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.25)" }}
+                >
+                  {adaptMutation.isPending ? "Creating…" : "✨ Create Adapted Version"}
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Materials */}
           <EnhancedMaterialsList
             yarnRequirements={pattern.yarnRequirements || []}
@@ -922,6 +1023,43 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                 >
                   ⚡ Regenerate this section
                 </button>
+              )}
+
+              {/* Alignment check — only shown when the section has a photo */}
+              {section.partImageUrl && (
+                alignmentResults[sectionIndex] ? (
+                  <div className="p-3 rounded-2xl" style={{ background: "rgba(61,131,163,0.06)", border: "1px solid rgba(61,131,163,0.2)" }}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[11px] font-semibold" style={{ color: "#3D2318" }}>📷 Photo alignment</span>
+                      <span className="text-[13px] font-bold" style={{
+                        color: alignmentResults[sectionIndex].score >= 70 ? "#84934F"
+                          : alignmentResults[sectionIndex].score >= 40 ? "#D4921A"
+                          : "#C24E6B",
+                      }}>
+                        {alignmentResults[sectionIndex].score}/100
+                      </span>
+                    </div>
+                    <p className="text-[11.5px] leading-relaxed mb-1.5" style={{ color: "#7A5C3E" }}>
+                      {alignmentResults[sectionIndex].feedback}
+                    </p>
+                    <button
+                      onClick={() => checkAlignment(sectionIndex)}
+                      className="text-[11px] font-semibold hover:opacity-70"
+                      style={{ color: "#3D8FA3" }}
+                    >
+                      Re-check →
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => checkAlignment(sectionIndex)}
+                    disabled={!!alignmentLoading[sectionIndex]}
+                    className="w-full py-2 rounded-xl text-[11.5px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+                    style={{ background: "rgba(61,131,163,0.07)", color: "#3D8FA3", border: "1px dashed rgba(61,131,163,0.3)" }}
+                  >
+                    {alignmentLoading[sectionIndex] ? "⏳ Checking alignment…" : "📷 AI Photo Check"}
+                  </button>
+                )
               )}
             </div>
           ))}
