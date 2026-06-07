@@ -181,10 +181,29 @@ export async function navByLabel(page: Page, labels: string[]) {
 
 /** Assert the document has no horizontal overflow at the current viewport. */
 export async function expectNoHorizontalOverflow(page: Page) {
-  const overflow = await page.evaluate(
-    () => Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
-  );
-  expect(overflow, `unexpected horizontal scroll of ${overflow}px`).toBeLessThanOrEqual(2);
+  const info = await page.evaluate(() => {
+    const docW = document.documentElement.clientWidth;
+    const overflow = Math.max(0, document.documentElement.scrollWidth - docW);
+    const offenders: { tag: string; cls: string; w: number; right: number }[] = [];
+    if (overflow > 2) {
+      document.querySelectorAll("*").forEach((el) => {
+        const r = (el as HTMLElement).getBoundingClientRect();
+        if (r.right > docW + 2 || r.width > docW + 2) {
+          offenders.push({
+            tag: el.tagName,
+            cls: (el.getAttribute("class") || "").slice(0, 90),
+            w: Math.round(r.width),
+            right: Math.round(r.right),
+          });
+        }
+      });
+    }
+    return { overflow, docW, offenders: offenders.slice(0, 8) };
+  });
+  expect(
+    info.overflow,
+    `horizontal overflow ${info.overflow}px (viewport ${info.docW}px). Offenders: ${JSON.stringify(info.offenders)}`,
+  ).toBeLessThanOrEqual(2);
 }
 
 /** Console errors that are environmental noise rather than app bugs. */
