@@ -154,8 +154,8 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
     "rounded-full border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
-    <div className="surface-card mb-8 p-5 sm:p-7">
-      <h2 className="mb-6 font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">My Pattern Library</h2>
+    <div className="mb-8">
+      <h2 className="mb-4 font-heading text-[20px] font-bold" style={{ color: "#3D2318" }}>My Patterns</h2>
 
       {isLoading ? (
         <div className="flex justify-center py-8">
@@ -217,74 +217,60 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
           </div>
 
           {visiblePatterns.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-3 gap-3">
               {visiblePatterns.map((pattern) => {
                 const progressPercent = progressOf(pattern);
                 return (
                   <div
                     key={pattern.id}
-                    className="cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-card shadow-sm transition-shadow hover:shadow-md"
+                    className="cursor-pointer overflow-hidden rounded-2xl transition-all hover:scale-[1.02]"
+                    style={{ background: "rgba(255,252,245,0.95)", boxShadow: "0 2px 12px rgba(80,40,10,0.10)", border: "1px solid rgba(140,100,55,0.12)" }}
                     onClick={() => onPatternSelected(pattern)}
                   >
-                    <div className="relative h-48 overflow-hidden bg-gray-100">
+                    {/* Square image */}
+                    <div className="relative aspect-square overflow-hidden bg-gray-100">
                       {pattern.endProductImage ? (
                         <img src={pattern.endProductImage} alt={pattern.title} className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-gray-400">
-                          <span>No image available</span>
+                        <div className="flex h-full w-full items-center justify-center text-[10px]" style={{ color: "#B0908A" }}>
+                          No image
                         </div>
                       )}
+                      {/* Heart */}
                       <button
                         type="button"
                         onClick={(e) => toggleFavorite(pattern, e)}
                         aria-label={pattern.favorite ? 'Remove from favorites' : 'Add to favorites'}
-                        aria-pressed={!!pattern.favorite}
-                        className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/85 shadow-sm backdrop-blur transition-colors hover:bg-white"
+                        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full"
+                        style={{ background: "rgba(255,252,245,0.9)" }}
                       >
-                        <Heart className={cn('h-5 w-5', pattern.favorite ? 'fill-primary text-primary' : 'text-gray-500')} />
+                        <Heart className={cn('h-3.5 w-3.5', pattern.favorite ? 'fill-current' : '')} style={{ color: "#C24E6B" }} />
                       </button>
+                      {/* Progress bar overlay */}
+                      {progressPercent > 0 && (
+                        <div className="absolute bottom-0 left-0 right-0" style={{ height: 3, background: "rgba(0,0,0,0.15)" }}>
+                          <div style={{ height: "100%", width: `${progressPercent}%`, background: "#84934F" }} />
+                        </div>
+                      )}
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-heading text-lg font-semibold text-foreground">{pattern.title}</h3>
-                      <div className="mb-3 mt-2 flex flex-wrap gap-2">
-                        <span className="inline-flex items-center rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-800">
-                          {pattern.projectType}
-                        </span>
-                        <span className="inline-flex items-center rounded-full bg-secondary-100 px-2.5 py-0.5 text-xs font-medium text-secondary-800">
-                          {pattern.skillLevel}
-                        </span>
-                      </div>
-                      <div className="flex text-sm text-gray-500">
-                        <Calendar className="mr-1 h-5 w-5 text-gray-400" />
-                        Created {formatDate(pattern.createdAt)}
-                      </div>
-                      <div className="mt-4 flex justify-between">
-                        <div className="text-sm">
-                          <div className="flex items-center text-gray-500">
-                            <span>Progress:</span>
-                            <span className="ml-1 font-medium text-primary-600">{progressPercent}%</span>
-                          </div>
-                          <div className="mt-1 h-1.5 w-24 rounded-full bg-gray-200">
-                            <div className="h-1.5 rounded-full bg-primary" style={{ width: `${progressPercent}%` }} />
-                          </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          <button
-                            type="button"
-                            className="inline-flex items-center rounded-full border border-transparent bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary-600"
-                            onClick={(e) => { e.stopPropagation(); onPatternSelected(pattern); }}
-                          >
-                            Open
-                          </button>
-                          <button
-                            type="button"
-                            className="inline-flex items-center rounded-full border border-transparent px-2 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
-                            onClick={(e) => handleDeletePattern(pattern.id, e)}
-                            aria-label="Delete pattern"
-                          >
-                            <Trash className="h-4 w-4" />
-                          </button>
-                        </div>
+                    {/* Info */}
+                    <div className="px-2 py-2">
+                      <p className="font-heading font-bold text-[12px] leading-tight truncate" style={{ color: "#3D2318" }}>
+                        {pattern.title}
+                      </p>
+                      <p className="text-[10px] mt-0.5 truncate" style={{ color: "#9A7868" }}>
+                        {pattern.projectType} · {pattern.skillLevel}
+                      </p>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <span className="text-[10px] font-semibold" style={{ color: "#84934F" }}>{progressPercent}%</span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleDeletePattern(pattern.id, e); }}
+                          className="w-5 h-5 flex items-center justify-center rounded-full hover:opacity-80"
+                          style={{ color: "#B0908A" }}
+                        >
+                          <Trash className="h-3 w-3" />
+                        </button>
                       </div>
                     </div>
                   </div>

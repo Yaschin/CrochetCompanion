@@ -137,16 +137,16 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
 
         {/* Tag line */}
         <motion.div
-          className="text-center mt-6 mb-8"
+          className="text-center mt-5 mb-6"
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.4 }}
         >
-          <p className="font-heading font-semibold text-[16px]" style={{ color: "#5C3A28" }}>
-            Patterns made for you, by Yala ✨
+          <p className="font-heading font-semibold text-[17px]" style={{ color: "#5C3A28" }}>
+            Your crochet studio
           </p>
-          <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>
-            AI-powered crochet pattern creation
+          <p className="font-heading font-semibold text-[17px]" style={{ color: "#5C3A28" }}>
+            Your creative world ✨
           </p>
         </motion.div>
 
@@ -168,39 +168,72 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
           <span style={{ fontSize: 20 }}>→</span>
         </motion.button>
 
-        {/* Character row — actual PNG images */}
+        {/* Aloo + Yala hero duo — large characters side by side */}
         <motion.div
-          className="flex gap-3 mt-8"
-          initial={{ opacity: 0, y: 8 }}
+          className="flex items-end justify-center gap-4 mt-6"
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.4 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
         >
-          {CHARACTERS.map((c) => (
-            <div key={c.id} className="flex flex-col items-center gap-1">
+          {/* Aloo — left */}
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            className="flex flex-col items-center gap-1"
+          >
+            <img
+              src="/characters/char-aloo-transparent.png"
+              alt="Aloo"
+              style={{ width: 90, height: "auto", objectFit: "contain",
+                filter: "drop-shadow(0 6px 16px rgba(50,20,5,0.28))" }}
+              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
+            />
+            <span className="text-[10px] font-semibold" style={{ color: "#C24E6B" }}>Aloo</span>
+          </motion.div>
+
+          {/* Yarn ball centre */}
+          <div className="flex flex-col items-center gap-1 mb-4">
+            <span style={{ fontSize: 28 }}>🧶</span>
+          </div>
+
+          {/* Yala — right */}
+          <motion.div
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 4.0, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+            className="flex flex-col items-center gap-1"
+          >
+            <img
+              src="/characters/char-yala-transparent.png"
+              alt="Yala"
+              style={{ width: 110, height: "auto", objectFit: "contain",
+                filter: "drop-shadow(0 6px 16px rgba(50,20,5,0.28))" }}
+              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
+            />
+            <span className="text-[10px] font-semibold" style={{ color: "#7C5FA8" }}>Yala</span>
+          </motion.div>
+        </motion.div>
+
+        {/* Secondary characters row */}
+        <motion.div
+          className="flex gap-4 mt-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.65, duration: 0.4 }}
+        >
+          {[
+            { id: "ashi",  color: "#3D8FA3" },
+            { id: "bee",   color: "#D4921A" },
+            { id: "sheep", color: "#84934F" },
+          ].map((c) => (
+            <div key={c.id} className="flex flex-col items-center gap-0.5">
               <div
                 className="rounded-full overflow-hidden flex items-center justify-center"
-                style={{
-                  width: 44,
-                  height: 44,
-                  background: `${c.color}18`,
-                  border: `2px solid ${c.color}55`,
-                }}
+                style={{ width: 36, height: 36, background: `${c.color}15`, border: `1.5px solid ${c.color}40` }}
               >
-                <img
-                  src={`/characters/char-${c.id}-transparent.png`}
-                  alt={c.label}
-                  style={{ width: 36, height: 36, objectFit: "contain" }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
+                <img src={`/characters/char-${c.id}-transparent.png`} alt={c.id}
+                  style={{ width: 28, height: 28, objectFit: "contain" }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               </div>
-              <span
-                className="font-semibold"
-                style={{ fontSize: 9, color: c.color }}
-              >
-                {c.label}
-              </span>
             </div>
           ))}
         </motion.div>

@@ -1,0 +1,1 @@
+- [Crochet Time app structure](crochet-time-structure.md) — key files, character paths, ViewType navigation map, and CSS conventions for this project.

@@ -10,24 +10,26 @@ interface SidebarProps {
 }
 
 const PRIMARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Home }[] = [
-  { id: "home",      view: "home",    label: "Home",      icon: Home },
-  { id: "studio",    view: "input",   label: "AI Studio", icon: Wand2 },
-  { id: "library",   view: "library", label: "Library",   icon: BookOpen },
-  { id: "favorites", view: "library", label: "Favorites", icon: Heart },
-  { id: "projects",  view: "library", label: "Projects",  icon: BasketIcon as typeof Home },
+  { id: "home",      view: "home",      label: "Home",      icon: Home },
+  { id: "studio",    view: "input",     label: "AI Studio", icon: Wand2 },
+  { id: "library",   view: "library",   label: "Library",   icon: BookOpen },
+  { id: "favorites", view: "favorites", label: "Favorites", icon: Heart },
+  { id: "projects",  view: "stash",     label: "Stash",     icon: BasketIcon as typeof Home },
 ];
 
 const SECONDARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Home }[] = [
-  { id: "community", view: "library", label: "Community Library", icon: Users },
-  { id: "profile",   view: "home",    label: "My Profile",        icon: User },
-  { id: "settings",  view: "home",    label: "Settings",          icon: Settings },
+  { id: "community", view: "community", label: "Community Library", icon: Users },
+  { id: "profile",   view: "home",      label: "My Profile",        icon: User },
+  { id: "settings",  view: "home",      label: "Settings",          icon: Settings },
 ];
 
 function resolveActiveId(view: ViewType): string {
   if (view === "home") return "home";
   if (view === "input" || view === "viewer") return "studio";
   if (view === "library") return "library";
-  if (view === "stash") return "projects";
+  if (view === "favorites") return "favorites";
+  if (view === "stash" || view === "projects") return "projects";
+  if (view === "community" || view === "community-detail" || view === "community-submit") return "community";
   return "home";
 }
 

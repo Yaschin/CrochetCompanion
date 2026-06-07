@@ -492,7 +492,7 @@ function FavoritesCard({
         )}
       </div>
 
-      <button onClick={() => onNavigate("library")} className="btn-craft btn-sage w-full justify-center text-[12px] py-2">
+      <button onClick={() => onNavigate("favorites")} className="btn-craft btn-sage w-full justify-center text-[12px] py-2">
         View Favorites →
       </button>
     </div>
@@ -563,7 +563,7 @@ function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) =
         <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
           Community Spotlight
         </span>
-        <button onClick={() => onNavigate("library")}
+        <button onClick={() => onNavigate("community")}
           className="text-[11px] font-semibold flex items-center gap-0.5 hover:opacity-70 transition-opacity"
           style={{ color: "#C24E6B" }}>
           View library <ChevronRight className="h-3 w-3" />

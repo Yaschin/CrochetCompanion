@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { ViewType } from "../lib/types";
 
@@ -6,17 +6,26 @@ interface GenerationLoadingScreenProps {
   onComplete: (view: ViewType) => void;
 }
 
-const MESSAGES = [
-  "Weaving your pattern together…",
-  "Counting stitches and rows…",
-  "Yala is adding magical details…",
-  "Checking your gauge…",
-  "Almost ready! Just a few more rounds…",
+const STAGES = [
+  { emoji: "🧶", label: "Winding yarn…",        round: "Round 1–4" },
+  { emoji: "🪡", label: "Setting up stitches…", round: "Round 5–8" },
+  { emoji: "🧵", label: "Shaping the body…",    round: "Round 9–14" },
+  { emoji: "✂️", label: "Finishing details…",   round: "Round 15–18" },
+  { emoji: "✨", label: "Magic touches!",        round: "Round 19–20" },
+];
+
+const YALA_TIPS = [
+  "Use a magic ring for amigurumi — it closes the center gap perfectly!",
+  "Count your stitches at the end of each round to stay on track.",
+  "Stuff firmly as you go — it's much easier than at the end!",
+  "Switch to a smaller hook if you can see stuffing through your stitches.",
+  "Blocking your finished piece can really bring the shape to life! 🌟",
 ];
 
 export default function GenerationLoadingScreen({ onComplete }: GenerationLoadingScreenProps) {
   const [progress, setProgress] = useState(0);
-  const [msgIdx, setMsgIdx] = useState(0);
+  const [stageIdx, setStageIdx] = useState(0);
+  const [tipIdx] = useState(() => Math.floor(Math.random() * YALA_TIPS.length));
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -27,7 +36,8 @@ export default function GenerationLoadingScreen({ onComplete }: GenerationLoadin
           setTimeout(() => onComplete("viewer"), 600);
           return 100;
         }
-        if (next % 20 === 0) setMsgIdx(i => (i + 1) % MESSAGES.length);
+        const newStage = Math.floor((next / 100) * STAGES.length);
+        setStageIdx(Math.min(newStage, STAGES.length - 1));
         return next;
       });
     }, 60);
@@ -36,87 +46,136 @@ export default function GenerationLoadingScreen({ onComplete }: GenerationLoadin
 
   const circumference = 2 * Math.PI * 70;
   const stroke = circumference - (progress / 100) * circumference;
+  const currentStage = STAGES[stageIdx];
 
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-8"
-      style={{ background: "linear-gradient(155deg, #F9EDD8 0%, #F2E4CE 60%, #EDD5B8 100%)" }}>
+    <div
+      className="flex flex-col items-center justify-between h-full py-8 px-6 gap-4"
+      style={{ background: "linear-gradient(155deg, #F9EDD8 0%, #F2E4CE 60%, #EDD5B8 100%)" }}
+    >
+      {/* Top: heading */}
+      <div className="text-center pt-2">
+        <motion.h1
+          className="font-heading font-bold text-[22px]"
+          style={{ color: "#3D2318" }}
+          animate={{ opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 2.5, repeat: Infinity }}
+        >
+          Yala is creating your pattern…
+        </motion.h1>
+        <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>
+          Stitch by stitch, row by row ✨
+        </p>
+      </div>
 
-      {/* Yala animating */}
+      {/* Middle: Yala + progress ring */}
+      <div className="flex flex-col items-center gap-5 flex-1 justify-center">
+        {/* Yala floating */}
+        <motion.div
+          animate={{ y: [0, -12, 0, -8, 0] }}
+          transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <img
+            src="/characters/char-yala-transparent.png"
+            alt="Yala"
+            style={{ width: 130, height: "auto", filter: "drop-shadow(0 8px 20px rgba(80,40,10,0.22))" }}
+          />
+        </motion.div>
+
+        {/* Circular progress ring */}
+        <div className="relative flex items-center justify-center" style={{ width: 150, height: 150 }}>
+          <svg width="150" height="150" viewBox="0 0 160 160" style={{ transform: "rotate(-90deg)" }}>
+            <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(194,78,107,0.12)" strokeWidth="8" />
+            <motion.circle
+              cx="80" cy="80" r="70" fill="none"
+              stroke="url(#progGrad)" strokeWidth="8" strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={stroke}
+              style={{ transition: "stroke-dashoffset 0.4s ease" }}
+            />
+            <defs>
+              <linearGradient id="progGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#C24E6B" />
+                <stop offset="100%" stopColor="#D4921A" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div className="absolute flex flex-col items-center">
+            <span className="font-heading font-bold text-[26px] leading-none" style={{ color: "#C24E6B" }}>
+              {progress}%
+            </span>
+            <span className="text-[10px] font-semibold mt-0.5" style={{ color: "#9A7868" }}>complete</span>
+          </div>
+        </div>
+
+        {/* Stage indicators */}
+        <div className="flex flex-col items-center gap-2">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={stageIdx}
+              className="flex items-center gap-2 px-4 py-2 rounded-full"
+              style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.2)" }}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.3 }}
+            >
+              <span style={{ fontSize: 16 }}>{currentStage.emoji}</span>
+              <span className="text-[13px] font-semibold" style={{ color: "#5C3A28" }}>
+                {currentStage.label}
+              </span>
+              <span className="text-[11px]" style={{ color: "#9A7868" }}>
+                {currentStage.round}
+              </span>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Emoji progress dots */}
+          <div className="flex gap-2 mt-1">
+            {STAGES.map((s, i) => (
+              <motion.div
+                key={i}
+                className="flex items-center justify-center"
+                animate={{
+                  scale: i === stageIdx ? 1.3 : 1,
+                  opacity: i <= stageIdx ? 1 : 0.3,
+                }}
+                transition={{ duration: 0.3 }}
+              >
+                <span style={{ fontSize: i === stageIdx ? 18 : 13 }}>{s.emoji}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom: Tip from Yala card */}
       <motion.div
-        animate={{ y: [0, -14, 0, -8, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        className="w-full rounded-2xl p-4 flex gap-3 items-center"
+        style={{
+          background: "rgba(255,252,245,0.95)",
+          border: "1.5px solid rgba(140,100,55,0.2)",
+          boxShadow: "0 4px 20px rgba(60,28,6,0.12)",
+        }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
       >
         <img
           src="/characters/char-yala-transparent.png"
           alt="Yala"
-          style={{ width: 160, height: "auto", filter: "drop-shadow(0 8px 20px rgba(80,40,10,0.22))" }}
+          style={{ width: 52, height: 52, objectFit: "contain", flexShrink: 0,
+            filter: "drop-shadow(0 3px 8px rgba(80,40,10,0.2))" }}
         />
-      </motion.div>
-
-      {/* Speech bubble */}
-      <div className="relative">
-        <div className="rounded-2xl px-5 py-3 max-w-[220px] text-center"
-          style={{
-            background: "rgba(255,252,245,0.96)",
-            border: "1.5px dashed rgba(140,95,45,0.35)",
-            boxShadow: "0 4px 14px rgba(60,28,6,0.14)",
-          }}>
-          <p className="font-heading text-[13px] font-semibold" style={{ color: "#5C3A28" }}>
-            Please wait…
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-bold mb-0.5" style={{ color: "#C24E6B" }}>
+            💡 Tip from Yala
           </p>
-          <motion.p
-            key={msgIdx}
-            className="text-[11.5px] mt-1 leading-snug"
-            style={{ color: "#9A7868" }}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            {MESSAGES[msgIdx]}
-          </motion.p>
+          <p className="text-[12px] leading-snug" style={{ color: "#5C3A28" }}>
+            {YALA_TIPS[tipIdx]}
+          </p>
         </div>
-        {/* Bubble tail */}
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0"
-          style={{ borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderBottom: "12px solid rgba(255,252,245,0.96)" }} />
-      </div>
-
-      {/* Circular progress */}
-      <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
-        <svg width="160" height="160" viewBox="0 0 160 160" style={{ transform: "rotate(-90deg)" }}>
-          <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(194,78,107,0.12)" strokeWidth="8" />
-          <motion.circle
-            cx="80" cy="80" r="70" fill="none"
-            stroke="url(#progGrad)" strokeWidth="8" strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={stroke}
-            style={{ transition: "stroke-dashoffset 0.4s ease" }}
-          />
-          <defs>
-            <linearGradient id="progGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#C24E6B" />
-              <stop offset="100%" stopColor="#D4921A" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="absolute flex flex-col items-center">
-          <span className="font-heading font-bold text-[28px] leading-none" style={{ color: "#C24E6B" }}>
-            {progress}%
-          </span>
-          <span className="text-[10.5px] font-semibold mt-0.5" style={{ color: "#9A7868" }}>complete</span>
-        </div>
-      </div>
-
-      {/* Dots row */}
-      <div className="flex gap-2">
-        {[0, 1, 2, 3].map((i) => (
-          <motion.div key={i}
-            className="rounded-full"
-            style={{ width: 8, height: 8, background: "#C24E6B", opacity: 0.3 }}
-            animate={{ opacity: [0.3, 1, 0.3] }}
-            transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.3 }}
-          />
-        ))}
-      </div>
+      </motion.div>
     </div>
   );
 }

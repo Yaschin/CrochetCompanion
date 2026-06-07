@@ -103,10 +103,10 @@ export default function YarnRecsScreen({ onNavigate }: YarnRecsScreenProps) {
           </button>
           <div>
             <h1 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>
-              Yarn & Colour Picks
+              Sheep's Yarn Picks
             </h1>
             <p className="text-[12px]" style={{ color: "#9A7868" }}>
-              Curated by Sheep ♡
+              Curated for your next project ♡
             </p>
           </div>
         </div>
