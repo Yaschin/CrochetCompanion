@@ -765,6 +765,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true, likes });
   });
 
+  // ── Backup: export & import all user data ───────────────────────────────────
+  app.get("/api/export", async (_req: Request, res: Response) => {
+    try {
+      const [patterns, stash, stashNotesContent] = await Promise.all([
+        patternService.getAllPatterns(),
+        stashService.getAllItems(),
+        stashService.getNotes(),
+      ]);
+      const payload = {
+        app: "crochet-time",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        patterns,
+        stash,
+        stashNotes: stashNotesContent,
+      };
+      const date = new Date().toISOString().slice(0, 10);
+      res.setHeader("Content-Disposition", `attachment; filename="crochet-time-backup-${date}.json"`);
+      res.setHeader("Content-Type", "application/json");
+      res.send(JSON.stringify(payload, null, 2));
+    } catch (error) {
+      console.error("Export failed:", error);
+      res.status(500).json({ message: "Export failed", error: (error as Error).message });
+    }
+  });
+
+  // Additive restore: imported patterns/stash are created as new records
+  // (never overwriting existing data), so re-importing is non-destructive.
+  app.post("/api/import", async (req: Request, res: Response) => {
+    try {
+      const body = req.body ?? {};
+      const patterns = Array.isArray(body.patterns) ? body.patterns : [];
+      const stash = Array.isArray(body.stash) ? body.stash : [];
+      let importedPatterns = 0;
+      let importedStash = 0;
+
+      for (const p of patterns) {
+        if (p && typeof p.title === "string" && Array.isArray(p.sections)) {
+          const { id: _id, createdAt: _createdAt, ...rest } = p;
+          await patternService.createPattern(rest);
+          importedPatterns++;
+        }
+      }
+
+      for (const s of stash) {
+        const result = stashItemSchema.omit({ id: true }).safeParse(s);
+        if (result.success) {
+          await stashService.createItem(result.data);
+          importedStash++;
+        }
+      }
+
+      if (typeof body.stashNotes === "string" && body.stashNotes.trim()) {
+        await stashService.updateNotes(body.stashNotes);
+      }
+
+      res.json({ success: true, importedPatterns, importedStash });
+    } catch (error) {
+      console.error("Import failed:", error);
+      res.status(500).json({ message: "Import failed", error: (error as Error).message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
