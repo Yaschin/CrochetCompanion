@@ -48,7 +48,6 @@ export async function generatePattern(inputData: PatternInputData) {
 
   // If API key is not available or invalid, return a fallback template pattern
   if (!API_KEY_AVAILABLE || !API_KEY_VALID_FORMAT) {
-    console.log("OpenAI API key not available or invalid. Returning fallback pattern template.");
     return getFallbackPatternTemplate(prompt, projectType, skillLevel);
   }
 
@@ -166,7 +165,6 @@ export async function generatePattern(inputData: PatternInputData) {
     try {
       if (attempt > 0) {
         const delayMs = 1000 * Math.pow(2, attempt); // 2s, 4s, 8s
-        console.log(`Retrying pattern generation after ${delayMs}ms delay (attempt ${attempt + 1}/${maxRetries})...`);
         await new Promise(resolve => setTimeout(resolve, delayMs));
       }
 
@@ -319,8 +317,6 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
       ? `I found these potential colors mentioned in the pattern: ${colorMentions.join(", ")}.`
       : "";
 
-    console.log(`Calculating yarn requirements for ${projectType} with ${totalSteps} steps (complexity: ${complexityScore})...`);
-    console.log(`Detected colors: ${colorMentions.join(", ") || "None detected"}`);
 
     // Ask the AI to estimate yarn requirements with enhanced context
     if (!openai) {
@@ -374,7 +370,6 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
-    console.log("Enhanced yarn requirements API response:", result);
 
     // Handle different response formats from the AI
     if (Array.isArray(result)) {

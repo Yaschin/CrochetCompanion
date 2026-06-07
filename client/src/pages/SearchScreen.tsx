@@ -29,14 +29,21 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
 
   const { data: patterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
 
-  const filtered = patterns.filter((p) => {
-    const matchesQuery = query === "" ||
-      p.title.toLowerCase().includes(query.toLowerCase()) ||
-      (p.description ?? "").toLowerCase().includes(query.toLowerCase());
-    const matchesFilter = activeFilter === "all" ||
-      p.projectType.toLowerCase().includes(activeFilter.toLowerCase());
-    return matchesQuery && matchesFilter;
-  });
+  const filtered = patterns
+    .filter((p) => {
+      const matchesQuery = query === "" ||
+        p.title.toLowerCase().includes(query.toLowerCase()) ||
+        (p.description ?? "").toLowerCase().includes(query.toLowerCase());
+      const matchesFilter = activeFilter === "all" ||
+        p.projectType.toLowerCase().includes(activeFilter.toLowerCase());
+      return matchesQuery && matchesFilter;
+    })
+    .sort((a, b) => {
+      if (activeSort === "Oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (activeSort === "A–Z") return a.title.localeCompare(b.title);
+      if (activeSort === "Favorites") return (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0);
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // Newest (default)
+    });
 
   return (
     <div className="flex flex-col h-full">

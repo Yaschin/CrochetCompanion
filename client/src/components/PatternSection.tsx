@@ -255,7 +255,6 @@ const PatternSection: React.FC<PatternSectionProps> = ({
     setIsDiagramDialogOpen(false);
     
     try {
-      console.log("Generating stitch diagram for section:", section.name);
       const response = await apiRequest('POST', '/api/generate-image', {
         prompt: promptToUse || `Crochet stitch diagram for the ${section.name} section of a ${projectType || 'crochet project'} - ${section.steps.map((s: PatternStep) => s.text).slice(0, 3).join(". ")}`,
         type: 'diagram',
@@ -263,7 +262,6 @@ const PatternSection: React.FC<PatternSectionProps> = ({
       });
       
       const data = await response.json();
-      console.log("Diagram generation response:", data);
       
       if (data.url) {
         onUpdateSection({

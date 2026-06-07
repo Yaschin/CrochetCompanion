@@ -44,7 +44,9 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const [activeTab, setActiveTab] = useState<"overview" | "pattern" | "notes">("overview");
   const [regenSection, setRegenSection] = useState<number | null>(null);
   const [regenNote, setRegenNote] = useState("");
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(() => {
+    try { return localStorage.getItem(`crochet-time:notes:${pattern.id}`) || ""; } catch { return ""; }
+  });
   const [showCelebration, setShowCelebration] = useState(false);
   const [adaptOpen, setAdaptOpen] = useState(false);
   const [adaptMode, setAdaptMode] = useState<"resize" | "substitute">("resize");
@@ -52,6 +54,11 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const [alignmentResults, setAlignmentResults] = useState<Record<number, { score: number; feedback: string }>>({});
   const [alignmentLoading, setAlignmentLoading] = useState<Record<number, boolean>>({});
   const regenerationTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Sync notes from localStorage whenever the pattern changes (e.g. navigating between patterns).
+  useEffect(() => {
+    try { setNotes(localStorage.getItem(`crochet-time:notes:${pattern.id}`) || ""); } catch { /* ignore */ }
+  }, [pattern.id]);
 
   // Clean up timeout to prevent memory leaks
   useEffect(() => {
@@ -723,7 +730,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-[10px] font-medium hidden sm:block" style={{ color: "#B0908A" }}>
-            Saved just now
+            Created {formattedDate}
           </span>
           <button
             type="button"
@@ -1112,7 +1119,10 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             <button
               className="px-5 py-2 rounded-xl font-semibold text-[12.5px] transition-all hover:opacity-90"
               style={{ background: "#C24E6B", color: "white" }}
-              onClick={() => toast({ title: "Notes saved!", description: "Your notes have been saved." })}
+              onClick={() => {
+                try { localStorage.setItem(`crochet-time:notes:${pattern.id}`, notes); } catch { /* ignore */ }
+                toast({ title: "Notes saved! ♡", description: "Your notes have been saved." });
+              }}
             >
               Save Notes
             </button>
