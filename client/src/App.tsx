@@ -21,7 +21,7 @@ import { Pattern, ViewType } from "./lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 
 function App() {
-  const [activeView, setActiveView] = useState<ViewType>("splash");
+  const [activeView, setActiveView] = useState<ViewType>("home");
   const [currentPattern, setCurrentPattern] = useState<Pattern | null>(null);
 
   const navigateToView = (view: ViewType) => setActiveView(view);
