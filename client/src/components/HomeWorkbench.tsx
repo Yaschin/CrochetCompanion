@@ -243,6 +243,7 @@ function HeroZone({
   onNavigate: (v: ViewType) => void;
 }) {
   const alooSrc = "/characters/char-aloo-transparent.png";
+  const ashiSrc = "/characters/char-ashi-transparent.png";
   const yalaSrc = "/characters/char-yala-transparent.png";
 
   return (
@@ -288,24 +289,32 @@ function HeroZone({
       </div>
 
       {/* Speech bubbles — outside clip so always fully visible */}
-      <div className="absolute z-20 hidden sm:block" style={{ top: 20, left: "10%" }}>
-        <div className="speech-bubble" style={{ maxWidth: 148 }}>
+      <div className="absolute z-20 hidden sm:block" style={{ top: 18, left: "7%" }}>
+        <div className="speech-bubble" style={{ maxWidth: 140 }}>
           <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
             Aloo is here to cheer you on! 🐾
           </p>
         </div>
       </div>
 
-      <div className="absolute z-20 hidden sm:block" style={{ bottom: 80, right: "8%" }}>
-        <div className="speech-bubble" style={{ maxWidth: 152 }}>
+      <div className="absolute z-20 hidden sm:block" style={{ top: 14, left: "43%" }}>
+        <div className="speech-bubble" style={{ maxWidth: 144 }}>
+          <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
+            Ashi loves cosy patterns! 🪡
+          </p>
+        </div>
+      </div>
+
+      <div className="absolute z-20 hidden sm:block" style={{ bottom: 80, right: "7%" }}>
+        <div className="speech-bubble" style={{ maxWidth: 148 }}>
           <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
             Yala is ready to create something magical. ✨
           </p>
         </div>
       </div>
 
-      {/* Aloo — left, free-standing, extends below hero bottom edge */}
-      <div className="absolute bottom-0 z-10" style={{ left: "14%" }}>
+      {/* Aloo — left, free-standing */}
+      <div className="absolute bottom-0 z-10" style={{ left: "6%" }}>
         <motion.div
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
@@ -314,7 +323,7 @@ function HeroZone({
             src={alooSrc}
             alt="Aloo"
             style={{
-              width: "min(190px, 28vw)",
+              width: "min(155px, 22vw)",
               height: "auto",
               objectFit: "contain",
               filter: "drop-shadow(0 8px 20px rgba(50,20,5,0.35))",
@@ -323,17 +332,36 @@ function HeroZone({
         </motion.div>
       </div>
 
-      {/* Yala — right, larger, free-standing */}
-      <div className="absolute bottom-0 z-10" style={{ right: "12%" }}>
+      {/* Ashi — centre, slightly smaller */}
+      <div className="absolute bottom-0 z-10" style={{ left: "50%", transform: "translateX(-50%)" }}>
+        <motion.div
+          animate={{ y: [0, -9, 0] }}
+          transition={{ duration: 3.9, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+        >
+          <img
+            src={ashiSrc}
+            alt="Ashi"
+            style={{
+              width: "min(145px, 21vw)",
+              height: "auto",
+              objectFit: "contain",
+              filter: "drop-shadow(0 7px 18px rgba(50,20,5,0.32))",
+            }}
+          />
+        </motion.div>
+      </div>
+
+      {/* Yala — right, larger */}
+      <div className="absolute bottom-0 z-10" style={{ right: "5%" }}>
         <motion.div
           animate={{ y: [0, -7, 0] }}
-          transition={{ duration: 4.0, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          transition={{ duration: 4.0, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
         >
           <img
             src={yalaSrc}
             alt="Yala"
             style={{
-              width: "min(230px, 34vw)",
+              width: "min(190px, 27vw)",
               height: "auto",
               objectFit: "contain",
               filter: "drop-shadow(0 10px 24px rgba(50,20,5,0.38))",

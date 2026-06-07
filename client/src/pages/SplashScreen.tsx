@@ -139,7 +139,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
         {/* Stage 1+ — Characters emerge */}
         {stage >= 1 && (
           <motion.div
-            className="flex items-end justify-center gap-3 mb-5 w-full"
+            className="flex items-end justify-center gap-2 mb-5 w-full"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
@@ -153,17 +153,39 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
               <div className="rounded-full p-2"
                 style={{ background: "rgba(194,78,107,0.08)", border: "1.5px dashed rgba(194,78,107,0.22)" }}>
                 <img src="/characters/char-aloo-transparent.png" alt="Aloo"
-                  style={{ width: 82, height: 82, objectFit: "contain", filter: "drop-shadow(0 5px 14px rgba(50,20,5,0.25))" }}
+                  style={{ width: 72, height: 72, objectFit: "contain", filter: "drop-shadow(0 5px 14px rgba(50,20,5,0.25))" }}
                   onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }} />
               </div>
-              <span className="text-[10.5px] font-bold" style={{ color: "#C24E6B" }}>Aloo</span>
+              <span className="text-[10px] font-bold" style={{ color: "#C24E6B" }}>Aloo</span>
             </motion.div>
 
-            {/* Yarn ball centre */}
-            <motion.div className="mb-4"
+            {/* Yarn ball — left of centre */}
+            <motion.div className="mb-5"
               animate={{ rotate: [0, 10, -6, 0], scale: [1, 1.08, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
-              <span style={{ fontSize: 34 }}>🧶</span>
+              <span style={{ fontSize: 28 }}>🧶</span>
+            </motion.div>
+
+            {/* Ashi — centre hero */}
+            <motion.div
+              className="flex flex-col items-center gap-1"
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+            >
+              <div className="rounded-full p-2"
+                style={{ background: "rgba(61,143,163,0.08)", border: "1.5px dashed rgba(61,143,163,0.25)" }}>
+                <img src="/characters/char-ashi-transparent.png" alt="Ashi"
+                  style={{ width: 88, height: 88, objectFit: "contain", filter: "drop-shadow(0 6px 16px rgba(50,20,5,0.28))" }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }} />
+              </div>
+              <span className="text-[10px] font-bold" style={{ color: "#3D8FA3" }}>Ashi</span>
+            </motion.div>
+
+            {/* Yarn ball — right of centre */}
+            <motion.div className="mb-5"
+              animate={{ rotate: [0, -8, 5, 0], scale: [1, 1.06, 1] }}
+              transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 1.1 }}>
+              <span style={{ fontSize: 24 }}>🧵</span>
             </motion.div>
 
             {/* Yala */}
@@ -175,10 +197,10 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
               <div className="rounded-full p-2"
                 style={{ background: "rgba(124,95,168,0.08)", border: "1.5px dashed rgba(124,95,168,0.22)" }}>
                 <img src="/characters/char-yala-transparent.png" alt="Yala"
-                  style={{ width: 96, height: 96, objectFit: "contain", filter: "drop-shadow(0 5px 14px rgba(50,20,5,0.25))" }}
+                  style={{ width: 84, height: 84, objectFit: "contain", filter: "drop-shadow(0 5px 14px rgba(50,20,5,0.25))" }}
                   onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }} />
               </div>
-              <span className="text-[10.5px] font-bold" style={{ color: "#7C5FA8" }}>Yala</span>
+              <span className="text-[10px] font-bold" style={{ color: "#7C5FA8" }}>Yala</span>
             </motion.div>
           </motion.div>
         )}
@@ -227,18 +249,17 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
               Enter Your Studio <span style={{ fontSize: 20 }}>→</span>
             </motion.button>
 
-            {/* Secondary characters */}
+            {/* Secondary characters — Bee & Sheep */}
             <motion.div className="flex gap-3 mt-5 items-center"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: 0.45, duration: 0.4 }}>
               {[
-                { id: "ashi",  color: "#3D8FA3", delay: 0 },
-                { id: "bee",   color: "#D4921A", delay: 0.3 },
-                { id: "sheep", color: "#84934F", delay: 0.6 },
+                { id: "bee",   color: "#D4921A", delay: 0 },
+                { id: "sheep", color: "#84934F", delay: 0.4 },
               ].map((c, i) => (
                 <motion.div key={c.id}
                   animate={{ y: [0, -5, 0] }}
-                  transition={{ duration: 3 + i * 0.4, repeat: Infinity, ease: "easeInOut", delay: c.delay }}>
+                  transition={{ duration: 3.2 + i * 0.5, repeat: Infinity, ease: "easeInOut", delay: c.delay }}>
                   <div className="rounded-full overflow-hidden flex items-center justify-center"
                     style={{ width: 40, height: 40, background: `${c.color}15`, border: `1.5px solid ${c.color}40` }}>
                     <img src={`/characters/char-${c.id}-transparent.png`} alt={c.id}
