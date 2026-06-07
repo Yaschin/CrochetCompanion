@@ -1,8 +1,9 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import {
   Home, Wand2, BookOpen, Heart, Users, User, Settings,
 } from "lucide-react";
 import { ViewType } from "../lib/types";
+import { getStreak } from "../lib/activityLog";
 
 interface SidebarProps {
   activeView: ViewType;
@@ -148,6 +149,7 @@ function ActivePillDecor() {
 
 const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
   const activeId = resolveActiveId(activeView);
+  const [streak] = useState(() => getStreak());
 
   return (
     <aside
@@ -279,20 +281,35 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
         />
       </div>
 
-      {/* "You're on a roll" chip — warm amber tint */}
+      {/* Streak chip */}
       <div
         className="mx-3 mb-3 rounded-xl px-3 py-2 text-center relative z-10"
         style={{
-          background: "linear-gradient(135deg, rgba(212,146,26,0.18), rgba(212,146,26,0.10))",
-          border: "1px dashed rgba(194,78,107,0.35)",
+          background: streak.current > 0
+            ? "linear-gradient(135deg, rgba(212,146,26,0.18), rgba(212,146,26,0.10))"
+            : "linear-gradient(135deg, rgba(194,78,107,0.10), rgba(194,78,107,0.06))",
+          border: streak.current > 0 ? "1px dashed rgba(212,146,26,0.45)" : "1px dashed rgba(194,78,107,0.35)",
         }}
       >
-        <p className="text-[10px] font-bold" style={{ color: "#B04060" }}>
-          You're on a roll! 🎉
-        </p>
-        <p className="text-[9.5px] leading-snug" style={{ color: "#9A7A68" }}>
-          Keep going, your creativity is blooming. ♡
-        </p>
+        {streak.current > 0 ? (
+          <>
+            <p className="text-[10px] font-bold" style={{ color: "#A06010" }}>
+              🔥 {streak.current}-day streak!
+            </p>
+            <p className="text-[9.5px] leading-snug" style={{ color: "#9A7A68" }}>
+              {streak.activeToday ? "Today counts ♡" : "Crochet today to keep it!"}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-[10px] font-bold" style={{ color: "#B04060" }}>
+              Start a streak ♡
+            </p>
+            <p className="text-[9.5px] leading-snug" style={{ color: "#9A7A68" }}>
+              Crochet something today!
+            </p>
+          </>
+        )}
       </div>
     </aside>
   );

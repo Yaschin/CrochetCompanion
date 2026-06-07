@@ -7,6 +7,31 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Pattern, ViewType } from "../lib/types";
+import { getStreak } from "../lib/activityLog";
+
+// ─── Notification helpers ──────────────────────────────────────────────────────
+const NOTIF_KEY = "crochet-time-community-seen";
+function getLastSeenCount(): number {
+  try { return parseInt(localStorage.getItem(NOTIF_KEY) ?? "0", 10) || 0; } catch { return 0; }
+}
+function markCommunityRead(count: number): void {
+  try { localStorage.setItem(NOTIF_KEY, String(count)); } catch { /* ignore */ }
+}
+
+// ─── Time helpers ──────────────────────────────────────────────────────────────
+function formatTimeSpent(startedAt?: string | null): string {
+  if (!startedAt) return "—";
+  const ms = Date.now() - new Date(startedAt).getTime();
+  if (ms < 0) return "—";
+  const totalMins = Math.floor(ms / 60_000);
+  if (totalMins < 1) return "Just started";
+  const days = Math.floor(totalMins / 1440);
+  const hours = Math.floor((totalMins % 1440) / 60);
+  const mins = totalMins % 60;
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${mins}m`;
+  return `${mins}m`;
+}
 
 interface HomeWorkbenchProps {
   onNavigate: (view: ViewType) => void;
@@ -721,6 +746,7 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
   const pct = active ? patternProgress(active) : 0;
   const steps = active?.sections?.flatMap(s => s.steps) ?? [];
   const doneRows = steps.filter(s => s.completed).length;
+  const timeSpent = formatTimeSpent(active?.startedAt);
 
   return (
     <div className="flex flex-col gap-3 p-4 relative">
@@ -782,8 +808,8 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
             {/* Time spent row */}
             <div className="flex justify-between items-center text-[10.5px] mb-2"
               style={{ color: "#9A7868", borderTop: "1px dashed rgba(140,100,55,0.18)", paddingTop: 6 }}>
-              <span>Time spent</span>
-              <span className="font-semibold" style={{ color: "#5C3A28" }}>4h 20m</span>
+              <span>Time since start</span>
+              <span className="font-semibold" style={{ color: "#5C3A28" }}>{timeSpent}</span>
             </div>
             <button onClick={() => onNavigate("viewer")}
               className="btn-craft btn-rose w-full justify-center text-[11px] py-1.5">
@@ -866,6 +892,17 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWor
     staleTime: 0,
     refetchOnMount: "always",
   });
+  const { data: communityPatterns = [] } = useQuery<{ id: string }[]>({ queryKey: ["/api/community"] });
+
+  const [streak] = useState(() => getStreak());
+  const [lastSeenCount, setLastSeenCount] = useState(() => getLastSeenCount());
+  const unreadCount = Math.max(0, communityPatterns.length - lastSeenCount);
+
+  const handleBellClick = () => {
+    markCommunityRead(communityPatterns.length);
+    setLastSeenCount(communityPatterns.length);
+    onNavigate("community");
+  };
 
   const [generatingIds, setGeneratingIds] = useState(new Set<string>());
 
@@ -910,12 +947,21 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWor
             Let's create something beautiful today.
           </p>
           {/* Motivational chip — visible only on mobile (sidebar hidden) */}
-          <div
-            className="md:hidden inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-[11px] font-semibold"
-            style={{ background: "rgba(194,78,107,0.09)", color: "#C24E6B", border: "1px dashed rgba(194,78,107,0.3)" }}
-          >
-            🔥 You're on a roll — 3-day streak!
-          </div>
+          {streak.current > 0 ? (
+            <div
+              className="md:hidden inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-[11px] font-semibold"
+              style={{ background: "rgba(212,146,26,0.09)", color: "#B07010", border: "1px dashed rgba(212,146,26,0.35)" }}
+            >
+              🔥 {streak.current}-day streak{streak.activeToday ? " — keep it up!" : " — crochet today!"}
+            </div>
+          ) : (
+            <div
+              className="md:hidden inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-[11px] font-semibold"
+              style={{ background: "rgba(194,78,107,0.09)", color: "#C24E6B", border: "1px dashed rgba(194,78,107,0.3)" }}
+            >
+              ✨ Start a streak — crochet something today!
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2.5">
           <button
@@ -924,11 +970,15 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWor
             style={{ background: "rgba(255,252,245,0.8)", border: "1px solid rgba(140,100,55,0.2)" }}>
             <Search className="h-4 w-4" style={{ color: "#9A7868" }} />
           </button>
-          <button className="relative w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
+          <button
+            onClick={handleBellClick}
+            className="relative w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
             style={{ background: "rgba(255,252,245,0.8)", border: "1px solid rgba(140,100,55,0.2)" }}>
             <Bell className="h-4 w-4" style={{ color: "#9A7868" }} />
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
-              style={{ background: "#C24E6B" }}>3</span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                style={{ background: "#C24E6B" }}>{unreadCount > 9 ? "9+" : unreadCount}</span>
+            )}
           </button>
           {/* Avatar + chevron */}
           <div className="flex items-center gap-1 cursor-pointer group">
