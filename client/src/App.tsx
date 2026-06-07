@@ -308,6 +308,7 @@ function App() {
                 <PatternDetailScreen
                   pattern={currentPattern}
                   onNavigate={navigateToView}
+                  onOpenPattern={handlePatternLoaded}
                 />
               )}
 

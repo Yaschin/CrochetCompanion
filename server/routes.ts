@@ -6,6 +6,7 @@ import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
 import { generateImage } from "./api/generateImage";
 import { analyzeAlignment } from "./api/analyzeAlignment";
+import { transformPattern } from "./api/transformPattern";
 import { communityService } from "./communityService";
 import { patternService } from "./patternService";
 import { stashService } from "./stashService";
@@ -686,13 +687,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // If regenerating based on image, ensure section and image exist
+      let sectionReferenceImage: string | undefined;
       if (basedOnImage && sectionIndex !== undefined) {
         const sectionIdx = Number(sectionIndex);
-        if (!originalPattern.sections[sectionIdx] || !originalPattern.sections[sectionIdx].partImageUrl) {
+        const sectionImg = originalPattern.sections[sectionIdx]?.partImageUrl;
+        if (!originalPattern.sections[sectionIdx] || !sectionImg) {
           return res.status(400).json({ success: false, message: "Section or section image not found" });
         }
+        // Resolve the section image to something the vision model can actually
+        // "see" (data URL or public URL), so regeneration is truly image-driven.
+        if (sectionImg.startsWith("data:") || sectionImg.startsWith("http")) {
+          sectionReferenceImage = sectionImg;
+        } else if (sectionImg.startsWith("/api/media/")) {
+          try {
+            sectionReferenceImage = await getObjectDataUrl(sectionImg.replace("/api/media/", ""));
+          } catch (err) {
+            console.warn("Could not load section image for vision regeneration:", err);
+          }
+        }
       }
-      
+
       // Call pattern generation with the original pattern for reference
       const regeneratedPattern = await generatePattern({
         prompt: originalPattern.title, // Use title since description might not exist
@@ -706,7 +720,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // the locked originals instead of regenerating the whole pattern from scratch.
         unlockedStepsOnly: true,
         // If regenerating based on specific section image, tell the API which image to focus on
-        sectionImageFocus: basedOnImage ? Number(sectionIndex) : undefined
+        sectionImageFocus: basedOnImage ? Number(sectionIndex) : undefined,
+        // The actual section image, sent to the vision model (true image-driven regen).
+        referenceImage: sectionReferenceImage,
       });
       
       // Update the pattern in the database
@@ -722,6 +738,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ success: false, message: "Failed to regenerate pattern" });
     }
   });
+
+  // ── Phase 2: adapt an existing pattern (non-destructive — saves a new one) ────
+  async function adaptAndSave(req: Request, res: Response, mode: "resize" | "substitute") {
+    try {
+      const { instruction } = req.body ?? {};
+      if (!instruction || typeof instruction !== "string" || !instruction.trim()) {
+        return res.status(400).json({
+          message: mode === "resize" ? "Tell me how to resize, e.g. '30% bigger'." : "Tell me which yarn to use, e.g. 'DK weight'.",
+        });
+      }
+      const original = await patternService.getPattern(req.params.id);
+      if (!original) return res.status(404).json({ message: "Pattern not found" });
+
+      const transformed = await transformPattern(original, mode, instruction.trim());
+      transformed.title =
+        mode === "resize" ? `${original.title} (resized)` : `${original.title} (${instruction.trim()})`;
+      const created = await patternService.createPattern(transformed);
+      res.status(201).json(created);
+    } catch (error) {
+      console.error(`${mode} failed:`, error);
+      res.status(500).json({ message: (error as Error).message || `${mode} failed` });
+    }
+  }
+
+  app.post("/api/patterns/:id/resize", (req, res) => adaptAndSave(req, res, "resize"));
+  app.post("/api/patterns/:id/substitute", (req, res) => adaptAndSave(req, res, "substitute"));
 
   // ── Community ───────────────────────────────────────────────────────────────
   app.get("/api/community", async (_req: Request, res: Response) => {
