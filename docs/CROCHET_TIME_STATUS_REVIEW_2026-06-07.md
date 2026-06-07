@@ -192,4 +192,32 @@ Implemented on `claude/batch-c-alignment` (Batches A & B now merged to `main`, s
 
 ---
 
-*End of review. (§1–§5 produced with no code changes; §6–§8 log the Batch A/B/C implementations that followed.)*
+## 9. Batch D — Execution Log (2026-06-07)
+
+Implemented on `claude/batch-d-community` (targets `main`; A/B/C merged).
+
+**Decisions taken:** full usable patterns · both submission paths · seeded gallery with real likes.
+
+**Backend:**
+1. New `community_patterns` table + zod (`shared/schema.ts`) — stores a full pattern snapshot (sections/steps) + showcase metadata (creator, likes).
+2. `server/communityService.ts` — db-backed `getAll`/`getById`/`create`/`incrementLikes` + `seedIfEmpty` (6 curated, genuinely-usable seed patterns).
+3. Endpoints in `routes.ts`: `GET /api/community`, `GET /api/community/:id`, `POST /api/community` (validates; uploads base64 photo to object storage), `POST /api/community/:id/like`. Seeding runs once on boot.
+
+**Frontend (mocks → real):**
+4. `CommunityScreen` — real list query, filters/sort, real like button.
+5. `CommunityDetailScreen` — fetch by id; like; **"Add to Library" / "Make This Pattern"** import the community pattern into Larissa's library (POST `/api/patterns`) and optionally open it in the viewer.
+6. `CommunitySubmitScreen` — the Share wizard now actually submits (photo upload + pattern text → a usable section), `POST /api/community`.
+7. `PatternViewer` — **"Share"** button publishes an existing pattern to the community (publish-from-library path).
+8. `App.tsx` — tracks the selected community id and wires detail/import.
+
+**Bonus fix:** there was **no default `queryFn`**, so `SearchScreen`/`ProjectsScreen`/`FavoritesScreen` (which call `useQuery` without one) were broken at runtime. Added a default fetcher to `queryClient` that derives the URL from the query key — fixes those screens too.
+
+**Migration note:** the new `community_patterns` table requires `drizzle-kit push` (alongside Batch A's `description` column) before deploy.
+
+**Verification:** `tsc` clean except the 2 environment-only `@google-cloud/storage` errors; all Community type imports are `import type` (no runtime `@shared` bundling). Live unverifiable here — **re-verify on a real environment**: gallery seeds, share-from-library and the Share wizard both create entries, likes persist, and "Make This Pattern" imports into the library.
+
+**Status:** All four confirmed decisions (Batches A–D) are now implemented. Remaining backlog items (regenerate-by-section-image vision, `wouter` routing, AI tier choice, dead-code/dep pruning, tests/CI) are tracked in §2.
+
+---
+
+*End of review. (§1–§5 produced with no code changes; §6–§9 log the Batch A/B/C/D implementations that followed.)*

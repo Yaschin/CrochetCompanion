@@ -7,9 +7,21 @@ import { QueryClient } from "@tanstack/react-query";
  * Cache time: How long inactive data remains in cache (30 minutes)
  * Retry: Number of times to retry failed queries (2 times)
  */
+// Default fetcher: builds the URL from the query key (e.g. ["/api/community", id]
+// → "/api/community/<id>"). Screens can still pass an explicit queryFn to override.
+const defaultQueryFn = async ({ queryKey }: { queryKey: readonly unknown[] }) => {
+  const url = queryKey.map((part) => String(part)).join("/");
+  const res = await fetch(url, { credentials: "same-origin" });
+  if (!res.ok) {
+    throw new Error(`API request failed (${res.status})`);
+  }
+  return res.json();
+};
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      queryFn: defaultQueryFn,
       refetchOnWindowFocus: false,
       retry: 2,
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff with max 30s

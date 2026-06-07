@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 import { ViewType } from "../lib/types";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface CommunitySubmitScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -19,6 +22,47 @@ export default function CommunitySubmitScreen({ onNavigate }: CommunitySubmitScr
   });
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  const { toast } = useToast();
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const [patternText, setPatternText] = useState("");
+
+  const onPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => setPhotoDataUrl(reader.result as string);
+    reader.readAsDataURL(f);
+  };
+
+  const submitMutation = useMutation({
+    mutationFn: async () => {
+      // Turn the pasted pattern text into a usable single section of steps.
+      const lines = patternText.split("\n").map(l => l.trim()).filter(Boolean);
+      const steps = (lines.length ? lines : [form.description || "See description."]).map((text, i) => ({
+        id: i + 1, text, locked: false, count: 0, notes: "", photo: null, completed: false,
+      }));
+      const body = {
+        title: form.name,
+        creator: "Larissa",
+        projectType: form.category,
+        skillLevel: form.skillLevel,
+        description: form.description,
+        yarnType: form.yarnWeight,
+        endProductImage: photoDataUrl || undefined,
+        sections: [{ name: form.name || "Pattern", notes: "", locked: false, steps }],
+      };
+      const res = await apiRequest("POST", "/api/community", body);
+      if (!res.ok) throw new Error("submit failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/community"] });
+      toast({ title: "Pattern shared! ✨", description: "Your pattern is now in the Community Library." });
+      onNavigate("community");
+    },
+    onError: () => toast({ title: "Could not share pattern", description: "Please add a name and try again.", variant: "destructive" }),
+  });
 
   return (
     <div className="flex flex-col h-full overflow-y-auto pb-20 md:pb-6">
@@ -146,18 +190,31 @@ export default function CommunitySubmitScreen({ onNavigate }: CommunitySubmitScr
 
           {step === 1 && (
             <div className="flex flex-col gap-4 items-center py-8">
-              <div className="w-full rounded-2xl border-2 border-dashed py-12 flex flex-col items-center gap-3"
-                style={{ borderColor: "rgba(140,100,55,0.3)", background: "rgba(255,252,245,0.6)" }}>
-                <div className="text-3xl">📷</div>
-                <p className="font-heading font-semibold text-[14px]" style={{ color: "#6B4B38" }}>Add Photos</p>
-                <p className="text-[12px]" style={{ color: "#9A7868" }}>Tap to upload or drag and drop</p>
-                <button className="mt-2 px-5 py-2 rounded-full font-semibold text-[12px]"
-                  style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B", border: "1px solid rgba(194,78,107,0.3)" }}>
-                  Choose Photos
-                </button>
-              </div>
+              {photoDataUrl ? (
+                <div className="relative w-full">
+                  <img src={photoDataUrl} alt="Preview" className="w-full max-h-64 object-contain rounded-2xl"
+                    style={{ background: "rgba(255,252,245,0.6)" }} />
+                  <button onClick={() => setPhotoDataUrl(null)}
+                    className="absolute top-2 right-2 px-3 py-1 rounded-full text-[12px] font-semibold"
+                    style={{ background: "rgba(0,0,0,0.55)", color: "white" }}>
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <label className="w-full rounded-2xl border-2 border-dashed py-12 flex flex-col items-center gap-3 cursor-pointer"
+                  style={{ borderColor: "rgba(140,100,55,0.3)", background: "rgba(255,252,245,0.6)" }}>
+                  <div className="text-3xl">📷</div>
+                  <p className="font-heading font-semibold text-[14px]" style={{ color: "#6B4B38" }}>Add a Photo</p>
+                  <p className="text-[12px]" style={{ color: "#9A7868" }}>Tap to upload your finished project</p>
+                  <span className="mt-2 px-5 py-2 rounded-full font-semibold text-[12px]"
+                    style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B", border: "1px solid rgba(194,78,107,0.3)" }}>
+                    Choose Photo
+                  </span>
+                  <input type="file" accept="image/*" className="hidden" onChange={onPhotoChange} />
+                </label>
+              )}
               <p className="text-[11.5px] text-center" style={{ color: "#9A7868" }}>
-                Add at least one finished project photo. More photos = more saves!
+                A finished project photo helps others picture the result (optional).
               </p>
             </div>
           )}
@@ -170,11 +227,16 @@ export default function CommunitySubmitScreen({ onNavigate }: CommunitySubmitScr
                 Paste your written pattern or upload a PDF
               </p>
               <textarea
-                placeholder="Round 1: 6 sc in magic ring (6)&#10;Round 2: inc in each st (12)&#10;..."
+                value={patternText}
+                onChange={e => setPatternText(e.target.value)}
+                placeholder={"Round 1: 6 sc in magic ring (6)\nRound 2: inc in each st (12)\n..."}
                 rows={8}
                 className="w-full px-4 py-3 rounded-2xl text-[12px] outline-none resize-none mt-2"
                 style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: "#3D2318", fontFamily: "monospace" }}
               />
+              <p className="text-[11px] text-center" style={{ color: "#9A7868" }}>
+                Each line becomes a step. You can refine it later from your library.
+              </p>
             </div>
           )}
 
@@ -203,13 +265,14 @@ export default function CommunitySubmitScreen({ onNavigate }: CommunitySubmitScr
 
         {/* Next button */}
         <button
-          onClick={() => step < STEPS.length - 1 ? setStep(s => s + 1) : onNavigate("community")}
-          className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-[15px] transition-all hover:opacity-90 mt-2"
+          onClick={() => step < STEPS.length - 1 ? setStep(s => s + 1) : submitMutation.mutate()}
+          disabled={submitMutation.isPending || (step === STEPS.length - 1 && !form.name.trim())}
+          className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-[15px] transition-all hover:opacity-90 mt-2 disabled:opacity-50"
           style={{ background: "#C24E6B", color: "white", boxShadow: "0 4px 20px rgba(194,78,107,0.4)" }}>
           {step < STEPS.length - 1 ? (
             <>Next: {STEPS[step + 1]} <ChevronRight className="h-4 w-4" /></>
           ) : (
-            "Submit Pattern ✨"
+            submitMutation.isPending ? "Sharing…" : "Submit Pattern ✨"
           )}
         </button>
       </div>

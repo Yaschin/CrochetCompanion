@@ -203,3 +203,52 @@ export const insertPatternSchema = createInsertSchema(patterns).omit({
 
 export type InsertPattern = z.infer<typeof insertPatternSchema>;
 export type Pattern = z.infer<typeof patternSchema>;
+
+// ── Community: full, shareable patterns ───────────────────────────────────────
+// A community pattern is a snapshot of a usable pattern (sections/steps) plus
+// showcase metadata (creator, likes). Submitted from the library ("publish") or
+// the standalone Share wizard.
+export const communityPatterns = pgTable("community_patterns", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  title: text("title").notNull(),
+  creator: text("creator").notNull().default("Larissa"),
+  projectType: text("projectType").notNull(),
+  skillLevel: text("skillLevel").notNull(),
+  description: text("description"),
+  endProductImage: text("endProductImage"),
+  yarnType: text("yarnType"),
+  size: text("size"),
+  sections: jsonb("sections").notNull(),
+  yarnRequirements: jsonb("yarnRequirements"),
+  hookRequirements: jsonb("hookRequirements"),
+  notionsRequirements: jsonb("notionsRequirements"),
+  toolRequirements: jsonb("toolRequirements"),
+  needsStuffing: text("needsStuffing"),
+  likes: integer("likes").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// Validation for incoming community submissions. Reuses the pattern content shapes.
+export const insertCommunityPatternSchema = z.object({
+  title: z.string().min(1),
+  creator: z.string().optional().default("Larissa"),
+  projectType: z.string().min(1),
+  skillLevel: z.string().min(1),
+  description: z.string().optional().default(""),
+  endProductImage: z.string().optional(),
+  yarnType: z.string().optional(),
+  size: z.string().optional(),
+  sections: patternSchema.shape.sections,
+  yarnRequirements: patternSchema.shape.yarnRequirements,
+  hookRequirements: patternSchema.shape.hookRequirements,
+  notionsRequirements: patternSchema.shape.notionsRequirements,
+  toolRequirements: patternSchema.shape.toolRequirements,
+  needsStuffing: z.string().optional(),
+});
+
+export type InsertCommunityPattern = z.infer<typeof insertCommunityPatternSchema>;
+export type CommunityPattern = InsertCommunityPattern & {
+  id: string;
+  likes: number;
+  createdAt: string;
+};
