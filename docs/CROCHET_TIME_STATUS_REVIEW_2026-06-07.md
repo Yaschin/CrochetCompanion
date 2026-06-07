@@ -89,22 +89,34 @@ All build-verified (`tsc`); **live/E2E verification still pending** (no runtime 
 | **Offline PWA** | manifest + service worker (offline shell, saved patterns, counter) + OfflineBanner |
 | **`wouter` routing** | URL-driven views; deep links, back button, shareable pattern URLs |
 
-### ⏳ Remaining backlog (optional / non-blocking)
+### ✅ Phase 3 "In-the-moment" + Backlog cleanup + Phase 2 (all merged to `main`)
+
+| Task | Notes |
+|---|---|
+| **Hands-free counting** | `StitchCounterScreen`: big tap target + Web-Speech voice ("next"/"stitch"/"back"/"reset") |
+| **Streaks** | `lib/activityLog.ts` (device-local) + `StreakCard` on Progress |
+| **Finish celebration** | `CelebrationOverlay` (confetti + bee) on transition to finished |
+| **CI pipeline** | `.github/workflows/ci.yml` — typecheck + Playwright e2e on every PR |
+| **Counter persistence** | standalone counter now localStorage + Wake Lock + haptics |
+| **Dep/asset cleanup** | removed `@uppy/*`, removed duplicate root `/public/characters`, maskable SVG icon |
+| **Phase 2 — AI adaptation (DRAFT)** | `transformPattern.ts` (resize / yarn-substitute) + `/resize` `/substitute` endpoints + `PatternAdaptCard`; real section-image vision wired into `/regenerate` |
+| **CI/build heals** | lockfile → npmjs URLs; tsconfig `target: es2020`, dropped deprecated `baseUrl` |
+
+### ⏳ Remaining backlog
 
 | Task | Status | Why it matters | Pri | Effort |
 |---|---|---|---|---|
-| **E2E / live verification of all batches** | Blocked in sandbox (no DB/keys, broken npm) | Confirms the merged work actually runs | **P1** | Med |
-| Standalone StitchCounterScreen persistence | In-viewer counter persists; standalone screen is non-persisted | Consistency | P2 | Low |
-| Regenerate-by-section-image → true vision input | Text-only today | Makes that path real | P2 | Low |
-| Remove duplicate root `/public/characters` | Not started | Asset drift | P3 | Low |
-| Prune now-unused deps (`@uppy/*` after ObjectUploader removal) | Not started | Bundle/clarity | P3 | Low |
-| AI tier choice (default `gpt-4.1`/`gpt-image-1`; env-overridable) | Default set | Cost/quality | P3 | Low |
-| Convert character PNGs → WebP/AVIF | PNG now | Perf | P3 | Low |
-| PWA icons → dedicated square/maskable set | Reuses bee PNG | Polish | P3 | Low |
+| **Confirm Playwright e2e green on CI** | In progress (unconfirmed) | Only real cross-screen verification | **P0** | Low–Med |
+| **Live deploy smoke test (all AI flows + offline + backup + routing)** | Blocked (needs deploy + OpenAI key) | `tsc` green ≠ runtime works | **P0** | Med |
+| **Phase 2 prompt tuning (resize math / gauge / vision regen)** | Implemented, needs live validation | Quality of AI adaptation | **P1** | Med |
+| Confirm DB migration applied (`drizzle-kit push`) | Unverified | community + description columns | **P1** | Low |
+| Convert character PNGs → WebP/AVIF | PNG now (needs image tooling) | Perf | P2 | Low |
+| De-dupe counter logic / share OpenAI client init | Not started | Tech debt | P3 | Low |
 
-### Testing status
-- **Build-verified:** `tsc` clean (except 2 environment-only `@google-cloud/storage` errors from the sandbox's broken npm).
-- **Live-verified:** **none yet.** This sandbox cannot boot the app (`DATABASE_URL` unset → `server/db.ts` throws at import; `tsx`/`vite`/`esbuild` binaries unlinked) and cannot install Playwright (`npm` fails with `ENOTEMPTY`). A Playwright suite that needs **no database** (mocks `/api/*`) is committed under `tests/e2e/` — see `docs/E2E_TESTING.md` to run it on a real environment or in CI.
+### Testing status (updated)
+- **`tsc`: GREEN on CI** (GitHub Actions `typecheck` job passes on `main`).
+- **Playwright e2e:** suite runs on CI (deps + browser + `vite build` succeed); the **test run itself is not yet confirmed green** — verify the latest `main` CI run.
+- **Live runtime / all AI behaviour:** **still unverified.** No deploy smoke test yet; Phase 2 prompts untested against a live OpenAI key. The sandbox cannot boot the app or install Playwright, so CI + a manual deploy test are the verification paths.
 
 ---
 

@@ -51,16 +51,25 @@ The `generateDefaultYarnRequirements` function provides fallback estimates when 
 function generateDefaultYarnRequirements(pattern: any, projectType: string, complexityScore: number): YarnRequirement[]
 ```
 
-### 5. Stash Usage Tracking
+### 5. Stash Coverage / Usage Matching
 
-The `estimateUsage` function in `client/src/components/YarnStash.tsx` connects stash items to patterns:
-- Matches stash items to pattern requirements based on type (yarn, hook, notion, tool)
-- Compares colors, sizes, and names to find relevant patterns
-- Returns usage information for each stash item
+Stash↔pattern matching lives in `client/src/lib/stashMatch.ts` (`analyzeStashCoverage`,
+`rankByStash`). It compares a pattern's requirements against the materials
+inventory (`/api/stash`, managed by `client/src/components/MaterialsInventory.tsx`):
+- Matches stash items to requirements by type (yarn, hook, notion, tool) using
+  tolerant, normalised text matching (e.g. "3.5mm" vs "3.5 mm").
+- Surfaced via `client/src/components/StashCoverage.tsx` ("Can I make this?") on the
+  pattern detail screen, and `client/src/pages/YarnRecsScreen.tsx` ("Make From My
+  Stash", ranked by coverage).
 
 ```typescript
-const estimateUsage = (item: StashItem) => {...}
+export function analyzeStashCoverage(pattern: Pattern, stash: StashItem[]): StashCoverage
+export function rankByStash(patterns: Pattern[], stash: StashItem[]): RankedPattern[]
 ```
+
+> NOTE: the previous `client/src/components/YarnStash.tsx` `estimateUsage` helper
+> described here historically has been removed; this section reflects the current
+> implementation.
 
 ## Volume Estimation Logic
 
