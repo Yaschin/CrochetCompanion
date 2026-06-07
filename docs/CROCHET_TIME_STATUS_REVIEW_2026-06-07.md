@@ -133,4 +133,27 @@ These choices materially expand scope beyond a single batch. To protect quality 
 
 ---
 
-*End of review. No application code, schema, styling, or dependencies were changed in producing this document.*
+---
+
+## 6. Batch A — Execution Log (2026-06-07)
+
+Batch A (foundation & honest core) was implemented on branch `claude/batch-a-foundation`.
+
+**Done:**
+1. **Unified `Pattern` type** — removed phantom fields (`imgUrl`, `difficultyLevel`, `completed`) from `client/src/lib/types.ts`; repointed all consumers to real schema fields (`imgUrl→endProductImage`, `difficultyLevel→skillLevel`, pattern-level `completed→status==='finished'`). Added a real, persisted **`description`** column (schema + storage + zod) since the AI generates one and two screens display it.
+2. **Projects (Decision 4)** — `ProjectsScreen` now buckets by real `status` (`active`/`finished`); empty-state is project-aware. Deleted the orphaned `ProjectsView.tsx`.
+3. **Lifecycle writes** — `PatternViewer` now has Start project / Mark finished / Reopen actions that persist `status` + `startedAt`/`finishedAt`.
+4. **FavoritesScreen** — rewritten to use real `/api/patterns` data + the favorite mutation (was a hardcoded Unsplash mock). Wired `onPatternSelected` in `App.tsx`.
+5. **Lock-aware regenerate** — server `/api/patterns/:id/regenerate` now passes `unlockedStepsOnly`; the client regen path uses this persisting endpoint; locked steps/sections are now read-only in the editor (`PatternSection`).
+
+**Important correction — `tsc` was silently passing:** the `baseUrl` deprecation (TS5101) was making `tsc` **exit before type-checking the program**, so the earlier "0 errors" (this doc §1 and the visual-system plan) was a false positive. Adding `ignoreDeprecations: "6.0"` to `tsconfig.json` makes the checker actually run. It then revealed ~15 **pre-existing** latent errors (none from Batch A), which were fixed: missing lucide imports in `PatternInputRefactored`, `PatternViewer.onNavigate` typed `string` instead of `ViewType`, `HomeWorkbench` not destructuring `onPatternSelected`, two implicit-`any` stream handlers, and three confirmed-dead files removed (`ObjectUploader.tsx`, `use-upload.ts`, `Navigation.tsx`).
+
+**Verification:**
+- `tsc` (with the checker now actually running) is clean except **2 errors** — both `Cannot find module '@google-cloud/storage'` — which are an artifact of this sandbox's broken `npm` (the package is never unpacked here). In a properly-installed environment these resolve, leaving `tsc` genuinely green.
+- `vite build` succeeded with the core Batch A changes; the sandbox's esbuild later became unstable (unrelated to code), so the final build couldn't be re-run here. Re-verify build + live behaviour in an environment with a working install + Neon DB + OpenAI key.
+
+**Next:** Batches B (AI upgrade), C (real alignment-check), D (Community backend) per §4.
+
+---
+
+*End of review. (§1–§5 produced with no code changes; §6 logs the Batch A implementation that followed.)*

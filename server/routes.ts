@@ -719,6 +719,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         size: originalPattern.size,
         patternId: patternId,
         originalPattern: originalPattern,
+        // Preserve locked steps/sections: merge unlocked regenerated content with
+        // the locked originals instead of regenerating the whole pattern from scratch.
+        unlockedStepsOnly: true,
         // If regenerating based on specific section image, tell the API which image to focus on
         sectionImageFocus: basedOnImage ? Number(sectionIndex) : undefined
       });

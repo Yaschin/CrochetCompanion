@@ -57,12 +57,9 @@ export interface PatternSection {
 export interface Pattern {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   projectType: string;
   skillLevel: string;
-  imgUrl: string;
-  difficultyLevel: string;
-  completed: boolean;
   materialsNotes?: string;
   yarnRequirements?: YarnRequirement[];
   hookRequirements?: HookRequirement[];

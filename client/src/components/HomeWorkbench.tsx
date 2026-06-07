@@ -398,8 +398,8 @@ function ContinueProjectCard({
       {pattern ? (
         <div className="flex items-start gap-2.5 flex-1">
 
-          {pattern.imgUrl && !pattern.imgUrl.startsWith("https://placehold") && (
-            <img src={pattern.imgUrl} alt={pattern.title}
+          {pattern.endProductImage && !pattern.endProductImage.startsWith("https://placehold") && (
+            <img src={pattern.endProductImage} alt={pattern.title}
               className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
               style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.14)" }} />
           )}
@@ -548,8 +548,8 @@ function RecentPatternsSection({
             className="flex flex-col items-start gap-1 group flex-shrink-0" style={{ width: 82 }}>
             <div className="w-full h-20 rounded-xl overflow-hidden craft-card p-0"
               style={{ background: "#FBF1F4" }}>
-              {p.imgUrl && !p.imgUrl.startsWith("https://placehold") ? (
-                <img src={p.imgUrl} alt={p.title} className="w-full h-full object-cover" />
+              {p.endProductImage && !p.endProductImage.startsWith("https://placehold") ? (
+                <img src={p.endProductImage} alt={p.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <span className="font-heading font-bold text-2xl" style={{ color: "#C24E6B", opacity: 0.3 }}>
@@ -757,8 +757,8 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
         {active ? (
           <div>
             <div className="flex items-start gap-2.5 mb-2">
-              {active.imgUrl && !active.imgUrl.startsWith("https://placehold") && (
-                <img src={active.imgUrl} alt={active.title}
+              {active.endProductImage && !active.endProductImage.startsWith("https://placehold") && (
+                <img src={active.endProductImage} alt={active.title}
                   className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
                   style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.12)" }} />
               )}
@@ -814,8 +814,8 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
               const pp = patternProgress(p);
               return (
                 <div key={p.id} className="flex items-center gap-2">
-                  {p.imgUrl && !p.imgUrl.startsWith("https://placehold") ? (
-                    <img src={p.imgUrl} className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                  {p.endProductImage && !p.endProductImage.startsWith("https://placehold") ? (
+                    <img src={p.endProductImage} className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
                   ) : (
                     <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ background: "#FBF1F4" }}>
@@ -856,7 +856,7 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
+export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWorkbenchProps) {
   const qc = useQueryClient();
   const { text, emoji } = greeting();
 
@@ -892,7 +892,7 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
   const activePattern = patterns[0] ?? null;
   const favoritesCount = patterns.filter((p) => p.favorite).length;
   const projectsCount = patterns.length;
-  const milestonesCount = patterns.filter((p) => p.completed).length;
+  const milestonesCount = patterns.filter((p) => p.status === 'finished').length;
   const recentPatterns = patterns.slice(0, 3);
 
   return (

@@ -29,10 +29,14 @@ const StepRow: React.FC<{
   stepIndex: number;
   sectionIndex: number;
   patternId: string;
+  sectionLocked?: boolean;
   onUpdate: (updatedStep: PatternStep) => void;
   onDelete: () => void;
-}> = ({ step, stepIndex, sectionIndex, patternId, onUpdate, onDelete }) => {
+}> = ({ step, stepIndex, sectionIndex, patternId, sectionLocked, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
+  // Locked steps (or steps in a locked section) cannot be edited or deleted.
+  // Progress controls (complete toggle, counter) stay available.
+  const editLocked = step.locked || !!sectionLocked;
   const [editedText, setEditedText] = useState(step.text);
   const [isShowingPhoto, setIsShowingPhoto] = useState(false);
   
@@ -138,18 +142,23 @@ const StepRow: React.FC<{
               </>
             ) : (
               <>
-                <button onClick={() => setIsEditing(true)} title="Edit step" aria-label="Edit step" className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                  <Edit className="h-[18px] w-[18px]" />
-                </button>
-                <button onClick={toggleLock} title={step.locked ? 'Unlock step' : 'Lock step'} aria-label={step.locked ? 'Unlock step' : 'Lock step'} className={cn('flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100', step.locked ? 'text-amber-500' : 'text-gray-400 hover:text-gray-600')}>
-                  {step.locked ? <Lock className="h-[18px] w-[18px]" /> : <Unlock className="h-[18px] w-[18px]" />}
+                {!editLocked && (
+                  <button onClick={() => setIsEditing(true)} title="Edit step" aria-label="Edit step" className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                    <Edit className="h-[18px] w-[18px]" />
+                  </button>
+                )}
+                {/* Section-level lock disables the per-step lock toggle; unlock the section to edit */}
+                <button onClick={toggleLock} disabled={sectionLocked} title={sectionLocked ? 'Section is locked' : step.locked ? 'Unlock step' : 'Lock step'} aria-label={step.locked ? 'Unlock step' : 'Lock step'} className={cn('flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100', sectionLocked && 'opacity-40 cursor-not-allowed', step.locked || sectionLocked ? 'text-amber-500' : 'text-gray-400 hover:text-gray-600')}>
+                  {step.locked || sectionLocked ? <Lock className="h-[18px] w-[18px]" /> : <Unlock className="h-[18px] w-[18px]" />}
                 </button>
                 <button onClick={() => setIsShowingPhoto(!isShowingPhoto)} title={step.photo ? 'Show/hide photo' : 'Add photo'} aria-label={step.photo ? 'Show or hide photo' : 'Add photo'} className={cn('flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100', step.photo ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600')}>
                   <Camera className="h-[18px] w-[18px]" />
                 </button>
-                <button onClick={onDelete} title="Delete step" aria-label="Delete step" className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-destructive">
-                  <Trash className="h-[18px] w-[18px]" />
-                </button>
+                {!editLocked && (
+                  <button onClick={onDelete} title="Delete step" aria-label="Delete step" className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-destructive">
+                    <Trash className="h-[18px] w-[18px]" />
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -512,22 +521,25 @@ const PatternSection: React.FC<PatternSectionProps> = ({
                 stepIndex={stepIndex}
                 sectionIndex={sectionIndex}
                 patternId={section.patternId || ""}
+                sectionLocked={!!section.locked}
                 onUpdate={(updatedStep) => onUpdateStep(stepIndex, updatedStep)}
                 onDelete={() => onDeleteStep(stepIndex)}
               />
             ))}
           </div>
 
-          {/* Add Step Button */}
-          <div className="px-2 mt-1">
-            <button 
-              className="w-full flex items-center justify-center py-1 border border-dashed border-gray-300 rounded text-secondary-500 hover:text-secondary-700 hover:border-secondary-400 text-xs"
-              onClick={onAddStep}
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              <span>Add Step</span>
-            </button>
-          </div>
+          {/* Add Step Button — disabled while the section is locked */}
+          {!section.locked && (
+            <div className="px-2 mt-1">
+              <button
+                className="w-full flex items-center justify-center py-1 border border-dashed border-gray-300 rounded text-secondary-500 hover:text-secondary-700 hover:border-secondary-400 text-xs"
+                onClick={onAddStep}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                <span>Add Step</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 

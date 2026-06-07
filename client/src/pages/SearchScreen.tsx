@@ -32,7 +32,7 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
   const filtered = patterns.filter((p) => {
     const matchesQuery = query === "" ||
       p.title.toLowerCase().includes(query.toLowerCase()) ||
-      p.description.toLowerCase().includes(query.toLowerCase());
+      (p.description ?? "").toLowerCase().includes(query.toLowerCase());
     const matchesFilter = activeFilter === "all" ||
       p.projectType.toLowerCase().includes(activeFilter.toLowerCase());
     return matchesQuery && matchesFilter;
@@ -214,8 +214,8 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
               >
                 <div className="h-28 overflow-hidden"
                   style={{ background: "linear-gradient(135deg, #FBF1F4, #F5EAF0)" }}>
-                  {p.imgUrl && !p.imgUrl.startsWith("https://placehold") ? (
-                    <img src={p.imgUrl} alt={p.title}
+                  {p.endProductImage && !p.endProductImage.startsWith("https://placehold") ? (
+                    <img src={p.endProductImage} alt={p.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -235,7 +235,7 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
                       style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B" }}>
-                      {p.difficultyLevel}
+                      {p.skillLevel}
                     </span>
                     {p.favorite && (
                       <Heart className="h-3.5 w-3.5" style={{ color: "#C24E6B" }} fill="#C24E6B" />
