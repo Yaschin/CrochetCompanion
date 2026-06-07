@@ -8,35 +8,77 @@ interface SplashScreenProps {
 function YarnBallAnim() {
   return (
     <motion.div
-      animate={{ rotate: [0, 15, -10, 15, 0], y: [0, -12, 0, -8, 0] }}
+      animate={{ rotate: [0, 12, -8, 12, 0], y: [0, -12, 0, -8, 0] }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
     >
-      <svg viewBox="0 0 120 120" width="120" height="120">
+      <svg viewBox="0 0 120 120" width="120" height="120" overflow="visible">
         <defs>
-          <radialGradient id="splashYarn" cx="38%" cy="32%" r="60%">
-            <stop offset="0%" stopColor="#F5D080" />
-            <stop offset="45%" stopColor="#D4921A" />
-            <stop offset="100%" stopColor="#9A6010" />
+          <radialGradient id="splashYarn" cx="36%" cy="30%" r="65%">
+            <stop offset="0%" stopColor="#F8DC88" />
+            <stop offset="40%" stopColor="#D4921A" />
+            <stop offset="100%" stopColor="#8A5810" />
           </radialGradient>
+          <clipPath id="ballClip">
+            <circle cx="60" cy="60" r="50" />
+          </clipPath>
         </defs>
+
+        {/* Sphere base */}
         <circle cx="60" cy="60" r="52" fill="url(#splashYarn)" />
-        <ellipse cx="60" cy="60" rx="38" ry="16" fill="none" stroke="white" strokeWidth="2.5" strokeOpacity="0.45" />
-        <ellipse cx="60" cy="60" rx="38" ry="16" fill="none" stroke="white" strokeWidth="2.5" strokeOpacity="0.38" transform="rotate(55,60,60)" />
-        <ellipse cx="60" cy="60" rx="38" ry="16" fill="none" stroke="white" strokeWidth="2.5" strokeOpacity="0.32" transform="rotate(-55,60,60)" />
-        <ellipse cx="60" cy="60" rx="38" ry="16" fill="none" stroke="white" strokeWidth="1.8" strokeOpacity="0.22" transform="rotate(100,60,60)" />
-        <circle cx="44" cy="44" r="11" fill="white" fillOpacity="0.14" />
-        {/* Trailing yarn thread */}
-        <path d="M 108 30 Q 115 20 112 10 Q 109 2 105 5" fill="none" stroke="#D4921A" strokeWidth="2.5" strokeOpacity="0.7" strokeLinecap="round" />
+
+        {/* Wound thread grooves — dark amber so they look like valleys in the yarn, not glowing orbits */}
+        <g clipPath="url(#ballClip)">
+          <ellipse cx="60" cy="60" rx="50" ry="10"
+            fill="none" stroke="#7A4808" strokeWidth="2.5" strokeOpacity="0.32" />
+          <ellipse cx="60" cy="60" rx="50" ry="10"
+            fill="none" stroke="#7A4808" strokeWidth="2.5" strokeOpacity="0.28"
+            transform="rotate(40,60,60)" />
+          <ellipse cx="60" cy="60" rx="50" ry="10"
+            fill="none" stroke="#7A4808" strokeWidth="2" strokeOpacity="0.22"
+            transform="rotate(80,60,60)" />
+          <ellipse cx="60" cy="60" rx="50" ry="10"
+            fill="none" stroke="#7A4808" strokeWidth="1.8" strokeOpacity="0.18"
+            transform="rotate(120,60,60)" />
+          <ellipse cx="60" cy="60" rx="50" ry="10"
+            fill="none" stroke="#7A4808" strokeWidth="1.5" strokeOpacity="0.14"
+            transform="rotate(160,60,60)" />
+          {/* Highlight ridge on top side of each wrap */}
+          <ellipse cx="60" cy="60" rx="50" ry="10"
+            fill="none" stroke="rgba(255,240,180,0.4)" strokeWidth="1" />
+          <ellipse cx="60" cy="60" rx="50" ry="10"
+            fill="none" stroke="rgba(255,240,180,0.3)" strokeWidth="1"
+            transform="rotate(40,60,60)" />
+        </g>
+
+        {/* Specular highlight — tighter, more realistic */}
+        <circle cx="44" cy="40" r="9" fill="white" fillOpacity="0.18" />
+        <circle cx="48" cy="44" r="4" fill="white" fillOpacity="0.10" />
+
+        {/* Trailing thread end coming off the ball */}
+        <path
+          d="M 108 32 Q 118 20 114 8 Q 111 1 107 4"
+          fill="none" stroke="#C8880C" strokeWidth="2.5"
+          strokeOpacity="0.72" strokeLinecap="round"
+        />
+        <path
+          d="M 112 36 Q 116 30 113 24"
+          fill="none" stroke="#D4921A" strokeWidth="1.8"
+          strokeOpacity="0.5" strokeLinecap="round"
+        />
       </svg>
     </motion.div>
   );
 }
 
-function FloatingFlower({ x, y, color, size, delay }: { x: number; y: number; color: string; size: number; delay: number }) {
+function FloatingFlower({
+  x, y, color, size, delay,
+}: {
+  x: number; y: number; color: string; size: number; delay: number;
+}) {
   return (
     <motion.div
       className="absolute pointer-events-none"
-      style={{ left: `${x}%`, top: `${y}%` }}
+      style={{ left: `${Math.min(x, 80)}%`, top: `${y}%` }}
       animate={{ y: [0, -10, 0], rotate: [0, 8, -5, 0] }}
       transition={{ duration: 5 + delay, repeat: Infinity, ease: "easeInOut", delay }}
     >
@@ -45,21 +87,37 @@ function FloatingFlower({ x, y, color, size, delay }: { x: number; y: number; co
           const rad = (a * Math.PI) / 180;
           const cx = 20 + Math.cos(rad) * 8;
           const cy = 20 + Math.sin(rad) * 8;
-          return <ellipse key={a} cx={cx} cy={cy} rx="7" ry="4.5"
-            transform={`rotate(${a},${cx},${cy})`} fill={color} fillOpacity="0.7" />;
+          return (
+            <ellipse
+              key={a} cx={cx} cy={cy} rx="7" ry="4.5"
+              transform={`rotate(${a},${cx},${cy})`}
+              fill={color} fillOpacity="0.72"
+            />
+          );
         })}
-        <circle cx="20" cy="20" r="5.5" fill={color} fillOpacity="0.85" />
+        <circle cx="20" cy="20" r="5.5" fill={color} fillOpacity="0.88" />
         <circle cx="20" cy="20" r="2.5" fill="white" fillOpacity="0.5" />
       </svg>
     </motion.div>
   );
 }
 
+const CHARACTERS = [
+  { id: "aloo",  label: "Aloo",  color: "#C24E6B" },
+  { id: "yala",  label: "Yala",  color: "#7C5FA8" },
+  { id: "ashi",  label: "Ashi",  color: "#3D8FA3" },
+  { id: "bee",   label: "Bee",   color: "#D4921A" },
+  { id: "sheep", label: "Sheep", color: "#84934F" },
+];
+
 export default function SplashScreen({ onNavigate }: SplashScreenProps) {
   return (
-    <div className="relative flex flex-col items-center justify-center h-full overflow-hidden"
-      style={{ background: "linear-gradient(155deg, #F9EDD8 0%, #F2E4CE 35%, #EDD5B8 70%, #F2E4CE 100%)" }}>
-
+    <div
+      className="relative flex flex-col items-center justify-center h-full overflow-hidden"
+      style={{
+        background: "linear-gradient(155deg, #F9EDD8 0%, #F2E4CE 35%, #EDD5B8 70%, #F2E4CE 100%)",
+      }}
+    >
       {/* Background stitch grid */}
       <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -74,14 +132,14 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
         <rect width="100%" height="100%" fill="url(#stitchGrid)" />
       </svg>
 
-      {/* Floating flowers */}
+      {/* Floating flowers — x capped at 80% to avoid edge clip */}
       <FloatingFlower x={8}  y={10} color="#C24E6B" size={38} delay={0} />
-      <FloatingFlower x={85} y={8}  color="#7C5FA8" size={30} delay={1.2} />
+      <FloatingFlower x={78} y={8}  color="#7C5FA8" size={30} delay={1.2} />
       <FloatingFlower x={5}  y={72} color="#84934F" size={34} delay={2.1} />
-      <FloatingFlower x={88} y={68} color="#D4921A" size={26} delay={0.7} />
+      <FloatingFlower x={80} y={68} color="#D4921A" size={26} delay={0.7} />
       <FloatingFlower x={50} y={5}  color="#3D8FA3" size={22} delay={1.8} />
       <FloatingFlower x={20} y={85} color="#C24E6B" size={18} delay={3.0} />
-      <FloatingFlower x={75} y={82} color="#84934F" size={20} delay={1.5} />
+      <FloatingFlower x={72} y={82} color="#84934F" size={20} delay={1.5} />
 
       {/* Main content */}
       <motion.div
@@ -145,42 +203,57 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
           </p>
         </motion.div>
 
-        {/* Enter button */}
+        {/* Enter button — never fully invisible */}
         <motion.button
           onClick={() => onNavigate("home")}
-          className="flex items-center gap-3 rounded-full px-8 py-4 font-heading font-bold text-[16px] text-white transition-all hover:scale-105 active:scale-95"
+          className="flex items-center gap-3 rounded-full px-8 py-4 font-heading font-bold text-[16px] transition-all hover:scale-105 active:scale-95"
           style={{
             background: "linear-gradient(135deg, #C24E6B, #A83050)",
+            color: "white",
             boxShadow: "0 8px 30px rgba(194,78,107,0.45), 0 2px 8px rgba(60,20,30,0.2)",
           }}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0.01, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.5 }}
           whileHover={{ boxShadow: "0 10px 36px rgba(194,78,107,0.55)" }}
         >
           Enter Your Studio
-          <span className="text-xl">→</span>
+          <span style={{ fontSize: 20 }}>→</span>
         </motion.button>
 
-        {/* Stitch character row */}
+        {/* Character row — actual PNG images */}
         <motion.div
           className="flex gap-3 mt-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.85 }}
         >
-          {[
-            { emoji: "🐾", color: "#C24E6B", label: "Aloo" },
-            { emoji: "🐘", color: "#7C5FA8", label: "Yala" },
-            { emoji: "🐑", color: "#84934F", label: "Sheep" },
-            { emoji: "🐝", color: "#D4921A", label: "Bee" },
-          ].map(c => (
-            <div key={c.label} className="flex flex-col items-center gap-0.5">
-              <div className="w-11 h-11 rounded-full flex items-center justify-center text-xl"
-                style={{ background: `${c.color}22`, border: `1.5px dashed ${c.color}66` }}>
-                {c.emoji}
+          {CHARACTERS.map((c) => (
+            <div key={c.id} className="flex flex-col items-center gap-1">
+              <div
+                className="rounded-full overflow-hidden flex items-center justify-center"
+                style={{
+                  width: 44,
+                  height: 44,
+                  background: `${c.color}18`,
+                  border: `2px solid ${c.color}55`,
+                }}
+              >
+                <img
+                  src={`/characters/char-${c.id}-transparent.png`}
+                  alt={c.label}
+                  style={{ width: 36, height: 36, objectFit: "contain" }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
               </div>
-              <span className="text-[9px] font-semibold" style={{ color: c.color }}>{c.label}</span>
+              <span
+                className="font-semibold"
+                style={{ fontSize: 9, color: c.color }}
+              >
+                {c.label}
+              </span>
             </div>
           ))}
         </motion.div>

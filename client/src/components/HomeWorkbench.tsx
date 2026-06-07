@@ -235,91 +235,91 @@ function HeroScene() {
 }
 
 function HeroZone({
-  characterImages, generatingIds, onGenerateAll, onNavigate,
+  characterImages, generatingIds, onNavigate,
 }: {
   characterImages: Record<string, string | null>;
   generatingIds: Set<string>;
-  onGenerateAll: () => void;
+  onGenerateAll?: () => void;
   onNavigate: (v: ViewType) => void;
 }) {
-  const alooImg = characterImages.aloo ?? null;
-  const yalaImg = characterImages.yala ?? null;
-  const anyMissing = !alooImg || !yalaImg;
-  const isGenerating = generatingIds.has("aloo") || generatingIds.has("yala");
-
-  // Static transparent paths tried first
   const alooSrc = "/characters/char-aloo-transparent.png";
   const yalaSrc = "/characters/char-yala-transparent.png";
 
   return (
+    // Outer wrapper: no overflow-hidden so characters can bleed past bottom rounded corners
     <div
-      className="relative w-full rounded-2xl overflow-hidden"
-      style={{
-        height: 310,
-        boxShadow: "0 6px 30px rgba(60,30,8,0.28), inset 0 1px 0 rgba(255,255,255,0.12)",
-      }}
+      className="relative w-full h-[220px] sm:h-[270px] md:h-[310px]"
     >
-      {/* Full CSS scene */}
-      <HeroScene />
+      {/* Background scene — clipped inside rounded box */}
+      <div
+        className="absolute inset-0 rounded-2xl overflow-hidden"
+        style={{
+          boxShadow: "0 6px 30px rgba(60,30,8,0.28), inset 0 1px 0 rgba(255,255,255,0.12)",
+        }}
+      >
+        <HeroScene />
 
-      {/* "Crochet is my happy place" tag — hanging from top centre */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center z-10">
-        {/* Rope */}
-        <div style={{ width: 3, height: 16, background: "linear-gradient(180deg, #5A3010, #8A5828)", borderRadius: 2, opacity: 0.7 }} />
-        <div
-          className="px-4 py-2.5 rounded-b-xl rounded-t-sm text-center"
-          style={{
-            background: "rgba(255,252,244,0.95)",
-            border: "1.5px dashed rgba(140,95,45,0.35)",
-            borderTop: "none",
-            boxShadow: "0 4px 14px rgba(60,28,6,0.18), inset 0 -1px 0 rgba(255,255,255,0.6)",
-          }}
-        >
-          <p className="font-heading text-[11px] font-semibold leading-tight" style={{ color: "#6A4A30" }}>
-            Crochet is my
-          </p>
-          <p className="font-script text-[15px] leading-tight" style={{ color: "#A83050", fontWeight: 700 }}>
-            happy place ♡
-          </p>
+        {/* "Crochet is my happy place" tag — hanging from top centre */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center z-10">
+          {/* Rope — thick + fully opaque */}
+          <div style={{
+            width: 4, height: 18,
+            background: "linear-gradient(180deg, #4A2808, #8A5828)",
+            borderRadius: 2,
+            opacity: 1,
+          }} />
+          <div
+            className="px-4 py-2.5 rounded-b-xl rounded-t-sm text-center"
+            style={{
+              background: "rgba(255,252,244,0.95)",
+              border: "1.5px dashed rgba(140,95,45,0.35)",
+              borderTop: "none",
+              boxShadow: "0 4px 14px rgba(60,28,6,0.18), inset 0 -1px 0 rgba(255,255,255,0.6)",
+            }}
+          >
+            <p className="font-heading text-[11px] font-semibold leading-tight" style={{ color: "#6A4A30" }}>
+              Crochet is my
+            </p>
+            <p className="font-script text-[15px] leading-tight" style={{ color: "#A83050", fontWeight: 700 }}>
+              happy place ♡
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Aloo speech bubble — top left */}
-      <div className="absolute z-20" style={{ top: 20, left: "10%" }}>
+      {/* Speech bubbles — outside clip so always fully visible */}
+      <div className="absolute z-20 hidden sm:block" style={{ top: 20, left: "10%" }}>
         <div className="speech-bubble" style={{ maxWidth: 148 }}>
           <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
-            Aloo is here to cheer you on while you work on your project. 🐾
+            Aloo is here to cheer you on! 🐾
           </p>
         </div>
       </div>
 
-      {/* Yala speech bubble — mid-right, near Yala's body */}
-      <div className="absolute z-20" style={{ bottom: 90, right: "8%" }}>
+      <div className="absolute z-20 hidden sm:block" style={{ bottom: 80, right: "8%" }}>
         <div className="speech-bubble" style={{ maxWidth: 152 }}>
           <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
-            Yala is ready to create something magical with you. ✨
+            Yala is ready to create something magical. ✨
           </p>
         </div>
       </div>
 
-      {/* Aloo — left, free-standing, large */}
+      {/* Aloo — left, free-standing, extends below hero bottom edge */}
       <div className="absolute bottom-0 z-10" style={{ left: "14%" }}>
         <motion.div
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
         >
-          {alooImg || true ? (
-            <img
-              src={alooSrc}
-              alt="Aloo"
-              onError={(e) => { if (alooImg) (e.target as HTMLImageElement).src = alooImg; }}
-              style={{ width: 190, height: "auto", objectFit: "contain", filter: "drop-shadow(0 8px 20px rgba(50,20,5,0.35))" }}
-            />
-          ) : isGenerating ? (
-            <div className="flex items-center justify-center" style={{ width: 190, height: 220 }}>
-              <Loader2 className="animate-spin" style={{ color: CHAR.aloo.color, width: 32, height: 32 }} />
-            </div>
-          ) : null}
+          <img
+            src={alooSrc}
+            alt="Aloo"
+            style={{
+              width: "min(190px, 28vw)",
+              height: "auto",
+              objectFit: "contain",
+              filter: "drop-shadow(0 8px 20px rgba(50,20,5,0.35))",
+            }}
+          />
         </motion.div>
       </div>
 
@@ -329,43 +329,18 @@ function HeroZone({
           animate={{ y: [0, -7, 0] }}
           transition={{ duration: 4.0, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
         >
-          {yalaImg || true ? (
-            <img
-              src={yalaSrc}
-              alt="Yala"
-              onError={(e) => { if (yalaImg) (e.target as HTMLImageElement).src = yalaImg; }}
-              style={{ width: 230, height: "auto", objectFit: "contain", filter: "drop-shadow(0 10px 24px rgba(50,20,5,0.38))" }}
-            />
-          ) : isGenerating ? (
-            <div className="flex items-center justify-center" style={{ width: 230, height: 270 }}>
-              <Loader2 className="animate-spin" style={{ color: CHAR.yala.color, width: 36, height: 36 }} />
-            </div>
-          ) : null}
+          <img
+            src={yalaSrc}
+            alt="Yala"
+            style={{
+              width: "min(230px, 34vw)",
+              height: "auto",
+              objectFit: "contain",
+              filter: "drop-shadow(0 10px 24px rgba(50,20,5,0.38))",
+            }}
+          />
         </motion.div>
       </div>
-
-      {/* Generate button — only if images missing */}
-      <AnimatePresence>
-        {anyMissing && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onGenerateAll}
-            disabled={isGenerating}
-            className="absolute bottom-5 left-1/2 -translate-x-1/2 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold transition-all disabled:opacity-60 z-20"
-            style={{
-              background: "rgba(255,252,245,0.94)",
-              color: "#A83050",
-              border: "1.5px dashed rgba(194,78,107,0.4)",
-              boxShadow: "0 3px 14px rgba(60,28,6,0.18)",
-              backdropFilter: "blur(6px)",
-            }}
-          >
-            {isGenerating ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Generating…</> : <>✨ Generate companions with AI</>}
-          </motion.button>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -672,30 +647,34 @@ function UpcomingMilestoneSection({ projectsCount }: { projectsCount: number }) 
 function StatsBar({
   projectsCount, favoritesCount, milestonesCount,
 }: { projectsCount: number; favoritesCount: number; milestonesCount: number }) {
+  const STATS = [
+    { value: projectsCount,   label: "Projects",
+      icon: <svg viewBox="0 0 22 22" width="20" height="20"><circle cx="11" cy="11" r="8" fill="none" stroke="rgba(255,200,120,0.8)" strokeWidth="1.5" strokeDasharray="4,2.5"/><circle cx="11" cy="11" r="3.5" fill="rgba(255,200,120,0.6)"/><ellipse cx="11" cy="11" rx="5.5" ry="2.5" fill="none" stroke="rgba(255,200,120,0.5)" strokeWidth="0.9"/></svg>
+    },
+    { value: favoritesCount,  label: "Favorites",
+      icon: <svg viewBox="0 0 22 22" width="20" height="20"><path d="M 11 18 Q 4 12 3 8 Q 2 4 6 3 Q 9 2 11 6 Q 13 2 16 3 Q 20 4 19 8 Q 18 12 11 18 Z" fill="#F090A0" fillOpacity="0.85"/></svg>
+    },
+    { value: milestonesCount, label: "Milestones",
+      icon: <svg viewBox="0 0 22 22" width="20" height="20">{[0,72,144,216,288].map(a => { const rad = a*Math.PI/180; return <ellipse key={a} cx={11+Math.cos(rad)*4.5} cy={11+Math.sin(rad)*4.5} rx="2.8" ry="2" transform={`rotate(${a},${11+Math.cos(rad)*4.5},${11+Math.sin(rad)*4.5})`} fill="rgba(255,200,120,0.8)" fillOpacity="0.85"/>; })}<circle cx="11" cy="11" r="2.8" fill="rgba(255,200,120,0.9)"/></svg>
+    },
+  ];
+
   return (
-    <div className="rounded-2xl flex items-center justify-between px-6 py-4"
+    <div
+      className="rounded-2xl px-4 py-3 md:px-6 md:py-4 flex flex-wrap items-center justify-between gap-2"
       style={{
         background: "linear-gradient(135deg, #7A4A28 0%, #9A6235 40%, #8A5428 100%)",
         boxShadow: "0 4px 20px rgba(60,30,8,0.28), inset 0 1px 0 rgba(255,255,255,0.10)",
-      }}>
-      <div className="flex items-center gap-8">
-        {[
-          { value: projectsCount,  label: "Projects",
-            icon: <svg viewBox="0 0 22 22" width="22" height="22"><circle cx="11" cy="11" r="8" fill="none" stroke="rgba(255,200,120,0.8)" strokeWidth="1.5" strokeDasharray="4,2.5"/><circle cx="11" cy="11" r="3.5" fill="rgba(255,200,120,0.6)"/><ellipse cx="11" cy="11" rx="5.5" ry="2.5" fill="none" stroke="rgba(255,200,120,0.5)" strokeWidth="0.9"/></svg>
-          },
-          { value: favoritesCount, label: "Favorites",
-            icon: <svg viewBox="0 0 22 22" width="22" height="22"><path d="M 11 18 Q 4 12 3 8 Q 2 4 6 3 Q 9 2 11 6 Q 13 2 16 3 Q 20 4 19 8 Q 18 12 11 18 Z" fill="#F090A0" fillOpacity="0.85"/></svg>
-          },
-          { value: milestonesCount, label: "Milestones",
-            icon: <svg viewBox="0 0 22 22" width="22" height="22">{[0,72,144,216,288].map(a => { const rad = a*Math.PI/180; return <ellipse key={a} cx={11+Math.cos(rad)*4.5} cy={11+Math.sin(rad)*4.5} rx="2.8" ry="2" transform={`rotate(${a},${11+Math.cos(rad)*4.5},${11+Math.sin(rad)*4.5})`} fill="rgba(255,200,120,0.8)" fillOpacity="0.85"/>; })}<circle cx="11" cy="11" r="2.8" fill="rgba(255,200,120,0.9)"/></svg>
-          },
-        ].map((item, i) => (
-          <div key={item.label} className="flex items-center gap-3">
-            {i > 0 && <div className="w-px h-8" style={{ background: "rgba(255,255,255,0.2)" }} />}
+      }}
+    >
+      <div className="flex flex-wrap items-center gap-4 md:gap-8">
+        {STATS.map((item, i) => (
+          <div key={item.label} className="flex items-center gap-2 md:gap-3">
+            {i > 0 && <div className="hidden md:block w-px h-8" style={{ background: "rgba(255,255,255,0.2)" }} />}
             <div className="flex items-center gap-2">
               <div className="flex-shrink-0">{item.icon}</div>
               <div>
-                <p className="font-heading font-bold leading-none" style={{ fontSize: 22, color: "rgba(255,248,235,0.95)" }}>
+                <p className="font-heading font-bold leading-none" style={{ fontSize: 20, color: "rgba(255,248,235,0.95)" }}>
                   {item.value}
                 </p>
                 <p className="text-[10.5px] font-semibold mt-0.5" style={{ color: "rgba(255,220,160,0.8)" }}>
@@ -706,7 +685,7 @@ function StatsBar({
           </div>
         ))}
       </div>
-      <button className="flex items-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-bold transition-all hover:opacity-90"
+      <button className="hidden sm:flex items-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-bold transition-all hover:opacity-90"
         style={{
           background: "linear-gradient(135deg, #D4921A, #E8A830)",
           color: "white",
@@ -733,18 +712,18 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
   return (
     <div className="flex flex-col gap-3 p-4 relative">
       {/* Large decorative flower — top-right corner */}
-      <div className="absolute -top-2 -right-2 pointer-events-none z-0">
-        <svg viewBox="0 0 56 56" width="56" height="56">
+      <div className="absolute -top-3 -right-4 pointer-events-none z-0">
+        <svg viewBox="0 0 56 56" width="80" height="80">
           {[0,72,144,216,288].map((a) => {
             const rad = (a * Math.PI) / 180;
             const cx = 28 + Math.cos(rad) * 11;
             const cy = 28 + Math.sin(rad) * 11;
             return <ellipse key={a} cx={cx} cy={cy} rx="9.5" ry="6.5"
               transform={`rotate(${a},${cx},${cy})`}
-              fill="#C24E6B" fillOpacity="0.55" />;
+              fill="#C24E6B" fillOpacity="0.72" />;
           })}
-          <circle cx="28" cy="28" r="7" fill="#C24E6B" fillOpacity="0.75" />
-          <circle cx="28" cy="28" r="3" fill="white" fillOpacity="0.5" />
+          <circle cx="28" cy="28" r="7" fill="#C24E6B" fillOpacity="0.88" />
+          <circle cx="28" cy="28" r="3" fill="white" fillOpacity="0.55" />
         </svg>
       </div>
 
@@ -910,11 +889,20 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
         style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
         <div>
           <h1 className="font-heading font-bold" style={{ fontSize: 28, color: "#3D2318", letterSpacing: "-0.02em" }}>
-            {text}, Larissa! {emoji}
+            {text},{" "}
+            <span className="font-script" style={{ fontSize: 30, color: "#A83050" }}>Larissa!</span>{" "}
+            {emoji}
           </h1>
           <p className="text-[13px] mt-0.5" style={{ color: "#9A7868" }}>
             Let's create something beautiful today.
           </p>
+          {/* Motivational chip — visible only on mobile (sidebar hidden) */}
+          <div
+            className="md:hidden inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-[11px] font-semibold"
+            style={{ background: "rgba(194,78,107,0.09)", color: "#C24E6B", border: "1px dashed rgba(194,78,107,0.3)" }}
+          >
+            🔥 You're on a roll — 3-day streak!
+          </div>
         </div>
         <div className="flex items-center gap-2.5">
           <button className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
@@ -940,7 +928,7 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
       </div>
 
       {/* ── Scrollable content ──────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-6 pt-5 pb-20 md:pb-6">
+      <div className="flex-1 overflow-y-auto px-6 pt-5 pb-4">
 
         {/* Hero zone */}
         <HeroZone
@@ -952,20 +940,28 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
 
         {/* Action cards — overlap hero by 32px */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10"
-          style={{ marginTop: -32 }}>
-          <ContinueProjectCard pattern={activePattern} onNavigate={onNavigate} />
-          <CreateWithYalaCard onNavigate={onNavigate} />
-          <FavoritesCard count={favoritesCount} onNavigate={onNavigate} />
+          style={{ marginTop: -28 }}>
+          <div style={{ minHeight: 190 }}>
+            <ContinueProjectCard pattern={activePattern} onNavigate={onNavigate} />
+          </div>
+          <div style={{ minHeight: 190 }}>
+            <CreateWithYalaCard onNavigate={onNavigate} />
+          </div>
+          <div style={{ minHeight: 190 }}>
+            <FavoritesCard count={favoritesCount} onNavigate={onNavigate} />
+          </div>
         </div>
 
         {/* Bottom sections — 3 col */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 mb-4">
           <RecentPatternsSection patterns={recentPatterns} onNavigate={onNavigate} />
           <CommunitySpotlightSection onNavigate={onNavigate} />
           <UpcomingMilestoneSection projectsCount={projectsCount} />
         </div>
+      </div>
 
-        {/* Stats bar */}
+      {/* Stats bar — outside scroll area so always visible at bottom */}
+      <div className="flex-shrink-0 px-6 pb-20 md:pb-5 pt-0">
         <StatsBar
           projectsCount={projectsCount}
           favoritesCount={favoritesCount}

@@ -71,9 +71,9 @@ export default function PhotoUploadScreen({ onNavigate }: PhotoUploadScreenProps
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 pb-20 md:pb-4 flex flex-col gap-4">
 
-        {/* Upload area */}
+        {/* Upload area — warm default border, only go teal on hover/drag */}
         <div
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
@@ -81,8 +81,16 @@ export default function PhotoUploadScreen({ onNavigate }: PhotoUploadScreenProps
           onClick={() => !previewUrl && fileRef.current?.click()}
           className="rounded-2xl border-2 border-dashed transition-all cursor-pointer"
           style={{
-            borderColor: dragging ? "#3D8FA3" : previewUrl ? "#84934F" : "rgba(60,143,163,0.4)",
-            background: dragging ? "rgba(60,143,163,0.08)" : previewUrl ? "rgba(132,147,79,0.06)" : "rgba(255,252,245,0.7)",
+            borderColor: dragging
+              ? "#3D8FA3"
+              : previewUrl
+              ? "#84934F"
+              : "rgba(140,100,55,0.35)",
+            background: dragging
+              ? "rgba(60,143,163,0.08)"
+              : previewUrl
+              ? "rgba(132,147,79,0.06)"
+              : "rgba(255,252,245,0.7)",
             minHeight: 160,
           }}
         >
@@ -128,7 +136,7 @@ export default function PhotoUploadScreen({ onNavigate }: PhotoUploadScreenProps
           ) : (
             <div className="flex flex-col items-center justify-center gap-3 py-10">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                style={{ background: "rgba(60,143,163,0.12)", color: "#3D8FA3" }}>
+                style={{ background: "rgba(140,100,55,0.10)", color: "#9A7868" }}>
                 <Upload className="h-6 w-6" />
               </div>
               <div className="text-center">
@@ -141,12 +149,12 @@ export default function PhotoUploadScreen({ onNavigate }: PhotoUploadScreenProps
               </div>
               <div className="flex gap-2">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-                  style={{ background: "rgba(60,143,163,0.1)", color: "#3D8FA3" }}>
+                  style={{ background: "rgba(140,100,55,0.09)", color: "#7A5A48" }}>
                   <Camera className="h-3 w-3" />
                   Camera
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-                  style={{ background: "rgba(60,143,163,0.1)", color: "#3D8FA3" }}>
+                  style={{ background: "rgba(140,100,55,0.09)", color: "#7A5A48" }}>
                   <Image className="h-3 w-3" />
                   Gallery
                 </div>

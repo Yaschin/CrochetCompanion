@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Home, Wand2, BookOpen, Heart, Archive } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { ViewType } from "../lib/types";
 
@@ -8,6 +9,14 @@ interface AppShellProps {
   rightPanel?: ReactNode;
   children: ReactNode;
 }
+
+const TABS = [
+  { view: "home"    as ViewType, label: "Home",    Icon: Home },
+  { view: "input"   as ViewType, label: "Create",  Icon: Wand2 },
+  { view: "library" as ViewType, label: "Library", Icon: BookOpen },
+  { view: "library" as ViewType, label: "Faves",   Icon: Heart },
+  { view: "stash"   as ViewType, label: "Stash",   Icon: Archive },
+];
 
 export default function AppShell({ activeView, onNavigate, rightPanel, children }: AppShellProps) {
   return (
@@ -41,30 +50,49 @@ export default function AppShell({ activeView, onNavigate, rightPanel, children 
 
       {/* Mobile bottom tab bar */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 py-2"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-1 pt-1 pb-safe"
         style={{
           background: "hsl(var(--sidebar-background))",
           borderTop: "1px solid hsl(var(--sidebar-border))",
           backdropFilter: "blur(12px)",
+          paddingBottom: "max(8px, env(safe-area-inset-bottom))",
         }}
       >
-        {([
-          { view: "home",    label: "Home",    emoji: "🏠" },
-          { view: "input",   label: "Create",  emoji: "✨" },
-          { view: "library", label: "Library", emoji: "📚" },
-          { view: "library", label: "Faves",   emoji: "♡" },
-          { view: "stash",   label: "Stash",   emoji: "🧶" },
-        ] as { view: ViewType; label: string; emoji: string }[]).map((item) => {
+        {TABS.map((item) => {
           const active = activeView === item.view;
           return (
             <button
               key={item.label}
               onClick={() => onNavigate(item.view)}
-              className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all"
-              style={{ color: active ? "#B04060" : "#8A6A58" }}
+              className="relative flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all"
+              style={{
+                minWidth: 52,
+                minHeight: 48,
+                color: active ? "#C24E6B" : "#8A6A58",
+                padding: "6px 8px",
+              }}
             >
-              <span className="text-lg leading-none">{item.emoji}</span>
-              <span className="text-[10px] font-semibold">{item.label}</span>
+              {active && (
+                <span
+                  className="absolute inset-0 rounded-xl"
+                  style={{ background: "rgba(194,78,107,0.10)" }}
+                />
+              )}
+              <item.Icon
+                style={{
+                  width: 20,
+                  height: 20,
+                  position: "relative",
+                  strokeWidth: active ? 2.2 : 1.8,
+                  fill: active && item.label === "Faves" ? "#C24E6B" : "none",
+                }}
+              />
+              <span
+                className="font-semibold relative"
+                style={{ fontSize: 9.5, letterSpacing: "0.01em" }}
+              >
+                {item.label}
+              </span>
             </button>
           );
         })}

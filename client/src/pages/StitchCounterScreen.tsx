@@ -20,13 +20,13 @@ interface HistoryEntry {
   time: string;
 }
 
+const MAX_STITCHES_PER_ROW = 20;
+
 export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenProps) {
   const [counts, setCounts] = useState<CounterState>({ stitches: 0, rows: 0 });
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [sound, setSound] = useState(true);
-
-  const MAX_STITCHES_PER_ROW = 20;
 
   const addEntry = (type: "stitch" | "row", delta: number, value: number) => {
     const now = new Date();
@@ -55,7 +55,7 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
     setHistory([]);
   };
 
-  const stitchProgress = (counts.stitches % MAX_STITCHES_PER_ROW) / MAX_STITCHES_PER_ROW;
+  const stitchesInRow = counts.stitches % MAX_STITCHES_PER_ROW;
 
   return (
     <div className="flex flex-col h-full">
@@ -92,7 +92,7 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
+      <div className="flex-1 overflow-y-auto px-6 py-5 pb-20 md:pb-5 flex flex-col gap-5">
 
         {/* Row counter — primary big counter */}
         <div className="craft-card craft-card-sage p-6">
@@ -145,20 +145,30 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
             </p>
             <span className="text-[10.5px] font-bold px-2.5 py-1 rounded-full"
               style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B" }}>
-              {counts.stitches % MAX_STITCHES_PER_ROW} / {MAX_STITCHES_PER_ROW} this row
+              {stitchesInRow} / {MAX_STITCHES_PER_ROW} this row
             </span>
           </div>
 
-          {/* Mini progress track for stitches in current row */}
-          <div className="flex gap-1 mb-4">
-            {Array.from({ length: MAX_STITCHES_PER_ROW }).map((_, i) => (
-              <div key={i} className="flex-1 rounded-full transition-all"
-                style={{
-                  height: 8,
-                  background: i < (counts.stitches % MAX_STITCHES_PER_ROW)
-                    ? "#C24E6B"
-                    : "rgba(194,78,107,0.15)",
-                }} />
+          {/* Dot grid — 2 rows × 10 dots, looks like a scoreboard */}
+          <div className="flex flex-col gap-1.5 mb-4">
+            {[0, 1].map((rowIdx) => (
+              <div key={rowIdx} className="flex gap-1.5 justify-center">
+                {Array.from({ length: 10 }).map((_, colIdx) => {
+                  const dotIndex = rowIdx * 10 + colIdx;
+                  const filled = dotIndex < stitchesInRow;
+                  return (
+                    <div key={colIdx}
+                      className="rounded-full transition-all"
+                      style={{
+                        width: 11, height: 11,
+                        background: filled ? "#C24E6B" : "rgba(194,78,107,0.15)",
+                        boxShadow: filled ? "0 1px 4px rgba(194,78,107,0.4)" : "none",
+                        transform: filled ? "scale(1.1)" : "scale(1)",
+                      }}
+                    />
+                  );
+                })}
+              </div>
             ))}
           </div>
 

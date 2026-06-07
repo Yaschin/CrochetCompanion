@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Trophy, TrendingUp, Plus, Minus } from "lucide-react";
 import { motion } from "framer-motion";
 import { Pattern, ViewType } from "../lib/types";
@@ -43,12 +42,13 @@ function MiniLineChart({ data, color }: { data: number[]; color: string }) {
 }
 
 const MOCK_PROGRESS = [2, 5, 8, 12, 15, 18, 22, 26, 30, 34, 38, 40];
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"];
+const DAYS_FULL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"];
+const DAYS_SHORT = DAYS_FULL.filter((_, i) => i % 2 === 0);
 
 const ACHIEVEMENTS = [
   { icon: "🌸", label: "First Stitch",   unlocked: true,  color: "#C24E6B" },
   { icon: "🧶", label: "10 Rows Done",   unlocked: true,  color: "#7C5FA8" },
-  { icon: "⭐", label: "Half Way There", unlocked: true,  color: "#D4921A" },
+  { icon: "⭐", label: "Half Way",        unlocked: true,  color: "#D4921A" },
   { icon: "🏆", label: "Pattern Done",   unlocked: false, color: "#84934F" },
   { icon: "🎉", label: "5 Projects",     unlocked: false, color: "#3D8FA3" },
 ];
@@ -81,11 +81,11 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 pb-20 md:pb-4 flex flex-col gap-4">
 
-        {/* Progress ring + stat */}
-        <div className="craft-card p-5 flex items-center gap-6">
-          <div className="relative" style={{ width: 100, height: 100 }}>
+        {/* Progress ring + stat — responsive: side-by-side on sm+, stacked on mobile */}
+        <div className="craft-card p-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+          <div className="relative flex-shrink-0" style={{ width: 100, height: 100 }}>
             <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)" }}>
               <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(194,78,107,0.12)" strokeWidth="8" />
               <circle cx="50" cy="50" r="42" fill="none" stroke="#C24E6B" strokeWidth="8"
@@ -100,14 +100,14 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
               <span className="text-[9px] font-semibold" style={{ color: "#9A7868" }}>done</span>
             </div>
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 text-center sm:text-left">
             <div>
               <p className="font-heading font-bold text-[28px] leading-none" style={{ color: "#3D2318" }}>
                 {done}/{total}
               </p>
               <p className="text-[12px]" style={{ color: "#9A7868" }}>rows complete</p>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-center sm:justify-start gap-1.5">
               <TrendingUp className="h-3.5 w-3.5" style={{ color: "#84934F" }} />
               <span className="text-[11px] font-semibold" style={{ color: "#84934F" }}>On track!</span>
             </div>
@@ -160,8 +160,9 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
             </span>
           </div>
           <MiniLineChart data={MOCK_PROGRESS} color="#C24E6B" />
+          {/* Day labels — every other day to avoid crowding */}
           <div className="flex justify-between mt-1">
-            {DAYS.map((d, i) => (
+            {DAYS_SHORT.map((d, i) => (
               <span key={i} className="text-[8.5px]" style={{ color: "#B0908A" }}>{d}</span>
             ))}
           </div>

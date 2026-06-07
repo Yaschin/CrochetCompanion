@@ -65,7 +65,7 @@ const YARN_RECS: YarnRec[] = [
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex gap-0.5">
+    <div className="flex gap-0.5 items-center">
       {[1, 2, 3, 4, 5].map((star) => (
         <svg key={star} viewBox="0 0 12 12" width="12" height="12">
           <path d="M 6 1 L 7.2 4.4 H 11 L 8 6.6 L 9.2 10 L 6 7.8 L 2.8 10 L 4 6.6 L 1 4.4 H 4.8 Z"
@@ -112,15 +112,23 @@ export default function YarnRecsScreen({ onNavigate }: YarnRecsScreenProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 pb-20 md:pb-4 flex flex-col gap-4">
 
-        {/* Sheep intro card */}
-        <div className="craft-card craft-card-sage p-4 flex items-center gap-4">
-          <img
-            src="/characters/char-sheep-transparent.png"
-            alt="Sheep"
-            style={{ width: 72, height: "auto", filter: "drop-shadow(0 4px 10px rgba(80,40,10,0.18))" }}
-          />
+        {/* Sheep intro card — use original PNG with a soft sage background so it's never dark */}
+        <div className="craft-card craft-card-sage p-4 flex items-center gap-4 overflow-hidden relative">
+          <div
+            className="flex-shrink-0 flex items-center justify-center rounded-2xl overflow-hidden"
+            style={{ width: 80, height: 80, background: "rgba(132,147,79,0.12)" }}
+          >
+            <img
+              src="/characters/char-sheep-transparent.png"
+              alt="Sheep"
+              style={{ width: 68, height: 68, objectFit: "contain", filter: "drop-shadow(0 2px 6px rgba(80,40,10,0.15)) brightness(1.1)" }}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = "/characters/char-sheep.png";
+              }}
+            />
+          </div>
           <div>
             <p className="font-heading font-semibold text-[13px]" style={{ color: "#3D2318" }}>
               Sheep's Picks
@@ -145,11 +153,11 @@ export default function YarnRecsScreen({ onNavigate }: YarnRecsScreenProps) {
               transition={{ delay: i * 0.08 }}
               className="craft-card overflow-hidden"
             >
-              {/* Color swatch bar */}
-              <div className="h-3 flex">
+              {/* Color swatch bar — taller for better visibility */}
+              <div className="h-4 flex" style={{ boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.06)" }}>
                 {yarn.colors.map((c, ci) => (
                   <div key={ci} className="flex-1 transition-all"
-                    style={{ background: c, opacity: ci === colorIdx ? 1 : 0.55 }} />
+                    style={{ background: c, opacity: ci === colorIdx ? 1 : 0.5 }} />
                 ))}
               </div>
 

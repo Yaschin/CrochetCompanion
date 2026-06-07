@@ -19,6 +19,8 @@ const FILTER_CHIPS = [
 
 const SORT_OPTIONS = ["Newest", "Oldest", "A–Z", "Favorites"];
 
+const RECENT_SEARCHES = ["amigurumi bear", "sunflower bag", "granny square", "ribbed hat"];
+
 export default function SearchScreen({ onNavigate, onPatternSelected }: SearchScreenProps) {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
@@ -118,7 +120,7 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
                 <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#9A7868" }}>
                   Sort by
                 </p>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {SORT_OPTIONS.map((opt) => (
                     <button key={opt} onClick={() => setActiveSort(opt)}
                       className="px-3 py-1.5 rounded-full text-[11.5px] font-bold transition-all"
@@ -138,7 +140,33 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
       </div>
 
       {/* Results */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 pb-20 md:pb-4">
+        {/* Recent searches — shown when query is empty */}
+        {!query && patterns.length === 0 && (
+          <div className="mb-5">
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: "#9A7868" }}>
+              Recent Searches
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {RECENT_SEARCHES.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setQuery(s)}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold transition-all hover:opacity-80"
+                  style={{
+                    background: "rgba(255,252,245,0.95)",
+                    border: "1px solid rgba(140,100,55,0.22)",
+                    color: "#5C3A28",
+                  }}
+                >
+                  <Search className="h-3 w-3" style={{ color: "#9A7868" }} />
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {query && (
           <p className="text-[12px] mb-3 font-semibold" style={{ color: "#9A7868" }}>
             {filtered.length} result{filtered.length !== 1 ? "s" : ""} for "{query}"
@@ -147,7 +175,21 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
 
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 gap-3">
-            <div className="text-5xl">🧶</div>
+            <svg viewBox="0 0 64 64" width="52" height="52">
+              <defs>
+                <radialGradient id="srYarn" cx="36%" cy="32%" r="60%">
+                  <stop offset="0%" stopColor="#F5D080" />
+                  <stop offset="100%" stopColor="#C24E6B" stopOpacity="0.6" />
+                </radialGradient>
+                <clipPath id="srClip"><circle cx="32" cy="32" r="28"/></clipPath>
+              </defs>
+              <circle cx="32" cy="32" r="28" fill="url(#srYarn)" />
+              <g clipPath="url(#srClip)">
+                <ellipse cx="32" cy="32" rx="26" ry="9" fill="none" stroke="white" strokeWidth="1.6" strokeOpacity="0.4"/>
+                <ellipse cx="32" cy="32" rx="26" ry="9" fill="none" stroke="white" strokeWidth="1.6" strokeOpacity="0.3" transform="rotate(50,32,32)"/>
+                <ellipse cx="32" cy="32" rx="26" ry="9" fill="none" stroke="white" strokeWidth="1.6" strokeOpacity="0.25" transform="rotate(100,32,32)"/>
+              </g>
+            </svg>
             <p className="font-heading font-semibold text-[15px]" style={{ color: "#9A7868" }}>
               No patterns found
             </p>
