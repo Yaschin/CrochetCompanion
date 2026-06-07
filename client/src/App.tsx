@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { queryClient } from "./lib/queryClient";
@@ -28,31 +29,112 @@ import SettingsScreen from "./pages/SettingsScreen";
 import { Pattern, ViewType } from "./lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 
+interface NavOpts {
+  patternId?: string | null;
+  communityId?: string | null;
+}
+
+// View → URL. Pattern/community screens carry their id in the path so they can
+// be deep-linked, refreshed, and shared.
+function pathFor(view: ViewType, opts: NavOpts = {}): string {
+  const pid = opts.patternId;
+  const cid = opts.communityId;
+  switch (view) {
+    case "splash": return "/";
+    case "home": return "/home";
+    case "input": return "/create";
+    case "loading": return "/loading";
+    case "library": return "/library";
+    case "search": return "/search";
+    case "stash": return "/stash";
+    case "favorites": return "/favorites";
+    case "projects": return "/projects";
+    case "yarn-recs": return "/yarn";
+    case "settings": return "/settings";
+    case "community": return "/community";
+    case "community-submit": return "/community/submit";
+    case "community-detail": return cid ? `/community/${cid}` : "/community";
+    case "viewer": return pid ? `/patterns/${pid}` : "/library";
+    case "regenerate": return pid ? `/patterns/${pid}` : "/library";
+    case "pattern-detail": return pid ? `/patterns/${pid}/details` : "/library";
+    case "progress": return pid ? `/patterns/${pid}/progress` : "/library";
+    case "photo-upload": return pid ? `/patterns/${pid}/photos` : "/library";
+    case "stitch-counter": return pid ? `/patterns/${pid}/counter` : "/library";
+    default: return "/home";
+  }
+}
+
+// URL → view (+ ids). The inverse of pathFor.
+function parseLocation(loc: string): { view: ViewType; patternId?: string; communityId?: string } {
+  const segs = loc.split("?")[0].split("/").filter(Boolean);
+  if (segs.length === 0) return { view: "splash" };
+  const [a, b, c] = segs;
+  switch (a) {
+    case "home": return { view: "home" };
+    case "create": return { view: "input" };
+    case "loading": return { view: "loading" };
+    case "library": return { view: "library" };
+    case "search": return { view: "search" };
+    case "stash": return { view: "stash" };
+    case "favorites": return { view: "favorites" };
+    case "projects": return { view: "projects" };
+    case "yarn": return { view: "yarn-recs" };
+    case "settings": return { view: "settings" };
+    case "community":
+      if (!b) return { view: "community" };
+      if (b === "submit") return { view: "community-submit" };
+      return { view: "community-detail", communityId: b };
+    case "patterns":
+      if (!b) return { view: "library" };
+      if (c === "details") return { view: "pattern-detail", patternId: b };
+      if (c === "progress") return { view: "progress", patternId: b };
+      if (c === "photos") return { view: "photo-upload", patternId: b };
+      if (c === "counter") return { view: "stitch-counter", patternId: b };
+      return { view: "viewer", patternId: b };
+    default:
+      return { view: "home" };
+  }
+}
+
 function App() {
-  const [activeView, setActiveView] = useState<ViewType>("splash");
+  const [location, setLocation] = useLocation();
+  const parsed = parseLocation(location);
+  const activeView = parsed.view;
+  const patternId = parsed.patternId;
+  const communityId = parsed.communityId ?? null;
+
   const [currentPattern, setCurrentPattern] = useState<Pattern | null>(null);
-  const [selectedCommunityId, setSelectedCommunityId] = useState<string | null>(null);
 
-  const navigateToView = (view: ViewType) => setActiveView(view);
+  // Hydrate the current pattern from the URL id on deep-link / refresh, when it
+  // isn't already loaded in memory.
+  useEffect(() => {
+    if (!patternId) return;
+    if (currentPattern && currentPattern.id === patternId) return;
+    let cancelled = false;
+    fetch(`/api/patterns/${patternId}`, { credentials: "same-origin" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((p) => { if (!cancelled && p) setCurrentPattern(p as Pattern); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [patternId, currentPattern]);
 
-  const handleCommunitySelected = (id: string) => {
-    setSelectedCommunityId(id);
-    setActiveView("community-detail");
-  };
+  const navigateToView = (view: ViewType) =>
+    setLocation(pathFor(view, { patternId: currentPattern?.id, communityId }));
+
+  const handleCommunitySelected = (id: string) => setLocation(pathFor("community-detail", { communityId: id }));
 
   const handlePatternCreated = (pattern: Pattern) => {
     setCurrentPattern(pattern);
-    setActiveView("loading");
+    setLocation(pathFor("loading"));
   };
 
   const handlePatternLoaded = (pattern: Pattern) => {
     setCurrentPattern(pattern);
-    setActiveView("viewer");
+    setLocation(pathFor("viewer", { patternId: pattern.id }));
   };
 
-  const handleLoadingComplete = (view: ViewType) => {
-    setActiveView(view);
-  };
+  const handleLoadingComplete = (view: ViewType) =>
+    setLocation(pathFor(view, { patternId: currentPattern?.id }));
 
   // Splash screen — full-screen, no shell
   if (activeView === "splash") {
@@ -145,7 +227,7 @@ function App() {
               {activeView === "viewer" && !currentPattern && (
                 <div className="px-6 py-6 pb-20 md:pb-6 flex flex-col items-center justify-center h-full gap-4">
                   <p className="font-heading font-semibold text-[16px]" style={{ color: "#9A7868" }}>
-                    No pattern selected
+                    Loading pattern…
                   </p>
                   <button onClick={() => navigateToView("library")}
                     className="btn-craft btn-rose px-5 py-2.5">
@@ -194,7 +276,7 @@ function App() {
               {activeView === "community-detail" && (
                 <CommunityDetailScreen
                   onNavigate={navigateToView}
-                  communityId={selectedCommunityId}
+                  communityId={communityId}
                   onPatternSelected={handlePatternLoaded}
                 />
               )}
@@ -219,7 +301,7 @@ function App() {
               )}
 
               {activeView === "yarn-recs" && (
-                <YarnRecsScreen onNavigate={navigateToView} />
+                <YarnRecsScreen onNavigate={navigateToView} onPatternSelected={handlePatternLoaded} />
               )}
 
               {activeView === "pattern-detail" && currentPattern && (
