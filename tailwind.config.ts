@@ -9,10 +9,9 @@ export default {
         'xs': '480px',
       },
       fontFamily: {
-        // Body: warm, rounded humanist sans
         sans: ['"Nunito Sans"', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
-        // Display/headings: characterful soft serif — handcrafted, premium
         heading: ['"Fraunces"', 'ui-serif', 'Georgia', 'Cambria', 'serif'],
+        script: ['"Dancing Script"', 'cursive'],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -20,7 +19,6 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
-        // ---- Semantic tokens (driven by CSS vars in index.css) ----
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -63,9 +61,6 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-
-        // ---- Brand scales (explicit so numeric utilities resolve) ----
-        // Primary: "rose madder" — the vivid, wool-dyed hero accent
         primary: {
           DEFAULT: "#C24E6B",
           foreground: "#FFFFFF",
@@ -81,7 +76,6 @@ export default {
           900: "#5C2330",
           dark: "#8C2F47",
         },
-        // Secondary: "sage" — natural-dye companion, used for headings/structure
         secondary: {
           DEFAULT: "#84934F",
           foreground: "#FFFFFF",
@@ -96,7 +90,6 @@ export default {
           800: "#404829",
           900: "#363C23",
         },
-        // Honey: warm marigold for highlights & celebratory moments
         honey: {
           DEFAULT: "#DE9F2E",
           50: "#FDF7E9",
@@ -108,7 +101,17 @@ export default {
           600: "#BC8222",
           700: "#94661C",
         },
-        // Warm neutral "wool" greys (override cool default greys)
+        plum: {
+          DEFAULT: "#7C5FA8",
+          50: "#F5F0FB",
+          100: "#E8DDEF",
+          200: "#D2BCE0",
+          300: "#B89ACF",
+          400: "#9C7BBD",
+          500: "#7C5FA8",
+          600: "#634D8A",
+          700: "#4E3C6D",
+        },
         gray: {
           50: "#FAF8F4",
           100: "#F2EEE7",
@@ -123,8 +126,8 @@ export default {
         },
       },
       backgroundImage: {
-        // Very subtle linen weave — applied to the app background
-        'linen': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill='%23000000' fill-opacity='0.018'%3E%3Cpath d='M0 0h20v20H0zM20 20h20v20H20z'/%3E%3C/g%3E%3C/svg%3E\")",
+        'linen': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E\")",
+        'parchment': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.35' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0.3'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E\")",
       },
       keyframes: {
         "accordion-down": {
@@ -135,15 +138,17 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        // Signature "running stitch" — draws a dashed thread along a path
         "stitch-draw": {
           from: { "stroke-dashoffset": "var(--stitch-length, 200)" },
           to: { "stroke-dashoffset": "0" },
         },
-        // Gentle bob for the yarn-ball mark
         "yarn-float": {
           "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-3px)" },
+          "50%": { transform: "translateY(-4px)" },
+        },
+        "bar-fill": {
+          from: { width: "0%" },
+          to: { width: "var(--bar-width)" },
         },
       },
       animation: {
@@ -151,6 +156,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "stitch-draw": "stitch-draw 1.1s ease-in-out forwards",
         "yarn-float": "yarn-float 3.2s ease-in-out infinite",
+        "bar-fill": "bar-fill 0.8s ease-out forwards",
       },
     },
   },

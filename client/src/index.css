@@ -4,51 +4,53 @@
 
 @layer base {
   /*
-   * Crochet Time design tokens — "premium handcrafted blend".
-   * Warm oatmeal/cocoa neutrals, rose-madder hero accent, sage + honey companions.
-   * Defined here (no theme-json plugin) so the palette is deterministic.
-   * Semantic tokens are HSL triplets so Tailwind's hsl(var(--x)) utilities work.
+   * Crochet Time — warm parchment design system.
+   * Palette: aged parchment background, warm dark-brown text, rose/plum/sage/honey character accents.
+   * All CSS variables are HSL triplets.
    */
   :root {
-    --background: 40 38% 97%;        /* warm ivory / oatmeal */
-    --foreground: 25 25% 18%;        /* deep cocoa */
+    /* Parchment amber — reference is ~#F7ECD8 */
+    --background: 37 58% 91%;
+    --foreground: 20 38% 16%;          /* warm dark brown #3D2318 */
 
-    --card: 40 40% 99%;
-    --card-foreground: 25 25% 18%;
+    /* Card faces — near-white with warmth */
+    --card: 38 35% 98%;
+    --card-foreground: 20 38% 16%;
 
-    --popover: 40 40% 99%;
-    --popover-foreground: 25 25% 18%;
+    --popover: 38 35% 98%;
+    --popover-foreground: 20 38% 16%;
 
-    --muted: 36 24% 92%;
-    --muted-foreground: 30 12% 42%;
+    /* Muted — warm gray-brown */
+    --muted: 35 28% 88%;
+    --muted-foreground: 25 20% 44%;    /* warm medium brown */
 
-    --accent: 36 24% 90%;            /* soft neutral hover (shadcn convention) */
-    --accent-foreground: 25 25% 18%;
+    --accent: 35 30% 85%;
+    --accent-foreground: 20 38% 16%;
 
     --destructive: 4 65% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 34 22% 86%;            /* warm taupe */
-    --input: 34 22% 86%;
-    --ring: 345 48% 53%;             /* rose — matches primary */
+    /* Border — warm taupe dashes */
+    --border: 32 25% 82%;
+    --input: 32 25% 82%;
+    --ring: 345 48% 53%;
 
-    --radius: 0.85rem;               /* soft, handcrafted rounding */
+    --radius: 0.875rem;
 
-    /* Charts — warm, natural-dye palette */
-    --chart-1: 345 48% 53%;          /* rose */
-    --chart-2: 78 30% 44%;           /* sage */
-    --chart-3: 40 73% 53%;           /* honey */
-    --chart-4: 18 55% 52%;           /* terracotta */
-    --chart-5: 300 20% 47%;          /* plum */
+    --chart-1: 345 48% 53%;
+    --chart-2: 78 30% 44%;
+    --chart-3: 40 73% 53%;
+    --chart-4: 18 55% 52%;
+    --chart-5: 275 25% 47%;
 
-    /* Sidebar (kept for any shadcn sidebar usage) */
-    --sidebar-background: 40 38% 97%;
-    --sidebar-foreground: 25 25% 18%;
+    /* Sidebar — slightly darker kraft vs main parchment */
+    --sidebar-background: 33 42% 87%;
+    --sidebar-foreground: 20 38% 16%;
     --sidebar-primary: 345 48% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 36 24% 90%;
-    --sidebar-accent-foreground: 25 25% 18%;
-    --sidebar-border: 34 22% 86%;
+    --sidebar-accent: 33 35% 82%;
+    --sidebar-accent-foreground: 20 38% 16%;
+    --sidebar-border: 32 25% 78%;
     --sidebar-ring: 345 48% 53%;
   }
 
@@ -58,14 +60,24 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    height: 100%;
   }
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    /* Subtle linen weave over the warm background for a tactile feel */
-    background-image: theme('backgroundImage.linen');
+    height: 100%;
+    /* Layered parchment: warm base + linen weave + subtle paper grain */
+    background-image:
+      theme('backgroundImage.linen'),
+      theme('backgroundImage.parchment'),
+      radial-gradient(ellipse 70% 50% at 15% 55%, rgba(200,155,80,0.10) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 40% at 85% 20%, rgba(215,175,110,0.08) 0%, transparent 60%);
     background-attachment: fixed;
     font-feature-settings: "kern", "liga";
+  }
+
+  #root {
+    height: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -74,27 +86,117 @@
     letter-spacing: -0.01em;
   }
 
-  /* Warm, on-brand focus ring for keyboard users */
   :focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 }
 
-@layer utilities {
-  /* Opt-in tactile card surface used by the new shell */
-  .surface-card {
-    @apply bg-card border border-border rounded-2xl shadow-sm;
+@layer components {
+  /* ─── Craft card — the core fabric-patch surface ─────────────────────────── */
+  .craft-card {
+    background: hsl(var(--card));
+    border: 1.5px dashed rgba(140, 100, 55, 0.28);
+    border-radius: 14px;
+    box-shadow:
+      0 2px 12px rgba(80, 45, 10, 0.07),
+      0 1px 3px rgba(80, 45, 10, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.70);
+    position: relative;
   }
+
+  /* Tinted variant — used in character action cards */
+  .craft-card-rose   { background: hsl(345 40% 98%); border-color: rgba(194, 78, 107, 0.28); }
+  .craft-card-plum   { background: hsl(275 35% 97%); border-color: rgba(124, 95, 168, 0.28); }
+  .craft-card-sage   { background: hsl(85  30% 97%); border-color: rgba(132, 147, 79, 0.28); }
+  .craft-card-honey  { background: hsl(40  50% 97%); border-color: rgba(222, 159, 46, 0.28); }
+
+  /* ─── Embossed pill button ────────────────────────────────────────────────── */
+  .btn-craft {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-family: "Nunito Sans", sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08);
+    border: none;
+  }
+  .btn-craft:hover  { transform: translateY(-1px); box-shadow: 0 3px 0 rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.10); }
+  .btn-craft:active { transform: translateY(1px);  box-shadow: 0 1px 0 rgba(0,0,0,0.14); }
+
+  .btn-rose   { background: linear-gradient(160deg,#D0607A 0%,#B84060 100%); color:#fff; }
+  .btn-plum   { background: linear-gradient(160deg,#8E70BC 0%,#6A4E9C 100%); color:#fff; }
+  .btn-sage   { background: linear-gradient(160deg,#96A860 0%,#728040 100%); color:#fff; }
+  .btn-honey  { background: linear-gradient(160deg,#E8AF40 0%,#C8901C 100%); color:#fff; }
+
+  /* ─── Progress bar ───────────────────────────────────────────────────────── */
+  .progress-track {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(90, 55, 20, 0.10);
+    overflow: hidden;
+  }
+  .progress-fill-rose  { background: linear-gradient(90deg, #C24E6B, #E07898); }
+  .progress-fill-plum  { background: linear-gradient(90deg, #7C5FA8, #A080C8); }
+  .progress-fill-sage  { background: linear-gradient(90deg, #84934F, #A8B870); }
+  .progress-fill-honey { background: linear-gradient(90deg, #DE9F2E, #F0BF58); }
+
+  /* ─── Speech bubble ─────────────────────────────────────────────────────── */
+  .speech-bubble {
+    background: hsl(var(--card));
+    border: 1.5px dashed rgba(140, 100, 55, 0.30);
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(80, 45, 10, 0.10), inset 0 1px 0 rgba(255,255,255,0.65);
+    position: relative;
+    padding: 10px 14px;
+  }
+  .speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 9px solid hsl(var(--card));
+    filter: drop-shadow(0 2px 2px rgba(80, 45, 10, 0.08));
+  }
+
+  /* ─── Badge / pill ────────────────────────────────────────────────────────── */
+  .badge-green  { background: rgba(80,148,80,0.12); color: #3D8B3D; border: 1px solid rgba(80,148,80,0.25); border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+  .badge-rose   { background: rgba(194,78,107,0.12); color: #B04060; border: 1px solid rgba(194,78,107,0.25); border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
 }
 
-/*
- * Respect the user's motion preferences. The signature animations are
- * delightful but must never get in the way — disable them when asked.
- */
+@layer utilities {
+  .surface-card {
+    @apply craft-card;
+  }
+
+  /* Sidebar nav active state — flush-left rose pill */
+  .nav-active {
+    background: rgba(194, 78, 107, 0.14);
+    color: #B04060;
+    border-radius: 0 999px 999px 0;
+  }
+
+  /* Text utilities using the warm palette */
+  .text-brown       { color: #3D2318; }
+  .text-brown-mid   { color: #7A6050; }
+  .text-brown-muted { color: #9A8878; }
+
+  /* Font script shorthand */
+  .font-script { font-family: 'Dancing Script', cursive; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;

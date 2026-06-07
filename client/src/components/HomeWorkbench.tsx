@@ -1,349 +1,695 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Sparkles, Edit3, Heart, Package, Share2, Loader2, ImageIcon } from "lucide-react";
+import {
+  Search, Bell, ImageIcon, Loader2, ChevronRight,
+  Heart, Wand2, FolderOpen, Trophy,
+} from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { ViewType } from "../lib/types";
+import { Pattern, ViewType } from "../lib/types";
 
 interface HomeWorkbenchProps {
   onNavigate: (view: ViewType) => void;
+  currentPattern?: Pattern | null;
+  onPatternSelected?: (p: Pattern) => void;
 }
 
-const CHARACTERS = [
-  {
-    id: "aloo",
-    name: "Aloo",
-    role: "Your project companion",
-    description: "Helps you track progress, save your place and celebrate every stitch.",
-    color: "#C24E6B",
-    lightColor: "#FBF1F4",
-    midColor: "#F0CACF",
-    size: "lg",
-    delay: 0.1,
-  },
-  {
-    id: "yala",
-    name: "Yala",
-    role: "Your creative guide",
-    description: "Guides AI creation, editing and pattern refinement. Helps ideas come to life.",
-    color: "#7C5FA8",
-    lightColor: "#F5F0FB",
-    midColor: "#D9CAEE",
-    size: "xl",
-    delay: 0.2,
-  },
-  {
-    id: "ashi",
-    name: "Ashi",
-    role: "Your community explorer",
-    description: "Helps you discover patterns and share your creations with the world.",
-    color: "#3D8FA3",
-    lightColor: "#EEF7FA",
-    midColor: "#C0DDE5",
-    size: "lg",
-    delay: 0.3,
-  },
-  {
-    id: "bee",
-    name: "Bee",
-    role: "Your celebration friend",
-    description: "Celebrates milestones, completions and all your wins.",
-    color: "#D4921A",
-    lightColor: "#FDF6E3",
-    midColor: "#F0D499",
-    size: "md",
-    delay: 0.4,
-  },
-  {
-    id: "sheep",
-    name: "Sheep",
-    role: "Your yarn expert",
-    description: "Suggests yarns, colours and materials to make every project perfect.",
-    color: "#84934F",
-    lightColor: "#F5F7EF",
-    midColor: "#D4DCAA",
-    size: "md",
-    delay: 0.5,
-  },
-];
+// ─── Data ──────────────────────────────────────────────────────────────────────
 
-const ACTIONS = [
-  { icon: Sparkles, label: "Create", description: "Bring ideas to life", view: "input" as ViewType },
-  { icon: Edit3, label: "Refine", description: "Edit, lock and improve", view: "library" as ViewType },
-  { icon: Heart, label: "Save", description: "Organise your favourites", view: "library" as ViewType },
-  { icon: Package, label: "Make", description: "Start with confidence", view: "input" as ViewType },
-  { icon: Share2, label: "Share", description: "Inspire and be inspired", view: "library" as ViewType },
-];
-
-const sizeMap = {
-  xl: { width: 155, height: 195 },
-  lg: { width: 138, height: 175 },
-  md: { width: 118, height: 152 },
+const CHAR = {
+  aloo:  { color: "#C24E6B", light: "#FBF1F4", mid: "#F0CACF", label: "Aloo" },
+  yala:  { color: "#7C5FA8", light: "#F5F0FB", mid: "#D9CAEE", label: "Yala" },
+  ashi:  { color: "#3D8FA3", light: "#EEF7FA", mid: "#C0DDE5", label: "Ashi" },
+  bee:   { color: "#D4921A", light: "#FDF6E3", mid: "#F0D499", label: "Bee" },
+  sheep: { color: "#84934F", light: "#F5F7EF", mid: "#D4DCAA", label: "Sheep" },
 };
 
-function CrochetFlower({ x, y, color, size = 28, rotate = 0 }: {
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return { text: "Good morning",   emoji: "☀️" };
+  if (h < 17) return { text: "Good afternoon", emoji: "🌸" };
+  return        { text: "Good evening",   emoji: "🌙" };
+}
+
+function patternProgress(p: Pattern) {
+  const steps = p.sections?.flatMap((s) => s.steps) ?? [];
+  const done  = steps.filter((s) => s.completed).length;
+  return steps.length > 0 ? Math.round((done / steps.length) * 100) : 0;
+}
+
+// ─── Small SVG decorations ─────────────────────────────────────────────────────
+
+function CrochetFlower({ x, y, color, size = 24, rotate = 0 }: {
   x: number; y: number; color: string; size?: number; rotate?: number;
 }) {
-  const r = size / 2;
-  const pr = r * 0.42;
-  const petals = 5;
+  const r = size / 2, pr = r * 0.42;
   return (
     <g transform={`translate(${x},${y}) rotate(${rotate})`}>
-      {Array.from({ length: petals }).map((_, i) => {
-        const angle = (i / petals) * 360;
-        const rad = (angle * Math.PI) / 180;
-        const cx = Math.cos(rad) * pr;
-        const cy = Math.sin(rad) * pr;
-        return (
-          <ellipse key={i} cx={cx} cy={cy} rx={r * 0.38} ry={r * 0.26}
-            transform={`rotate(${angle}, ${cx}, ${cy})`}
-            fill={color} fillOpacity="0.75" />
-        );
+      {[0,72,144,216,288].map((a) => {
+        const rad = (a * Math.PI) / 180;
+        const cx = Math.cos(rad)*pr, cy = Math.sin(rad)*pr;
+        return <ellipse key={a} cx={cx} cy={cy} rx={r*0.38} ry={r*0.25}
+          transform={`rotate(${a},${cx},${cy})`} fill={color} fillOpacity="0.75" />;
       })}
-      <circle cx={0} cy={0} r={r * 0.25} fill={color} fillOpacity="0.95" />
-      <circle cx={0} cy={0} r={r * 0.12} fill="white" fillOpacity="0.6" />
+      <circle r={r*0.26} fill={color} fillOpacity="0.95" />
+      <circle r={r*0.12} fill="white"  fillOpacity="0.55" />
     </g>
   );
 }
 
-function YarnBasket() {
+function YarnBall({ x, y, color, r = 18 }: { x:number; y:number; color:string; r?:number }) {
   return (
-    <svg width="110" height="95" viewBox="0 0 120 100" fill="none">
-      <ellipse cx="60" cy="72" rx="48" ry="22" fill="#C4A882" fillOpacity="0.5" />
-      <path d="M12 55 Q60 75 108 55 L104 72 Q60 92 16 72 Z" fill="#C4A882" fillOpacity="0.7" />
-      <path d="M16 45 Q60 65 104 45 Q60 35 16 45Z" fill="#D4BC9A" fillOpacity="0.8" />
-      <ellipse cx="60" cy="45" rx="44" ry="16" fill="#D4BC9A" fillOpacity="0.6" />
-      <circle cx="44" cy="52" r="9" fill="#C24E6B" fillOpacity="0.7" />
-      <circle cx="44" cy="52" r="6" fill="#D97A90" fillOpacity="0.5" />
-      <circle cx="62" cy="48" r="8" fill="#84934F" fillOpacity="0.7" />
-      <circle cx="62" cy="48" r="5" fill="#A8B87A" fillOpacity="0.5" />
-      <circle cx="78" cy="50" r="7" fill="#7C5FA8" fillOpacity="0.7" />
-      <circle cx="78" cy="50" r="4.5" fill="#A898CC" fillOpacity="0.5" />
-      <path d="M56 12 Q80 8 104 28" stroke="#C24E6B" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.6" />
-    </svg>
+    <g transform={`translate(${x},${y})`}>
+      <circle r={r} fill={color} fillOpacity="0.55" />
+      <circle r={r} fill="none" stroke={color} strokeWidth="1" strokeOpacity="0.4" />
+      <ellipse rx={r*0.72} ry={r*0.32} fill="none" stroke="white" strokeWidth="0.9" strokeOpacity="0.35" />
+      <ellipse rx={r*0.72} ry={r*0.32} fill="none" stroke="white" strokeWidth="0.9" strokeOpacity="0.25"
+        transform="rotate(60)" />
+      <ellipse rx={r*0.72} ry={r*0.32} fill="none" stroke="white" strokeWidth="0.9" strokeOpacity="0.25"
+        transform="rotate(-60)" />
+    </g>
   );
 }
 
-function CharacterPortrait({
-  character,
-  imageUrl,
-  isGenerating,
+// ─── Character oval (hero) ────────────────────────────────────────────────────
+
+function CharacterOval({
+  charKey, width, height, imageUrl, isGenerating,
 }: {
-  character: typeof CHARACTERS[0];
-  imageUrl: string | null;
-  isGenerating: boolean;
+  charKey: keyof typeof CHAR; width: number; height: number;
+  imageUrl: string | null; isGenerating: boolean;
 }) {
-  const { width, height } = sizeMap[character.size as keyof typeof sizeMap];
-  const borderRadius = "50% 50% 46% 46% / 54% 54% 46% 46%";
-
+  const c = CHAR[charKey];
+  const br = "50% 50% 46% 46% / 54% 54% 46% 46%";
   return (
-    <motion.div
-      animate={{ y: [0, -7, 0] }}
-      transition={{
-        duration: 3.8 + character.delay,
-        repeat: Infinity,
-        ease: "easeInOut",
-        delay: character.delay * 0.4,
+    <div
+      className="relative overflow-hidden flex-shrink-0 flex items-center justify-center"
+      style={{
+        width, height,
+        borderRadius: br,
+        border: `2.5px solid ${c.color}55`,
+        boxShadow: `0 16px 48px ${c.color}30, 0 4px 12px ${c.color}18, inset 0 1px 0 rgba(255,255,255,0.7)`,
+        background: imageUrl
+          ? undefined
+          : `radial-gradient(ellipse at 40% 32%, white 0%, ${c.light} 28%, ${c.mid} 70%, ${c.color}40 100%)`,
       }}
-      style={{ width, height }}
-      className="relative flex-shrink-0"
     >
-      <div
-        className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden"
-        style={{
-          borderRadius,
-          background: imageUrl
-            ? undefined
-            : `radial-gradient(ellipse at 40% 30%, white 0%, ${character.lightColor} 30%, ${character.midColor} 70%, ${character.color}44 100%)`,
-          border: `2.5px solid ${character.color}50`,
-          boxShadow: `0 16px 48px ${character.color}28, 0 4px 12px ${character.color}18, inset 0 1px 0 rgba(255,255,255,0.7)`,
-        }}
-      >
-        <AnimatePresence mode="wait">
-          {imageUrl ? (
-            <motion.img
-              key="photo"
-              initial={{ opacity: 0, scale: 1.06 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              src={imageUrl}
-              alt={character.name}
-              className="w-full h-full object-cover"
-              style={{ borderRadius }}
-            />
-          ) : isGenerating ? (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center gap-2"
-            >
-              <Loader2
-                className="animate-spin"
-                style={{ color: character.color, width: 28, height: 28 }}
-              />
-              <span className="text-xs font-medium" style={{ color: character.color }}>
-                Creating…
-              </span>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="placeholder"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center w-full h-full"
-            >
-              {/* Stitch texture */}
-              <svg className="absolute inset-0 w-full h-full opacity-[0.07]" viewBox="0 0 60 60">
-                <defs>
-                  <pattern id={`stitch-${character.id}`} x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-                    <circle cx="4" cy="4" r="2.5" fill={character.color} />
-                    <circle cx="0" cy="0" r="1" fill={character.color} />
-                    <circle cx="8" cy="0" r="1" fill={character.color} />
-                    <circle cx="0" cy="8" r="1" fill={character.color} />
-                    <circle cx="8" cy="8" r="1" fill={character.color} />
-                  </pattern>
-                </defs>
-                <rect width="60" height="60" fill={`url(#stitch-${character.id})`} />
-              </svg>
-              <span
-                className="relative z-10 font-heading font-bold select-none leading-none"
-                style={{
-                  fontSize: character.size === "xl" ? 68 : character.size === "lg" ? 60 : 50,
-                  color: character.color,
-                  opacity: 0.2,
-                  letterSpacing: "-0.04em",
-                }}
-              >
-                {character.name[0]}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Name tag — only on placeholder */}
-        {!imageUrl && !isGenerating && (
-          <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
-            <span
-              className="px-3 py-0.5 text-xs font-semibold rounded-full"
-              style={{
-                background: `${character.color}22`,
-                color: character.color,
-                border: `1px solid ${character.color}44`,
-              }}
-            >
-              {character.name}
+      {imageUrl ? (
+        <img src={imageUrl} alt={c.label}
+          className="w-full h-full object-cover" style={{ borderRadius: br }} />
+      ) : isGenerating ? (
+        <Loader2 className="animate-spin" style={{ color: c.color, width: 26, height: 26 }} />
+      ) : (
+        <>
+          <svg className="absolute inset-0 w-full h-full opacity-[0.07]" viewBox="0 0 60 60">
+            <defs>
+              <pattern id={`dots-${charKey}`} x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+                <circle cx="4" cy="4" r="2.4" fill={c.color} />
+              </pattern>
+            </defs>
+            <rect width="60" height="60" fill={`url(#dots-${charKey})`} />
+          </svg>
+          <span className="font-heading font-bold select-none"
+            style={{ fontSize: width * 0.42, color: c.color, opacity: 0.2, letterSpacing: "-0.04em" }}>
+            {c.label[0]}
+          </span>
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold"
+              style={{ background: `${c.color}20`, color: c.color, border: `1px solid ${c.color}40` }}>
+              {c.label}
             </span>
           </div>
-        )}
-
-        {/* Sheen */}
-        {!imageUrl && (
-          <div className="absolute top-0 left-0 right-0 h-2/5 rounded-t-full opacity-40 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55), transparent)" }} />
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
-function YarnTrailSVG() {
-  return (
-    <svg
-      className="absolute bottom-6 left-0 right-0 w-full pointer-events-none"
-      height="32"
-      viewBox="0 0 900 32"
-      preserveAspectRatio="none"
-    >
-      <path
-        d="M 60 20 C 100 8, 140 28, 200 18 C 260 8, 300 26, 370 16 C 430 8, 480 24, 540 16 C 600 8, 650 26, 720 18 C 770 12, 820 24, 860 16"
-        stroke="#C24E6B"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.5"
-        strokeDasharray="6 4"
-      />
-      <circle cx="840" cy="17" r="5" fill="#C24E6B" fillOpacity="0.4" />
-    </svg>
-  );
-}
-
-function StitchedLabelTag() {
-  return (
-    <div className="relative inline-flex flex-col items-center gap-0.5 px-4 py-3 rounded-sm"
-      style={{
-        background: "rgba(255,255,255,0.72)",
-        border: "1.5px dashed #C4A88255",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-      }}
-    >
-      <span className="text-[9px] font-semibold tracking-[0.22em] uppercase text-gray-400">
-        Handmade with care
-      </span>
-      <div className="h-px w-10 bg-gray-200 my-0.5" />
-      <span className="text-[9px] font-semibold tracking-[0.18em] uppercase text-gray-400">
-        Built for
-      </span>
-      <span
-        className="text-lg leading-tight"
-        style={{ fontFamily: "'Dancing Script', cursive", color: "#C24E6B", fontWeight: 700 }}
-      >
-        Larissa
-      </span>
-      <Heart className="h-3 w-3 text-rose-300 mt-0.5" fill="currentColor" />
+          <div className="absolute inset-0 rounded-t-full opacity-35 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.6), transparent)", height: "42%" }} />
+        </>
+      )}
     </div>
   );
 }
 
-function CharacterInfoCard({ character, index }: { character: typeof CHARACTERS[0]; index: number }) {
+// ─── Hero zone ────────────────────────────────────────────────────────────────
+
+function HeroZone({
+  characterImages, generatingIds, onGenerateAll, onNavigate,
+}: {
+  characterImages: Record<string, string | null>;
+  generatingIds: Set<string>;
+  onGenerateAll: () => void;
+  onNavigate: (v: ViewType) => void;
+}) {
+  const alooImg = characterImages.aloo ?? null;
+  const yalaImg = characterImages.yala ?? null;
+  const anyMissing = !alooImg || !yalaImg;
+  const isGenerating = generatingIds.has("aloo") || generatingIds.has("yala");
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.55 + index * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="flex flex-col items-center text-center px-4 py-4 rounded-2xl flex-1 min-w-[140px] max-w-[180px]"
+    <div
+      className="relative w-full mb-4 rounded-2xl overflow-hidden"
       style={{
-        background: `${character.lightColor}ee`,
-        border: `1.5px solid ${character.color}30`,
-        boxShadow: `0 2px 12px ${character.color}12`,
+        height: 280,
+        background: "linear-gradient(145deg, #B07840 0%, #C89060 18%, #D8AA78 38%, #EAC890 55%, #D8AA78 72%, #C08858 88%, #A87040 100%)",
+        boxShadow: "0 4px 20px rgba(80,45,10,0.18), inset 0 1px 0 rgba(255,255,255,0.15)",
       }}
     >
-      <div
-        className="w-9 h-9 rounded-full flex items-center justify-center mb-2 flex-shrink-0"
-        style={{ background: `${character.color}18`, border: `1.5px solid ${character.color}35` }}
-      >
-        <span className="text-base font-bold font-heading" style={{ color: character.color }}>
-          {character.name[0]}
-        </span>
+      {/* Top shelf shadow */}
+      <div className="absolute top-0 left-0 right-0 h-10 pointer-events-none"
+        style={{ background: "linear-gradient(to bottom, rgba(60,30,5,0.25), transparent)" }} />
+
+      {/* SVG scene props layer */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 780 260"
+        preserveAspectRatio="xMidYMid meet">
+        {/* Yarn balls */}
+        <YarnBall x={50}  y={42}  color="#C24E6B" r={20} />
+        <YarnBall x={85}  y={28}  color="#84934F" r={15} />
+        <YarnBall x={24}  y={68}  color="#D4921A" r={13} />
+        <YarnBall x={700} y={35}  color="#7C5FA8" r={18} />
+        <YarnBall x={730} y={55}  color="#3D8FA3" r={13} />
+        <YarnBall x={712} y={18}  color="#C24E6B" r={11} />
+        {/* Decorative flowers */}
+        <CrochetFlower x={140} y={220} color="#C24E6B" size={26} rotate={20} />
+        <CrochetFlower x={160} y={240} color="#84934F" size={16} rotate={-30} />
+        <CrochetFlower x={620} y={215} color="#7C5FA8" size={22} rotate={15} />
+        <CrochetFlower x={645} y={238} color="#D4921A" size={14} rotate={40} />
+        {/* Stem / lavender sprigs */}
+        <line x1="680" y1="260" x2="680" y2="180" stroke="#84934F" strokeWidth="2" strokeOpacity="0.6" />
+        <ellipse cx="680" cy="175" rx="4" ry="8" fill="#7C5FA8" fillOpacity="0.5" />
+        <ellipse cx="676" cy="188" rx="3" ry="7" fill="#7C5FA8" fillOpacity="0.45" transform="rotate(-15,676,188)" />
+        <ellipse cx="684" cy="185" rx="3" ry="7" fill="#7C5FA8" fillOpacity="0.45" transform="rotate(15,684,185)" />
+      </svg>
+
+      {/* "Crochet is my happy place" tag — hanging from top centre */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center z-10">
+        <div className="w-px h-3" style={{ background: "rgba(120,70,20,0.45)" }} />
+        <div className="px-4 py-2 rounded-b-xl rounded-t-sm text-center"
+          style={{
+            background: "rgba(255,252,245,0.92)",
+            border: "1.5px dashed rgba(140,100,55,0.32)",
+            borderTop: "none",
+            boxShadow: "0 3px 10px rgba(80,45,10,0.14), inset 0 -1px 0 rgba(255,255,255,0.6)",
+          }}
+        >
+          <p className="font-heading text-[11px] font-semibold leading-tight" style={{ color: "#6A4A30" }}>
+            Crochet is my
+          </p>
+          <p className="font-script text-[14px] leading-tight" style={{ color: "#A83050", fontWeight: 700 }}>
+            happy place ♡
+          </p>
+        </div>
       </div>
-      <span
-        className="text-xl font-semibold leading-tight mb-0.5"
-        style={{ fontFamily: "'Dancing Script', cursive", color: character.color, fontWeight: 700 }}
-      >
-        {character.name}
-      </span>
-      <span className="text-xs font-semibold text-gray-500 tracking-wide mb-2 leading-tight">
-        {character.role}
-      </span>
-      <div className="w-8 h-px mb-2" style={{ background: `${character.color}40` }} />
-      <p className="text-xs text-gray-500 leading-relaxed">{character.description}</p>
-    </motion.div>
+
+      {/* Aloo speech bubble — top left, floating */}
+      <div className="absolute z-20" style={{ top: 18, left: "12%" }}>
+        <div className="speech-bubble" style={{ maxWidth: 148 }}>
+          <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
+            Aloo is here to cheer you on while you work on your project. 🐾
+          </p>
+        </div>
+      </div>
+
+      {/* Yala speech bubble — top right, floating */}
+      <div className="absolute z-20" style={{ top: 18, right: "11%" }}>
+        <div className="speech-bubble" style={{ maxWidth: 152 }}>
+          <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
+            Yala is ready to create something magical with you. ✨
+          </p>
+        </div>
+      </div>
+
+      {/* Aloo — left character, sits at bottom, smaller so scene breathes */}
+      <div className="absolute bottom-0 z-10" style={{ left: "7%" }}>
+        <motion.div
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <CharacterOval charKey="aloo" width={108} height={136}
+            imageUrl={alooImg} isGenerating={generatingIds.has("aloo")} />
+        </motion.div>
+      </div>
+
+      {/* Yala — right character (larger), sits at bottom */}
+      <div className="absolute bottom-0 z-10" style={{ right: "6%" }}>
+        <motion.div
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 4.0, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        >
+          <CharacterOval charKey="yala" width={126} height={158}
+            imageUrl={yalaImg} isGenerating={generatingIds.has("yala")} />
+        </motion.div>
+      </div>
+
+      {/* Wooden surface line at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 h-6 pointer-events-none"
+        style={{ background: "linear-gradient(to top, rgba(80,40,8,0.28), transparent)" }} />
+
+      {/* Generate button — visible at centre-right area */}
+      <AnimatePresence>
+        {anyMissing && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={onGenerateAll}
+            disabled={isGenerating}
+            className="absolute bottom-5 left-1/2 -translate-x-1/2 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all disabled:opacity-60 z-20"
+            style={{
+              background: isGenerating ? "rgba(255,252,245,0.7)" : "rgba(255,252,245,0.92)",
+              color: "#A83050",
+              border: "1.5px dashed rgba(194,78,107,0.4)",
+              boxShadow: "0 2px 10px rgba(80,45,10,0.12)",
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            {isGenerating
+              ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Generating companions…</>
+              : <><ImageIcon className="h-3.5 w-3.5" />Generate companions with AI</>}
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
+// ─── Action cards ─────────────────────────────────────────────────────────────
+
+function ContinueProjectCard({
+  pattern, onNavigate,
+}: { pattern: Pattern | null; onNavigate: (v: ViewType) => void }) {
+  const pct = pattern ? patternProgress(pattern) : 0;
+  return (
+    <div className="craft-card craft-card-rose flex flex-col gap-2.5 p-4 h-full">
+      <div>
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-base">🐾</span>
+          <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+            Continue Your Project
+          </span>
+        </div>
+        <p className="text-[11px] font-sans" style={{ color: "#9A7868" }}>Pick up where you left off</p>
+      </div>
+
+      {pattern ? (
+        <div className="flex items-start gap-2.5 flex-1">
+          {pattern.imgUrl && !pattern.imgUrl.startsWith("https://placehold") && (
+            <img src={pattern.imgUrl} alt={pattern.title}
+              className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+              style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.12)" }} />
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="font-heading font-semibold text-[13px] truncate" style={{ color: "#3D2318" }}>
+              {pattern.title}
+            </p>
+            <p className="text-[11px] mb-1.5" style={{ color: "#9A7868" }}>{pattern.skillLevel}</p>
+            <div className="progress-track">
+              <div className="progress-fill-rose h-full rounded-full"
+                style={{ width: `${pct}%`, transition: "width 0.7s ease" }} />
+            </div>
+            <p className="text-[10px] mt-0.5" style={{ color: "#9A7868" }}>{pct}% complete</p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center text-center px-2">
+          <p className="text-[12px]" style={{ color: "#B0908A" }}>
+            No patterns yet — start your first one!
+          </p>
+        </div>
+      )}
+
+      <button
+        onClick={() => onNavigate(pattern ? "viewer" : "input")}
+        className="btn-craft btn-rose w-full justify-center text-[12px] py-2"
+      >
+        {pattern ? "Open Project" : "Start Creating"} →
+      </button>
+    </div>
+  );
+}
+
+function CreateWithYalaCard({ onNavigate }: { onNavigate: (v: ViewType) => void }) {
+  return (
+    <div className="craft-card craft-card-plum flex flex-col gap-2.5 p-4 h-full">
+      <div>
+        <div className="flex items-center gap-2 mb-0.5">
+          <Wand2 className="h-4 w-4 flex-shrink-0" style={{ color: "#7C5FA8" }} />
+          <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+            Create with Yala
+          </span>
+        </div>
+        <p className="text-[11px] font-sans" style={{ color: "#9A7868" }}>Design a pattern with AI</p>
+      </div>
+
+      <div className="flex-1 flex flex-col justify-center gap-1.5">
+        <p className="text-[12px] leading-snug" style={{ color: "#6A4A5A" }}>
+          Describe your idea and Yala will bring it to life.
+        </p>
+        <div className="rounded-xl px-3 py-2 text-[11px] italic"
+          style={{ background: "rgba(124,95,168,0.08)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.18)" }}>
+          e.g. A cosy sunflower bag for everyday use
+        </div>
+      </div>
+
+      <button onClick={() => onNavigate("input")} className="btn-craft btn-plum w-full justify-center text-[12px] py-2">
+        Start Creating →
+      </button>
+    </div>
+  );
+}
+
+function FavoritesCard({
+  count, onNavigate,
+}: { count: number; onNavigate: (v: ViewType) => void }) {
+  return (
+    <div className="craft-card craft-card-sage flex flex-col gap-2.5 p-4 h-full">
+      <div>
+        <div className="flex items-center gap-2 mb-0.5">
+          <Heart className="h-4 w-4 flex-shrink-0" style={{ color: "#84934F" }} fill="#84934F" />
+          <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+            Larissa's Favorites
+          </span>
+        </div>
+        <p className="text-[11px] font-sans" style={{ color: "#9A7868" }}>Your saved patterns</p>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-center gap-1">
+        <span className="font-heading font-bold" style={{ fontSize: 36, color: "#84934F", lineHeight: 1 }}>
+          {count}
+        </span>
+        <span className="text-[11px] font-semibold" style={{ color: "#9A7868" }}>
+          {count === 1 ? "pattern saved" : "patterns saved"}
+        </span>
+      </div>
+
+      <button onClick={() => onNavigate("library")} className="btn-craft btn-sage w-full justify-center text-[12px] py-2">
+        View Favorites →
+      </button>
+    </div>
+  );
+}
+
+// ─── Bottom sections ─────────────────────────────────────────────────────────
+
+function RecentPatternsSection({
+  patterns, onNavigate,
+}: { patterns: Pattern[]; onNavigate: (v: ViewType) => void }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+          Recent Patterns
+        </span>
+        <button onClick={() => onNavigate("library")}
+          className="text-[11px] font-semibold flex items-center gap-0.5 hover:opacity-70 transition-opacity"
+          style={{ color: "#C24E6B" }}>
+          View all <ChevronRight className="h-3 w-3" />
+        </button>
+      </div>
+
+      <div className="flex gap-2.5">
+        {patterns.length === 0 && (
+          <p className="text-[12px] text-brown-muted">No patterns yet.</p>
+        )}
+        {patterns.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => onNavigate("library")}
+            className="flex flex-col items-start gap-1 group flex-shrink-0"
+            style={{ width: 80 }}
+          >
+            <div className="w-full h-20 rounded-xl overflow-hidden craft-card p-0"
+              style={{ background: p.imgUrl && !p.imgUrl.startsWith("https://placehold")
+                ? undefined : `hsl(${CHAR.aloo.light})` }}>
+              {p.imgUrl && !p.imgUrl.startsWith("https://placehold") ? (
+                <img src={p.imgUrl} alt={p.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="font-heading font-bold text-2xl" style={{ color: "#C24E6B", opacity: 0.3 }}>
+                    {p.title[0]}
+                  </span>
+                </div>
+              )}
+            </div>
+            <p className="text-[10.5px] font-semibold leading-tight text-left line-clamp-2 group-hover:opacity-75 transition-opacity"
+              style={{ color: "#5C3A28" }}>
+              {p.title}
+            </p>
+            <p className="text-[9.5px]" style={{ color: "#9A7868" }}>{p.projectType} · {p.skillLevel}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) => void }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+          Community Spotlight
+        </span>
+        <button onClick={() => onNavigate("library")}
+          className="text-[11px] font-semibold flex items-center gap-0.5 hover:opacity-70 transition-opacity"
+          style={{ color: "#C24E6B" }}>
+          View library <ChevronRight className="h-3 w-3" />
+        </button>
+      </div>
+      <div className="craft-card p-3 flex flex-col gap-2">
+        <div className="w-full h-20 rounded-lg overflow-hidden" style={{ background: "linear-gradient(135deg, #E8D0B8 0%, #D4B898 100%)" }}>
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-3xl opacity-60">🌸</span>
+          </div>
+        </div>
+        <p className="font-heading font-semibold text-[12px]" style={{ color: "#3D2318" }}>
+          Granny Square Flower Blanket
+        </p>
+        <p className="text-[10.5px]" style={{ color: "#9A7868" }}>by CrochetLily</p>
+        <div className="flex items-center gap-1">
+          <Heart className="h-3 w-3" style={{ color: "#C24E6B" }} fill="#C24E6B" />
+          <span className="text-[10.5px] font-semibold" style={{ color: "#C24E6B" }}>1.2k</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UpcomingMilestoneSection({ projectsCount }: { projectsCount: number }) {
+  const next = Math.ceil((projectsCount + 1) / 5) * 5;
+  const need = next - projectsCount;
+  return (
+    <div>
+      <div className="mb-2.5">
+        <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+          Upcoming Milestone
+        </span>
+      </div>
+      <div className="craft-card craft-card-honey p-3 flex flex-col items-center text-center gap-2">
+        {/* Small bee decoration */}
+        <svg viewBox="0 0 60 65" fill="none" className="w-14 h-16">
+          <ellipse cx="12" cy="32" rx="11" ry="7" fill="rgba(190,225,255,0.7)" transform="rotate(-20,12,32)" />
+          <ellipse cx="48" cy="32" rx="11" ry="7" fill="rgba(190,225,255,0.7)" transform="rotate(20,48,32)" />
+          <ellipse cx="30" cy="44" rx="16" ry="18" fill="#F0C840" />
+          <rect x="14" y="38" width="32" height="5.5" rx="2.75" fill="rgba(45,25,5,0.65)" />
+          <rect x="14" y="49" width="32" height="5.5" rx="2.75" fill="rgba(45,25,5,0.65)" />
+          <circle cx="30" cy="25" r="11" fill="#F0C840" />
+          <circle cx="26" cy="23" r="2.5" fill="#2D1905" /><circle cx="34" cy="23" r="2.5" fill="#2D1905" />
+          <circle cx="27" cy="22.5" r="0.9" fill="white" /><circle cx="35" cy="22.5" r="0.9" fill="white" />
+          <path d="M 25 29 Q 30 33 35 29" stroke="#2D1905" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+          <line x1="26" y1="15" x2="21" y2="7" stroke="#2D1905" strokeWidth="1.2" strokeLinecap="round" />
+          <circle cx="21" cy="6" r="2" fill="#C24E6B" />
+          <line x1="34" y1="15" x2="39" y2="7" stroke="#2D1905" strokeWidth="1.2" strokeLinecap="round" />
+          <circle cx="39" cy="6" r="2" fill="#C24E6B" />
+        </svg>
+        <div>
+          <p className="font-heading font-semibold text-[12px]" style={{ color: "#3D2318" }}>
+            You're close!
+          </p>
+          <p className="text-[11px] leading-snug mt-0.5" style={{ color: "#7A6040" }}>
+            Complete {need} more {need === 1 ? "project" : "projects"} to unlock a special reward.
+          </p>
+        </div>
+        {/* Milestone dots */}
+        <div className="flex items-center gap-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="rounded-full"
+              style={{
+                width: i < (5 - need) ? 10 : 8,
+                height: i < (5 - need) ? 10 : 8,
+                background: i < (5 - need) ? "#D4921A" : "rgba(212,146,26,0.25)",
+                border: `1.5px solid ${i < (5 - need) ? "#D4921A" : "rgba(212,146,26,0.4)"}`,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Stats bar ────────────────────────────────────────────────────────────────
+
+function StatsBar({
+  projectsCount, favoritesCount, milestonesCount,
+}: { projectsCount: number; favoritesCount: number; milestonesCount: number }) {
+  const items = [
+    { value: projectsCount,   label: "Projects",   icon: "🧶" },
+    { value: favoritesCount,  label: "Favorites",  icon: "♡" },
+    { value: milestonesCount, label: "Milestones", icon: "🌸" },
+  ];
+  return (
+    <div className="craft-card flex items-center justify-between px-6 py-3.5"
+      style={{ background: "rgba(255,252,245,0.7)" }}>
+      <div className="flex items-center gap-8">
+        {items.map((item, i) => (
+          <div key={item.label} className="flex items-center gap-3">
+            {i > 0 && <div className="w-px h-8" style={{ background: "rgba(140,100,55,0.2)" }} />}
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{item.icon}</span>
+              <div>
+                <p className="font-heading font-bold leading-none" style={{ fontSize: 22, color: "#3D2318" }}>
+                  {item.value}
+                </p>
+                <p className="text-[10.5px] font-semibold mt-0.5" style={{ color: "#9A7868" }}>
+                  {item.label}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button className="btn-craft btn-honey flex items-center gap-1.5 text-[12px] py-2 px-4">
+        <Trophy className="h-3.5 w-3.5" />
+        View Achievements →
+      </button>
+    </div>
+  );
+}
+
+// ─── Right panel (exported) ───────────────────────────────────────────────────
+
+export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => void }) {
+  const { data: patterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
+
+  const active = patterns[0] ?? null;
+  const overview = patterns.slice(0, 3);
+  const pct = active ? patternProgress(active) : 0;
+
+  return (
+    <div className="flex flex-col gap-4 p-4">
+      {/* Active Project */}
+      <div className="craft-card p-3.5">
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-heading font-semibold text-[13px]" style={{ color: "#3D2318" }}>
+            Active Project
+          </span>
+          <FolderOpen className="h-4 w-4" style={{ color: "#9A7868" }} />
+        </div>
+        {active ? (
+          <div>
+            <div className="flex items-start gap-2.5 mb-2.5">
+              {active.imgUrl && !active.imgUrl.startsWith("https://placehold") && (
+                <img src={active.imgUrl} alt={active.title}
+                  className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+                  style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.12)" }} />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-heading font-semibold text-[13px] truncate" style={{ color: "#3D2318" }}>
+                  {active.title}
+                </p>
+                <span className="badge-green inline-block mt-0.5">In Progress</span>
+              </div>
+            </div>
+            <div className="mb-1.5">
+              <div className="flex justify-between text-[10.5px] mb-1" style={{ color: "#9A7868" }}>
+                <span>Progress</span><span>{pct}%</span>
+              </div>
+              <div className="progress-track">
+                <div className="progress-fill-rose h-full rounded-full"
+                  style={{ width: `${pct}%`, transition: "width 0.7s ease" }} />
+              </div>
+            </div>
+            <button
+              onClick={() => onNavigate("viewer")}
+              className="btn-craft btn-rose w-full justify-center text-[11px] py-1.5 mt-2"
+            >
+              Open Workspace →
+            </button>
+          </div>
+        ) : (
+          <p className="text-[12px] text-center py-3" style={{ color: "#9A7868" }}>
+            No active project yet
+          </p>
+        )}
+      </div>
+
+      {/* Projects Overview */}
+      {overview.length > 0 && (
+        <div className="craft-card p-3.5">
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="font-heading font-semibold text-[13px]" style={{ color: "#3D2318" }}>
+              Projects Overview
+            </span>
+            <button onClick={() => onNavigate("library")}
+              className="text-[10.5px] font-semibold hover:opacity-70" style={{ color: "#C24E6B" }}>
+              View all
+            </button>
+          </div>
+          <div className="flex flex-col gap-2.5">
+            {overview.map((p) => {
+              const pp = patternProgress(p);
+              return (
+                <div key={p.id} className="flex items-center gap-2">
+                  {p.imgUrl && !p.imgUrl.startsWith("https://placehold") ? (
+                    <img src={p.imgUrl} className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: "#FBF1F4" }}>
+                      <span className="font-heading font-bold text-sm" style={{ color: "#C24E6B", opacity: 0.5 }}>
+                        {p.title[0]}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11.5px] font-semibold truncate" style={{ color: "#3D2318" }}>{p.title}</p>
+                    <div className="progress-track mt-1">
+                      <div className="progress-fill-rose h-full rounded-full"
+                        style={{ width: `${pp}%`, transition: "width 0.7s ease" }} />
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-semibold flex-shrink-0" style={{ color: "#9A7868" }}>
+                    {pp}%
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Motivational quote */}
+      <div className="craft-card p-3.5 text-center">
+        <Heart className="h-4 w-4 mx-auto mb-2" style={{ color: "#C24E6B" }} fill="#C24E6B" />
+        <p className="font-heading text-[12px] leading-relaxed italic" style={{ color: "#5C3A28" }}>
+          "Every stitch brings you closer to something beautiful."
+        </p>
+        <p className="mt-1.5 font-script text-[15px]" style={{ color: "#C24E6B" }}>♡</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
+
 export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
   const qc = useQueryClient();
-  const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
+  const { text, emoji } = greeting();
 
-  // Fetch existing character image URLs
+  const { data: patterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
   const { data: characterImages = {} } = useQuery<Record<string, string | null>>({
     queryKey: ["/api/characters"],
     staleTime: 1000 * 60 * 5,
   });
+
+  const [generatingIds, setGeneratingIds] = useState(new Set<string>());
 
   const generateMutation = useMutation({
     mutationFn: (characterId: string) =>
@@ -351,237 +697,91 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
     onMutate: (characterId) => {
       setGeneratingIds((s) => { const n = new Set(s); n.add(characterId); return n; });
     },
-    onSettled: (_, __, characterId) => {
-      setGeneratingIds((s) => {
-        const next = new Set(s);
-        next.delete(characterId);
-        return next;
-      });
+    onSettled: (_d, _e, characterId) => {
+      setGeneratingIds((s) => { const n = new Set(s); n.delete(characterId); return n; });
       qc.invalidateQueries({ queryKey: ["/api/characters"] });
     },
   });
 
-  const allGenerated = CHARACTERS.every((c) => characterImages[c.id]);
-  const anyMissing = CHARACTERS.some((c) => !characterImages[c.id]);
-  const isGeneratingAny = generatingIds.size > 0;
-
   const handleGenerateAll = () => {
-    CHARACTERS.forEach((c) => {
-      if (!characterImages[c.id] && !generatingIds.has(c.id)) {
-        generateMutation.mutate(c.id);
+    ["aloo", "yala", "ashi", "bee", "sheep"].forEach((id) => {
+      if (!characterImages[id] && !generatingIds.has(id)) {
+        generateMutation.mutate(id);
       }
     });
   };
 
+  const activePattern = patterns[0] ?? null;
+  const favoritesCount = patterns.filter((p) => p.favorite).length;
+  const projectsCount = patterns.length;
+  const milestonesCount = patterns.filter((p) => p.completed).length;
+  const recentPatterns = patterns.slice(0, 3);
+
   return (
-    <div className="relative -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 sm:-mt-8 overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 120% 80% at 50% 0%, #FDF7EE 0%, #F7EFE2 40%, #F2E8D8 100%)" }}
-      />
-      <div className="absolute top-0 left-0 right-0 h-40 pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, rgba(212,188,154,0.12), transparent)" }}
-      />
-
-      {/* Decorative SVG flowers */}
-      <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
-        <CrochetFlower x={48} y={130} color="#C24E6B" size={32} rotate={15} />
-        <CrochetFlower x={30} y={195} color="#D4921A" size={20} rotate={-20} />
-        <CrochetFlower x={78} y={168} color="#84934F" size={16} rotate={40} />
-        <CrochetFlower x={850} y={145} color="#7C5FA8" size={28} rotate={-10} />
-        <CrochetFlower x={880} y={210} color="#C24E6B" size={18} rotate={30} />
-        <CrochetFlower x={825} y={190} color="#3D8FA3" size={14} rotate={55} />
-        <CrochetFlower x={155} y={490} color="#C24E6B" size={22} rotate={20} />
-        <CrochetFlower x={740} y={485} color="#84934F" size={19} rotate={-35} />
-      </svg>
-
-      <div className="relative z-10 max-w-5xl mx-auto px-6 py-8 sm:py-10">
-
-        {/* Top row */}
-        <div className="flex items-start justify-between mb-6">
-          <StitchedLabelTag />
-          <div className="opacity-80 hidden sm:block">
-            <YarnBasket />
-          </div>
-        </div>
-
-        {/* Hero heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center mb-2"
-        >
-          <h1
-            className="leading-tight mb-1"
-            style={{
-              fontFamily: "'Dancing Script', cursive",
-              fontSize: "clamp(2.6rem, 6vw, 4rem)",
-              color: "#6B3A4A",
-              fontWeight: 700,
-              letterSpacing: "-0.01em",
-              textShadow: "0 1px 2px rgba(0,0,0,0.06)",
-            }}
-          >
-            Crochet Time
-            <span style={{ color: "#C24E6B" }}>♥</span>
+    <div className="flex flex-col h-full">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="flex-shrink-0 flex items-center justify-between px-6 py-4"
+        style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
+        <div>
+          <h1 className="font-heading font-bold" style={{ fontSize: 24, color: "#3D2318", letterSpacing: "-0.02em" }}>
+            {text}, Larissa! {emoji}
           </h1>
-          <p className="font-heading text-gray-600 text-base sm:text-lg font-medium tracking-wide">
-            Your crochet studio. Your creative world.
+          <p className="text-[13px] mt-0.5" style={{ color: "#9A7868" }}>
+            Let's create something beautiful today.
           </p>
-        </motion.div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
+            style={{ background: "rgba(255,252,245,0.8)", border: "1.5px dashed rgba(140,100,55,0.25)" }}>
+            <Search className="h-4 w-4" style={{ color: "#9A7868" }} />
+          </button>
+          <button className="relative w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
+            style={{ background: "rgba(255,252,245,0.8)", border: "1.5px dashed rgba(140,100,55,0.25)" }}>
+            <Bell className="h-4 w-4" style={{ color: "#9A7868" }} />
+            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+              style={{ background: "#C24E6B" }}>3</span>
+          </button>
+          {/* Avatar */}
+          <div className="w-9 h-9 rounded-full flex items-center justify-center font-script text-lg"
+            style={{ background: "linear-gradient(135deg,#E0A0B0,#C24E6B)", color: "white", fontWeight: 700 }}>
+            L
+          </div>
+        </div>
+      </div>
 
-        {/* Pink dashed divider */}
-        <div className="flex justify-center mb-5">
-          <svg width="220" height="12" viewBox="0 0 220 12">
-            <path d="M 10 6 Q 55 1 110 6 Q 165 11 210 6"
-              stroke="#C24E6B" strokeWidth="2" strokeLinecap="round" fill="none"
-              strokeDasharray="5 4" opacity="0.5" />
-            <circle cx="110" cy="6" r="3" fill="#C24E6B" opacity="0.4" />
-          </svg>
+      {/* ── Scrollable content ──────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-6 py-5 pb-20 md:pb-6">
+
+        {/* Hero zone */}
+        <HeroZone
+          characterImages={characterImages}
+          generatingIds={generatingIds}
+          onGenerateAll={handleGenerateAll}
+          onNavigate={onNavigate}
+        />
+
+        {/* Action cards — 3 col */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6" style={{ minHeight: 180 }}>
+          <ContinueProjectCard pattern={activePattern} onNavigate={onNavigate} />
+          <CreateWithYalaCard onNavigate={onNavigate} />
+          <FavoritesCard count={favoritesCount} onNavigate={onNavigate} />
         </div>
 
-        <p className="text-center text-sm text-gray-500 mb-8 max-w-lg mx-auto leading-relaxed">
-          Meet your amigurumi companions. Each character has a special role
-          to support you on your crochet journey.
-        </p>
-
-        {/* Character stage */}
-        <div className="relative mb-3">
-          <div className="absolute bottom-0 left-4 right-4 h-10 rounded-full pointer-events-none"
-            style={{
-              background: "radial-gradient(ellipse at 50% 100%, #E8D8C0 0%, transparent 70%)",
-              filter: "blur(8px)",
-            }}
-          />
-          <YarnTrailSVG />
-
-          <div className="flex items-end justify-center gap-4 sm:gap-6 pb-2">
-            {CHARACTERS.map((character) => (
-              <motion.div
-                key={character.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: character.delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <CharacterPortrait
-                  character={character}
-                  imageUrl={characterImages[character.id] ?? null}
-                  isGenerating={generatingIds.has(character.id)}
-                />
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Generate companions button */}
-          <AnimatePresence>
-            {anyMissing && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ delay: 0.8, duration: 0.4 }}
-                className="flex justify-center mt-5"
-              >
-                <button
-                  onClick={handleGenerateAll}
-                  disabled={isGeneratingAny}
-                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{
-                    background: isGeneratingAny
-                      ? "rgba(194,78,107,0.08)"
-                      : "linear-gradient(135deg, #C24E6B 0%, #9B3B53 100%)",
-                    color: isGeneratingAny ? "#C24E6B" : "white",
-                    border: "1.5px solid rgba(194,78,107,0.3)",
-                    boxShadow: isGeneratingAny ? "none" : "0 4px 16px rgba(194,78,107,0.3)",
-                  }}
-                >
-                  {isGeneratingAny ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Generating companions…
-                    </>
-                  ) : (
-                    <>
-                      <ImageIcon className="h-4 w-4" />
-                      Generate companions with AI
-                    </>
-                  )}
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {allGenerated && (
-            <p className="text-center text-xs text-gray-400 mt-4">
-              Your companions are ready ♥
-            </p>
-          )}
+        {/* Bottom sections — 3 col */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+          <RecentPatternsSection patterns={recentPatterns} onNavigate={onNavigate} />
+          <CommunitySpotlightSection onNavigate={onNavigate} />
+          <UpcomingMilestoneSection projectsCount={projectsCount} />
         </div>
 
-        {/* Character info cards */}
-        <div className="flex flex-wrap justify-center gap-3 mt-8 mb-10">
-          {CHARACTERS.map((character, i) => (
-            <CharacterInfoCard key={character.id} character={character} index={i} />
-          ))}
-        </div>
-
-        {/* Bottom strip */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-6 sm:gap-10"
-          style={{
-            background: "rgba(196,168,130,0.13)",
-            border: "1.5px solid rgba(196,168,130,0.3)",
-            backdropFilter: "blur(4px)",
-          }}
-        >
-          <div className="flex-shrink-0 text-center sm:text-left">
-            <p className="font-heading text-gray-600 text-sm font-medium">
-              Together, we make every project
-            </p>
-            <p
-              className="text-2xl leading-tight"
-              style={{ fontFamily: "'Dancing Script', cursive", color: "#C24E6B", fontWeight: 700 }}
-            >
-              beautifully yours. ♥
-            </p>
-          </div>
-
-          <div className="hidden sm:block w-px self-stretch bg-amber-200 opacity-60" />
-
-          <div className="flex items-center gap-6 sm:gap-8 flex-wrap justify-center">
-            {ACTIONS.map(({ icon: Icon, label, description, view }) => (
-              <motion.button
-                key={label}
-                onClick={() => onNavigate(view)}
-                className="flex flex-col items-center gap-1.5 group focus:outline-none"
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-              >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-150"
-                  style={{
-                    background: "rgba(194,78,107,0.09)",
-                    border: "1.5px solid rgba(194,78,107,0.22)",
-                  }}
-                >
-                  <Icon className="h-4 w-4 text-rose-500 group-hover:text-rose-600 transition-colors" />
-                </div>
-                <span className="text-xs font-semibold text-gray-600 group-hover:text-gray-800 transition-colors">
-                  {label}
-                </span>
-                <span className="text-[10px] text-gray-400 hidden sm:block text-center leading-tight max-w-[72px]">
-                  {description}
-                </span>
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
+        {/* Stats bar */}
+        <StatsBar
+          projectsCount={projectsCount}
+          favoritesCount={favoritesCount}
+          milestonesCount={milestonesCount}
+        />
       </div>
     </div>
   );
 }
+
