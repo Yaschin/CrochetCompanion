@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlooSVG, YalaSVG } from "./Characters";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search, Bell, Loader2, ChevronRight, MoreHorizontal,
@@ -243,6 +242,8 @@ function HeroZone({
   onGenerateAll?: () => void;
   onNavigate: (v: ViewType) => void;
 }) {
+  const alooSrc = "/characters/char-aloo-transparent.png";
+  const yalaSrc = "/characters/char-yala-transparent.png";
 
   return (
     // Outer wrapper: no overflow-hidden so characters can bleed past bottom rounded corners
@@ -308,9 +309,17 @@ function HeroZone({
         <motion.div
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-          style={{ filter: "drop-shadow(0 8px 20px rgba(50,20,5,0.30))" }}
         >
-          <AlooSVG size={Math.min(190, window.innerWidth * 0.28)} />
+          <img
+            src={alooSrc}
+            alt="Aloo"
+            style={{
+              width: "min(190px, 28vw)",
+              height: "auto",
+              objectFit: "contain",
+              filter: "drop-shadow(0 8px 20px rgba(50,20,5,0.35))",
+            }}
+          />
         </motion.div>
       </div>
 
@@ -319,9 +328,17 @@ function HeroZone({
         <motion.div
           animate={{ y: [0, -7, 0] }}
           transition={{ duration: 4.0, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          style={{ filter: "drop-shadow(0 10px 24px rgba(80,20,100,0.35))" }}
         >
-          <YalaSVG size={Math.min(230, window.innerWidth * 0.34)} />
+          <img
+            src={yalaSrc}
+            alt="Yala"
+            style={{
+              width: "min(230px, 34vw)",
+              height: "auto",
+              objectFit: "contain",
+              filter: "drop-shadow(0 10px 24px rgba(50,20,5,0.38))",
+            }}
+          />
         </motion.div>
       </div>
     </div>
