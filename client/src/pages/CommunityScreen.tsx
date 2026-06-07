@@ -1,93 +1,55 @@
 import { useState } from "react";
 import { Search, Heart, ChevronDown, Sparkles } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { ViewType } from "../lib/types";
+import type { CommunityPattern } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface CommunityScreenProps {
   onNavigate: (view: ViewType) => void;
   onPatternSelect?: (id: string) => void;
 }
 
-interface CommunityPattern {
-  id: string;
-  title: string;
-  creator: string;
-  difficulty: "Easy" | "Intermediate" | "Advanced";
-  diffColor: string;
-  hearts: string;
-  img: string;
-  type: string;
-}
-
-const COMMUNITY_PATTERNS: CommunityPattern[] = [
-  {
-    id: "c1", title: "Granny Square Flower Blanket", creator: "Omm",
-    difficulty: "Intermediate", diffColor: "#D4921A", hearts: "1.2k",
-    img: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=300&q=80", type: "Home Decor",
-  },
-  {
-    id: "c2", title: "Tiny Dragon", creator: "YarnDaries",
-    difficulty: "Advanced", diffColor: "#C24E6B", hearts: "980",
-    img: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=300&q=80", type: "Toy",
-  },
-  {
-    id: "c3", title: "Bumblebee", creator: "HookedByHana",
-    difficulty: "Easy", diffColor: "#84934F", hearts: "860",
-    img: "https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=300&q=80", type: "Toy",
-  },
-  {
-    id: "c4", title: "Ocean Turtle", creator: "StitchJoy",
-    difficulty: "Intermediate", diffColor: "#D4921A", hearts: "1k",
-    img: "https://images.unsplash.com/photo-1559715745-e1b33a271c8f?w=300&q=80", type: "Toy",
-  },
-  {
-    id: "c5", title: "Tulip Bouquet", creator: "CozyCrops",
-    difficulty: "Easy", diffColor: "#84934F", hearts: "790",
-    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80", type: "Home Decor",
-  },
-  {
-    id: "c6", title: "Bear Backpack", creator: "KnottingArt",
-    difficulty: "Intermediate", diffColor: "#D4921A", hearts: "950",
-    img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80", type: "Accessory",
-  },
-  {
-    id: "c7", title: "Daisy Bucket Hat", creator: "YarnLily",
-    difficulty: "Easy", diffColor: "#84934F", hearts: "720",
-    img: "https://images.unsplash.com/photo-1575029292585-6f3dd97b7b91?w=300&q=80", type: "Wearable",
-  },
-  {
-    id: "c8", title: "Sunflower Coaster Set", creator: "CrochetLily",
-    difficulty: "Easy", diffColor: "#84934F", hearts: "640",
-    img: "https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=300&q=80", type: "Home Decor",
-  },
-  {
-    id: "c9", title: "Sleepy Panda", creator: "WoolWhimsy",
-    difficulty: "Intermediate", diffColor: "#D4921A", hearts: "1.1k",
-    img: "https://images.unsplash.com/photo-1575029292585-6f3dd97b7b91?w=300&q=80", type: "Toy",
-  },
-];
-
 const TYPE_FILTERS = ["All Types", "Toy", "Wearable", "Home Decor", "Accessory"];
 const SKILL_FILTERS = ["All Skill Levels", "Easy", "Intermediate", "Advanced"];
-const SORT_OPTIONS = ["Popular", "Most Recent", "Most Saves"];
+const SORT_OPTIONS = ["Popular", "Most Recent"];
+
+function diffColor(skill: string): string {
+  const s = skill.toLowerCase();
+  if (s.startsWith("adv")) return "#C24E6B";
+  if (s.startsWith("int")) return "#D4921A";
+  return "#84934F";
+}
 
 export default function CommunityScreen({ onNavigate, onPatternSelect }: CommunityScreenProps) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All Types");
   const [skillFilter, setSkillFilter] = useState("All Skill Levels");
   const [sort, setSort] = useState("Popular");
-  const [liked, setLiked] = useState<Set<string>>(new Set());
 
-  const filtered = COMMUNITY_PATTERNS.filter(p => {
-    const matchSearch = p.title.toLowerCase().includes(search.toLowerCase()) ||
-                        p.creator.toLowerCase().includes(search.toLowerCase());
-    const matchType = typeFilter === "All Types" || p.type === typeFilter;
-    const matchSkill = skillFilter === "All Skill Levels" || p.difficulty === skillFilter;
-    return matchSearch && matchType && matchSkill;
+  const { data: patterns = [], isLoading } = useQuery<CommunityPattern[]>({ queryKey: ["/api/community"] });
+
+  const likeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiRequest("POST", `/api/community/${id}/like`, {});
+      if (!res.ok) throw new Error("like failed");
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/community"] }),
   });
 
-  const toggleLike = (id: string) => {
-    setLiked(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
-  };
+  const filtered = patterns
+    .filter((p) => {
+      const matchSearch =
+        p.title.toLowerCase().includes(search.toLowerCase()) ||
+        p.creator.toLowerCase().includes(search.toLowerCase());
+      const matchType = typeFilter === "All Types" || p.projectType === typeFilter;
+      const matchSkill = skillFilter === "All Skill Levels" || p.skillLevel === skillFilter;
+      return matchSearch && matchType && matchSkill;
+    })
+    .sort((a, b) => (sort === "Most Recent"
+      ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      : (b.likes || 0) - (a.likes || 0)));
 
   return (
     <div className="flex flex-col h-full overflow-y-auto pb-20 md:pb-6">
@@ -144,7 +106,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect }: Communi
               onChange={e => setSort(e.target.value)}
               className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer outline-none"
               style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.25)", color: "#6B4B38" }}>
-              {SORT_OPTIONS.map(o => <option key={o}>Sort: {o}</option>)}
+              {SORT_OPTIONS.map(o => <option key={o} value={o}>Sort: {o}</option>)}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none" style={{ color: "#9A7868" }} />
           </div>
@@ -153,49 +115,62 @@ export default function CommunityScreen({ onNavigate, onPatternSelect }: Communi
 
       {/* Grid */}
       <div className="px-4 pt-4">
-        <div className="grid grid-cols-3 gap-3">
-          {filtered.map(p => (
-            <div
-              key={p.id}
-              onClick={() => onNavigate("community-detail")}
-              className="rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
-              style={{ background: "rgba(255,252,245,0.95)", boxShadow: "0 2px 12px rgba(80,40,10,0.10)", border: "1px solid rgba(140,100,55,0.12)" }}>
-              {/* Image */}
-              <div className="relative aspect-square overflow-hidden">
-                <img src={p.img} alt={p.title} className="w-full h-full object-cover"
-                  onError={e => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80"; }} />
-                {/* Difficulty badge */}
-                <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold"
-                  style={{ background: "rgba(255,252,245,0.92)", color: p.diffColor }}>
-                  {p.difficulty}
+        {isLoading ? (
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="rounded-2xl aspect-square animate-pulse" style={{ background: "rgba(140,100,55,0.08)" }} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            {filtered.map(p => (
+              <div
+                key={p.id}
+                onClick={() => onPatternSelect?.(p.id)}
+                className="rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
+                style={{ background: "rgba(255,252,245,0.95)", boxShadow: "0 2px 12px rgba(80,40,10,0.10)", border: "1px solid rgba(140,100,55,0.12)" }}>
+                {/* Image */}
+                <div className="relative aspect-square overflow-hidden">
+                  {p.endProductImage ? (
+                    <img src={p.endProductImage} alt={p.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center"
+                      style={{ background: "linear-gradient(135deg, #FBF1F4, #F5EAF0)" }}>
+                      <span className="font-heading font-bold text-2xl" style={{ color: "#C24E6B", opacity: 0.3 }}>{p.title[0]}</span>
+                    </div>
+                  )}
+                  {/* Difficulty badge */}
+                  <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold"
+                    style={{ background: "rgba(255,252,245,0.92)", color: diffColor(p.skillLevel) }}>
+                    {p.skillLevel}
+                  </div>
+                </div>
+                {/* Info */}
+                <div className="px-2 pt-1.5 pb-2">
+                  <p className="font-heading font-bold text-[11px] leading-tight truncate" style={{ color: "#3D2318" }}>
+                    {p.title}
+                  </p>
+                  <p className="text-[10px] mt-0.5 truncate" style={{ color: "#9A7868" }}>
+                    by {p.creator}
+                  </p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <button onClick={e => { e.stopPropagation(); likeMutation.mutate(p.id); }}>
+                      <Heart className="h-3 w-3 fill-current" style={{ color: "#C24E6B" }} />
+                    </button>
+                    <span className="text-[10px] font-semibold" style={{ color: "#C24E6B" }}>{p.likes ?? 0}</span>
+                  </div>
                 </div>
               </div>
-              {/* Info */}
-              <div className="px-2 pt-1.5 pb-2">
-                <p className="font-heading font-bold text-[11px] leading-tight truncate" style={{ color: "#3D2318" }}>
-                  {p.title}
-                </p>
-                <p className="text-[10px] mt-0.5 truncate" style={{ color: "#9A7868" }}>
-                  by {p.creator}
-                </p>
-                <div className="flex items-center gap-1 mt-1">
-                  <button onClick={e => { e.stopPropagation(); toggleLike(p.id); }}>
-                    <Heart className={`h-3 w-3 ${liked.has(p.id) ? "fill-current" : ""}`}
-                      style={{ color: "#C24E6B" }} />
-                  </button>
-                  <span className="text-[10px] font-semibold" style={{ color: "#C24E6B" }}>{p.hearts}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {filtered.length === 0 && (
+        {!isLoading && filtered.length === 0 && (
           <div className="text-center py-16">
             <p className="font-heading font-semibold text-[15px]" style={{ color: "#9A7868" }}>
               No patterns found
             </p>
-            <p className="text-[13px] mt-1" style={{ color: "#B0908A" }}>Try a different search or filter</p>
+            <p className="text-[13px] mt-1" style={{ color: "#B0908A" }}>Try a different search or share your own!</p>
           </div>
         )}
       </div>

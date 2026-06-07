@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '../lib/queryClient';
+import { apiRequest, queryClient } from '../lib/queryClient';
 import { Pattern, PatternSection as PatternSectionType, PatternStep, ViewType } from '../lib/types';
 import PatternSection from './PatternSection';
 import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
 import StitchCounter from './StitchCounter';
 import { cn } from '../lib/utils';
-import { RefreshCw, Download, Plus, Image, Hash, Heart, CheckCircle2, Play } from 'lucide-react';
+import { RefreshCw, Download, Plus, Image, Hash, Heart, CheckCircle2, Play, Share2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
@@ -87,6 +87,36 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         variant: "destructive",
       });
     },
+  });
+
+  // Publish this pattern to the Community Library (publish-from-library path)
+  const shareToCommunityMutation = useMutation({
+    mutationFn: async () => {
+      const body = {
+        title: pattern.title,
+        creator: 'Larissa',
+        projectType: pattern.projectType,
+        skillLevel: pattern.skillLevel,
+        description: pattern.description || '',
+        endProductImage: pattern.endProductImage,
+        yarnType: pattern.yarnType,
+        size: pattern.size,
+        sections: pattern.sections,
+        yarnRequirements: pattern.yarnRequirements || [],
+        hookRequirements: pattern.hookRequirements || [],
+        notionsRequirements: pattern.notionsRequirements || [],
+        toolRequirements: pattern.toolRequirements || [],
+        needsStuffing: pattern.needsStuffing,
+      };
+      const res = await apiRequest('POST', '/api/community', body);
+      if (!res.ok) throw new Error('share failed');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/community'] });
+      toast({ title: 'Shared to Community ✨', description: 'Your pattern is now in the Community Library.' });
+    },
+    onError: () => toast({ title: 'Could not share pattern', variant: 'destructive' }),
   });
 
   // Regenerate steps mutation
@@ -724,6 +754,14 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                     style={{ background: "rgba(132,147,79,0.1)", color: "#84934F", border: "1px solid rgba(132,147,79,0.2)" }}
                   >
                     <RefreshCw className="h-3 w-3" /> New Image
+                  </button>
+                  <button
+                    onClick={() => shareToCommunityMutation.mutate()}
+                    disabled={shareToCommunityMutation.isPending}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+                    style={{ background: "rgba(124,95,168,0.1)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.2)" }}
+                  >
+                    <Share2 className="h-3 w-3" /> {shareToCommunityMutation.isPending ? "Sharing…" : "Share"}
                   </button>
                 </div>
               </div>

@@ -29,8 +29,14 @@ import { AnimatePresence, motion } from "framer-motion";
 function App() {
   const [activeView, setActiveView] = useState<ViewType>("splash");
   const [currentPattern, setCurrentPattern] = useState<Pattern | null>(null);
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string | null>(null);
 
   const navigateToView = (view: ViewType) => setActiveView(view);
+
+  const handleCommunitySelected = (id: string) => {
+    setSelectedCommunityId(id);
+    setActiveView("community-detail");
+  };
 
   const handlePatternCreated = (pattern: Pattern) => {
     setCurrentPattern(pattern);
@@ -179,11 +185,15 @@ function App() {
               )}
 
               {activeView === "community" && (
-                <CommunityScreen onNavigate={navigateToView} />
+                <CommunityScreen onNavigate={navigateToView} onPatternSelect={handleCommunitySelected} />
               )}
 
               {activeView === "community-detail" && (
-                <CommunityDetailScreen onNavigate={navigateToView} />
+                <CommunityDetailScreen
+                  onNavigate={navigateToView}
+                  communityId={selectedCommunityId}
+                  onPatternSelected={handlePatternLoaded}
+                />
               )}
 
               {activeView === "community-submit" && (

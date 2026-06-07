@@ -6,13 +6,17 @@ import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
 import { generateImage } from "./api/generateImage";
 import { analyzeAlignment } from "./api/analyzeAlignment";
+import { communityService } from "./communityService";
 import { patternService } from "./patternService";
 import { stashService } from "./stashService";
-import { patternSchema, stashItemSchema } from "../shared/schema";
+import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
 import { z } from "zod";
 import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject, getObjectDataUrl } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Seed the community gallery on first boot (no-op if already populated).
+  communityService.seedIfEmpty().catch((e) => console.error("Community seed failed:", e));
+
   // Serve stored media objects from object storage
   app.get("/api/media/:key", async (req: Request, res: Response) => {
     try {
@@ -717,6 +721,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error regenerating pattern:', error);
       res.status(500).json({ success: false, message: "Failed to regenerate pattern" });
     }
+  });
+
+  // ── Community ───────────────────────────────────────────────────────────────
+  app.get("/api/community", async (_req: Request, res: Response) => {
+    const items = await communityService.getAll();
+    res.json(items);
+  });
+
+  app.get("/api/community/:id", async (req: Request, res: Response) => {
+    const item = await communityService.getById(req.params.id);
+    if (!item) return res.status(404).json({ message: "Community pattern not found" });
+    res.json(item);
+  });
+
+  app.post("/api/community", async (req: Request, res: Response) => {
+    try {
+      const parsed = insertCommunityPatternSchema.parse(req.body);
+
+      // If a base64 data-URL image was supplied (standalone Share form), store it
+      // durably; publish-from-library passes an existing /api/media URL through.
+      if (parsed.endProductImage && parsed.endProductImage.startsWith("data:")) {
+        const mimeMatch = parsed.endProductImage.match(/^data:(image\/\w+);base64,/);
+        const contentType = mimeMatch ? mimeMatch[1] : "image/png";
+        const base64 = parsed.endProductImage.replace(/^data:image\/\w+;base64,/, "");
+        parsed.endProductImage = await uploadBuffer(Buffer.from(base64, "base64"), contentType);
+      }
+
+      const created = await communityService.create(parsed);
+      res.status(201).json(created);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid submission", errors: error.errors });
+      }
+      console.error("Error creating community pattern:", error);
+      res.status(500).json({ message: "Failed to share pattern" });
+    }
+  });
+
+  app.post("/api/community/:id/like", async (req: Request, res: Response) => {
+    const likes = await communityService.incrementLikes(req.params.id);
+    if (likes === undefined) return res.status(404).json({ message: "Community pattern not found" });
+    res.json({ success: true, likes });
   });
 
   const httpServer = createServer(app);
