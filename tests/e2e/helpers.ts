@@ -165,7 +165,8 @@ export async function enterApp(page: Page) {
  */
 export async function navByLabel(page: Page, labels: string[]) {
   for (const label of labels) {
-    const cands = page.getByRole("button", { name: label });
+    // exact:true so "Library" doesn't also match "Community Library".
+    const cands = page.getByRole("button", { name: label, exact: true });
     const n = await cands.count();
     for (let i = 0; i < n; i++) {
       const c = cands.nth(i);

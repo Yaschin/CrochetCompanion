@@ -55,7 +55,8 @@ for (const screen of PRIMARY) {
   test(`${screen.name} renders cleanly`, async ({ page, consoleErrors }, testInfo) => {
     await enterApp(page);
     if (screen.labels) await navByLabel(page, screen.labels);
-    await expect(page.getByText(screen.expectText).first()).toBeVisible({ timeout: 10000 });
+    // Scope to <main> so the always-in-DOM (mobile-hidden) Sidebar isn't matched.
+    await expect(page.locator("main").getByText(screen.expectText).first()).toBeVisible({ timeout: 10000 });
     await snap(page, testInfo, screen.name);
     expect(realConsoleErrors(consoleErrors)).toEqual([]);
   });
@@ -73,7 +74,7 @@ test("community gallery renders cleanly", async ({ page, consoleErrors }, testIn
     await page.getByRole("button", { name: /Community Library/i }).first().click();
     await page.waitForTimeout(350);
   }
-  await expect(page.getByText(/Community Library/i).first()).toBeVisible({ timeout: 10000 });
+  await expect(page.locator("main").getByText(/Community Library/i).first()).toBeVisible({ timeout: 10000 });
   await snap(page, testInfo, "community");
   expect(realConsoleErrors(consoleErrors)).toEqual([]);
 });
@@ -112,11 +113,6 @@ test("community submit wizard renders", async ({ page, consoleErrors }, testInfo
 test("pattern viewer renders from the library", async ({ page, consoleErrors }, testInfo) => {
   await enterApp(page);
   await navByLabel(page, ["Library"]);
-  // DIAGNOSTIC: capture where we landed + whether the library rendered the card.
-  await page.waitForTimeout(600);
-  const cuddleCount = await page.getByText("Cuddle Bunny").count();
-  const bodySnippet = (await page.locator("body").innerText().catch(() => "")).replace(/\s+/g, " ").slice(0, 240);
-  console.log(`[diag viewer] url=${page.url()} cuddleBunnyCount=${cuddleCount} body="${bodySnippet}"`);
   await page.getByText("Cuddle Bunny").first().click();
   await expect(page.getByRole("button", { name: /Overview/i }).first()).toBeVisible({ timeout: 10000 });
   await snap(page, testInfo, "viewer");
