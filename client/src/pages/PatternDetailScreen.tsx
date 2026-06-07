@@ -7,13 +7,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import StashCoverage from "../components/StashCoverage";
+import PatternAdaptCard from "../components/PatternAdaptCard";
 
 interface PatternDetailScreenProps {
   pattern: Pattern;
   onNavigate: (view: ViewType) => void;
+  onOpenPattern?: (pattern: Pattern) => void;
 }
 
-export default function PatternDetailScreen({ pattern, onNavigate }: PatternDetailScreenProps) {
+export default function PatternDetailScreen({ pattern, onNavigate, onOpenPattern }: PatternDetailScreenProps) {
   const { toast } = useToast();
   const [showMore, setShowMore] = useState(false);
   const [isFav, setIsFav] = useState(pattern.favorite ?? false);
@@ -158,6 +160,9 @@ export default function PatternDetailScreen({ pattern, onNavigate }: PatternDeta
 
         {/* Can I make this? — real stash coverage */}
         <StashCoverage pattern={pattern} onOpenStash={() => onNavigate("stash")} />
+
+        {/* Adapt: resize / swap yarn (AI) */}
+        <PatternAdaptCard pattern={pattern} onOpenPattern={onOpenPattern} />
 
         {/* Action buttons */}
         <div className="flex flex-col gap-3">
