@@ -905,7 +905,9 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
           </div>
         </div>
         <div className="flex items-center gap-2.5">
-          <button className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
+          <button
+            onClick={() => onNavigate("search")}
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
             style={{ background: "rgba(255,252,245,0.8)", border: "1px solid rgba(140,100,55,0.2)" }}>
             <Search className="h-4 w-4" style={{ color: "#9A7868" }} />
           </button>
@@ -938,9 +940,8 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
           onNavigate={onNavigate}
         />
 
-        {/* Action cards — overlap hero by 32px */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10"
-          style={{ marginTop: -28 }}>
+        {/* Action cards — slight overlap on sm+, flush on mobile so characters don't clash */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10 mt-3 sm:-mt-7">
           <div style={{ minHeight: 190 }}>
             <ContinueProjectCard pattern={activePattern} onNavigate={onNavigate} />
           </div>

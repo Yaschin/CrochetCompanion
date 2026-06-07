@@ -141,30 +141,25 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
       <FloatingFlower x={20} y={85} color="#C24E6B" size={18} delay={3.0} />
       <FloatingFlower x={72} y={82} color="#84934F" size={20} delay={1.5} />
 
-      {/* Main content */}
-      <motion.div
-        className="flex flex-col items-center z-10"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      >
+      {/* Main content — no parent fade, each element animates independently */}
+      <div className="flex flex-col items-center z-10">
         {/* Logo */}
         <div className="text-center mb-6">
           <motion.p
             className="font-script leading-none"
             style={{ fontSize: "3.8rem", color: "#A83050", fontWeight: 700 }}
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.15, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ delay: 0.05, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
             Crochet
           </motion.p>
           <motion.p
             className="font-script leading-none"
             style={{ fontSize: "3.8rem", color: "#A83050", fontWeight: 700, marginTop: "-8px" }}
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.25, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ delay: 0.12, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
             Time ♥
           </motion.p>
@@ -173,7 +168,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
             style={{ color: "#9A7868", letterSpacing: "0.18em" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.45 }}
+            transition={{ delay: 0.22, duration: 0.4 }}
           >
             Your creative companion
           </motion.p>
@@ -181,9 +176,9 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
 
         {/* Yarn ball */}
         <motion.div
-          initial={{ scale: 0, opacity: 0 }}
+          initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6, type: "spring", bounce: 0.4 }}
+          transition={{ delay: 0.18, duration: 0.5, type: "spring", bounce: 0.4 }}
         >
           <YarnBallAnim />
         </motion.div>
@@ -191,9 +186,9 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
         {/* Tag line */}
         <motion.div
           className="text-center mt-6 mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
         >
           <p className="font-heading font-semibold text-[16px]" style={{ color: "#5C3A28" }}>
             Patterns made for you, by Yala ✨
@@ -203,7 +198,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
           </p>
         </motion.div>
 
-        {/* Enter button — never fully invisible */}
+        {/* Enter button */}
         <motion.button
           onClick={() => onNavigate("home")}
           className="flex items-center gap-3 rounded-full px-8 py-4 font-heading font-bold text-[16px] transition-all hover:scale-105 active:scale-95"
@@ -212,9 +207,9 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
             color: "white",
             boxShadow: "0 8px 30px rgba(194,78,107,0.45), 0 2px 8px rgba(60,20,30,0.2)",
           }}
-          initial={{ opacity: 0.01, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.5 }}
+          transition={{ delay: 0.4, duration: 0.4 }}
           whileHover={{ boxShadow: "0 10px 36px rgba(194,78,107,0.55)" }}
         >
           Enter Your Studio
@@ -224,9 +219,9 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
         {/* Character row — actual PNG images */}
         <motion.div
           className="flex gap-3 mt-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.85 }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.4 }}
         >
           {CHARACTERS.map((c) => (
             <div key={c.id} className="flex flex-col items-center gap-1">
@@ -257,7 +252,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
             </div>
           ))}
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }

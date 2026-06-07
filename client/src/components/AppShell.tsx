@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Home, Wand2, BookOpen, Heart, Archive } from "lucide-react";
+import { Home, Wand2, BookOpen, Search, Archive } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { ViewType } from "../lib/types";
 
@@ -14,7 +14,7 @@ const TABS = [
   { view: "home"    as ViewType, label: "Home",    Icon: Home },
   { view: "input"   as ViewType, label: "Create",  Icon: Wand2 },
   { view: "library" as ViewType, label: "Library", Icon: BookOpen },
-  { view: "library" as ViewType, label: "Faves",   Icon: Heart },
+  { view: "search"  as ViewType, label: "Search",  Icon: Search },
   { view: "stash"   as ViewType, label: "Stash",   Icon: Archive },
 ];
 
@@ -28,8 +28,8 @@ export default function AppShell({ activeView, onNavigate, rightPanel, children 
 
       {/* Main + optional right panel */}
       <div className="flex flex-1 min-w-0 overflow-hidden">
-        {/* Main content */}
-        <main className="flex-1 min-w-0 overflow-y-auto flex flex-col">
+        {/* Main content — overflow-hidden so inner screens manage their own scroll */}
+        <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
           {children}
         </main>
 
@@ -84,7 +84,7 @@ export default function AppShell({ activeView, onNavigate, rightPanel, children 
                   height: 20,
                   position: "relative",
                   strokeWidth: active ? 2.2 : 1.8,
-                  fill: active && item.label === "Faves" ? "#C24E6B" : "none",
+                  fill: "none",
                 }}
               />
               <span

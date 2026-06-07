@@ -95,42 +95,50 @@ function App() {
               )}
 
               {activeView === "input" && (
-                <div className="px-6 py-6">
+                <div className="flex flex-col h-full overflow-y-auto px-6 py-6 pb-20 md:pb-6">
                   <PatternInputRefactored onPatternCreated={handlePatternCreated} />
                 </div>
               )}
 
               {activeView === "viewer" && currentPattern && (
-                <div className="px-6 py-4">
-                  <div className="flex items-center gap-2 mb-4">
+                <div className="flex flex-col h-full overflow-y-auto px-4 md:px-6 py-4 pb-20 md:pb-6">
+                  {/* Viewer toolbar — wraps on mobile */}
+                  <div className="flex flex-wrap items-center gap-2 mb-4">
                     <button
                       onClick={() => navigateToView("library")}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors hover:opacity-75"
+                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
                       style={{ color: "#C24E6B", background: "rgba(194,78,107,0.08)", border: "1px solid rgba(194,78,107,0.2)" }}
                     >
-                      <ChevronLeft className="h-4 w-4" />
-                      Back to My Patterns
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                      Patterns
                     </button>
                     <button
                       onClick={() => navigateToView("progress")}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors hover:opacity-75"
+                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
                       style={{ color: "#84934F", background: "rgba(132,147,79,0.08)", border: "1px solid rgba(132,147,79,0.2)" }}
                     >
-                      📊 Track Progress
+                      📊 Progress
                     </button>
                     <button
                       onClick={() => navigateToView("stitch-counter")}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors hover:opacity-75"
+                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
                       style={{ color: "#7C5FA8", background: "rgba(124,95,168,0.08)", border: "1px solid rgba(124,95,168,0.2)" }}
                     >
                       🧮 Counter
                     </button>
                     <button
                       onClick={() => navigateToView("yarn-recs")}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors hover:opacity-75"
+                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
                       style={{ color: "#D4921A", background: "rgba(212,146,26,0.08)", border: "1px solid rgba(212,146,26,0.2)" }}
                     >
-                      🧶 Yarn Picks
+                      🧶 Yarn
+                    </button>
+                    <button
+                      onClick={() => navigateToView("photo-upload")}
+                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
+                      style={{ color: "#3D8FA3", background: "rgba(60,143,163,0.08)", border: "1px solid rgba(60,143,163,0.2)" }}
+                    >
+                      📷 Photos
                     </button>
                   </div>
                   <PatternViewer
@@ -141,7 +149,7 @@ function App() {
               )}
 
               {activeView === "viewer" && !currentPattern && (
-                <div className="px-6 py-6 flex flex-col items-center justify-center h-full gap-4">
+                <div className="px-6 py-6 pb-20 md:pb-6 flex flex-col items-center justify-center h-full gap-4">
                   <p className="font-heading font-semibold text-[16px]" style={{ color: "#9A7868" }}>
                     No pattern selected
                   </p>
@@ -153,7 +161,7 @@ function App() {
               )}
 
               {activeView === "library" && (
-                <div className="px-6 py-6">
+                <div className="flex flex-col h-full overflow-y-auto px-6 py-6 pb-20 md:pb-6">
                   <PatternLibrary
                     onPatternSelected={handlePatternLoaded}
                     onCreateNew={() => navigateToView("input")}
@@ -162,7 +170,7 @@ function App() {
               )}
 
               {activeView === "stash" && (
-                <div className="px-6 py-6">
+                <div className="flex flex-col h-full overflow-y-auto px-6 py-6 pb-20 md:pb-6">
                   <MaterialsInventory />
                 </div>
               )}
