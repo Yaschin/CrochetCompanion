@@ -78,6 +78,16 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
     setFormData((prev: PatternInputFormData) => ({ ...prev, skillLevel: level }));
   };
 
+  // Convert a File to a base64 data URL so the image bytes can be sent to the
+  // vision model (OpenAI accepts data URLs as image_url input).
+  const fileToDataUrl = (f: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(f);
+    });
+
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -106,12 +116,13 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       
       setFile(selectedFile);
       
-      // Update the prompt with file description
+      // Seed a prompt only if empty; the actual image bytes are sent to the
+      // vision model at generation time (see generatePatternMutation).
       setFormData((prev: PatternInputFormData) => ({
         ...prev,
-        prompt: prev.prompt 
-          ? `${prev.prompt} (Reference image: ${selectedFile.name})`
-          : `Create a crochet pattern based on the uploaded reference image (${selectedFile.name})`
+        prompt: prev.prompt
+          ? prev.prompt
+          : `Create a crochet pattern based on the attached reference image.`
       }));
       
       toast({
@@ -126,12 +137,14 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   // Generate pattern mutation
   const generatePatternMutation = useMutation({
     mutationFn: async (data: PatternInputFormData) => {
+      const referenceImage = file ? await fileToDataUrl(file) : undefined;
       const res = await apiRequest('POST', '/api/generate-pattern', {
         prompt: data.prompt,
         projectType: data.projectType,
         skillLevel: data.skillLevel,
         yarnType: data.yarnType || undefined,
-        size: data.size || undefined
+        size: data.size || undefined,
+        referenceImage
       });
       return res.json();
     }

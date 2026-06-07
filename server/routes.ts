@@ -27,8 +27,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate pattern endpoint
   app.post("/api/generate-pattern", async (req: Request, res: Response) => {
     try {
-      const { prompt, projectType, skillLevel, yarnType, size } = req.body;
-      
+      const { prompt, projectType, skillLevel, yarnType, size, referenceImage } = req.body;
+
       if (!prompt || !projectType || !skillLevel) {
         return res.status(400).json({ message: "Missing required fields" });
       }
@@ -38,7 +38,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         projectType,
         skillLevel,
         yarnType,
-        size
+        size,
+        referenceImage
       });
 
       res.json(generatedPattern);

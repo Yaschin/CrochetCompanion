@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { uploadFromUrl } from "../objectStorage";
+import { uploadFromUrl, uploadBuffer } from "../objectStorage";
 
 // Check if OpenAI API key is available and validate its format
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
@@ -14,9 +14,13 @@ if (!API_KEY_AVAILABLE) {
 }
 
 // Initialize OpenAI only if API key is available and valid
-const openai = (API_KEY_AVAILABLE && API_KEY_VALID_FORMAT) 
-  ? new OpenAI({ apiKey: OPENAI_API_KEY.trim() }) 
+const openai = (API_KEY_AVAILABLE && API_KEY_VALID_FORMAT)
+  ? new OpenAI({ apiKey: OPENAI_API_KEY.trim() })
   : null;
+
+// Image model. dall-e-3 was retired from the OpenAI API; default to a current
+// image model. Override via OPENAI_IMAGE_MODEL (e.g. "gpt-image-1-mini", "gpt-image-2").
+const IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1";
 
 interface ImageGenerationRequest {
   prompt: string;
@@ -105,21 +109,29 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
       };
 
       // Race the actual API call against the timeout
-      const requestTimeout = 30000; // 30 seconds timeout
+      const requestTimeout = 60000; // 60s — current image models can be slower than dall-e-3
       const response = await Promise.race([
         openai.images.generate({
-          model: "dall-e-3",
+          model: IMAGE_MODEL,
           prompt: enhancedPrompt,
           n: 1,
           size: "1024x1024",
-          quality: "standard",
+          quality: (type === "final" ? "high" : "medium") as any,
         }),
         timeout(requestTimeout)
       ]);
 
-      const openaiUrl = response.data?.[0]?.url;
-      if (!openaiUrl) return "";
-      return await uploadFromUrl(openaiUrl);
+      // gpt-image-1 returns base64 image data (not a hosted URL like dall-e-3 did),
+      // so decode and store it durably in object storage. Fall back to URL if present.
+      const img = response.data?.[0] as any;
+      if (img?.b64_json) {
+        const buffer = Buffer.from(img.b64_json, "base64");
+        return await uploadBuffer(buffer, "image/png");
+      }
+      if (img?.url) {
+        return await uploadFromUrl(img.url);
+      }
+      return "";
     } catch (err) {
       console.error(`Image generation attempt ${attempt + 1}/${maxRetries} failed:`, err);
       

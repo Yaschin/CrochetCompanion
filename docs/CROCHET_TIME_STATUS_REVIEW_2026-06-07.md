@@ -156,4 +156,25 @@ Batch A (foundation & honest core) was implemented on branch `claude/batch-a-fou
 
 ---
 
-*End of review. (§1–§5 produced with no code changes; §6 logs the Batch A implementation that followed.)*
+## 7. Batch B — Execution Log (2026-06-07)
+
+Implemented on `claude/batch-b-ai-upgrade` (stacked on Batch A).
+
+**Context discovered:** a web check confirmed **`dall-e-3` was removed from the OpenAI API on 2026-05-12** — so image generation was effectively **broken in production**, making this batch necessary rather than optional. `gpt-4o` is likewise superseded.
+
+**Done (Decision 3 — upgrade now + real reference image):**
+1. **Image model** — `dall-e-3` → **`gpt-image-1`** (`server/api/generateImage.ts`). gpt-image-1 returns base64 (not a hosted URL), so the response is decoded and stored via `uploadBuffer`; URL fallback retained. Quality maps `final→high`, others→`medium`; timeout raised to 60s.
+2. **Text + vision model** — `gpt-4o` → **`gpt-4.1`** in both call sites (`server/api/generatePattern.ts`).
+3. **Real reference-image input** — the inspiration image is now sent to the vision model as actual bytes (base64 data URL) instead of only appending the filename. Wired client → route → `generatePattern` (`PatternInputRefactored.tsx`, `routes.ts`, `generatePattern.ts`), with a system-prompt instruction to match the image's subject/shape/colours/style.
+
+**Model choice & override:** both models are **env-overridable** — `OPENAI_TEXT_MODEL` and `OPENAI_IMAGE_MODEL`. Defaults (`gpt-4.1`, `gpt-image-1`) are confirmed-available, vision-capable, cost-reasonable choices. To move tiers (flagship `gpt-5.5`/`gpt-5.4`, or cheaper `gpt-image-1-mini`), set the env var — no code change. **Provider remains OpenAI** (confirm if that should change).
+
+**Not in this batch:** the regenerate "based on section image" path is still text-only (it references the section in the prompt but doesn't yet send the stored section image to the vision model — would need a server-side fetch of the object-storage bytes). Flagged as a small follow-up.
+
+**Verification:** `tsc` clean except the 2 environment-only `@google-cloud/storage` "cannot find module" errors. Build/live unverifiable here (broken sandbox esbuild + no OpenAI key) — **re-verify generation end-to-end on a real environment**, confirming the chosen model IDs are valid for the account and that reference-image generation visibly reflects the uploaded image.
+
+**Next:** Batch C (real vision-based alignment-check — reuses this batch's vision wiring), then Batch D (Community backend).
+
+---
+
+*End of review. (§1–§5 produced with no code changes; §6–§7 log the Batch A and B implementations that followed.)*
