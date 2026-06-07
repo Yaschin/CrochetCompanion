@@ -333,11 +333,19 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
 
   const activeCategory = CATEGORIES.find(c => c.id === formData.projectType);
 
+  const YALA_TIPS = [
+    "Pick a category and I'll tailor the pattern just for you! 🐾",
+    "More detail = a better pattern. Tell me everything! ✨",
+    "Great colour choices make the magic happen 🎨",
+    "A reference photo helps me imagine exactly what you want!",
+    "I've got everything I need — let's create something beautiful! 🌟",
+  ];
+
   return (
     <div className="flex flex-col gap-0 max-w-lg mx-auto w-full">
 
       {/* Progress bar */}
-      <div className="flex items-center gap-1.5 mb-6">
+      <div className="flex items-center gap-1.5 mb-4">
         {WIZARD_STEPS.map((label, i) => (
           <div key={label} className="flex items-center gap-1.5 flex-1">
             <div className="flex flex-col items-center gap-1 flex-shrink-0">
@@ -360,6 +368,17 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
             )}
           </div>
         ))}
+      </div>
+
+      {/* Yala floating tip */}
+      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl mb-5"
+        style={{ background: "rgba(124,95,168,0.07)", border: "1px dashed rgba(124,95,168,0.22)" }}>
+        <img src="/characters/char-yala-transparent.png" alt="Yala"
+          style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }}
+          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+        <p className="text-[12px] italic leading-snug" style={{ color: "#7C5FA8" }}>
+          "{YALA_TIPS[wizardStep]}"
+        </p>
       </div>
 
       {/* ── Step 0: What are you making? ── */}

@@ -22,6 +22,7 @@ import CommunityScreen from "./pages/CommunityScreen";
 import CommunityDetailScreen from "./pages/CommunityDetailScreen";
 import CommunitySubmitScreen from "./pages/CommunitySubmitScreen";
 import PatternDetailScreen from "./pages/PatternDetailScreen";
+import ProjectsScreen from "./pages/ProjectsScreen";
 import { Pattern, ViewType } from "./lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -160,9 +161,10 @@ function App() {
               )}
 
               {activeView === "projects" && (
-                <div className="flex flex-col h-full overflow-y-auto px-6 py-6 pb-20 md:pb-6">
-                  <MaterialsInventory />
-                </div>
+                <ProjectsScreen
+                  onNavigate={navigateToView}
+                  onPatternSelected={handlePatternLoaded}
+                />
               )}
 
               {activeView === "search" && (

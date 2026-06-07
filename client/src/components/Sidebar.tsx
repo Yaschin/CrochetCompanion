@@ -14,7 +14,7 @@ const PRIMARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Hom
   { id: "studio",    view: "input",     label: "AI Studio", icon: Wand2 },
   { id: "library",   view: "library",   label: "Library",   icon: BookOpen },
   { id: "favorites", view: "favorites", label: "Favorites", icon: Heart },
-  { id: "projects",  view: "stash",     label: "Stash",     icon: BasketIcon as typeof Home },
+  { id: "projects",  view: "projects",  label: "Projects",  icon: BasketIcon as typeof Home },
 ];
 
 const SECONDARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Home }[] = [
