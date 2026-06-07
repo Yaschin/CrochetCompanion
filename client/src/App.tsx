@@ -23,6 +23,7 @@ import CommunityDetailScreen from "./pages/CommunityDetailScreen";
 import CommunitySubmitScreen from "./pages/CommunitySubmitScreen";
 import PatternDetailScreen from "./pages/PatternDetailScreen";
 import ProjectsScreen from "./pages/ProjectsScreen";
+import SettingsScreen from "./pages/SettingsScreen";
 import { Pattern, ViewType } from "./lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -224,6 +225,10 @@ function App() {
                   pattern={currentPattern}
                   onNavigate={navigateToView}
                 />
+              )}
+
+              {activeView === "settings" && (
+                <SettingsScreen onNavigate={navigateToView} />
               )}
 
             </ErrorBoundary>

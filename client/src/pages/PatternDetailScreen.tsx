@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ChevronLeft, Download, Copy, Heart, RefreshCw } from "lucide-react";
+import { ChevronLeft, Download, Copy, Heart, RefreshCw, Printer } from "lucide-react";
+import { printPattern } from "../lib/printPattern";
 import { motion } from "framer-motion";
 import { Pattern, ViewType } from "../lib/types";
 import { useToast } from "@/hooks/use-toast";
@@ -167,6 +168,15 @@ export default function PatternDetailScreen({ pattern, onNavigate }: PatternDeta
               boxShadow: "0 6px 24px rgba(194,78,107,0.35)" }}>
             <Download className="h-4.5 w-4.5" style={{ width: 18, height: 18 }} />
             Download Pattern
+          </button>
+
+          <button
+            onClick={() => printPattern(pattern)}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-heading font-bold text-[14px] transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{ background: "rgba(60,143,163,0.10)", color: "#3D8FA3",
+              border: "1.5px solid rgba(60,143,163,0.25)" }}>
+            <Printer className="h-4 w-4" />
+            Print / Save as PDF
           </button>
 
           <button

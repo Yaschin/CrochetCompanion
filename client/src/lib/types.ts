@@ -111,4 +111,5 @@ export type ViewType =
   | "photo-upload"
   | "stitch-counter"
   | "yarn-recs"
-  | "pattern-detail";
+  | "pattern-detail"
+  | "settings";
