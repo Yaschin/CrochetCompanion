@@ -2,8 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Search, Bell, ImageIcon, Loader2, ChevronRight,
-  Heart, Wand2, FolderOpen, Trophy,
+  Search, Bell, Loader2, ChevronRight, MoreHorizontal,
+  Heart, Wand2, FolderOpen, Trophy, ChevronRight as ChevRight,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Pattern, ViewType } from "../lib/types";
@@ -13,8 +13,6 @@ interface HomeWorkbenchProps {
   currentPattern?: Pattern | null;
   onPatternSelected?: (p: Pattern) => void;
 }
-
-// ─── Data ──────────────────────────────────────────────────────────────────────
 
 const CHAR = {
   aloo:  { color: "#C24E6B", light: "#FBF1F4", mid: "#F0CACF", label: "Aloo" },
@@ -37,7 +35,7 @@ function patternProgress(p: Pattern) {
   return steps.length > 0 ? Math.round((done / steps.length) * 100) : 0;
 }
 
-// ─── Small SVG decorations ─────────────────────────────────────────────────────
+// ─── SVG decorations ──────────────────────────────────────────────────────────
 
 function CrochetFlower({ x, y, color, size = 24, rotate = 0 }: {
   x: number; y: number; color: string; size?: number; rotate?: number;
@@ -49,10 +47,10 @@ function CrochetFlower({ x, y, color, size = 24, rotate = 0 }: {
         const rad = (a * Math.PI) / 180;
         const cx = Math.cos(rad)*pr, cy = Math.sin(rad)*pr;
         return <ellipse key={a} cx={cx} cy={cy} rx={r*0.38} ry={r*0.25}
-          transform={`rotate(${a},${cx},${cy})`} fill={color} fillOpacity="0.75" />;
+          transform={`rotate(${a},${cx},${cy})`} fill={color} fillOpacity="0.8" />;
       })}
       <circle r={r*0.26} fill={color} fillOpacity="0.95" />
-      <circle r={r*0.12} fill="white"  fillOpacity="0.55" />
+      <circle r={r*0.12} fill="white" fillOpacity="0.6" />
     </g>
   );
 }
@@ -60,92 +58,181 @@ function CrochetFlower({ x, y, color, size = 24, rotate = 0 }: {
 function YarnBall({ x, y, color, r = 18 }: { x:number; y:number; color:string; r?:number }) {
   return (
     <g transform={`translate(${x},${y})`}>
-      <circle r={r} fill={color} fillOpacity="0.55" />
-      <circle r={r} fill="none" stroke={color} strokeWidth="1" strokeOpacity="0.4" />
-      <ellipse rx={r*0.72} ry={r*0.32} fill="none" stroke="white" strokeWidth="0.9" strokeOpacity="0.35" />
-      <ellipse rx={r*0.72} ry={r*0.32} fill="none" stroke="white" strokeWidth="0.9" strokeOpacity="0.25"
+      <circle r={r} fill={color} fillOpacity="0.6" />
+      <ellipse rx={r*0.72} ry={r*0.28} fill="none" stroke="white" strokeWidth="1.1" strokeOpacity="0.4" />
+      <ellipse rx={r*0.72} ry={r*0.28} fill="none" stroke="white" strokeWidth="1.1" strokeOpacity="0.3"
         transform="rotate(60)" />
-      <ellipse rx={r*0.72} ry={r*0.32} fill="none" stroke="white" strokeWidth="0.9" strokeOpacity="0.25"
+      <ellipse rx={r*0.72} ry={r*0.28} fill="none" stroke="white" strokeWidth="1.1" strokeOpacity="0.3"
         transform="rotate(-60)" />
+      <circle r={r*0.28} fill="white" fillOpacity="0.12" cx={-r*0.22} cy={-r*0.22} />
     </g>
   );
 }
 
-// ─── Character oval (hero) ────────────────────────────────────────────────────
-
-function CharacterOval({
-  charKey, width, height, imageUrl, isGenerating,
-}: {
-  charKey: keyof typeof CHAR; width: number; height: number;
-  imageUrl: string | null; isGenerating: boolean;
-}) {
-  const c = CHAR[charKey];
-  const br = "50% 50% 46% 46% / 54% 54% 46% 46%";
-  // Try static path first (instant load), fall back to API url, then to placeholder
-  const staticUrl = `/characters/char-${charKey}.png`;
-  const [src, setSrc] = useState<string | null>(staticUrl);
-  const [failed, setFailed] = useState(false);
-
-  // If static url fails, fall back to the API-provided url
-  const handleError = () => {
-    if (src === staticUrl && imageUrl) {
-      setSrc(imageUrl);
-    } else {
-      setSrc(null);
-      setFailed(true);
-    }
-  };
-
-  const showImage = src && !failed;
-  const showSpinner = isGenerating && !showImage;
-
+// Small flower for milestone dots
+function FlowerDot({ filled, color }: { filled: boolean; color: string }) {
   return (
-    <div
-      className="relative overflow-hidden flex-shrink-0 flex items-center justify-center"
-      style={{
-        width, height,
-        borderRadius: br,
-        border: `2.5px solid ${c.color}55`,
-        boxShadow: `0 16px 48px ${c.color}30, 0 4px 12px ${c.color}18, inset 0 1px 0 rgba(255,255,255,0.7)`,
-        background: showImage
-          ? undefined
-          : `radial-gradient(ellipse at 40% 32%, white 0%, ${c.light} 28%, ${c.mid} 70%, ${c.color}40 100%)`,
-      }}
-    >
-      {showImage ? (
-        <img src={src} alt={c.label} onError={handleError}
-          className="w-full h-full object-cover" style={{ borderRadius: br }} />
-      ) : showSpinner ? (
-        <Loader2 className="animate-spin" style={{ color: c.color, width: 26, height: 26 }} />
-      ) : (
-        <>
-          <svg className="absolute inset-0 w-full h-full opacity-[0.07]" viewBox="0 0 60 60">
-            <defs>
-              <pattern id={`dots-${charKey}`} x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-                <circle cx="4" cy="4" r="2.4" fill={c.color} />
-              </pattern>
-            </defs>
-            <rect width="60" height="60" fill={`url(#dots-${charKey})`} />
-          </svg>
-          <span className="font-heading font-bold select-none"
-            style={{ fontSize: width * 0.42, color: c.color, opacity: 0.2, letterSpacing: "-0.04em" }}>
-            {c.label[0]}
-          </span>
-          <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold"
-              style={{ background: `${c.color}20`, color: c.color, border: `1px solid ${c.color}40` }}>
-              {c.label}
-            </span>
-          </div>
-          <div className="absolute inset-0 rounded-t-full opacity-35 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.6), transparent)", height: "42%" }} />
-        </>
-      )}
-    </div>
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      {[0,72,144,216,288].map((a) => {
+        const rad = (a * Math.PI) / 180;
+        const cx = 7 + Math.cos(rad) * 3;
+        const cy = 7 + Math.sin(rad) * 3;
+        return <ellipse key={a} cx={cx} cy={cy} rx="2.2" ry="1.5"
+          transform={`rotate(${a},${cx},${cy})`}
+          fill={filled ? color : "none"} stroke={filled ? "none" : color}
+          strokeWidth="0.8" fillOpacity={filled ? 0.85 : 0} />;
+      })}
+      <circle cx="7" cy="7" r="2" fill={filled ? color : "none"}
+        stroke={filled ? "none" : color} strokeWidth="0.8" />
+    </svg>
   );
 }
 
-// ─── Hero zone ────────────────────────────────────────────────────────────────
+// ─── Hero zone (rich CSS scene + free-standing transparent chars) ──────────────
+
+function HeroScene() {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* Base warm wood gradient */}
+      <div className="absolute inset-0" style={{
+        background: "linear-gradient(175deg, #7A4A28 0%, #9A6035 12%, #B87A45 28%, #C8935A 42%, #D4A870 58%, #C8935A 72%, #A8723A 88%, #8A5528 100%)"
+      }} />
+
+      {/* Warm lamp glow — upper right */}
+      <div className="absolute" style={{
+        top: -60, right: -40, width: 340, height: 340,
+        background: "radial-gradient(ellipse, rgba(255,220,120,0.55) 0%, rgba(255,190,80,0.28) 35%, transparent 70%)",
+        borderRadius: "50%",
+      }} />
+
+      {/* Secondary ambient glow — left */}
+      <div className="absolute" style={{
+        top: -20, left: -60, width: 260, height: 260,
+        background: "radial-gradient(ellipse, rgba(255,200,100,0.22) 0%, transparent 65%)",
+        borderRadius: "50%",
+      }} />
+
+      {/* Wooden shelf top edge */}
+      <div className="absolute top-0 left-0 right-0" style={{ height: 28 }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(180deg, #5C3018 0%, #7A4828 60%, #9A6035 100%)",
+        }} />
+        {/* Shelf grain lines */}
+        {[18, 42, 70, 110, 148, 190, 240, 290, 340, 400, 460, 520, 580, 640, 700, 750].map((x, i) => (
+          <div key={i} className="absolute top-0 bottom-0" style={{
+            left: x, width: 1,
+            background: "linear-gradient(180deg, rgba(40,18,5,0.4) 0%, rgba(60,30,10,0.15) 100%)",
+          }} />
+        ))}
+        {/* Shelf front edge highlight */}
+        <div className="absolute bottom-0 left-0 right-0" style={{ height: 3, background: "linear-gradient(90deg, #A06030, #C08040, #A06030)", opacity: 0.7 }} />
+      </div>
+
+      {/* Shelf items SVG layer */}
+      <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet" style={{ pointerEvents: "none" }}>
+        {/* Yarn basket — left side on shelf */}
+        <g transform="translate(48, 2)">
+          {/* Basket body */}
+          <ellipse cx="28" cy="28" rx="26" ry="16" fill="#8B6035" fillOpacity="0.9" />
+          <rect x="2" y="16" width="52" height="22" rx="6" fill="#A07040" />
+          <rect x="2" y="16" width="52" height="22" rx="6" fill="none" stroke="#7A5025" strokeWidth="1.2" />
+          {/* Weave lines */}
+          {[20, 25, 30, 35].map(y => (
+            <line key={y} x1="2" y1={y} x2="54" y2={y} stroke="#7A5025" strokeWidth="0.7" strokeOpacity="0.6" />
+          ))}
+          {[10, 18, 26, 34, 42, 50].map(x => (
+            <line key={x} x1={x} y1="16" x2={x} y2="38" stroke="#7A5025" strokeWidth="0.7" strokeOpacity="0.5" />
+          ))}
+          {/* Handle */}
+          <path d="M 8 16 Q 28 4 48 16" fill="none" stroke="#8B6035" strokeWidth="3" strokeLinecap="round" />
+          {/* Yarn balls peeking out */}
+          <circle cx="16" cy="14" r="8" fill="#C24E6B" fillOpacity="0.9" />
+          <circle cx="28" cy="11" r="9" fill="#84934F" fillOpacity="0.9" />
+          <circle cx="40" cy="13" r="8" fill="#D4921A" fillOpacity="0.9" />
+          <ellipse cx="16" cy="14" rx="5.5" ry="2.5" fill="none" stroke="white" strokeWidth="0.8" strokeOpacity="0.5" />
+          <ellipse cx="28" cy="11" rx="6.5" ry="2.8" fill="none" stroke="white" strokeWidth="0.8" strokeOpacity="0.5" />
+          <ellipse cx="40" cy="13" rx="5.8" ry="2.5" fill="none" stroke="white" strokeWidth="0.8" strokeOpacity="0.5" />
+        </g>
+
+        {/* Ceramic mug — right of basket */}
+        <g transform="translate(118, 6)">
+          <ellipse cx="16" cy="7" rx="13" ry="5" fill="#7A9A70" fillOpacity="0.9" />
+          <rect x="3" y="7" width="26" height="24" rx="3" fill="#8AAA80" />
+          <ellipse cx="16" cy="31" rx="13" ry="5" fill="#7A9A70" fillOpacity="0.8" />
+          {/* Handle */}
+          <path d="M 29 13 Q 38 14 38 20 Q 38 26 29 27" fill="none" stroke="#7A9A70" strokeWidth="3" strokeLinecap="round" />
+          {/* Crochet heart on mug */}
+          <path d="M 12 16 Q 12 13 15 13 Q 16 13 16 14.5 Q 16 13 17 13 Q 20 13 20 16 Q 20 19 16 22 Q 12 19 12 16Z" fill="#C24E6B" fillOpacity="0.7" />
+        </g>
+
+        {/* Crochet hook standing up */}
+        <g transform="translate(158, 0)">
+          <rect x="3" y="1" width="4" height="28" rx="2" fill="#A07040" fillOpacity="0.8" />
+          <path d="M 3 4 Q 0 4 0 7 Q 0 10 4 10" fill="none" stroke="#8A6030" strokeWidth="1.5" strokeLinecap="round" />
+          <rect x="2" y="22" width="6" height="8" rx="1.5" fill="#C24E6B" fillOpacity="0.7" />
+        </g>
+
+        {/* Right side — yarn balls scattered on table */}
+        <YarnBall x={780} y={22} color="#7C5FA8" r={18} />
+        <YarnBall x={815} y={14} color="#3D8FA3" r={13} />
+        <YarnBall x={798} y={8}  color="#C24E6B" r={10} />
+
+        {/* Lavender sprigs — right of scene */}
+        <g transform="translate(845, 0)">
+          <line x1="10" y1="32" x2="10" y2="4" stroke="#9BA860" strokeWidth="2.2" strokeOpacity="0.8" />
+          <ellipse cx="10" cy="2"  rx="4"   ry="8"   fill="#9878C0" fillOpacity="0.65" />
+          <ellipse cx="5"  cy="8"  rx="3"   ry="7"   fill="#9878C0" fillOpacity="0.55" transform="rotate(-18,5,8)" />
+          <ellipse cx="15" cy="7"  rx="3"   ry="7"   fill="#9878C0" fillOpacity="0.55" transform="rotate(18,15,7)" />
+          <ellipse cx="4"  cy="14" rx="2.5" ry="5.5" fill="#9878C0" fillOpacity="0.4" transform="rotate(-22,4,14)" />
+          <ellipse cx="16" cy="13" rx="2.5" ry="5.5" fill="#9878C0" fillOpacity="0.4" transform="rotate(22,16,13)" />
+        </g>
+
+        {/* Crocheted green mat / rug on table surface */}
+        <ellipse cx="420" cy="292" rx="200" ry="22" fill="#6A8A48" fillOpacity="0.45" />
+        <ellipse cx="420" cy="292" rx="186" ry="18" fill="none" stroke="#5A7A38" strokeWidth="1.5" strokeOpacity="0.4" strokeDasharray="6,4" />
+        <ellipse cx="420" cy="292" rx="165" ry="14" fill="none" stroke="#5A7A38" strokeWidth="1" strokeOpacity="0.3" strokeDasharray="4,3" />
+
+        {/* Scattered yarn snippet on table */}
+        <path d="M 200 288 Q 220 282 240 290 Q 255 296 270 284" fill="none" stroke="#C24E6B" strokeWidth="2.5" strokeOpacity="0.5" strokeLinecap="round" />
+        <path d="M 560 286 Q 580 278 600 286 Q 615 292 630 280" fill="none" stroke="#7C5FA8" strokeWidth="2.5" strokeOpacity="0.5" strokeLinecap="round" />
+
+        {/* Floor lamp silhouette — far right */}
+        <g transform="translate(870, 20)">
+          <line x1="12" y1="0" x2="12" y2="280" stroke="#5A3818" strokeWidth="3" strokeOpacity="0.6" />
+          {/* Lamp shade */}
+          <path d="M 0 0 L 24 0 L 20 28 L 4 28 Z" fill="#D4921A" fillOpacity="0.5" />
+          <ellipse cx="12" cy="0" rx="12" ry="4" fill="#E8A830" fillOpacity="0.6" />
+          {/* Base */}
+          <ellipse cx="12" cy="278" rx="16" ry="5" fill="#5A3818" fillOpacity="0.5" />
+        </g>
+
+        {/* Table surface warm grain overlay at bottom */}
+        <rect x="0" y="270" width="900" height="30" fill="url(#woodGrain)" />
+        <defs>
+          <linearGradient id="woodGrain" x1="0" y1="0" x2="900" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#7A4A28" stopOpacity="0.45" />
+            <stop offset="20%" stopColor="#9A6035" stopOpacity="0.3" />
+            <stop offset="50%" stopColor="#B07840" stopOpacity="0.25" />
+            <stop offset="80%" stopColor="#9A6035" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#7A4A28" stopOpacity="0.45" />
+          </linearGradient>
+        </defs>
+
+        {/* Decorative crochet flowers on table */}
+        <CrochetFlower x={168} y={268} color="#C24E6B" size={28} rotate={20} />
+        <CrochetFlower x={190} y={282} color="#84934F" size={18} rotate={-30} />
+        <CrochetFlower x={640} y={265} color="#7C5FA8" size={24} rotate={15} />
+        <CrochetFlower x={665} y={280} color="#D4921A" size={16} rotate={40} />
+      </svg>
+
+      {/* Top shadow — shelf depth */}
+      <div className="absolute top-0 left-0 right-0" style={{ height: 44, background: "linear-gradient(180deg, rgba(30,12,3,0.55) 0%, transparent 100%)" }} />
+      {/* Bottom table edge gradient */}
+      <div className="absolute bottom-0 left-0 right-0" style={{ height: 32, background: "linear-gradient(0deg, rgba(50,24,6,0.5) 0%, transparent 100%)" }} />
+    </div>
+  );
+}
 
 function HeroZone({
   characterImages, generatingIds, onGenerateAll, onNavigate,
@@ -160,63 +247,45 @@ function HeroZone({
   const anyMissing = !alooImg || !yalaImg;
   const isGenerating = generatingIds.has("aloo") || generatingIds.has("yala");
 
+  // Static transparent paths tried first
+  const alooSrc = "/characters/char-aloo-transparent.png";
+  const yalaSrc = "/characters/char-yala-transparent.png";
+
   return (
     <div
-      className="relative w-full mb-4 rounded-2xl overflow-hidden"
+      className="relative w-full rounded-2xl overflow-hidden"
       style={{
-        height: 280,
-        background: "linear-gradient(145deg, #B07840 0%, #C89060 18%, #D8AA78 38%, #EAC890 55%, #D8AA78 72%, #C08858 88%, #A87040 100%)",
-        boxShadow: "0 4px 20px rgba(80,45,10,0.18), inset 0 1px 0 rgba(255,255,255,0.15)",
+        height: 310,
+        boxShadow: "0 6px 30px rgba(60,30,8,0.28), inset 0 1px 0 rgba(255,255,255,0.12)",
       }}
     >
-      {/* Top shelf shadow */}
-      <div className="absolute top-0 left-0 right-0 h-10 pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, rgba(60,30,5,0.25), transparent)" }} />
-
-      {/* SVG scene props layer */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 780 260"
-        preserveAspectRatio="xMidYMid meet">
-        {/* Yarn balls */}
-        <YarnBall x={50}  y={42}  color="#C24E6B" r={20} />
-        <YarnBall x={85}  y={28}  color="#84934F" r={15} />
-        <YarnBall x={24}  y={68}  color="#D4921A" r={13} />
-        <YarnBall x={700} y={35}  color="#7C5FA8" r={18} />
-        <YarnBall x={730} y={55}  color="#3D8FA3" r={13} />
-        <YarnBall x={712} y={18}  color="#C24E6B" r={11} />
-        {/* Decorative flowers */}
-        <CrochetFlower x={140} y={220} color="#C24E6B" size={26} rotate={20} />
-        <CrochetFlower x={160} y={240} color="#84934F" size={16} rotate={-30} />
-        <CrochetFlower x={620} y={215} color="#7C5FA8" size={22} rotate={15} />
-        <CrochetFlower x={645} y={238} color="#D4921A" size={14} rotate={40} />
-        {/* Stem / lavender sprigs */}
-        <line x1="680" y1="260" x2="680" y2="180" stroke="#84934F" strokeWidth="2" strokeOpacity="0.6" />
-        <ellipse cx="680" cy="175" rx="4" ry="8" fill="#7C5FA8" fillOpacity="0.5" />
-        <ellipse cx="676" cy="188" rx="3" ry="7" fill="#7C5FA8" fillOpacity="0.45" transform="rotate(-15,676,188)" />
-        <ellipse cx="684" cy="185" rx="3" ry="7" fill="#7C5FA8" fillOpacity="0.45" transform="rotate(15,684,185)" />
-      </svg>
+      {/* Full CSS scene */}
+      <HeroScene />
 
       {/* "Crochet is my happy place" tag — hanging from top centre */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center z-10">
-        <div className="w-px h-3" style={{ background: "rgba(120,70,20,0.45)" }} />
-        <div className="px-4 py-2 rounded-b-xl rounded-t-sm text-center"
+        {/* Rope */}
+        <div style={{ width: 3, height: 16, background: "linear-gradient(180deg, #5A3010, #8A5828)", borderRadius: 2, opacity: 0.7 }} />
+        <div
+          className="px-4 py-2.5 rounded-b-xl rounded-t-sm text-center"
           style={{
-            background: "rgba(255,252,245,0.92)",
-            border: "1.5px dashed rgba(140,100,55,0.32)",
+            background: "rgba(255,252,244,0.95)",
+            border: "1.5px dashed rgba(140,95,45,0.35)",
             borderTop: "none",
-            boxShadow: "0 3px 10px rgba(80,45,10,0.14), inset 0 -1px 0 rgba(255,255,255,0.6)",
+            boxShadow: "0 4px 14px rgba(60,28,6,0.18), inset 0 -1px 0 rgba(255,255,255,0.6)",
           }}
         >
           <p className="font-heading text-[11px] font-semibold leading-tight" style={{ color: "#6A4A30" }}>
             Crochet is my
           </p>
-          <p className="font-script text-[14px] leading-tight" style={{ color: "#A83050", fontWeight: 700 }}>
+          <p className="font-script text-[15px] leading-tight" style={{ color: "#A83050", fontWeight: 700 }}>
             happy place ♡
           </p>
         </div>
       </div>
 
-      {/* Aloo speech bubble — top left, floating */}
-      <div className="absolute z-20" style={{ top: 18, left: "12%" }}>
+      {/* Aloo speech bubble — top left */}
+      <div className="absolute z-20" style={{ top: 20, left: "10%" }}>
         <div className="speech-bubble" style={{ maxWidth: 148 }}>
           <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
             Aloo is here to cheer you on while you work on your project. 🐾
@@ -224,8 +293,8 @@ function HeroZone({
         </div>
       </div>
 
-      {/* Yala speech bubble — top right, floating */}
-      <div className="absolute z-20" style={{ top: 18, right: "11%" }}>
+      {/* Yala speech bubble — mid-right, near Yala's body */}
+      <div className="absolute z-20" style={{ bottom: 90, right: "8%" }}>
         <div className="speech-bubble" style={{ maxWidth: 152 }}>
           <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
             Yala is ready to create something magical with you. ✨
@@ -233,54 +302,67 @@ function HeroZone({
         </div>
       </div>
 
-      {/* Aloo — left character, sits at bottom, smaller so scene breathes */}
-      <div className="absolute bottom-0 z-10" style={{ left: "7%" }}>
-        <motion.div
-          animate={{ y: [0, -5, 0] }}
-          transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <CharacterOval charKey="aloo" width={108} height={136}
-            imageUrl={alooImg} isGenerating={generatingIds.has("aloo")} />
-        </motion.div>
-      </div>
-
-      {/* Yala — right character (larger), sits at bottom */}
-      <div className="absolute bottom-0 z-10" style={{ right: "6%" }}>
+      {/* Aloo — left, free-standing, large */}
+      <div className="absolute bottom-0 z-10" style={{ left: "14%" }}>
         <motion.div
           animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 4.0, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
         >
-          <CharacterOval charKey="yala" width={126} height={158}
-            imageUrl={yalaImg} isGenerating={generatingIds.has("yala")} />
+          {alooImg || true ? (
+            <img
+              src={alooSrc}
+              alt="Aloo"
+              onError={(e) => { if (alooImg) (e.target as HTMLImageElement).src = alooImg; }}
+              style={{ width: 190, height: "auto", objectFit: "contain", filter: "drop-shadow(0 8px 20px rgba(50,20,5,0.35))" }}
+            />
+          ) : isGenerating ? (
+            <div className="flex items-center justify-center" style={{ width: 190, height: 220 }}>
+              <Loader2 className="animate-spin" style={{ color: CHAR.aloo.color, width: 32, height: 32 }} />
+            </div>
+          ) : null}
         </motion.div>
       </div>
 
-      {/* Wooden surface line at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-6 pointer-events-none"
-        style={{ background: "linear-gradient(to top, rgba(80,40,8,0.28), transparent)" }} />
+      {/* Yala — right, larger, free-standing */}
+      <div className="absolute bottom-0 z-10" style={{ right: "12%" }}>
+        <motion.div
+          animate={{ y: [0, -7, 0] }}
+          transition={{ duration: 4.0, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        >
+          {yalaImg || true ? (
+            <img
+              src={yalaSrc}
+              alt="Yala"
+              onError={(e) => { if (yalaImg) (e.target as HTMLImageElement).src = yalaImg; }}
+              style={{ width: 230, height: "auto", objectFit: "contain", filter: "drop-shadow(0 10px 24px rgba(50,20,5,0.38))" }}
+            />
+          ) : isGenerating ? (
+            <div className="flex items-center justify-center" style={{ width: 230, height: 270 }}>
+              <Loader2 className="animate-spin" style={{ color: CHAR.yala.color, width: 36, height: 36 }} />
+            </div>
+          ) : null}
+        </motion.div>
+      </div>
 
-      {/* Generate button — visible at centre-right area */}
+      {/* Generate button — only if images missing */}
       <AnimatePresence>
         {anyMissing && (
           <motion.button
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
             onClick={onGenerateAll}
             disabled={isGenerating}
-            className="absolute bottom-5 left-1/2 -translate-x-1/2 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all disabled:opacity-60 z-20"
+            className="absolute bottom-5 left-1/2 -translate-x-1/2 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold transition-all disabled:opacity-60 z-20"
             style={{
-              background: isGenerating ? "rgba(255,252,245,0.7)" : "rgba(255,252,245,0.92)",
+              background: "rgba(255,252,245,0.94)",
               color: "#A83050",
               border: "1.5px dashed rgba(194,78,107,0.4)",
-              boxShadow: "0 2px 10px rgba(80,45,10,0.12)",
-              backdropFilter: "blur(4px)",
+              boxShadow: "0 3px 14px rgba(60,28,6,0.18)",
+              backdropFilter: "blur(6px)",
             }}
           >
-            {isGenerating
-              ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Generating companions…</>
-              : <><ImageIcon className="h-3.5 w-3.5" />Generate companions with AI</>}
+            {isGenerating ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Generating…</> : <>✨ Generate companions with AI</>}
           </motion.button>
         )}
       </AnimatePresence>
@@ -288,12 +370,16 @@ function HeroZone({
   );
 }
 
-// ─── Action cards ─────────────────────────────────────────────────────────────
+// ─── Action cards — overlap hero by 32px ──────────────────────────────────────
 
 function ContinueProjectCard({
   pattern, onNavigate,
 }: { pattern: Pattern | null; onNavigate: (v: ViewType) => void }) {
   const pct = pattern ? patternProgress(pattern) : 0;
+  const steps = pattern?.sections?.flatMap(s => s.steps) ?? [];
+  const totalRows = steps.length;
+  const doneRows = steps.filter(s => s.completed).length;
+
   return (
     <div className="craft-card craft-card-rose flex flex-col gap-2.5 p-4 h-full">
       <div>
@@ -303,7 +389,7 @@ function ContinueProjectCard({
             Continue Your Project
           </span>
         </div>
-        <p className="text-[11px] font-sans" style={{ color: "#9A7868" }}>Pick up where you left off</p>
+        <p className="text-[11px]" style={{ color: "#9A7868" }}>Pick up where you left off</p>
       </div>
 
       {pattern ? (
@@ -311,18 +397,20 @@ function ContinueProjectCard({
           {pattern.imgUrl && !pattern.imgUrl.startsWith("https://placehold") && (
             <img src={pattern.imgUrl} alt={pattern.title}
               className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
-              style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.12)" }} />
+              style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.14)" }} />
           )}
           <div className="flex-1 min-w-0">
             <p className="font-heading font-semibold text-[13px] truncate" style={{ color: "#3D2318" }}>
               {pattern.title}
             </p>
-            <p className="text-[11px] mb-1.5" style={{ color: "#9A7868" }}>{pattern.skillLevel}</p>
+            <p className="text-[11px] mb-1.5" style={{ color: "#9A7868" }}>
+              {totalRows > 0 ? `Row ${doneRows} of ${totalRows}` : pattern.skillLevel}
+            </p>
             <div className="progress-track">
               <div className="progress-fill-rose h-full rounded-full"
                 style={{ width: `${pct}%`, transition: "width 0.7s ease" }} />
             </div>
-            <p className="text-[10px] mt-0.5" style={{ color: "#9A7868" }}>{pct}% complete</p>
+            <p className="text-[10px] mt-0.5" style={{ color: "#9A7868" }}>{pct}%</p>
           </div>
         </div>
       ) : (
@@ -353,16 +441,36 @@ function CreateWithYalaCard({ onNavigate }: { onNavigate: (v: ViewType) => void 
             Create with Yala
           </span>
         </div>
-        <p className="text-[11px] font-sans" style={{ color: "#9A7868" }}>Design a pattern with AI</p>
+        <p className="text-[11px]" style={{ color: "#9A7868" }}>Design a pattern with AI</p>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center gap-1.5">
-        <p className="text-[12px] leading-snug" style={{ color: "#6A4A5A" }}>
-          Describe your idea and Yala will bring it to life.
-        </p>
-        <div className="rounded-xl px-3 py-2 text-[11px] italic"
-          style={{ background: "rgba(124,95,168,0.08)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.18)" }}>
-          e.g. A cosy sunflower bag for everyday use
+      <div className="flex flex-1 gap-2.5 items-center">
+        {/* Yarn ball visual */}
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 64, height: 64 }}>
+          <svg viewBox="0 0 64 64" width="64" height="64">
+            <defs>
+              <radialGradient id="yarnGrad" cx="38%" cy="35%" r="60%">
+                <stop offset="0%" stopColor="#E8D080" />
+                <stop offset="40%" stopColor="#C8A840" />
+                <stop offset="100%" stopColor="#906818" />
+              </radialGradient>
+            </defs>
+            <circle cx="32" cy="32" r="28" fill="url(#yarnGrad)" />
+            <ellipse cx="32" cy="32" rx="20" ry="9" fill="none" stroke="white" strokeWidth="1.8" strokeOpacity="0.5" />
+            <ellipse cx="32" cy="32" rx="20" ry="9" fill="none" stroke="white" strokeWidth="1.8" strokeOpacity="0.4" transform="rotate(55,32,32)" />
+            <ellipse cx="32" cy="32" rx="20" ry="9" fill="none" stroke="white" strokeWidth="1.8" strokeOpacity="0.35" transform="rotate(-55,32,32)" />
+            <ellipse cx="32" cy="32" rx="20" ry="9" fill="none" stroke="white" strokeWidth="1.2" strokeOpacity="0.25" transform="rotate(100,32,32)" />
+            <circle cx="24" cy="24" r="6" fill="white" fillOpacity="0.12" />
+          </svg>
+        </div>
+        <div className="flex-1 flex flex-col gap-1.5">
+          <p className="text-[12px] leading-snug" style={{ color: "#6A4A5A" }}>
+            Describe your idea and Yala will bring it to life.
+          </p>
+          <div className="rounded-xl px-2.5 py-1.5 text-[11px] italic"
+            style={{ background: "rgba(124,95,168,0.1)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.2)" }}>
+            e.g. A cosy sunflower bag for everyday use
+          </div>
         </div>
       </div>
 
@@ -385,16 +493,28 @@ function FavoritesCard({
             Larissa's Favorites
           </span>
         </div>
-        <p className="text-[11px] font-sans" style={{ color: "#9A7868" }}>Your saved patterns</p>
+        <p className="text-[11px]" style={{ color: "#9A7868" }}>Your saved patterns</p>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center gap-1">
-        <span className="font-heading font-bold" style={{ fontSize: 36, color: "#84934F", lineHeight: 1 }}>
-          {count}
-        </span>
-        <span className="text-[11px] font-semibold" style={{ color: "#9A7868" }}>
-          {count === 1 ? "pattern saved" : "patterns saved"}
-        </span>
+      <div className="flex-1 flex flex-col items-center justify-center gap-1.5">
+        {count === 0 ? (
+          <svg viewBox="0 0 90 80" width="90" height="80" className="opacity-70">
+            <path d="M 45 70 Q 20 50 15 35 Q 10 18 25 14 Q 35 11 45 24 Q 55 11 65 14 Q 80 18 75 35 Q 70 50 45 70 Z"
+              fill="#C24E6B" fillOpacity="0.25" stroke="#C24E6B" strokeWidth="2.5" strokeOpacity="0.6"
+              strokeDasharray="5,3" />
+            <path d="M 45 62 Q 26 46 22 34 Q 18 22 28 19 Q 36 17 45 29 Q 54 17 62 19 Q 72 22 68 34 Q 64 46 45 62 Z"
+              fill="#C24E6B" fillOpacity="0.15" />
+          </svg>
+        ) : (
+          <>
+            <span className="font-heading font-bold" style={{ fontSize: 38, color: "#84934F", lineHeight: 1 }}>
+              {count}
+            </span>
+            <span className="text-[11px] font-semibold" style={{ color: "#9A7868" }}>
+              {count === 1 ? "pattern saved" : "patterns saved"}
+            </span>
+          </>
+        )}
       </div>
 
       <button onClick={() => onNavigate("library")} className="btn-craft btn-sage w-full justify-center text-[12px] py-2">
@@ -404,7 +524,7 @@ function FavoritesCard({
   );
 }
 
-// ─── Bottom sections ─────────────────────────────────────────────────────────
+// ─── Bottom sections ──────────────────────────────────────────────────────────
 
 function RecentPatternsSection({
   patterns, onNavigate,
@@ -424,18 +544,13 @@ function RecentPatternsSection({
 
       <div className="flex gap-2.5">
         {patterns.length === 0 && (
-          <p className="text-[12px] text-brown-muted">No patterns yet.</p>
+          <p className="text-[12px]" style={{ color: "#B0908A" }}>No patterns yet.</p>
         )}
         {patterns.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => onNavigate("library")}
-            className="flex flex-col items-start gap-1 group flex-shrink-0"
-            style={{ width: 80 }}
-          >
+          <button key={p.id} onClick={() => onNavigate("library")}
+            className="flex flex-col items-start gap-1 group flex-shrink-0" style={{ width: 82 }}>
             <div className="w-full h-20 rounded-xl overflow-hidden craft-card p-0"
-              style={{ background: p.imgUrl && !p.imgUrl.startsWith("https://placehold")
-                ? undefined : `hsl(${CHAR.aloo.light})` }}>
+              style={{ background: "#FBF1F4" }}>
               {p.imgUrl && !p.imgUrl.startsWith("https://placehold") ? (
                 <img src={p.imgUrl} alt={p.title} className="w-full h-full object-cover" />
               ) : (
@@ -446,12 +561,20 @@ function RecentPatternsSection({
                 </div>
               )}
             </div>
-            <p className="text-[10.5px] font-semibold leading-tight text-left line-clamp-2 group-hover:opacity-75 transition-opacity"
-              style={{ color: "#5C3A28" }}>
+            <p className="text-[10.5px] font-semibold leading-tight text-left line-clamp-2" style={{ color: "#5C3A28" }}>
               {p.title}
             </p>
             <p className="text-[9.5px]" style={{ color: "#9A7868" }}>{p.projectType} · {p.skillLevel}</p>
           </button>
+        ))}
+      </div>
+
+      {/* Carousel dots */}
+      <div className="flex gap-1.5 mt-2.5 justify-center">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="rounded-full transition-all"
+            style={{ width: i === 0 ? 16 : 6, height: 6,
+              background: i === 0 ? "#C24E6B" : "rgba(194,78,107,0.25)" }} />
         ))}
       </div>
     </div>
@@ -471,19 +594,23 @@ function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) =
           View library <ChevronRight className="h-3 w-3" />
         </button>
       </div>
-      <div className="craft-card p-3 flex flex-col gap-2">
-        <div className="w-full h-20 rounded-lg overflow-hidden" style={{ background: "linear-gradient(135deg, #E8D0B8 0%, #D4B898 100%)" }}>
+      {/* Horizontal layout: image left, text right */}
+      <div className="craft-card p-3 flex gap-3 items-start">
+        <div className="flex-shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden"
+          style={{ background: "linear-gradient(135deg, #E8C8A8, #D4A880)" }}>
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-3xl opacity-60">🌸</span>
+            <span className="text-3xl">🌸</span>
           </div>
         </div>
-        <p className="font-heading font-semibold text-[12px]" style={{ color: "#3D2318" }}>
-          Granny Square Flower Blanket
-        </p>
-        <p className="text-[10.5px]" style={{ color: "#9A7868" }}>by CrochetLily</p>
-        <div className="flex items-center gap-1">
-          <Heart className="h-3 w-3" style={{ color: "#C24E6B" }} fill="#C24E6B" />
-          <span className="text-[10.5px] font-semibold" style={{ color: "#C24E6B" }}>1.2k</span>
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+          <p className="font-heading font-semibold text-[12px] leading-tight" style={{ color: "#3D2318" }}>
+            Granny Square Flower Blanket
+          </p>
+          <p className="text-[10.5px]" style={{ color: "#9A7868" }}>by CrochetLily</p>
+          <div className="flex items-center gap-1 mt-0.5">
+            <Heart className="h-3 w-3 flex-shrink-0" style={{ color: "#C24E6B" }} fill="#C24E6B" />
+            <span className="text-[10.5px] font-semibold" style={{ color: "#C24E6B" }}>1.2k</span>
+          </div>
         </div>
       </div>
     </div>
@@ -493,6 +620,8 @@ function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) =
 function UpcomingMilestoneSection({ projectsCount }: { projectsCount: number }) {
   const next = Math.ceil((projectsCount + 1) / 5) * 5;
   const need = next - projectsCount;
+  const filled = 5 - need;
+
   return (
     <div>
       <div className="mb-2.5">
@@ -500,44 +629,39 @@ function UpcomingMilestoneSection({ projectsCount }: { projectsCount: number }) 
           Upcoming Milestone
         </span>
       </div>
-      <div className="craft-card craft-card-honey p-3 flex flex-col items-center text-center gap-2">
-        {/* Small bee decoration */}
-        <svg viewBox="0 0 60 65" fill="none" className="w-14 h-16">
-          <ellipse cx="12" cy="32" rx="11" ry="7" fill="rgba(190,225,255,0.7)" transform="rotate(-20,12,32)" />
-          <ellipse cx="48" cy="32" rx="11" ry="7" fill="rgba(190,225,255,0.7)" transform="rotate(20,48,32)" />
-          <ellipse cx="30" cy="44" rx="16" ry="18" fill="#F0C840" />
-          <rect x="14" y="38" width="32" height="5.5" rx="2.75" fill="rgba(45,25,5,0.65)" />
-          <rect x="14" y="49" width="32" height="5.5" rx="2.75" fill="rgba(45,25,5,0.65)" />
-          <circle cx="30" cy="25" r="11" fill="#F0C840" />
-          <circle cx="26" cy="23" r="2.5" fill="#2D1905" /><circle cx="34" cy="23" r="2.5" fill="#2D1905" />
-          <circle cx="27" cy="22.5" r="0.9" fill="white" /><circle cx="35" cy="22.5" r="0.9" fill="white" />
-          <path d="M 25 29 Q 30 33 35 29" stroke="#2D1905" strokeWidth="1.4" strokeLinecap="round" fill="none" />
-          <line x1="26" y1="15" x2="21" y2="7" stroke="#2D1905" strokeWidth="1.2" strokeLinecap="round" />
-          <circle cx="21" cy="6" r="2" fill="#C24E6B" />
-          <line x1="34" y1="15" x2="39" y2="7" stroke="#2D1905" strokeWidth="1.2" strokeLinecap="round" />
-          <circle cx="39" cy="6" r="2" fill="#C24E6B" />
+      <div className="craft-card craft-card-honey p-3 flex items-center gap-3">
+        {/* Small bee */}
+        <svg viewBox="0 0 48 52" fill="none" className="flex-shrink-0" style={{ width: 42, height: 46 }}>
+          <ellipse cx="9" cy="25" rx="8" ry="5" fill="rgba(190,225,255,0.72)" transform="rotate(-20,9,25)" />
+          <ellipse cx="39" cy="25" rx="8" ry="5" fill="rgba(190,225,255,0.72)" transform="rotate(20,39,25)" />
+          <ellipse cx="24" cy="34" rx="13" ry="15" fill="#F0C840" />
+          <rect x="11" y="29" width="26" height="4.5" rx="2.25" fill="rgba(45,25,5,0.65)" />
+          <rect x="11" y="38" width="26" height="4.5" rx="2.25" fill="rgba(45,25,5,0.65)" />
+          <circle cx="24" cy="19" r="9" fill="#F0C840" />
+          <circle cx="20" cy="17.5" r="2" fill="#2D1905" /><circle cx="28" cy="17.5" r="2" fill="#2D1905" />
+          <circle cx="20.8" cy="17" r="0.8" fill="white" /><circle cx="28.8" cy="17" r="0.8" fill="white" />
+          <path d="M 20 22 Q 24 26 28 22" stroke="#2D1905" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+          <line x1="20" y1="11" x2="16" y2="5" stroke="#2D1905" strokeWidth="1.1" strokeLinecap="round" />
+          <circle cx="16" cy="4.5" r="1.8" fill="#C24E6B" />
+          <line x1="28" y1="11" x2="32" y2="5" stroke="#2D1905" strokeWidth="1.1" strokeLinecap="round" />
+          <circle cx="32" cy="4.5" r="1.8" fill="#C24E6B" />
         </svg>
-        <div>
-          <p className="font-heading font-semibold text-[12px]" style={{ color: "#3D2318" }}>
-            You're close!
-          </p>
-          <p className="text-[11px] leading-snug mt-0.5" style={{ color: "#7A6040" }}>
+
+        <div className="flex-1 min-w-0">
+          <p className="font-heading font-semibold text-[12px]" style={{ color: "#3D2318" }}>You're close!</p>
+          <p className="text-[10.5px] leading-snug mt-0.5" style={{ color: "#7A6040" }}>
             Complete {need} more {need === 1 ? "project" : "projects"} to unlock a special reward.
           </p>
+          {/* Flower dots */}
+          <div className="flex items-center gap-1.5 mt-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <FlowerDot key={i} filled={i < filled} color="#D4921A" />
+            ))}
+          </div>
         </div>
-        {/* Milestone dots */}
-        <div className="flex items-center gap-1">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="rounded-full"
-              style={{
-                width: i < (5 - need) ? 10 : 8,
-                height: i < (5 - need) ? 10 : 8,
-                background: i < (5 - need) ? "#D4921A" : "rgba(212,146,26,0.25)",
-                border: `1.5px solid ${i < (5 - need) ? "#D4921A" : "rgba(212,146,26,0.4)"}`,
-              }}
-            />
-          ))}
-        </div>
+
+        {/* Chevron */}
+        <ChevRight className="flex-shrink-0 h-4 w-4" style={{ color: "#D4921A", opacity: 0.7 }} />
       </div>
     </div>
   );
@@ -548,25 +672,33 @@ function UpcomingMilestoneSection({ projectsCount }: { projectsCount: number }) 
 function StatsBar({
   projectsCount, favoritesCount, milestonesCount,
 }: { projectsCount: number; favoritesCount: number; milestonesCount: number }) {
-  const items = [
-    { value: projectsCount,   label: "Projects",   icon: "🧶" },
-    { value: favoritesCount,  label: "Favorites",  icon: "♡" },
-    { value: milestonesCount, label: "Milestones", icon: "🌸" },
-  ];
   return (
-    <div className="craft-card flex items-center justify-between px-6 py-3.5"
-      style={{ background: "rgba(255,252,245,0.7)" }}>
+    <div className="rounded-2xl flex items-center justify-between px-6 py-4"
+      style={{
+        background: "linear-gradient(135deg, #7A4A28 0%, #9A6235 40%, #8A5428 100%)",
+        boxShadow: "0 4px 20px rgba(60,30,8,0.28), inset 0 1px 0 rgba(255,255,255,0.10)",
+      }}>
       <div className="flex items-center gap-8">
-        {items.map((item, i) => (
+        {[
+          { value: projectsCount,  label: "Projects",
+            icon: <svg viewBox="0 0 22 22" width="22" height="22"><circle cx="11" cy="11" r="8" fill="none" stroke="rgba(255,200,120,0.8)" strokeWidth="1.5" strokeDasharray="4,2.5"/><circle cx="11" cy="11" r="3.5" fill="rgba(255,200,120,0.6)"/><ellipse cx="11" cy="11" rx="5.5" ry="2.5" fill="none" stroke="rgba(255,200,120,0.5)" strokeWidth="0.9"/></svg>
+          },
+          { value: favoritesCount, label: "Favorites",
+            icon: <svg viewBox="0 0 22 22" width="22" height="22"><path d="M 11 18 Q 4 12 3 8 Q 2 4 6 3 Q 9 2 11 6 Q 13 2 16 3 Q 20 4 19 8 Q 18 12 11 18 Z" fill="#F090A0" fillOpacity="0.85"/></svg>
+          },
+          { value: milestonesCount, label: "Milestones",
+            icon: <svg viewBox="0 0 22 22" width="22" height="22">{[0,72,144,216,288].map(a => { const rad = a*Math.PI/180; return <ellipse key={a} cx={11+Math.cos(rad)*4.5} cy={11+Math.sin(rad)*4.5} rx="2.8" ry="2" transform={`rotate(${a},${11+Math.cos(rad)*4.5},${11+Math.sin(rad)*4.5})`} fill="rgba(255,200,120,0.8)" fillOpacity="0.85"/>; })}<circle cx="11" cy="11" r="2.8" fill="rgba(255,200,120,0.9)"/></svg>
+          },
+        ].map((item, i) => (
           <div key={item.label} className="flex items-center gap-3">
-            {i > 0 && <div className="w-px h-8" style={{ background: "rgba(140,100,55,0.2)" }} />}
+            {i > 0 && <div className="w-px h-8" style={{ background: "rgba(255,255,255,0.2)" }} />}
             <div className="flex items-center gap-2">
-              <span className="text-lg">{item.icon}</span>
+              <div className="flex-shrink-0">{item.icon}</div>
               <div>
-                <p className="font-heading font-bold leading-none" style={{ fontSize: 22, color: "#3D2318" }}>
+                <p className="font-heading font-bold leading-none" style={{ fontSize: 22, color: "rgba(255,248,235,0.95)" }}>
                   {item.value}
                 </p>
-                <p className="text-[10.5px] font-semibold mt-0.5" style={{ color: "#9A7868" }}>
+                <p className="text-[10.5px] font-semibold mt-0.5" style={{ color: "rgba(255,220,160,0.8)" }}>
                   {item.label}
                 </p>
               </div>
@@ -574,7 +706,12 @@ function StatsBar({
           </div>
         ))}
       </div>
-      <button className="btn-craft btn-honey flex items-center gap-1.5 text-[12px] py-2 px-4">
+      <button className="flex items-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-bold transition-all hover:opacity-90"
+        style={{
+          background: "linear-gradient(135deg, #D4921A, #E8A830)",
+          color: "white",
+          boxShadow: "0 3px 12px rgba(150,80,10,0.4)",
+        }}>
         <Trophy className="h-3.5 w-3.5" />
         View Achievements →
       </button>
@@ -582,7 +719,7 @@ function StatsBar({
   );
 }
 
-// ─── Right panel (exported) ───────────────────────────────────────────────────
+// ─── Right panel ──────────────────────────────────────────────────────────────
 
 export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => void }) {
   const { data: patterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
@@ -590,20 +727,44 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
   const active = patterns[0] ?? null;
   const overview = patterns.slice(0, 3);
   const pct = active ? patternProgress(active) : 0;
+  const steps = active?.sections?.flatMap(s => s.steps) ?? [];
+  const doneRows = steps.filter(s => s.completed).length;
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-3 p-4 relative">
+      {/* Large decorative flower — top-right corner */}
+      <div className="absolute -top-2 -right-2 pointer-events-none z-0">
+        <svg viewBox="0 0 56 56" width="56" height="56">
+          {[0,72,144,216,288].map((a) => {
+            const rad = (a * Math.PI) / 180;
+            const cx = 28 + Math.cos(rad) * 11;
+            const cy = 28 + Math.sin(rad) * 11;
+            return <ellipse key={a} cx={cx} cy={cy} rx="9.5" ry="6.5"
+              transform={`rotate(${a},${cx},${cy})`}
+              fill="#C24E6B" fillOpacity="0.55" />;
+          })}
+          <circle cx="28" cy="28" r="7" fill="#C24E6B" fillOpacity="0.75" />
+          <circle cx="28" cy="28" r="3" fill="white" fillOpacity="0.5" />
+        </svg>
+      </div>
+
       {/* Active Project */}
-      <div className="craft-card p-3.5">
+      <div className="craft-card p-3.5 relative z-10">
         <div className="flex items-center justify-between mb-3">
           <span className="font-heading font-semibold text-[13px]" style={{ color: "#3D2318" }}>
             Active Project
           </span>
-          <FolderOpen className="h-4 w-4" style={{ color: "#9A7868" }} />
+          <div className="flex items-center gap-2">
+            <FolderOpen className="h-4 w-4" style={{ color: "#9A7868" }} />
+            <button className="flex items-center justify-center w-5 h-5 rounded-full hover:opacity-70"
+              style={{ color: "#9A7868" }}>
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         {active ? (
           <div>
-            <div className="flex items-start gap-2.5 mb-2.5">
+            <div className="flex items-start gap-2.5 mb-2">
               {active.imgUrl && !active.imgUrl.startsWith("https://placehold") && (
                 <img src={active.imgUrl} alt={active.title}
                   className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
@@ -616,19 +777,24 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
                 <span className="badge-green inline-block mt-0.5">In Progress</span>
               </div>
             </div>
-            <div className="mb-1.5">
+            <div className="mb-2">
               <div className="flex justify-between text-[10.5px] mb-1" style={{ color: "#9A7868" }}>
-                <span>Progress</span><span>{pct}%</span>
+                <span>Row {doneRows} of {steps.length || "—"}</span>
+                <span>{pct}%</span>
               </div>
               <div className="progress-track">
                 <div className="progress-fill-rose h-full rounded-full"
                   style={{ width: `${pct}%`, transition: "width 0.7s ease" }} />
               </div>
             </div>
-            <button
-              onClick={() => onNavigate("viewer")}
-              className="btn-craft btn-rose w-full justify-center text-[11px] py-1.5 mt-2"
-            >
+            {/* Time spent row */}
+            <div className="flex justify-between items-center text-[10.5px] mb-2"
+              style={{ color: "#9A7868", borderTop: "1px dashed rgba(140,100,55,0.18)", paddingTop: 6 }}>
+              <span>Time spent</span>
+              <span className="font-semibold" style={{ color: "#5C3A28" }}>4h 20m</span>
+            </div>
+            <button onClick={() => onNavigate("viewer")}
+              className="btn-craft btn-rose w-full justify-center text-[11px] py-1.5">
               Open Workspace →
             </button>
           </div>
@@ -668,6 +834,7 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-[11.5px] font-semibold truncate" style={{ color: "#3D2318" }}>{p.title}</p>
+                    <p className="text-[10px]" style={{ color: "#9A7868" }}>In Progress</p>
                     <div className="progress-track mt-1">
                       <div className="progress-fill-rose h-full rounded-full"
                         style={{ width: `${pp}%`, transition: "width 0.7s ease" }} />
@@ -742,34 +909,38 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
       <div className="flex-shrink-0 flex items-center justify-between px-6 py-4"
         style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
         <div>
-          <h1 className="font-heading font-bold" style={{ fontSize: 24, color: "#3D2318", letterSpacing: "-0.02em" }}>
+          <h1 className="font-heading font-bold" style={{ fontSize: 28, color: "#3D2318", letterSpacing: "-0.02em" }}>
             {text}, Larissa! {emoji}
           </h1>
           <p className="text-[13px] mt-0.5" style={{ color: "#9A7868" }}>
             Let's create something beautiful today.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
-            style={{ background: "rgba(255,252,245,0.8)", border: "1.5px dashed rgba(140,100,55,0.25)" }}>
+            style={{ background: "rgba(255,252,245,0.8)", border: "1px solid rgba(140,100,55,0.2)" }}>
             <Search className="h-4 w-4" style={{ color: "#9A7868" }} />
           </button>
           <button className="relative w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
-            style={{ background: "rgba(255,252,245,0.8)", border: "1.5px dashed rgba(140,100,55,0.25)" }}>
+            style={{ background: "rgba(255,252,245,0.8)", border: "1px solid rgba(140,100,55,0.2)" }}>
             <Bell className="h-4 w-4" style={{ color: "#9A7868" }} />
             <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
               style={{ background: "#C24E6B" }}>3</span>
           </button>
-          {/* Avatar */}
-          <div className="w-9 h-9 rounded-full flex items-center justify-center font-script text-lg"
-            style={{ background: "linear-gradient(135deg,#E0A0B0,#C24E6B)", color: "white", fontWeight: 700 }}>
-            L
+          {/* Avatar + chevron */}
+          <div className="flex items-center gap-1 cursor-pointer group">
+            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center font-script text-lg"
+              style={{ background: "linear-gradient(135deg,#E0A0B0,#C24E6B)", color: "white", fontWeight: 700,
+                boxShadow: "0 2px 8px rgba(194,78,107,0.3)" }}>
+              L
+            </div>
+            <ChevronRight className="h-3.5 w-3.5 rotate-90 group-hover:opacity-70 transition-opacity" style={{ color: "#9A7868" }} />
           </div>
         </div>
       </div>
 
       {/* ── Scrollable content ──────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 pb-20 md:pb-6">
+      <div className="flex-1 overflow-y-auto px-6 pt-5 pb-20 md:pb-6">
 
         {/* Hero zone */}
         <HeroZone
@@ -779,15 +950,16 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
           onNavigate={onNavigate}
         />
 
-        {/* Action cards — 3 col */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6" style={{ minHeight: 180 }}>
+        {/* Action cards — overlap hero by 32px */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10"
+          style={{ marginTop: -32 }}>
           <ContinueProjectCard pattern={activePattern} onNavigate={onNavigate} />
           <CreateWithYalaCard onNavigate={onNavigate} />
           <FavoritesCard count={favoritesCount} onNavigate={onNavigate} />
         </div>
 
         {/* Bottom sections — 3 col */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 mb-5">
           <RecentPatternsSection patterns={recentPatterns} onNavigate={onNavigate} />
           <CommunitySpotlightSection onNavigate={onNavigate} />
           <UpcomingMilestoneSection projectsCount={projectsCount} />
@@ -803,4 +975,3 @@ export default function HomeWorkbench({ onNavigate }: HomeWorkbenchProps) {
     </div>
   );
 }
-

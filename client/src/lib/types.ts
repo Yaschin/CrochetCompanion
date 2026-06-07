@@ -12,23 +12,23 @@ export interface PatternInputFormData {
 
 export interface YarnRequirement {
   color: string;
-  volume: string; // e.g., "~50g" or "~80 yards"
+  volume: string;
 }
 
 export interface HookRequirement {
-  size: string; // e.g., "5.0mm" or "H/8"
+  size: string;
   quantity: number;
   note?: string;
 }
 
 export interface NotionsRequirement {
-  name: string; // e.g., "Safety eyes", "Buttons"
-  description: string; // e.g., "15mm black", "1 inch wooden"
+  name: string;
+  description: string;
   quantity: number;
 }
 
 export interface ToolRequirement {
-  name: string; // e.g., "Tapestry needle", "Stitch markers"
+  name: string;
   description?: string;
   quantity?: number;
 }
@@ -71,7 +71,6 @@ export interface Pattern {
   needsStuffing?: string;
   sections: PatternSection[];
   createdAt: string;
-  // Additional properties used in newer implementations
   yarnType?: string;
   size?: string;
   endProductImage?: string;
@@ -80,7 +79,6 @@ export interface Pattern {
 
 export type StashItemType = 'yarn' | 'hook' | 'notion' | 'tool';
 
-// Matches the database/API shape (shared/schema.ts stashItemSchema).
 export interface StashItem {
   id: string;
   type: StashItemType;
@@ -93,4 +91,17 @@ export interface StashItem {
   notes?: string;
 }
 
-export type ViewType = "home" | "input" | "viewer" | "library" | "stash";
+export type ViewType =
+  | "home"
+  | "splash"
+  | "input"
+  | "loading"
+  | "viewer"
+  | "regenerate"
+  | "library"
+  | "search"
+  | "stash"
+  | "progress"
+  | "photo-upload"
+  | "stitch-counter"
+  | "yarn-recs";
