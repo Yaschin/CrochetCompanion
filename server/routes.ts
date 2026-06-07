@@ -5,11 +5,12 @@ import { resolve } from "path";
 import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
 import { generateImage } from "./api/generateImage";
+import { analyzeAlignment } from "./api/analyzeAlignment";
 import { patternService } from "./patternService";
 import { stashService } from "./stashService";
 import { patternSchema, stashItemSchema } from "../shared/schema";
 import { z } from "zod";
-import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject } from "./objectStorage";
+import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject, getObjectDataUrl } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve stored media objects from object storage
@@ -27,8 +28,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate pattern endpoint
   app.post("/api/generate-pattern", async (req: Request, res: Response) => {
     try {
-      const { prompt, projectType, skillLevel, yarnType, size } = req.body;
-      
+      const { prompt, projectType, skillLevel, yarnType, size, referenceImage } = req.body;
+
       if (!prompt || !projectType || !skillLevel) {
         return res.status(400).json({ message: "Missing required fields" });
       }
@@ -38,7 +39,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         projectType,
         skillLevel,
         yarnType,
-        size
+        size,
+        referenceImage
       });
 
       res.json(generatedPattern);
@@ -636,57 +638,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get section details
       const section = pattern.sections[sectionIdx];
-      const sectionSteps = section.steps.map(step => step.text).join(' ');
+      const sectionSteps = section.steps.map(step => step.text).join('\n');
       const sectionName = section.name;
-      
-      // In a production environment, you would integrate with an AI service
-      // like OpenAI to analyze the image and compare it with the pattern description
-      // For now, we'll implement a simplified algorithm that provides a reasonable alignment score
-      
-      // Factors that influence alignment score:
-      // 1. Number of steps in the section (more steps = more detailed pattern)
-      // 2. Complexity of instructions
-      // 3. Section name relevance
-      // 4. Special crochet terms presence
-      
-      // Count of crochet terms in steps
-      const crochetTerms = ['sc', 'dc', 'hdc', 'tr', 'st', 'ch', 'sl st', 'inc', 'dec', 'round', 'row',
-                           'magic ring', 'amigurumi', 'stitch', 'single crochet', 'double crochet'];
-      
-      let termMatches = 0;
-      crochetTerms.forEach(term => {
-        if (sectionSteps.toLowerCase().includes(term)) {
-          termMatches++;
-        }
-      });
-      
-      // Calculate base score using various factors
-      const stepCount = section.steps.length;
-      const detailScore = Math.min(stepCount * 2, 40); // Max 40 points for steps
-      const termScore = Math.min(termMatches * 3, 30);  // Max 30 points for crochet terms
-      const nameRelevanceScore = 15; // Base score for having a section name
-      
-      // Variance factor to make the score realistic (±15%)
-      const variance = Math.floor(Math.random() * 30) - 15;
-      
-      // Calculate final alignment score (0-100%)
-      let alignmentScore = detailScore + termScore + nameRelevanceScore + variance;
-      
-      // Ensure the score is within valid range
-      alignmentScore = Math.max(Math.min(alignmentScore, 100), 10);
-      
-      res.json({ 
-        success: true, 
-        alignmentScore,
-        details: {
-          stepCountContribution: detailScore,
-          termMatchContribution: termScore,
-          nameRelevanceContribution: nameRelevanceScore
-        }
+      const partImageUrl = section.partImageUrl as string;
+
+      // Object-storage images (/api/media/...) are not publicly fetchable by OpenAI,
+      // so convert them to a data URL. External/public URLs are passed through directly.
+      let imageInput: string;
+      if (partImageUrl.startsWith("/api/media/")) {
+        const key = partImageUrl.replace("/api/media/", "");
+        imageInput = await getObjectDataUrl(key);
+      } else {
+        imageInput = partImageUrl;
+      }
+
+      // Genuine vision-based comparison (replaces the previous Math.random() estimate).
+      const { score, feedback } = await analyzeAlignment(imageInput, sectionName, sectionSteps);
+
+      res.json({
+        success: true,
+        alignmentScore: score,
+        feedback,
       });
     } catch (error) {
       console.error('Error checking pattern-image alignment:', error);
-      res.status(500).json({ success: false, message: "Failed to analyze pattern-image alignment" });
+      const message = String(error).includes("API key")
+        ? "AI alignment check requires a valid OpenAI API key."
+        : "Failed to analyze pattern-image alignment";
+      res.status(500).json({ success: false, message });
     }
   });
   

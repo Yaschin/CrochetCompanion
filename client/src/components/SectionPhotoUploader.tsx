@@ -152,7 +152,9 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
         
         toast({
           title: 'Alignment Check Complete',
-          description: `Your pattern matches the image by approximately ${response.data.alignmentScore}%`,
+          description: response.data.feedback
+            ? `${response.data.alignmentScore}% match — ${response.data.feedback}`
+            : `Your pattern matches the image by approximately ${response.data.alignmentScore}%`,
         });
       } else {
         throw new Error('Alignment check failed');

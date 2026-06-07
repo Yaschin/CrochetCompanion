@@ -13,7 +13,10 @@ if (!API_KEY_AVAILABLE) {
   console.error("ERROR: OPENAI_API_KEY appears to be invalid (should start with 'sk-' followed by at least 32 characters). Using fallback template for pattern generation.");
 }
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+// Text + vision model. gpt-4o and dall-e-3 were retired from the OpenAI API, so
+// this defaults to a current model that supports image input and JSON output.
+// Override via OPENAI_TEXT_MODEL to move tiers (e.g. "gpt-5.4", "gpt-5.5").
+const TEXT_MODEL = process.env.OPENAI_TEXT_MODEL || "gpt-4.1";
 const openai = (API_KEY_AVAILABLE && API_KEY_VALID_FORMAT)
   ? new OpenAI({ apiKey: OPENAI_API_KEY })
   : null;
@@ -28,6 +31,7 @@ interface PatternInputData {
   unlockedStepsOnly?: boolean;
   originalPattern?: any;
   sectionImageFocus?: number; // Index of section whose image should influence regeneration
+  referenceImage?: string; // data URL (or fetchable URL) of a user-supplied reference image
 }
 
 export async function generatePattern(inputData: PatternInputData) {
@@ -39,6 +43,7 @@ export async function generatePattern(inputData: PatternInputData) {
     size,
     unlockedStepsOnly,
     originalPattern,
+    referenceImage,
   } = inputData;
 
   // If API key is not available or invalid, return a fallback template pattern
@@ -62,6 +67,10 @@ export async function generatePattern(inputData: PatternInputData) {
       : 'If the user has not provided a yarn colour, please recommend suitable wool colours for this crochet project and include them within the instructions.'}
 
     ${size ? `The finished item should be approximately ${size}.` : ''}
+
+    ${referenceImage
+      ? `IMPORTANT: The user has attached a reference image. Carefully analyse it and design the pattern so the finished piece resembles the subject, shape, proportions, colours, and overall style shown in that image.`
+      : ''}
 
     Include ALL materials needed for the project, including:
     1. Yarn/wool (colors and amounts)
@@ -165,11 +174,20 @@ export async function generatePattern(inputData: PatternInputData) {
         throw new Error("OpenAI client is not initialized - API key missing");
       }
 
+      // When a reference image is supplied, send it alongside the text so the
+      // vision model can actually "see" it (previously only the filename was used).
+      const userContent: any = referenceImage
+        ? [
+            { type: "text", text: prompt },
+            { type: "image_url", image_url: { url: referenceImage } },
+          ]
+        : prompt;
+
       const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: TEXT_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: prompt }
+          { role: "user", content: userContent },
         ],
         response_format: { type: "json_object" }
       });
@@ -310,7 +328,7 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
     }
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: TEXT_MODEL,
       messages: [
         {
           role: "system",
