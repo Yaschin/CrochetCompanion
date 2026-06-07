@@ -171,24 +171,6 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
     }
   };
 
-  // Handle capturing from webcam
-  const handleCapture = async () => {
-    try {
-      // Will be implemented later if needed
-      toast({
-        title: 'Coming soon',
-        description: 'Webcam capture functionality will be available in a future update.',
-      });
-    } catch (error) {
-      console.error('Capture error:', error);
-      toast({
-        title: 'Capture failed',
-        description: 'There was a problem capturing your photo. Please try again.',
-        variant: 'destructive'
-      });
-    }
-  };
-
   // Generate a section image through the AI
   const handleGenerateAIImage = async () => {
     try {
@@ -348,14 +330,17 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
                   />
                 </label>
 
-                <Button 
-                  type="button" 
-                  onClick={handleCapture}
-                  className="flex flex-col items-center justify-center px-4 py-2"
-                >
+                <label className="flex flex-col items-center justify-center px-4 py-2 bg-white text-blue-500 rounded-lg shadow-lg tracking-wide border border-blue-500 cursor-pointer hover:bg-blue-500 hover:text-white">
                   <Camera className="h-6 w-6" />
-                  <span className="mt-2 text-sm">Capture</span>
-                </Button>
+                  <span className="mt-2 text-sm">Camera</span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleFileChange}
+                  />
+                </label>
 
                 <Button 
                   type="button" 

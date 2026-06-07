@@ -208,7 +208,7 @@ function App() {
               )}
 
               {activeView === "photo-upload" && (
-                <PhotoUploadScreen onNavigate={navigateToView} />
+                <PhotoUploadScreen pattern={currentPattern} onNavigate={navigateToView} />
               )}
 
               {activeView === "stitch-counter" && (
