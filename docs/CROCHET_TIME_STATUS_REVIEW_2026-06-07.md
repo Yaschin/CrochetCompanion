@@ -75,20 +75,32 @@ These were the MVP-critical items in the original review; all are implemented an
 | Default React Query `queryFn` (Search/Projects/Favorites were broken) | D |
 | Reconcile/archive stale docs | this batch (see `docs/archive/`) |
 
+### ✅ Phase 1 "Foundations" (Trust pillar — branch `claude/foundations`)
+All build-verified (`tsc`); **live/E2E verification still pending** (no runtime in sandbox).
+
+| Task | Notes |
+|---|---|
+| **Stash-aware matching** | `lib/stashMatch.ts` + `StashCoverage` ("Can I make this?") on PatternDetail |
+| **Real yarn recommendations** | `YarnRecsScreen` rewritten to "Make From My Stash" (ranked by real coverage) |
+| **Real Progress** | removed `MOCK_PROGRESS`; per-section bars, time-on-project, derived achievements |
+| **Real Progress Photos** | removed `SAMPLE_PHOTOS`; aggregates the pattern's real step photos |
+| **Webcam stub → real camera** | replaced "Coming soon" with `capture=environment` input |
+| **Export / backup** | `GET /api/export` (JSON) + `POST /api/import` (additive); `printPattern` → Save-as-PDF; new Settings screen |
+| **Offline PWA** | manifest + service worker (offline shell, saved patterns, counter) + OfflineBanner |
+| **`wouter` routing** | URL-driven views; deep links, back button, shareable pattern URLs |
+
 ### ⏳ Remaining backlog (optional / non-blocking)
 
 | Task | Status | Why it matters | Pri | Effort |
 |---|---|---|---|---|
-| **E2E / live verification of A–D** | Blocked in sandbox (no DB/keys, broken npm) | Confirms the merged work actually runs | **P1** | Med |
-| Playwright suite execution (suite authored this batch) | Authored, unrun here | Cross-screen/responsive coverage | **P1** | Low (on a real env) |
-| Confirm & add stitch-counter persistence | Needs validation | Core craft use-case | P2 | Med |
+| **E2E / live verification of all batches** | Blocked in sandbox (no DB/keys, broken npm) | Confirms the merged work actually runs | **P1** | Med |
+| Standalone StitchCounterScreen persistence | In-viewer counter persists; standalone screen is non-persisted | Consistency | P2 | Low |
 | Regenerate-by-section-image → true vision input | Text-only today | Makes that path real | P2 | Low |
-| Real Progress charts from step data | Mock (`MOCK_PROGRESS`) | Honest progress view | P2 | Med |
-| `wouter` routing migration (URLs/back/deep links) | Not started | Navigation depth | P2 | Med |
 | Remove duplicate root `/public/characters` | Not started | Asset drift | P3 | Low |
 | Prune now-unused deps (`@uppy/*` after ObjectUploader removal) | Not started | Bundle/clarity | P3 | Low |
 | AI tier choice (default `gpt-4.1`/`gpt-image-1`; env-overridable) | Default set | Cost/quality | P3 | Low |
 | Convert character PNGs → WebP/AVIF | PNG now | Perf | P3 | Low |
+| PWA icons → dedicated square/maskable set | Reuses bee PNG | Polish | P3 | Low |
 
 ### Testing status
 - **Build-verified:** `tsc` clean (except 2 environment-only `@google-cloud/storage` errors from the sandbox's broken npm).
