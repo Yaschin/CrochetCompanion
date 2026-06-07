@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { ViewType } from "../lib/types";
+import { YalaSVG } from "../components/Characters";
 
 interface GenerationLoadingScreenProps {
   onComplete: (view: ViewType) => void;
@@ -46,11 +47,7 @@ export default function GenerationLoadingScreen({ onComplete }: GenerationLoadin
         animate={{ y: [0, -14, 0, -8, 0] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       >
-        <img
-          src="/characters/char-yala-transparent.png"
-          alt="Yala"
-          style={{ width: 160, height: "auto", filter: "drop-shadow(0 8px 20px rgba(80,40,10,0.22))" }}
-        />
+        <YalaSVG size={160} />
       </motion.div>
 
       {/* Speech bubble */}

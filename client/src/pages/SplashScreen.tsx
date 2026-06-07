@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ViewType } from "../lib/types";
+import { AlooSVG, AshiSVG, YalaSVG, BeeSVG, SheepSVG } from "../components/Characters";
 
 interface SplashScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -103,11 +104,11 @@ function FloatingFlower({
 }
 
 const CHARACTERS = [
-  { id: "aloo",  label: "Aloo",  color: "#C24E6B" },
-  { id: "yala",  label: "Yala",  color: "#7C5FA8" },
-  { id: "ashi",  label: "Ashi",  color: "#3D8FA3" },
-  { id: "bee",   label: "Bee",   color: "#D4921A" },
-  { id: "sheep", label: "Sheep", color: "#84934F" },
+  { id: "aloo",  label: "Aloo",  color: "#C24E6B", Svg: AlooSVG },
+  { id: "yala",  label: "Yala",  color: "#7C5FA8", Svg: YalaSVG },
+  { id: "ashi",  label: "Ashi",  color: "#3D8FA3", Svg: AshiSVG },
+  { id: "bee",   label: "Bee",   color: "#D4921A", Svg: BeeSVG },
+  { id: "sheep", label: "Sheep", color: "#84934F", Svg: SheepSVG },
 ];
 
 export default function SplashScreen({ onNavigate }: SplashScreenProps) {
@@ -226,22 +227,15 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
           {CHARACTERS.map((c) => (
             <div key={c.id} className="flex flex-col items-center gap-1">
               <div
-                className="rounded-full overflow-hidden flex items-center justify-center"
+                className="rounded-full flex items-center justify-center overflow-hidden"
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   background: `${c.color}18`,
                   border: `2px solid ${c.color}55`,
                 }}
               >
-                <img
-                  src={`/characters/char-${c.id}-transparent.png`}
-                  alt={c.label}
-                  style={{ width: 36, height: 36, objectFit: "contain" }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
+                <c.Svg size={40} />
               </div>
               <span
                 className="font-semibold"
