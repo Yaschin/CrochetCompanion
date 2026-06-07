@@ -269,9 +269,13 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
         </div>
       </div>
 
-      {/* Bee mascot — larger, prominent */}
-      <div className="flex justify-center relative z-10" style={{ marginTop: -6 }}>
-        <BeeMascot />
+      {/* Amigurumi bee mascot */}
+      <div className="flex justify-center relative z-10" style={{ marginTop: -4 }}>
+        <img
+          src="/characters/char-bee-transparent.png"
+          alt="Bee"
+          style={{ width: 88, height: 88, objectFit: "contain", filter: "drop-shadow(0 4px 12px rgba(50,30,0,0.22))" }}
+        />
       </div>
 
       {/* "You're on a roll" chip — warm amber tint */}

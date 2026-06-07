@@ -397,6 +397,7 @@ function ContinueProjectCard({
 
       {pattern ? (
         <div className="flex items-start gap-2.5 flex-1">
+
           {pattern.imgUrl && !pattern.imgUrl.startsWith("https://placehold") && (
             <img src={pattern.imgUrl} alt={pattern.title}
               className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
@@ -417,8 +418,13 @@ function ContinueProjectCard({
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center text-center px-2">
-          <p className="text-[12px]" style={{ color: "#B0908A" }}>
+        <div className="flex-1 flex items-center justify-center gap-3 px-1">
+          <img
+            src="/characters/char-aloo-transparent.png"
+            alt="Aloo"
+            style={{ width: 62, height: 62, objectFit: "contain", filter: "drop-shadow(0 3px 8px rgba(50,20,5,0.18))", flexShrink: 0 }}
+          />
+          <p className="text-[12px] leading-snug" style={{ color: "#B0908A" }}>
             No patterns yet — start your first one!
           </p>
         </div>
@@ -491,13 +497,11 @@ function FavoritesCard({
 
       <div className="flex-1 flex flex-col items-center justify-center gap-1.5">
         {count === 0 ? (
-          <svg viewBox="0 0 90 80" width="90" height="80" className="opacity-70">
-            <path d="M 45 70 Q 20 50 15 35 Q 10 18 25 14 Q 35 11 45 24 Q 55 11 65 14 Q 80 18 75 35 Q 70 50 45 70 Z"
-              fill="#C24E6B" fillOpacity="0.25" stroke="#C24E6B" strokeWidth="2.5" strokeOpacity="0.6"
-              strokeDasharray="5,3" />
-            <path d="M 45 62 Q 26 46 22 34 Q 18 22 28 19 Q 36 17 45 29 Q 54 17 62 19 Q 72 22 68 34 Q 64 46 45 62 Z"
-              fill="#C24E6B" fillOpacity="0.15" />
-          </svg>
+          <img
+            src="/characters/char-ashi-transparent.png"
+            alt="Ashi"
+            style={{ width: 72, height: 72, objectFit: "contain", filter: "drop-shadow(0 3px 10px rgba(50,20,5,0.18))" }}
+          />
         ) : (
           <>
             <span className="font-heading font-bold" style={{ fontSize: 38, color: "#84934F", lineHeight: 1 }}>
