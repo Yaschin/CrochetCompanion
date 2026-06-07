@@ -45,8 +45,8 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
   const [stage, setStage] = useState(0);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setStage(1), 900);
-    const t2 = setTimeout(() => setStage(2), 1700);
+    const t1 = setTimeout(() => setStage(1), 1800);
+    const t2 = setTimeout(() => setStage(2), 4000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -159,13 +159,6 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
               <span className="text-[10px] font-bold" style={{ color: "#C24E6B" }}>Aloo</span>
             </motion.div>
 
-            {/* Yarn ball — left of centre */}
-            <motion.div className="mb-5"
-              animate={{ rotate: [0, 10, -6, 0], scale: [1, 1.08, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
-              <span style={{ fontSize: 28 }}>🧶</span>
-            </motion.div>
-
             {/* Ashi — centre hero */}
             <motion.div
               className="flex flex-col items-center gap-1"
@@ -179,13 +172,6 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
                   onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }} />
               </div>
               <span className="text-[10px] font-bold" style={{ color: "#3D8FA3" }}>Ashi</span>
-            </motion.div>
-
-            {/* Yarn ball — right of centre */}
-            <motion.div className="mb-5"
-              animate={{ rotate: [0, -8, 5, 0], scale: [1, 1.06, 1] }}
-              transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 1.1 }}>
-              <span style={{ fontSize: 24 }}>🧵</span>
             </motion.div>
 
             {/* Yala */}
@@ -208,16 +194,80 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
         {/* Stage 2 — Logo + tagline + CTA */}
         {stage >= 2 && (
           <>
-            <motion.div className="mb-2"
+            <motion.div className="mb-2 flex items-center justify-center gap-3"
               initial={{ scale: 0.88, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-              <p className="font-script leading-none" style={{ fontSize: "3.4rem", color: "#A83050", fontWeight: 700 }}>
-                Crochet
-              </p>
-              <p className="font-script leading-none" style={{ fontSize: "3.4rem", color: "#A83050", fontWeight: 700, marginTop: "-10px" }}>
-                Time ♥
-              </p>
+
+              {/* Realistic wool ball — left */}
+              <motion.svg viewBox="0 0 80 80" width="62" height="62" style={{ flexShrink: 0 }}
+                animate={{ rotate: [0, 6, -4, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}>
+                <defs>
+                  <radialGradient id="wb1" cx="36%" cy="32%" r="62%">
+                    <stop offset="0%" stopColor="#E87898" />
+                    <stop offset="45%" stopColor="#C24E6B" />
+                    <stop offset="100%" stopColor="#7A1E38" />
+                  </radialGradient>
+                  <clipPath id="wbc"><circle cx="40" cy="40" r="34" /></clipPath>
+                </defs>
+                <circle cx="40" cy="40" r="34" fill="url(#wb1)" />
+                <g clipPath="url(#wbc)" fill="none" strokeWidth="2.2">
+                  <ellipse cx="40" cy="40" rx="34" ry="13" stroke="rgba(255,255,255,0.28)" transform="rotate(-35,40,40)" />
+                  <ellipse cx="40" cy="40" rx="34" ry="13" stroke="rgba(255,255,255,0.22)" transform="rotate(15,40,40)" />
+                  <ellipse cx="40" cy="40" rx="34" ry="13" stroke="rgba(255,255,255,0.18)" transform="rotate(60,40,40)" />
+                  <ellipse cx="40" cy="40" rx="22" ry="9"  stroke="rgba(255,255,255,0.14)" transform="rotate(-10,40,40)" />
+                </g>
+                {/* Highlight */}
+                <ellipse cx="30" cy="27" rx="9" ry="5.5" fill="rgba(255,255,255,0.2)" transform="rotate(-30,30,27)" />
+                {/* Shadow */}
+                <circle cx="44" cy="48" r="30" fill="rgba(0,0,0,0.08)" />
+                {/* Yarn tail */}
+                <path d="M 66 46 Q 74 40 70 30" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2" strokeLinecap="round" />
+              </motion.svg>
+
+              {/* Text */}
+              <div className="text-center">
+                <p className="font-script leading-none" style={{ fontSize: "3.2rem", color: "#A83050", fontWeight: 700 }}>
+                  Crochet
+                </p>
+                <p className="font-script leading-none" style={{ fontSize: "3.2rem", color: "#A83050", fontWeight: 700, marginTop: "-10px" }}>
+                  Time ♥
+                </p>
+              </div>
+
+              {/* Realistic thread spool — right */}
+              <motion.svg viewBox="0 0 56 80" width="44" height="62" style={{ flexShrink: 0 }}
+                animate={{ rotate: [0, -5, 3, 0] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}>
+                <defs>
+                  <linearGradient id="sp1" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#4A7A5A" />
+                    <stop offset="40%" stopColor="#6AA870" />
+                    <stop offset="100%" stopColor="#3A6048" />
+                  </linearGradient>
+                  <linearGradient id="sp2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2A5038" />
+                    <stop offset="100%" stopColor="#4A8058" />
+                  </linearGradient>
+                </defs>
+                {/* Top flange */}
+                <ellipse cx="28" cy="10" rx="24" ry="8" fill="#2A5038" />
+                <ellipse cx="28" cy="8"  rx="24" ry="8" fill="url(#sp2)" />
+                {/* Body */}
+                <rect x="8" y="8" width="40" height="52" rx="3" fill="url(#sp1)" />
+                {/* Thread wraps */}
+                {[16,23,30,37,44,51].map((y, i) => (
+                  <ellipse key={i} cx="28" cy={y} rx="20" ry="4.5" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.4" />
+                ))}
+                {/* Bottom flange */}
+                <ellipse cx="28" cy="60" rx="24" ry="8" fill="#2A5038" />
+                <ellipse cx="28" cy="60" rx="24" ry="8" fill="url(#sp2)" opacity="0.85" />
+                {/* Highlight on body */}
+                <rect x="10" y="12" width="8" height="44" rx="4" fill="rgba(255,255,255,0.12)" />
+                {/* Thread tail */}
+                <path d="M 48 34 Q 56 30 54 20" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.8" strokeLinecap="round" />
+              </motion.svg>
             </motion.div>
 
             <motion.p className="text-[12px] font-semibold tracking-widest uppercase mb-5"

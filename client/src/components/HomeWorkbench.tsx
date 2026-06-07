@@ -448,23 +448,13 @@ function CreateWithYalaCard({ onNavigate }: { onNavigate: (v: ViewType) => void 
       </div>
 
       <div className="flex flex-1 gap-2.5 items-center">
-        {/* Yarn ball visual */}
-        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 64, height: 64 }}>
-          <svg viewBox="0 0 64 64" width="64" height="64">
-            <defs>
-              <radialGradient id="yarnGrad" cx="38%" cy="35%" r="60%">
-                <stop offset="0%" stopColor="#E8D080" />
-                <stop offset="40%" stopColor="#C8A840" />
-                <stop offset="100%" stopColor="#906818" />
-              </radialGradient>
-            </defs>
-            <circle cx="32" cy="32" r="28" fill="url(#yarnGrad)" />
-            <ellipse cx="32" cy="32" rx="20" ry="9" fill="none" stroke="white" strokeWidth="1.8" strokeOpacity="0.5" />
-            <ellipse cx="32" cy="32" rx="20" ry="9" fill="none" stroke="white" strokeWidth="1.8" strokeOpacity="0.4" transform="rotate(55,32,32)" />
-            <ellipse cx="32" cy="32" rx="20" ry="9" fill="none" stroke="white" strokeWidth="1.8" strokeOpacity="0.35" transform="rotate(-55,32,32)" />
-            <ellipse cx="32" cy="32" rx="20" ry="9" fill="none" stroke="white" strokeWidth="1.2" strokeOpacity="0.25" transform="rotate(100,32,32)" />
-            <circle cx="24" cy="24" r="6" fill="white" fillOpacity="0.12" />
-          </svg>
+        {/* Yala character */}
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 68, height: 68 }}>
+          <img
+            src="/characters/char-yala-transparent.png"
+            alt="Yala"
+            style={{ width: 68, height: 68, objectFit: "contain", filter: "drop-shadow(0 4px 10px rgba(50,20,5,0.22))" }}
+          />
         </div>
         <div className="flex-1 flex flex-col gap-1.5">
           <p className="text-[12px] leading-snug" style={{ color: "#6A4A5A" }}>
@@ -633,22 +623,13 @@ function UpcomingMilestoneSection({ projectsCount }: { projectsCount: number }) 
         </span>
       </div>
       <div className="craft-card craft-card-honey p-3 flex items-center gap-3">
-        {/* Small bee */}
-        <svg viewBox="0 0 48 52" fill="none" className="flex-shrink-0" style={{ width: 42, height: 46 }}>
-          <ellipse cx="9" cy="25" rx="8" ry="5" fill="rgba(190,225,255,0.72)" transform="rotate(-20,9,25)" />
-          <ellipse cx="39" cy="25" rx="8" ry="5" fill="rgba(190,225,255,0.72)" transform="rotate(20,39,25)" />
-          <ellipse cx="24" cy="34" rx="13" ry="15" fill="#F0C840" />
-          <rect x="11" y="29" width="26" height="4.5" rx="2.25" fill="rgba(45,25,5,0.65)" />
-          <rect x="11" y="38" width="26" height="4.5" rx="2.25" fill="rgba(45,25,5,0.65)" />
-          <circle cx="24" cy="19" r="9" fill="#F0C840" />
-          <circle cx="20" cy="17.5" r="2" fill="#2D1905" /><circle cx="28" cy="17.5" r="2" fill="#2D1905" />
-          <circle cx="20.8" cy="17" r="0.8" fill="white" /><circle cx="28.8" cy="17" r="0.8" fill="white" />
-          <path d="M 20 22 Q 24 26 28 22" stroke="#2D1905" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-          <line x1="20" y1="11" x2="16" y2="5" stroke="#2D1905" strokeWidth="1.1" strokeLinecap="round" />
-          <circle cx="16" cy="4.5" r="1.8" fill="#C24E6B" />
-          <line x1="28" y1="11" x2="32" y2="5" stroke="#2D1905" strokeWidth="1.1" strokeLinecap="round" />
-          <circle cx="32" cy="4.5" r="1.8" fill="#C24E6B" />
-        </svg>
+        {/* Amigurumi bee character */}
+        <img
+          src="/characters/char-bee-transparent.png"
+          alt="Bee"
+          className="flex-shrink-0"
+          style={{ width: 46, height: 46, objectFit: "contain", filter: "drop-shadow(0 3px 8px rgba(50,30,0,0.2))" }}
+        />
 
         <div className="flex-1 min-w-0">
           <p className="font-heading font-semibold text-[12px]" style={{ color: "#3D2318" }}>You're close!</p>
