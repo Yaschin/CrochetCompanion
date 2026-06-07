@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "Xdorx1jv4RrrdPqmpq2Nk"
@@ -30,3 +29,39 @@ id = "cfVjAVj0HccI-bjFVW-Bf"
 uri = "file://attached_assets/char-ashi.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "IyoC0qIcIyScOiIZnVdsE"
+uri = "file://public/characters/char-aloo.png"
+type = "image"
+title = "aloo shitzu amigurumi"
+
+[[generated]]
+id = "ywbBC4OxTvAPsp21YKYsK"
+uri = "file://public/characters/char-ashi.png"
+type = "image"
+title = "ashi maltipoo amigurumi"
+
+[[generated]]
+id = "HlPaPuT3L_tO0gpibFaAF"
+uri = "file://public/characters/char-yala.png"
+type = "image"
+title = "yala desi elephant amigurumi"
+
+[[outputs]]
+id = "P2idT6M6wrM4S9n0Us7WR"
+uri = "file://public/characters/char-aloo-transparent.png"
+type = "image"
+title = "Aloo — Shih Tzu (white/gray + black features)"
+
+[[outputs]]
+id = "UD1g82zA9DHqlDc3s1e4j"
+uri = "file://public/characters/char-ashi-transparent.png"
+type = "image"
+title = "Ashi — Maltipoo (brown + black)"
+
+[[outputs]]
+id = "T_6c_-5myT0QHxzbnNdhB"
+uri = "file://public/characters/char-yala-transparent.png"
+type = "image"
+title = "Yala — Desi Elephant (jewel-toned decoration)"
