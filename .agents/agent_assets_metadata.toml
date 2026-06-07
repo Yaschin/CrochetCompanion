@@ -48,6 +48,12 @@ uri = "file://public/characters/char-yala.png"
 type = "image"
 title = "yala desi elephant amigurumi"
 
+[[generated]]
+id = "M0HxjSdypS53Fdd0eHSze"
+uri = "file://client/public/yarn-ball.png"
+type = "image"
+title = "photorealistic amber yarn ball"
+
 [[outputs]]
 id = "P2idT6M6wrM4S9n0Us7WR"
 uri = "file://public/characters/char-aloo-transparent.png"
@@ -65,3 +71,9 @@ id = "T_6c_-5myT0QHxzbnNdhB"
 uri = "file://public/characters/char-yala-transparent.png"
 type = "image"
 title = "Yala — NEW Desi Elephant"
+
+[[outputs]]
+id = "JWRfSeKujM_HHt1hhrngC"
+uri = "file://client/public/yarn-ball.png"
+type = "image"
+title = "Generated yarn ball"

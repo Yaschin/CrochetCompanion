@@ -8,64 +8,16 @@ interface SplashScreenProps {
 function YarnBallAnim() {
   return (
     <motion.div
-      animate={{ rotate: [0, 12, -8, 12, 0], y: [0, -12, 0, -8, 0] }}
+      animate={{ rotate: [0, 8, -5, 8, 0], y: [0, -10, 0, -7, 0] }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
     >
-      <svg viewBox="0 0 120 120" width="120" height="120" overflow="visible">
-        <defs>
-          <radialGradient id="splashYarn" cx="36%" cy="30%" r="65%">
-            <stop offset="0%" stopColor="#F8DC88" />
-            <stop offset="40%" stopColor="#D4921A" />
-            <stop offset="100%" stopColor="#8A5810" />
-          </radialGradient>
-          <clipPath id="ballClip">
-            <circle cx="60" cy="60" r="50" />
-          </clipPath>
-        </defs>
-
-        {/* Sphere base */}
-        <circle cx="60" cy="60" r="52" fill="url(#splashYarn)" />
-
-        {/* Wound thread grooves — dark amber so they look like valleys in the yarn, not glowing orbits */}
-        <g clipPath="url(#ballClip)">
-          <ellipse cx="60" cy="60" rx="50" ry="10"
-            fill="none" stroke="#7A4808" strokeWidth="2.5" strokeOpacity="0.32" />
-          <ellipse cx="60" cy="60" rx="50" ry="10"
-            fill="none" stroke="#7A4808" strokeWidth="2.5" strokeOpacity="0.28"
-            transform="rotate(40,60,60)" />
-          <ellipse cx="60" cy="60" rx="50" ry="10"
-            fill="none" stroke="#7A4808" strokeWidth="2" strokeOpacity="0.22"
-            transform="rotate(80,60,60)" />
-          <ellipse cx="60" cy="60" rx="50" ry="10"
-            fill="none" stroke="#7A4808" strokeWidth="1.8" strokeOpacity="0.18"
-            transform="rotate(120,60,60)" />
-          <ellipse cx="60" cy="60" rx="50" ry="10"
-            fill="none" stroke="#7A4808" strokeWidth="1.5" strokeOpacity="0.14"
-            transform="rotate(160,60,60)" />
-          {/* Highlight ridge on top side of each wrap */}
-          <ellipse cx="60" cy="60" rx="50" ry="10"
-            fill="none" stroke="rgba(255,240,180,0.4)" strokeWidth="1" />
-          <ellipse cx="60" cy="60" rx="50" ry="10"
-            fill="none" stroke="rgba(255,240,180,0.3)" strokeWidth="1"
-            transform="rotate(40,60,60)" />
-        </g>
-
-        {/* Specular highlight — tighter, more realistic */}
-        <circle cx="44" cy="40" r="9" fill="white" fillOpacity="0.18" />
-        <circle cx="48" cy="44" r="4" fill="white" fillOpacity="0.10" />
-
-        {/* Trailing thread end coming off the ball */}
-        <path
-          d="M 108 32 Q 118 20 114 8 Q 111 1 107 4"
-          fill="none" stroke="#C8880C" strokeWidth="2.5"
-          strokeOpacity="0.72" strokeLinecap="round"
-        />
-        <path
-          d="M 112 36 Q 116 30 113 24"
-          fill="none" stroke="#D4921A" strokeWidth="1.8"
-          strokeOpacity="0.5" strokeLinecap="round"
-        />
-      </svg>
+      <img
+        src="/yarn-ball.png"
+        alt="Yarn ball"
+        width={130}
+        height={130}
+        style={{ objectFit: "contain", display: "block" }}
+      />
     </motion.div>
   );
 }
