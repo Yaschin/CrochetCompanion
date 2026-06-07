@@ -177,4 +177,19 @@ Implemented on `claude/batch-b-ai-upgrade` (stacked on Batch A).
 
 ---
 
-*End of review. (§1–§5 produced with no code changes; §6–§7 log the Batch A and B implementations that followed.)*
+## 8. Batch C — Execution Log (2026-06-07)
+
+Implemented on `claude/batch-c-alignment` (Batches A & B now merged to `main`, so this PR targets `main`).
+
+**Done (Decision 2 — make the alignment-check real):**
+1. **Replaced the `Math.random()` fake** in `POST /api/patterns/:id/sections/:i/alignment-check` with a genuine vision comparison. New module `server/api/analyzeAlignment.ts` sends the section photo + the section's written instructions to the vision model (`gpt-4.1`, shared `OPENAI_TEXT_MODEL`) and returns a real `{ score 0-100, feedback }` as strict JSON.
+2. **Object-storage images made visible to the model** — added `getObjectDataUrl(key)` in `server/objectStorage.ts` to read a stored object and return a base64 data URL (object-storage `/api/media/...` URLs aren't publicly fetchable by OpenAI). External/public URLs are passed through directly.
+3. **Honest failure** — if no valid OpenAI key, the endpoint returns a clear error ("requires a valid OpenAI API key") instead of a fabricated number. The client now also surfaces the model's short feedback in the result toast.
+
+**Verification:** `tsc` clean except the 2 environment-only `@google-cloud/storage` errors. Live behaviour unverifiable here — **re-verify on a real environment** that uploading a section photo and clicking "Check Pattern Match" returns a sensible score + feedback.
+
+**Next:** Batch D (Community backend) — the last of the confirmed decisions.
+
+---
+
+*End of review. (§1–§5 produced with no code changes; §6–§8 log the Batch A/B/C implementations that followed.)*

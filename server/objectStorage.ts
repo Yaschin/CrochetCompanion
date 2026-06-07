@@ -61,6 +61,24 @@ export async function objectExists(key: string): Promise<boolean> {
   return exists;
 }
 
+// Read a stored object and return it as a base64 data URL. Used to feed
+// object-storage images (which are not publicly fetchable) into the vision model.
+export async function getObjectDataUrl(key: string): Promise<string> {
+  const { bucketName, prefix } = getPublicBucketAndPrefix();
+  const objectName = prefix ? `${prefix}/media/${key}` : `media/${key}`;
+  const bucket = objectStorageClient.bucket(bucketName);
+  const file = bucket.file(objectName);
+
+  const [exists] = await file.exists();
+  if (!exists) {
+    throw new Error(`Object not found: ${key}`);
+  }
+  const [metadata] = await file.getMetadata();
+  const contentType = (metadata.contentType as string) || "image/png";
+  const [buffer] = await file.download();
+  return `data:${contentType};base64,${buffer.toString("base64")}`;
+}
+
 export async function uploadFromUrl(sourceUrl: string): Promise<string> {
   const response = await fetch(sourceUrl);
   if (!response.ok) {
