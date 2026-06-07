@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, RotateCcw, History, Plus, Minus, Volume2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ViewType } from "../lib/types";
@@ -21,12 +21,50 @@ interface HistoryEntry {
 }
 
 const MAX_STITCHES_PER_ROW = 20;
+const STORAGE_KEY = "crochet-time-counter";
+
+function loadState(): { counts: CounterState; history: HistoryEntry[] } {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        counts: parsed.counts ?? { stitches: 0, rows: 0 },
+        history: Array.isArray(parsed.history) ? parsed.history : [],
+      };
+    }
+  } catch { /* ignore */ }
+  return { counts: { stitches: 0, rows: 0 }, history: [] };
+}
 
 export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenProps) {
-  const [counts, setCounts] = useState<CounterState>({ stitches: 0, rows: 0 });
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [counts, setCounts] = useState<CounterState>(() => loadState().counts);
+  const [history, setHistory] = useState<HistoryEntry[]>(() => loadState().history);
   const [showHistory, setShowHistory] = useState(false);
   const [sound, setSound] = useState(true);
+
+  // Persist counts + history across sessions.
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ counts, history })); } catch { /* ignore */ }
+  }, [counts, history]);
+
+  // Keep the screen awake while counting (re-acquire after tab switches).
+  useEffect(() => {
+    let lock: { release?: () => void } | null = null;
+    const request = async () => {
+      try { lock = await (navigator as Navigator & { wakeLock?: { request: (t: string) => Promise<{ release?: () => void }> } }).wakeLock?.request("screen") ?? null; }
+      catch { /* unsupported or denied */ }
+    };
+    request();
+    const onVisible = () => { if (document.visibilityState === "visible") request(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      try { lock?.release?.(); } catch { /* ignore */ }
+    };
+  }, []);
+
+  const buzz = () => { if (sound) { try { navigator.vibrate?.(8); } catch { /* ignore */ } } };
 
   const addEntry = (type: "stitch" | "row", delta: number, value: number) => {
     const now = new Date();
@@ -35,6 +73,7 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
   };
 
   const changeStitches = (delta: number) => {
+    buzz();
     setCounts(c => {
       const next = Math.max(0, c.stitches + delta);
       addEntry("stitch", delta, next);
@@ -43,6 +82,7 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
   };
 
   const changeRows = (delta: number) => {
+    buzz();
     setCounts(c => {
       const next = Math.max(0, c.rows + delta);
       addEntry("row", delta, next);

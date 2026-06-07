@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Crochet Time">
+  <!-- Full-bleed background so platform maskable cropping is safe -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F9EDD8"/>
+      <stop offset="100%" stop-color="#EDD5B8"/>
+    </linearGradient>
+    <radialGradient id="ball" cx="40%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#D86A86"/>
+      <stop offset="100%" stop-color="#B04060"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <!-- Yarn ball (kept within the central safe zone for maskable icons) -->
+  <g transform="translate(256 272)">
+    <circle r="132" fill="url(#ball)"/>
+    <!-- Wound-strand lines -->
+    <g fill="none" stroke="#8E2E4C" stroke-width="6" stroke-linecap="round" opacity="0.55">
+      <path d="M -120 -40 Q 0 -120 120 -40"/>
+      <path d="M -128 10 Q 0 -70 128 10"/>
+      <path d="M -120 60 Q 0 -20 120 60"/>
+      <path d="M -70 -110 Q -10 0 -70 110"/>
+      <path d="M 10 -130 Q 70 0 10 130"/>
+      <path d="M 78 -106 Q 120 0 78 106"/>
+    </g>
+    <ellipse cx="-44" cy="-52" rx="34" ry="20" fill="#FFFFFF" opacity="0.18"/>
+    <!-- Loose strand trailing off -->
+    <path d="M 120 50 Q 180 90 150 150 Q 120 200 175 215" fill="none" stroke="#B04060" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <!-- Crochet hook -->
+  <g transform="rotate(28 256 256)">
+    <rect x="250" y="120" width="14" height="210" rx="7" fill="#C9942E"/>
+    <path d="M 257 120 q -26 -6 -22 22 q 3 16 20 12" fill="none" stroke="#C9942E" stroke-width="14" stroke-linecap="round"/>
+  </g>
+</svg>
