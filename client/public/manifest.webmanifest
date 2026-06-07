@@ -1,0 +1,15 @@
+{
+  "name": "Crochet Time",
+  "short_name": "Crochet",
+  "description": "Your personal crochet companion — patterns, stash, and progress, wherever you craft.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2E4CE",
+  "theme_color": "#FBF8F2",
+  "icons": [
+    { "src": "/characters/char-bee-transparent.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/characters/char-bee-transparent.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -5,6 +5,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import AppShell from "./components/AppShell";
 import ErrorBoundary from "./components/ErrorBoundary";
+import OfflineBanner from "./components/OfflineBanner";
 import HomeWorkbench, { HomeRightPanel } from "./components/HomeWorkbench";
 import PatternInputRefactored from "./components/PatternInputRefactored";
 import PatternViewer from "./components/PatternViewer";
@@ -79,6 +80,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <OfflineBanner />
       <AppShell
         activeView={activeView}
         onNavigate={navigateToView}
