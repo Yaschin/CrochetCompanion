@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Key, ExternalLink, AlertCircle } from 'lucide-react';
 import { PatternInputFormData, Pattern } from '../lib/types';
 
 interface PatternInputProps {
@@ -194,10 +194,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
         skillLevel: formData.skillLevel,
         yarnType: formData.yarnType || undefined,
         size: formData.size || undefined,
-        imgUrl: imageResponse.url, // Main image
         endProductImage: imageResponse.url, // Product image
-        difficultyLevel: formData.skillLevel, // Map skill level to difficulty level
-        completed: false, // New pattern starts as not completed
         materialsNotes: generatedPatternData.materialsNotes || "",
         yarnRequirements: generatedPatternData.yarnRequirements || [],
         hookRequirements: generatedPatternData.hookRequirements || [],

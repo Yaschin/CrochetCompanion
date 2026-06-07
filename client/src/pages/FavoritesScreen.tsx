@@ -1,40 +1,34 @@
-import { useState } from "react";
-import { Heart, Search, MoreHorizontal, ChevronLeft } from "lucide-react";
-import { ViewType } from "../lib/types";
+import { Heart, MoreHorizontal } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Pattern, ViewType } from "../lib/types";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface FavoritesScreenProps {
   onNavigate: (view: ViewType) => void;
+  onPatternSelected: (p: Pattern) => void;
 }
 
-interface FavPattern {
-  id: string;
-  title: string;
-  type: string;
-  difficulty: string;
-  img: string;
-}
+export default function FavoritesScreen({ onNavigate, onPatternSelected }: FavoritesScreenProps) {
+  const { toast } = useToast();
+  const { data: patterns = [], isLoading } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
 
-const FAV_PATTERNS: FavPattern[] = [
-  { id: "1", title: "Cuddle Bunny",       type: "Toy",       difficulty: "Interm.",  img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80" },
-  { id: "2", title: "Daisy Bucket Hat",   type: "Wearable",  difficulty: "Easy",     img: "https://images.unsplash.com/photo-1575029292585-6f3dd97b7b91?w=300&q=80" },
-  { id: "3", title: "Sunflower Coaster",  type: "Home Decor",difficulty: "Easy",     img: "https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=300&q=80" },
-  { id: "4", title: "Granny Square Bag",  type: "Accessory", difficulty: "Easy",     img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80" },
-  { id: "5", title: "Sleepy Bear",        type: "Toy",       difficulty: "Easy",     img: "https://images.unsplash.com/photo-1559715745-e1b33a271c8f?w=300&q=80" },
-  { id: "6", title: "Pocket Dragon",      type: "Toy",       difficulty: "Advanced", img: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=300&q=80" },
-];
+  const favorites = patterns.filter((p) => p.favorite);
 
-export default function FavoritesScreen({ onNavigate }: FavoritesScreenProps) {
-  const [favs, setFavs] = useState<Set<string>>(new Set(FAV_PATTERNS.map(p => p.id)));
+  const favoriteMutation = useMutation({
+    mutationFn: async ({ id, favorite }: { id: string; favorite: boolean }) => {
+      const res = await apiRequest("PUT", `/api/patterns/${id}`, { favorite });
+      if (!res.ok) throw new Error("Failed to update favorite");
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/patterns"] }),
+    onError: () => toast({ title: "Could not update favorite", variant: "destructive" }),
+  });
 
-  const toggle = (id: string) => {
-    setFavs(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
+  const open = (p: Pattern) => {
+    onPatternSelected(p);
+    onNavigate("viewer");
   };
-
-  const visible = FAV_PATTERNS.filter(p => favs.has(p.id));
 
   return (
     <div className="flex flex-col h-full overflow-y-auto pb-20 md:pb-6">
@@ -55,7 +49,14 @@ export default function FavoritesScreen({ onNavigate }: FavoritesScreenProps) {
 
       {/* Grid */}
       <div className="px-4 pt-4">
-        {visible.length === 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="rounded-2xl aspect-square animate-pulse"
+                style={{ background: "rgba(140,100,55,0.08)" }} />
+            ))}
+          </div>
+        ) : favorites.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Heart className="h-12 w-12" style={{ color: "rgba(194,78,107,0.25)" }} />
             <p className="font-heading font-semibold text-[15px]" style={{ color: "#9A7868" }}>
@@ -72,33 +73,45 @@ export default function FavoritesScreen({ onNavigate }: FavoritesScreenProps) {
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-3">
-            {visible.map(p => (
-              <div key={p.id} className="relative rounded-2xl overflow-hidden"
-                style={{ background: "rgba(255,252,245,0.9)", boxShadow: "0 2px 12px rgba(80,40,10,0.10)", border: "1px solid rgba(140,100,55,0.12)" }}>
-                {/* Image */}
-                <div className="relative aspect-square overflow-hidden">
-                  <img src={p.img} alt={p.title}
-                    className="w-full h-full object-cover"
-                    onError={e => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80"; }} />
-                  {/* Heart button */}
-                  <button
-                    onClick={() => toggle(p.id)}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center"
-                    style={{ background: "rgba(255,252,245,0.9)" }}>
-                    <Heart className="h-3.5 w-3.5 fill-current" style={{ color: "#C24E6B" }} />
-                  </button>
+            {favorites.map((p) => {
+              const thumb = p.endProductImage && !p.endProductImage.startsWith("https://placehold") ? p.endProductImage : null;
+              return (
+                <div key={p.id} className="relative rounded-2xl overflow-hidden cursor-pointer transition-transform active:scale-[0.98]"
+                  onClick={() => open(p)}
+                  style={{ background: "rgba(255,252,245,0.9)", boxShadow: "0 2px 12px rgba(80,40,10,0.10)", border: "1px solid rgba(140,100,55,0.12)" }}>
+                  {/* Image */}
+                  <div className="relative aspect-square overflow-hidden">
+                    {thumb ? (
+                      <img src={thumb} alt={p.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center"
+                        style={{ background: "linear-gradient(135deg, #FBF1F4, #F5EAF0)" }}>
+                        <span className="font-heading font-bold text-3xl" style={{ color: "#C24E6B", opacity: 0.25 }}>
+                          {p.title[0]}
+                        </span>
+                      </div>
+                    )}
+                    {/* Heart button */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); favoriteMutation.mutate({ id: p.id, favorite: false }); }}
+                      aria-label="Remove from favorites"
+                      className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center"
+                      style={{ background: "rgba(255,252,245,0.9)" }}>
+                      <Heart className="h-3.5 w-3.5 fill-current" style={{ color: "#C24E6B" }} />
+                    </button>
+                  </div>
+                  {/* Info */}
+                  <div className="px-2 py-2">
+                    <p className="font-heading font-bold text-[12px] leading-tight truncate" style={{ color: "#3D2318" }}>
+                      {p.title}
+                    </p>
+                    <p className="text-[10px] mt-0.5 truncate" style={{ color: "#9A7868" }}>
+                      {p.projectType} · {p.skillLevel}
+                    </p>
+                  </div>
                 </div>
-                {/* Info */}
-                <div className="px-2 py-2">
-                  <p className="font-heading font-bold text-[12px] leading-tight truncate" style={{ color: "#3D2318" }}>
-                    {p.title}
-                  </p>
-                  <p className="text-[10px] mt-0.5" style={{ color: "#9A7868" }}>
-                    {p.type} · {p.difficulty}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

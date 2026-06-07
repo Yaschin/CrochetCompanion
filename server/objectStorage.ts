@@ -96,7 +96,7 @@ export async function streamObject(
   });
 
   const stream = file.createReadStream();
-  stream.on("error", (err) => {
+  stream.on("error", (err: any) => {
     console.error("Stream error:", err);
     if (!res.headersSent) {
       res.status(500).json({ error: "Error streaming file" });

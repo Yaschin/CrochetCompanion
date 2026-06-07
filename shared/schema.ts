@@ -50,6 +50,7 @@ export const patterns = pgTable("patterns", {
   yarnType: text("yarnType"),
   size: text("size"),
   endProductImage: text("endProductImage"),
+  description: text("description"),
   materialsNotes: text("materialsNotes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   sections: jsonb("sections").notNull(),
@@ -118,6 +119,7 @@ export interface PatternSection {
 export const patternSchema = z.object({
   id: z.string(),
   title: z.string(),
+  description: z.string().optional().default(""),
   projectType: z.string(),
   skillLevel: z.string(),
   yarnType: z.string().optional(),

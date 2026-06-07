@@ -16,7 +16,7 @@ function patternProgress(p: Pattern) {
 
 function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect: () => void; index: number }) {
   const { pct, done, total } = patternProgress(pattern);
-  const thumb = pattern.endProductImage || (pattern.imgUrl && !pattern.imgUrl.startsWith("https://placehold") ? pattern.imgUrl : null);
+  const thumb = pattern.endProductImage && !pattern.endProductImage.startsWith("https://placehold") ? pattern.endProductImage : null;
 
   return (
     <motion.div
@@ -40,7 +40,7 @@ function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect:
         <p className="text-[11px] mt-0.5 mb-2" style={{ color: "#9A7868" }}>
           {pattern.projectType} · {pattern.skillLevel}
         </p>
-        {!pattern.completed ? (
+        {pattern.status !== 'finished' ? (
           <>
             <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(140,100,55,0.15)" }}>
               <div className="h-full rounded-full transition-all" style={{
@@ -67,8 +67,8 @@ function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect:
 export default function ProjectsScreen({ onNavigate, onPatternSelected }: ProjectsScreenProps) {
   const { data: patterns = [], isLoading } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
 
-  const inProgress = patterns.filter(p => !p.completed);
-  const completed = patterns.filter(p => p.completed);
+  const inProgress = patterns.filter(p => p.status === 'active');
+  const completed = patterns.filter(p => p.status === 'finished');
 
   return (
     <div className="flex flex-col h-full">
@@ -107,7 +107,7 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
                 style={{ background: "rgba(140,100,55,0.06)" }} />
             ))}
           </div>
-        ) : patterns.length === 0 ? (
+        ) : inProgress.length === 0 && completed.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center gap-5 pb-10">
             <motion.div
               animate={{ y: [0, -8, 0] }}

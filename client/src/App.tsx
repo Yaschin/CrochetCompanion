@@ -175,7 +175,7 @@ function App() {
               )}
 
               {activeView === "favorites" && (
-                <FavoritesScreen onNavigate={navigateToView} />
+                <FavoritesScreen onNavigate={navigateToView} onPatternSelected={handlePatternLoaded} />
               )}
 
               {activeView === "community" && (

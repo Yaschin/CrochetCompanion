@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '../lib/queryClient';
-import { Pattern, PatternSection as PatternSectionType, PatternStep } from '../lib/types';
+import { Pattern, PatternSection as PatternSectionType, PatternStep, ViewType } from '../lib/types';
 import PatternSection from './PatternSection';
 import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
@@ -18,7 +18,7 @@ import { Label } from './ui/label';
 interface PatternViewerProps {
   pattern: Pattern;
   onPatternUpdated: (pattern: Pattern) => void;
-  onNavigate?: (view: string) => void;
+  onNavigate?: (view: ViewType) => void;
 }
 
 /**
@@ -93,16 +93,9 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const regenerateStepsMutation = useMutation({
     mutationFn: async (data: { patternId: string; unlockedStepsOnly: boolean }) => {
       try {
-        const res = await apiRequest('POST', '/api/generate-pattern', {
-          prompt: pattern.title, // Use the title as a base prompt for regeneration
-          patternId: data.patternId,
-          projectType: pattern.projectType,
-          skillLevel: pattern.skillLevel,
-          yarnType: pattern.yarnType,
-          size: pattern.size,
-          unlockedStepsOnly: true,
-          originalPattern: pattern
-        });
+        // Use the persisting, lock-aware regenerate endpoint so locked steps are
+        // preserved server-side and the result is saved to the database.
+        const res = await apiRequest('POST', `/api/patterns/${data.patternId}/regenerate`, {});
         
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
@@ -154,8 +147,8 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       }
     },
     onSuccess: (data) => {
-      // Assuming the returned data is the regenerated pattern
-      onPatternUpdated(data);
+      // The regenerate endpoint returns { success, message, pattern }
+      onPatternUpdated(data.pattern);
       toast({
         title: "Pattern Regenerated",
         description: "Your pattern has been updated with new instructions.",
@@ -739,6 +732,37 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
 
           {/* Progress bar */}
           <PatternProgressBar sections={pattern.sections} />
+
+          {/* Project lifecycle */}
+          <div className="flex gap-2">
+            {pattern.status !== 'active' && pattern.status !== 'finished' && (
+              <button
+                onClick={() => updatePatternMutation.mutate({ ...pattern, status: 'active', startedAt: new Date().toISOString() })}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+                style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.3)" }}
+              >
+                <Play className="h-3.5 w-3.5" /> Start project
+              </button>
+            )}
+            {pattern.status === 'active' && (
+              <button
+                onClick={() => updatePatternMutation.mutate({ ...pattern, status: 'finished', finishedAt: new Date().toISOString() })}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+                style={{ background: "rgba(132,147,79,0.14)", color: "#5F6B36", border: "1px solid rgba(132,147,79,0.3)" }}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" /> Mark finished
+              </button>
+            )}
+            {pattern.status === 'finished' && (
+              <button
+                onClick={() => updatePatternMutation.mutate({ ...pattern, status: 'active', finishedAt: null })}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+                style={{ background: "rgba(140,100,55,0.08)", color: "#7A5C3E", border: "1px solid rgba(140,100,55,0.22)" }}
+              >
+                <Play className="h-3.5 w-3.5" /> Reopen project
+              </button>
+            )}
+          </div>
 
           {/* Tools grid */}
           <div className="grid grid-cols-2 gap-3">
