@@ -14,11 +14,11 @@ const STEPS = ["Details", "Photos", "Pattern", "Review"];
 export default function CommunitySubmitScreen({ onNavigate }: CommunitySubmitScreenProps) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
-    name: "Daisy Shoulder Bag",
+    name: "",
     category: "Accessory",
     skillLevel: "Easy",
     yarnWeight: "DK (Light Worsted)",
-    description: "A sweet & simple shoulder bag with daisy granny squares.",
+    description: "",
   });
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
@@ -163,6 +163,7 @@ export default function CommunitySubmitScreen({ onNavigate }: CommunitySubmitScr
                   <textarea
                     value={form.description}
                     onChange={e => set("description", e.target.value)}
+                    maxLength={100}
                     rows={3}
                     className="w-full px-3 py-2.5 rounded-xl text-[13px] outline-none resize-none"
                     style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: "#3D2318" }}

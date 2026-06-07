@@ -590,20 +590,16 @@ function RecentPatternsSection({
           </button>
         ))}
       </div>
-
-      {/* Carousel dots */}
-      <div className="flex gap-1.5 mt-2.5 justify-center">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="rounded-full transition-all"
-            style={{ width: i === 0 ? 16 : 6, height: 6,
-              background: i === 0 ? "#C24E6B" : "rgba(194,78,107,0.25)" }} />
-        ))}
-      </div>
     </div>
   );
 }
 
 function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) => void }) {
+  const { data: community = [] } = useQuery<{ id: string; title: string; creator: string; endProductImage?: string; likes: number }[]>({
+    queryKey: ["/api/community"],
+  });
+  const top = [...community].sort((a, b) => (b.likes ?? 0) - (a.likes ?? 0))[0] ?? null;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-2.5">
@@ -616,25 +612,36 @@ function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) =
           View library <ChevronRight className="h-3 w-3" />
         </button>
       </div>
-      {/* Horizontal layout: image left, text right */}
-      <div className="craft-card p-3 flex gap-3 items-start">
+      <button
+        type="button"
+        onClick={() => onNavigate("community")}
+        className="craft-card p-3 flex gap-3 items-start w-full text-left hover:opacity-90 transition-opacity"
+      >
         <div className="flex-shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden"
           style={{ background: "linear-gradient(135deg, #E8C8A8, #D4A880)" }}>
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-3xl">🌸</span>
-          </div>
+          {top?.endProductImage ? (
+            <img src={top.endProductImage} alt={top.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-3xl">🌸</span>
+            </div>
+          )}
         </div>
         <div className="flex-1 min-w-0 flex flex-col gap-1">
           <p className="font-heading font-semibold text-[12px] leading-tight" style={{ color: "#3D2318" }}>
-            Granny Square Flower Blanket
+            {top ? top.title : "Explore the community gallery"}
           </p>
-          <p className="text-[10.5px]" style={{ color: "#9A7868" }}>by CrochetLily</p>
-          <div className="flex items-center gap-1 mt-0.5">
-            <Heart className="h-3 w-3 flex-shrink-0" style={{ color: "#C24E6B" }} fill="#C24E6B" />
-            <span className="text-[10.5px] font-semibold" style={{ color: "#C24E6B" }}>1.2k</span>
-          </div>
+          <p className="text-[10.5px]" style={{ color: "#9A7868" }}>
+            {top ? `by ${top.creator}` : "Share your patterns with others"}
+          </p>
+          {top && (
+            <div className="flex items-center gap-1 mt-0.5">
+              <Heart className="h-3 w-3 flex-shrink-0" style={{ color: "#C24E6B" }} fill="#C24E6B" />
+              <span className="text-[10.5px] font-semibold" style={{ color: "#C24E6B" }}>{top.likes}</span>
+            </div>
+          )}
         </div>
-      </div>
+      </button>
     </div>
   );
 }
