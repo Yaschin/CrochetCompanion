@@ -1,6 +1,6 @@
 # Crochet Time — Current-State Assessment
 
-> ⚠️ **SUPERSEDED (2026-06-07).** This assessment describes an earlier, broken state and **no longer matches the code**. Several of its P0 findings (78 type errors, ephemeral images/photos, dropped non-yarn materials, dead files) have since been fixed. See **[`CROCHET_TIME_STATUS_REVIEW_2026-06-07.md`](./CROCHET_TIME_STATUS_REVIEW_2026-06-07.md)** for the current source of truth. Retained for history only.
+> ⚠️ **SUPERSEDED (2026-06-07).** This assessment describes an earlier, broken state and **no longer matches the code**. Several of its P0 findings (78 type errors, ephemeral images/photos, dropped non-yarn materials, dead files) have since been fixed. See **[`CROCHET_TIME_STATUS_REVIEW_2026-06-07.md`](../CROCHET_TIME_STATUS_REVIEW_2026-06-07.md)** for the current source of truth. Retained for history only.
 
 **Prepared for:** Yash
 **Date:** 2026-06-06
