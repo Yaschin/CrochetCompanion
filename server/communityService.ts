@@ -129,7 +129,6 @@ const COMMUNITY_SEEDS: z.input<typeof insertCommunityPatternSchema>[] = [
     projectType: "Home Decor",
     skillLevel: "Easy",
     description: "A cheerful sunflower coaster worked in the round — a quick, satisfying make.",
-    endProductImage: "https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=600&q=80",
     yarnType: "Cotton (DK)",
     sections: [
       section("Center", ["Rnd 1: 6 sc in magic ring (6)", "Rnd 2: inc in each st (12)", "Rnd 3: (sc, inc) x6 (18)"]),
@@ -143,7 +142,6 @@ const COMMUNITY_SEEDS: z.input<typeof insertCommunityPatternSchema>[] = [
     projectType: "Toy",
     skillLevel: "Intermediate",
     description: "A plump little bee with stripes and tiny wings. Beginner-friendly amigurumi shaping.",
-    endProductImage: "https://images.unsplash.com/photo-1559715745-e1b33a271c8f?w=600&q=80",
     yarnType: "Acrylic (Worsted)",
     needsStuffing: "Polyester fiberfill",
     sections: [
@@ -158,7 +156,6 @@ const COMMUNITY_SEEDS: z.input<typeof insertCommunityPatternSchema>[] = [
     projectType: "Home Decor",
     skillLevel: "Intermediate",
     description: "Classic granny squares with a floral centre, joined as-you-go. Cosy and timeless.",
-    endProductImage: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&q=80",
     yarnType: "Acrylic (Worsted)",
     sections: [
       section("Square (make 35)", ["Rnd 1: flower centre — 6 dc in MR", "Rnd 2: petals around centre", "Rnds 3-5: granny clusters to square off"]),
@@ -172,7 +169,6 @@ const COMMUNITY_SEEDS: z.input<typeof insertCommunityPatternSchema>[] = [
     projectType: "Wearable",
     skillLevel: "Easy",
     description: "A breezy bucket hat with appliqué daisies. Adjustable for most adult sizes.",
-    endProductImage: "https://images.unsplash.com/photo-1575029292585-6f3dd97b7b91?w=600&q=80",
     yarnType: "Cotton (Worsted)",
     sections: [
       section("Crown", ["Rnd 1: 8 hdc in MR", "Increase evenly each round until 22cm diameter"]),
@@ -186,7 +182,6 @@ const COMMUNITY_SEEDS: z.input<typeof insertCommunityPatternSchema>[] = [
     projectType: "Toy",
     skillLevel: "Intermediate",
     description: "A friendly sea turtle with a textured shell. Great stash-buster for greens and blues.",
-    endProductImage: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&q=80",
     yarnType: "Acrylic (Worsted)",
     needsStuffing: "Polyester fiberfill",
     sections: [
@@ -201,7 +196,6 @@ const COMMUNITY_SEEDS: z.input<typeof insertCommunityPatternSchema>[] = [
     projectType: "Home Decor",
     skillLevel: "Easy",
     description: "A trio of everlasting tulips on wire stems — a sweet gift that never wilts.",
-    endProductImage: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
     yarnType: "Cotton (DK)",
     sections: [
       section("Flower (make 3)", ["Work petals in the round", "Shape into a cupped tulip and fasten"]),

@@ -716,7 +716,7 @@ function StatsBar({
 export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => void }) {
   const { data: patterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
 
-  const active = patterns[0] ?? null;
+  const active = patterns.find((p) => p.status === "active") ?? patterns.find((p) => p.status !== "finished") ?? patterns[0] ?? null;
   const overview = patterns.slice(0, 3);
   const pct = active ? patternProgress(active) : 0;
   const steps = active?.sections?.flatMap(s => s.steps) ?? [];
@@ -889,7 +889,7 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWor
     });
   };
 
-  const activePattern = patterns[0] ?? null;
+  const activePattern = patterns.find((p) => p.status === "active") ?? patterns.find((p) => p.status !== "finished") ?? patterns[0] ?? null;
   const favoritesCount = patterns.filter((p) => p.favorite).length;
   const projectsCount = patterns.length;
   const milestonesCount = patterns.filter((p) => p.status === 'finished').length;

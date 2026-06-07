@@ -1,7 +1,7 @@
 import { Pattern, patterns as patternsTable } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 // Storage interface with CRUD methods
 export interface IStorage {
@@ -86,7 +86,7 @@ export class DatabaseStorage implements IStorage {
 
   async getAllPatterns(): Promise<Pattern[]> {
     try {
-      const result = await db.select().from(patternsTable);
+      const result = await db.select().from(patternsTable).orderBy(desc(patternsTable.createdAt));
       return result.map(rowToPattern);
     } catch (error) {
       console.error("Error getting all patterns:", error);
