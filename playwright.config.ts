@@ -23,7 +23,7 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  retries: 0,
   reporter: [["list"], ["html", { open: "never" }]],
   outputDir: "test-results",
 
@@ -32,6 +32,10 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "off",
+    // The preview build registers a service worker whose fetch handler would
+    // bypass page.route('**/api/**') mocks (and hit a non-existent backend on
+    // CI). Block service workers so the API mocks actually apply.
+    serviceWorkers: "block",
   },
 
   // Skip the built-in server when pointing at an external URL.

@@ -112,6 +112,11 @@ test("community submit wizard renders", async ({ page, consoleErrors }, testInfo
 test("pattern viewer renders from the library", async ({ page, consoleErrors }, testInfo) => {
   await enterApp(page);
   await navByLabel(page, ["Library"]);
+  // DIAGNOSTIC: capture where we landed + whether the library rendered the card.
+  await page.waitForTimeout(600);
+  const cuddleCount = await page.getByText("Cuddle Bunny").count();
+  const bodySnippet = (await page.locator("body").innerText().catch(() => "")).replace(/\s+/g, " ").slice(0, 240);
+  console.log(`[diag viewer] url=${page.url()} cuddleBunnyCount=${cuddleCount} body="${bodySnippet}"`);
   await page.getByText("Cuddle Bunny").first().click();
   await expect(page.getByRole("button", { name: /Overview/i }).first()).toBeVisible({ timeout: 10000 });
   await snap(page, testInfo, "viewer");
