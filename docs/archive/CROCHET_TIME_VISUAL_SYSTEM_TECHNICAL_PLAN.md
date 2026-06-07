@@ -1,6 +1,6 @@
 # Crochet Time — Visual System Technical Plan
 
-> ℹ️ **Note (2026-06-07).** Still valid as a forward-looking design plan. Two status claims have since drifted: characters shipped as **PNG in `client/public/characters/`** (not WebP/AVIF in object storage), and **routing is still `useState`** (wouter not yet adopted). See **[`CROCHET_TIME_STATUS_REVIEW_2026-06-07.md`](./CROCHET_TIME_STATUS_REVIEW_2026-06-07.md)** for current state.
+> ℹ️ **Note (2026-06-07).** Still valid as a forward-looking design plan. Two status claims have since drifted: characters shipped as **PNG in `client/public/characters/`** (not WebP/AVIF in object storage), and **routing is still `useState`** (wouter not yet adopted). See **[`CROCHET_TIME_STATUS_REVIEW_2026-06-07.md`](../CROCHET_TIME_STATUS_REVIEW_2026-06-07.md)** for current state.
 
 **Prepared:** 2026-06-06  
 **Scope:** Design-system implementation plan only. No code was modified, no libraries installed, no assets created.  

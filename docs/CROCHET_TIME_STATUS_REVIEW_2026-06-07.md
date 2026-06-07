@@ -57,31 +57,42 @@ The two prior planning docs are **stale**. They describe a broken app (78 type e
 
 ## 2. Pending Work
 
-**MVP-critical** (generate → edit → library/favorites → track → count):
+### ✅ Completed & retired (Batches A–D, merged to `main`)
+These were the MVP-critical items in the original review; all are implemented and build-verified (`tsc`). **Live/E2E verification is still pending** (see "Testing status" below).
 
-| Task | Status | Why it matters | Files / routes | Deps | Pri | Effort | Independent? |
-|---|---|---|---|---|---|---|---|
-| Unify `Pattern` type (drop phantom fields) | In progress (drift) | Root cause of Projects bug & future breakage | `lib/types.ts`, `shared/schema.ts` | — | **P0** | Low | Yes |
-| Fix ProjectsScreen to use `status` not `completed` | Impl. but broken | Projects tab mis-categorises every project | `pages/ProjectsScreen.tsx`, `components/ProjectsView.tsx` | type unify | **P0** | Low | Yes |
-| Add "Start project" / "Mark finished" actions | Not started | Lifecycle inert without writes | `PatternViewer.tsx`, `routes.ts` PUT | type unify | **P0** | Med | Yes |
-| Wire FavoritesScreen to real `/api/patterns` | Not started (mock) | Tab shows fake data | `pages/FavoritesScreen.tsx` | — | **P0** | Low | Yes |
-| Make `/regenerate` lock-aware + enforce locks in editor | Partially impl. | Locked work silently overwritten | `routes.ts:694`, `PatternViewer`, `PatternSection` | — | **P0** | Med | Yes |
-| Remove/replace fake `Math.random()` alignment-check | Not started | Fabricated trust signal | `routes.ts:618` | Decision 2 | **P1** | Low | Needs dir |
-| Confirm & add stitch-counter persistence | Needs validation | Core craft use-case | `StitchCounterScreen`, `StitchCounter.tsx` | — | **P1** | Med | Yes |
-| Reconcile/archive stale docs (this doc) | In progress | Prevents future confusion | `docs/*` | — | **P1** | Low | Yes |
-| Remove duplicate root `/public/characters` | Not started | Asset drift | `/public/characters` | — | **P2** | Low | Yes |
-| `tsc` baseUrl deprecation warning | Trivial | Clean build | `tsconfig.json` | — | **P2** | Low | Yes |
+| Task | Batch |
+|---|---|
+| Unify `Pattern` type (drop phantom `imgUrl`/`difficultyLevel`/`completed`; add `description`) | A |
+| Fix ProjectsScreen to use real `status`; delete orphaned `ProjectsView` | A |
+| "Start project" / "Mark finished" lifecycle writes | A |
+| Wire FavoritesScreen to real `/api/patterns` data | A |
+| `/regenerate` lock-aware + locks enforced in editor | A |
+| `tsc` actually runs (baseUrl deprecation un-masked) + pre-existing errors fixed | A |
+| AI model refresh — `gpt-4o`→`gpt-4.1`, `dall-e-3`→`gpt-image-1` | B |
+| Real reference-image vision input | B |
+| Real vision-based alignment-check (replaced `Math.random()`) | C |
+| Real Community backend + gallery + likes + import-to-library | D |
+| Default React Query `queryFn` (Search/Projects/Favorites were broken) | D |
+| Reconcile/archive stale docs | this batch (see `docs/archive/`) |
 
-**Optional enhancements (not MVP):**
+### ⏳ Remaining backlog (optional / non-blocking)
 
-| Task | Status | Pri | Effort | Independent? |
+| Task | Status | Why it matters | Pri | Effort |
 |---|---|---|---|---|
-| Real Community backend (or cut the tab) | Mock only | P2 | High | Needs Decision 1 |
-| Real Progress charts from step data | Mock | P2 | Med | Yes |
-| `wouter` routing migration (URLs/back) | Not started | P2 | Med | Yes |
-| AI model refresh (gpt-4o/dall-e-3 → current) | Not started | P2 | Low | Needs Decision 3 |
-| Reference-image vision input (or remove) | Cosmetic | P2 | Med | Needs Decision 3 |
-| Convert character PNGs → WebP/AVIF | PNG now | P3 | Low | Yes |
+| **E2E / live verification of A–D** | Blocked in sandbox (no DB/keys, broken npm) | Confirms the merged work actually runs | **P1** | Med |
+| Playwright suite execution (suite authored this batch) | Authored, unrun here | Cross-screen/responsive coverage | **P1** | Low (on a real env) |
+| Confirm & add stitch-counter persistence | Needs validation | Core craft use-case | P2 | Med |
+| Regenerate-by-section-image → true vision input | Text-only today | Makes that path real | P2 | Low |
+| Real Progress charts from step data | Mock (`MOCK_PROGRESS`) | Honest progress view | P2 | Med |
+| `wouter` routing migration (URLs/back/deep links) | Not started | Navigation depth | P2 | Med |
+| Remove duplicate root `/public/characters` | Not started | Asset drift | P3 | Low |
+| Prune now-unused deps (`@uppy/*` after ObjectUploader removal) | Not started | Bundle/clarity | P3 | Low |
+| AI tier choice (default `gpt-4.1`/`gpt-image-1`; env-overridable) | Default set | Cost/quality | P3 | Low |
+| Convert character PNGs → WebP/AVIF | PNG now | Perf | P3 | Low |
+
+### Testing status
+- **Build-verified:** `tsc` clean (except 2 environment-only `@google-cloud/storage` errors from the sandbox's broken npm).
+- **Live-verified:** **none yet.** This sandbox cannot boot the app (`DATABASE_URL` unset → `server/db.ts` throws at import; `tsx`/`vite`/`esbuild` binaries unlinked) and cannot install Playwright (`npm` fails with `ENOTEMPTY`). A Playwright suite that needs **no database** (mocks `/api/*`) is committed under `tests/e2e/` — see `docs/E2E_TESTING.md` to run it on a real environment or in CI.
 
 ---
 
