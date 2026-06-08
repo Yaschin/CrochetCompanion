@@ -194,6 +194,13 @@ const PatternSection: React.FC<PatternSectionProps> = ({
 }) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [editedNotes, setEditedNotes] = useState(section.notes || '');
+
+  // Keep editedNotes in sync when section.notes changes externally (e.g. after a save)
+  React.useEffect(() => {
+    if (!isEditingNotes) {
+      setEditedNotes(section.notes || '');
+    }
+  }, [section.notes, isEditingNotes]);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   
   const toggleLock = () => {

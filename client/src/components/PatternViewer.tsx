@@ -95,10 +95,6 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         recordActivity();
         setShowCelebration(true);
       }
-      toast({
-        title: "Pattern Updated",
-        description: "Your pattern has been saved successfully.",
-      });
     },
     onError: () => {
       toast({
@@ -185,11 +181,13 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
 
   // Regenerate steps mutation
   const regenerateStepsMutation = useMutation({
-    mutationFn: async (data: { patternId: string; unlockedStepsOnly: boolean }) => {
+    mutationFn: async (data: { patternId: string; unlockedStepsOnly: boolean; userNote?: string }) => {
       try {
         // Use the persisting, lock-aware regenerate endpoint so locked steps are
         // preserved server-side and the result is saved to the database.
-        const res = await apiRequest('POST', `/api/patterns/${data.patternId}/regenerate`, {});
+        const res = await apiRequest('POST', `/api/patterns/${data.patternId}/regenerate`, {
+          userNote: data.userNote || undefined,
+        });
         
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
@@ -536,12 +534,13 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   }, [pattern, updatePatternMutation]);
 
   // Handle pattern regeneration
-  const handleRegeneratePattern = async () => {
+  const handleRegeneratePattern = async (userNote?: string) => {
     setIsRegenerating(true);
     try {
       await regenerateStepsMutation.mutateAsync({
         patternId: pattern.id,
-        unlockedStepsOnly: true
+        unlockedStepsOnly: true,
+        userNote,
       });
     } catch (error) {
       // Error is already handled by the mutation's onError
@@ -1007,7 +1006,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                   />
                   <div className="flex gap-2">
                     <button
-                      onClick={() => { handleRegeneratePattern(); setRegenSection(null); }}
+                      onClick={() => { handleRegeneratePattern(regenNote); setRegenSection(null); }}
                       className="flex-1 py-2 rounded-xl text-[12px] font-semibold"
                       style={{ background: "linear-gradient(135deg, #7C5FA8, #5C3F88)", color: "white" }}
                     >

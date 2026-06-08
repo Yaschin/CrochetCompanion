@@ -2,3 +2,4 @@
 - [PatternViewer tabs design](patternviewer-tabs.md) — viewer has Overview/Pattern/Notes tabs; Notes persist in localStorage keyed by pattern.id; "Created {date}" shows real date; Adapt panel is live.
 - [PatternInput wizard](patternInput-wizard.md) — 5-step wizard replaced JSX-only (mutations kept); stale old return block required manual sed deletion.
 - [Walkthrough bugs fixed](walkthrough-bugs.md) — 4 bugs found and fixed during full app walkthrough; DB/seed/sort/activePattern issues.
+- [Deep review fixes](deep-review-fixes.md) — 5 bugs fixed in end-to-end review: noisy toast, wizardColors, cache invalidation, regenNote, editedNotes sync.

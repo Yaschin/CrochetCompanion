@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
 import { Sparkles, Key, ExternalLink, AlertCircle } from 'lucide-react';
 import { PatternInputFormData, Pattern } from '../lib/types';
@@ -136,10 +136,13 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
 
   // Generate pattern mutation
   const generatePatternMutation = useMutation({
-    mutationFn: async (data: PatternInputFormData) => {
+    mutationFn: async (data: PatternInputFormData & { colors?: string[] }) => {
       const referenceImage = file ? await fileToDataUrl(file) : undefined;
+      const colorHint = data.colors && data.colors.length > 0
+        ? ` Colour palette: ${data.colors.join(', ')}.`
+        : '';
       const res = await apiRequest('POST', '/api/generate-pattern', {
-        prompt: data.prompt,
+        prompt: data.prompt + colorHint,
         projectType: data.projectType,
         skillLevel: data.skillLevel,
         yarnType: data.yarnType || undefined,
@@ -188,7 +191,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
     try {
       // Generate the pattern
       setGenerationStage('pattern');
-      const generatedPatternData = await generatePatternMutation.mutateAsync(formData);
+      const generatedPatternData = await generatePatternMutation.mutateAsync({ ...formData, colors: wizardColors });
       
       // Generate an image for the pattern
       setGenerationStage('images');
@@ -233,6 +236,9 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
 
       // Save the pattern
       const savedPattern = await savePatternMutation.mutateAsync(patternToSave);
+
+      // Invalidate the pattern library cache so the new pattern appears immediately
+      queryClient.invalidateQueries({ queryKey: ['/api/patterns'] });
       
       // Set the completion stage
       setGenerationStage('complete');

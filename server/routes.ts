@@ -678,7 +678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/patterns/:patternId/regenerate", async (req: Request, res: Response) => {
     try {
       const { patternId } = req.params;
-      const { sectionIndex, basedOnImage } = req.body;
+      const { sectionIndex, basedOnImage, userNote } = req.body;
       
       // Get the original pattern
       const originalPattern = await patternService.getPattern(patternId);
@@ -708,8 +708,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Call pattern generation with the original pattern for reference
+      const basePrompt = originalPattern.title;
+      const fullPrompt = (userNote && typeof userNote === "string" && userNote.trim())
+        ? `${basePrompt}. Additional instructions: ${userNote.trim()}`
+        : basePrompt;
+
       const regeneratedPattern = await generatePattern({
-        prompt: originalPattern.title, // Use title since description might not exist
+        prompt: fullPrompt,
         projectType: originalPattern.projectType,
         skillLevel: originalPattern.skillLevel,
         yarnType: originalPattern.yarnType,
