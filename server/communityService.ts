@@ -91,30 +91,43 @@ export const communityService = {
 
   // Seed 40 curated patterns. Re-seeds when the table has fewer than 30 entries
   // (handles first-run and migration from the original 6-pattern seed).
+  // On every startup also resumes image generation for any patterns still missing images.
   async seedIfEmpty(): Promise<void> {
     try {
-      const existing = await db.select({ id: communityPatterns.id }).from(communityPatterns);
-      if (existing.length >= 30) return;
+      const existing = await db.select().from(communityPatterns);
 
-      // Clear old seeds and replace with the full curated gallery.
-      if (existing.length > 0) {
-        await db.delete(communityPatterns);
-        console.log("Community: cleared old seeds, replacing with full 40-pattern gallery…");
+      if (existing.length < 30) {
+        // Clear old seeds and replace with the full curated gallery.
+        if (existing.length > 0) {
+          await db.delete(communityPatterns);
+          console.log("Community: cleared old seeds, replacing with full 40-pattern gallery…");
+        } else {
+          console.log("Community: seeding 40-pattern gallery for the first time…");
+        }
+
+        const created: CommunityPattern[] = [];
+        for (const seed of COMMUNITY_SEEDS) {
+          const p = await this.create(insertCommunityPatternSchema.parse(seed));
+          created.push(p);
+        }
+        console.log(`Community: seeded ${created.length} patterns. Generating images in background…`);
+        generateCommunityImages(created).catch((e) =>
+          console.error("Community image generation error:", e)
+        );
       } else {
-        console.log("Community: seeding 40-pattern gallery for the first time…");
+        // Already seeded — resume image generation for any patterns still missing images.
+        const missing = existing
+          .filter((r) => !r.endProductImage || r.endProductImage.includes("placehold"))
+          .map(rowToCommunity);
+        if (missing.length > 0) {
+          console.log(`Community: resuming image generation for ${missing.length} patterns…`);
+          generateCommunityImages(missing).catch((e) =>
+            console.error("Community image generation (resume) error:", e)
+          );
+        } else {
+          console.log("Community: all 40 patterns have images ✓");
+        }
       }
-
-      const created: CommunityPattern[] = [];
-      for (const seed of COMMUNITY_SEEDS) {
-        const p = await this.create(insertCommunityPatternSchema.parse(seed));
-        created.push(p);
-      }
-      console.log(`Community: seeded ${created.length} patterns. Generating images in background…`);
-
-      // Non-blocking: generate images in the background 3 at a time.
-      generateCommunityImages(created).catch((e) =>
-        console.error("Community image generation error:", e)
-      );
     } catch (error) {
       console.error("Error seeding community patterns:", error);
     }
