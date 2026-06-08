@@ -91,7 +91,7 @@ export default function FavoritesScreen({ onNavigate, onPatternSelected }: Favor
                     <button
                       onClick={(e) => { e.stopPropagation(); favoriteMutation.mutate({ id: p.id, favorite: false }); }}
                       aria-label="Remove from favorites"
-                      className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center"
+                      className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full flex items-center justify-center"
                       style={{ background: "rgba(255,252,245,0.9)" }}>
                       <Heart className="h-3.5 w-3.5 fill-current" style={{ color: "#C24E6B" }} />
                     </button>

@@ -127,7 +127,10 @@ const MaterialsInventory: FC = () => {
       if (!res.ok) throw new Error('Failed to save notes');
       return res.json();
     },
-    onSuccess: () => toast({ title: 'Notes saved' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/stash-notes'] });
+      toast({ title: 'Notes saved' });
+    },
     onError: () => toast({ title: 'Could not save notes', variant: 'destructive' }),
   });
 

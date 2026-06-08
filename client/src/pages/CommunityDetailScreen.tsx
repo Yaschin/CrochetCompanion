@@ -29,6 +29,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
       queryClient.invalidateQueries({ queryKey: ["/api/community", communityId] });
       queryClient.invalidateQueries({ queryKey: ["/api/community"] });
     },
+    onError: () => toast({ title: "Could not like pattern", variant: "destructive" }),
   });
 
   // Import a community pattern into Larissa's library as a new, editable pattern.

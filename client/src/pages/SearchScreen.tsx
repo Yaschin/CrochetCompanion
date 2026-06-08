@@ -27,7 +27,7 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
   const [activeSort, setActiveSort] = useState("Newest");
   const [showFilters, setShowFilters] = useState(false);
 
-  const { data: patterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
+  const { data: patterns = [], isLoading } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
 
   const filtered = patterns
     .filter((p) => {
@@ -78,6 +78,7 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
           />
           {query && (
             <button onClick={() => setQuery("")}
+              aria-label="Clear search"
               className="absolute right-3.5 top-1/2 -translate-y-1/2 hover:opacity-70">
               <X className="h-4 w-4" style={{ color: "#9A7868" }} />
             </button>
@@ -90,6 +91,7 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
             <button
               key={chip.id}
               onClick={() => setActiveFilter(chip.id)}
+              aria-pressed={activeFilter === chip.id}
               className="flex-shrink-0 px-4 py-1.5 rounded-full text-[12px] font-bold transition-all"
               style={
                 activeFilter === chip.id
@@ -130,6 +132,7 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
                 <div className="flex gap-2 flex-wrap">
                   {SORT_OPTIONS.map((opt) => (
                     <button key={opt} onClick={() => setActiveSort(opt)}
+                      aria-pressed={activeSort === opt}
                       className="px-3 py-1.5 rounded-full text-[11.5px] font-bold transition-all"
                       style={
                         activeSort === opt
@@ -148,8 +151,18 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
 
       {/* Results */}
       <div className="flex-1 overflow-y-auto px-6 py-4 pb-20 md:pb-4">
+        {/* Loading skeleton */}
+        {isLoading && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="rounded-2xl overflow-hidden animate-pulse"
+                style={{ background: "rgba(140,100,55,0.08)", aspectRatio: "1" }} />
+            ))}
+          </div>
+        )}
+
         {/* Search shortcuts — shown when the user has patterns but no active query */}
-        {!query && patterns.length > 0 && (
+        {!isLoading && !query && patterns.length > 0 && (
           <div className="mb-5">
             <p className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: "#9A7868" }}>
               Try searching for
@@ -174,13 +187,13 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
           </div>
         )}
 
-        {query && (
+        {!isLoading && query && (
           <p className="text-[12px] mb-3 font-semibold" style={{ color: "#9A7868" }}>
             {filtered.length} result{filtered.length !== 1 ? "s" : ""} for "{query}"
           </p>
         )}
 
-        {filtered.length === 0 ? (
+        {!isLoading && filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 gap-3">
             <svg viewBox="0 0 64 64" width="52" height="52">
               <defs>
@@ -208,7 +221,7 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
               Create with Yala →
             </button>
           </div>
-        ) : (
+        ) : !isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {filtered.map((p, i) => (
               <motion.button
@@ -252,7 +265,7 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
               </motion.button>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

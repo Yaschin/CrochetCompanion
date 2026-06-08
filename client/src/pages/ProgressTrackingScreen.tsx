@@ -63,7 +63,15 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
           <>
             {/* Progress ring + real stats */}
             <div className="craft-card p-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-              <div className="relative flex-shrink-0" style={{ width: 100, height: 100 }}>
+              <div
+                className="relative flex-shrink-0"
+                style={{ width: 100, height: 100 }}
+                role="progressbar"
+                aria-valuenow={pct}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`${pct}% complete`}
+              >
                 <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)" }}>
                   <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(194,78,107,0.12)" strokeWidth="8" />
                   <circle cx="50" cy="50" r="42" fill="none" stroke="#C24E6B" strokeWidth="8" strokeLinecap="round"

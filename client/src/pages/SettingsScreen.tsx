@@ -15,15 +15,32 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
 
-  const handleExport = () => {
-    // Hits GET /api/export, which sets Content-Disposition for a file download.
-    const a = document.createElement("a");
-    a.href = "/api/export";
-    a.download = "";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    toast({ title: "Backup started", description: "Your data is downloading as a JSON file." });
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/export");
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "crochet-time-backup.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({ title: "Backup downloaded", description: "Your data has been saved as a JSON file." });
+    } catch (err) {
+      toast({
+        title: "Export failed",
+        description: err instanceof Error ? err.message : "Could not download your backup. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleImportFile = async (file: File) => {
@@ -79,11 +96,12 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
 
           <button
             onClick={handleExport}
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-heading font-bold text-[14px] transition-all hover:opacity-90 active:scale-[0.98]"
+            disabled={exporting}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-heading font-bold text-[14px] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
             style={{ background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.35)" }}
           >
             <Download className="h-4 w-4" />
-            Export backup (.json)
+            {exporting ? "Exporting…" : "Export backup (.json)"}
           </button>
 
           <input

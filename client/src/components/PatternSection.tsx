@@ -88,6 +88,7 @@ const StepRow: React.FC<{
         {/* Complete — primary action, comfortable tap target */}
         <button
           onClick={toggleComplete}
+          onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggleComplete(); } }}
           role="checkbox"
           aria-checked={step.completed}
           aria-label={step.completed ? 'Mark step incomplete' : 'Mark step complete'}

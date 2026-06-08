@@ -142,6 +142,7 @@ export default function PatternDetailScreen({ pattern, onNavigate, onOpenPattern
           {desc.length > 160 && (
             <button
               onClick={() => setShowMore(s => !s)}
+              aria-expanded={showMore}
               className="text-[12px] font-semibold mt-2 transition-opacity hover:opacity-70"
               style={{ color: "#C24E6B" }}>
               {showMore ? "Show less" : "Show more"}

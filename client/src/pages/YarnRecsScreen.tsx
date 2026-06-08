@@ -108,6 +108,21 @@ export default function YarnRecsScreen({ onNavigate, onPatternSelected }: YarnRe
           </div>
         </div>
 
+        {/* Loading skeleton */}
+        {isLoading && (
+          <div className="flex flex-col gap-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="craft-card p-3.5 flex items-center gap-3 animate-pulse">
+                <div className="flex-shrink-0 w-11 h-11 rounded-xl" style={{ background: "rgba(140,100,55,0.12)" }} />
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="h-3.5 rounded-full w-3/4" style={{ background: "rgba(140,100,55,0.10)" }} />
+                  <div className="h-2.5 rounded-full w-1/2" style={{ background: "rgba(140,100,55,0.07)" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Empty: no stash yet */}
         {!isLoading && stash.length === 0 && (
           <div className="craft-card p-6 flex flex-col items-center text-center gap-3">
