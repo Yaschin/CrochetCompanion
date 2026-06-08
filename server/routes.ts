@@ -11,6 +11,7 @@ import { communityService } from "./communityService";
 import { patternService } from "./patternService";
 import { stashService } from "./stashService";
 import { seedLibraryIfEmpty } from "./seedLibrary";
+import { seedAdditionalPatterns } from "./seedAdditionalPatterns";
 import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
 import { z } from "zod";
 import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject, getObjectDataUrl } from "./objectStorage";
@@ -20,6 +21,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   communityService.seedIfEmpty().catch((e) => console.error("Community seed failed:", e));
   // Seed Larissa's personal library and stash on first boot.
   seedLibraryIfEmpty().catch((e) => console.error("Library/stash seed failed:", e));
+  // Seed 20 additional curated patterns (5 per category).
+  seedAdditionalPatterns().catch((e) => console.error("Additional pattern seed failed:", e));
 
   // Serve stored media objects from object storage
   app.get("/api/media/:key", async (req: Request, res: Response) => {
