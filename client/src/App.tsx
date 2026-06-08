@@ -55,7 +55,6 @@ function pathFor(view: ViewType, opts: NavOpts = {}): string {
     case "community-submit": return "/community/submit";
     case "community-detail": return cid ? `/community/${cid}` : "/community";
     case "viewer": return pid ? `/patterns/${pid}` : "/library";
-    case "regenerate": return pid ? `/patterns/${pid}` : "/library";
     case "pattern-detail": return pid ? `/patterns/${pid}/details` : "/library";
     case "progress": return pid ? `/patterns/${pid}/progress` : "/library";
     case "photo-upload": return pid ? `/patterns/${pid}/photos` : "/library";
@@ -297,7 +296,10 @@ function App() {
               )}
 
               {activeView === "stitch-counter" && (
-                <StitchCounterScreen onNavigate={navigateToView} />
+                <StitchCounterScreen
+                  onNavigate={navigateToView}
+                  backView={currentPattern ? "viewer" : "home"}
+                />
               )}
 
               {activeView === "yarn-recs" && (

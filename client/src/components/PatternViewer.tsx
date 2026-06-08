@@ -48,6 +48,8 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     try { return localStorage.getItem(`crochet-time:notes:${pattern.id}`) || ""; } catch { return ""; }
   });
   const [showCelebration, setShowCelebration] = useState(false);
+  const [regenAllConfirmOpen, setRegenAllConfirmOpen] = useState(false);
+  const [regenAllNote, setRegenAllNote] = useState("");
   const [adaptOpen, setAdaptOpen] = useState(false);
   const [adaptMode, setAdaptMode] = useState<"resize" | "substitute">("resize");
   const [adaptInstruction, setAdaptInstruction] = useState("");
@@ -1087,7 +1089,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             </button>
             <button
               className={`inline-flex justify-center items-center px-4 py-2 rounded-full shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark ${isRegenerating ? 'opacity-75 cursor-not-allowed' : ''}`}
-              onClick={handleRegeneratePattern}
+              onClick={() => setRegenAllConfirmOpen(true)}
               disabled={isRegenerating}
             >
               {isRegenerating ? (
@@ -1128,6 +1130,48 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
           </div>
         </div>
       )}
+
+      {/* ── Regenerate All Confirmation Dialog ── */}
+      <Dialog open={regenAllConfirmOpen} onOpenChange={(o) => { setRegenAllConfirmOpen(o); if (!o) setRegenAllNote(""); }}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Regenerate All Sections?</DialogTitle>
+            <DialogDescription>
+              This will rewrite all unlocked steps with AI. Locked steps are safe. You can add an optional note to guide the regeneration.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-3">
+            <textarea
+              rows={2}
+              placeholder="Optional: any specific instructions? (e.g. make it beginner-friendly)"
+              value={regenAllNote}
+              onChange={(e) => setRegenAllNote(e.target.value)}
+              className="w-full p-2.5 rounded-xl text-[13px] outline-none resize-none"
+              style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(140,100,55,0.25)", color: "#3D2318" }}
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => { setRegenAllConfirmOpen(false); setRegenAllNote(""); }}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={isRegenerating}
+              onClick={() => {
+                setRegenAllConfirmOpen(false);
+                handleRegeneratePattern(regenAllNote || undefined);
+                setRegenAllNote("");
+              }}
+            >
+              {isRegenerating ? (
+                <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Regenerating…</>
+              ) : (
+                <><RefreshCw className="h-4 w-4 mr-2" />Yes, Regenerate All</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Image Regeneration Dialog ── */}
       <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>

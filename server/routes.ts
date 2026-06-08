@@ -19,10 +19,10 @@ import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject, getObjec
 export async function registerRoutes(app: Express): Promise<Server> {
   // Seed the community gallery on first boot (no-op if already populated).
   communityService.seedIfEmpty().catch((e) => console.error("Community seed failed:", e));
-  // Seed Larissa's personal library and stash on first boot.
-  seedLibraryIfEmpty().catch((e) => console.error("Library/stash seed failed:", e));
-  // Seed 20 additional curated patterns (5 per category).
-  seedAdditionalPatterns().catch((e) => console.error("Additional pattern seed failed:", e));
+  // Seed Larissa's personal library and stash, then additional patterns (chained to avoid race condition).
+  seedLibraryIfEmpty()
+    .then(() => seedAdditionalPatterns())
+    .catch((e) => console.error("Library/stash seed failed:", e));
 
   // Serve stored media objects from object storage
   app.get("/api/media/:key", async (req: Request, res: Response) => {

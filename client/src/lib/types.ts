@@ -98,7 +98,6 @@ export type ViewType =
   | "input"
   | "loading"
   | "viewer"
-  | "regenerate"
   | "library"
   | "search"
   | "stash"

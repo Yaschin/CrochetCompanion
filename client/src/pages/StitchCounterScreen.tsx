@@ -6,6 +6,7 @@ import { recordActivity } from "../lib/activityLog";
 
 interface StitchCounterScreenProps {
   onNavigate: (view: ViewType) => void;
+  backView?: ViewType;
 }
 
 interface CounterState {
@@ -38,7 +39,7 @@ function loadState(): { counts: CounterState; history: HistoryEntry[] } {
   return { counts: { stitches: 0, rows: 0 }, history: [] };
 }
 
-export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenProps) {
+export default function StitchCounterScreen({ onNavigate, backView = "home" }: StitchCounterScreenProps) {
   const [counts, setCounts] = useState<CounterState>(() => loadState().counts);
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadState().history);
   const [showHistory, setShowHistory] = useState(false);
@@ -134,7 +135,7 @@ export default function StitchCounterScreen({ onNavigate }: StitchCounterScreenP
       <div className="flex-shrink-0 flex items-center justify-between px-6 pt-5 pb-4"
         style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
         <div className="flex items-center gap-3">
-          <button onClick={() => onNavigate("progress")}
+          <button onClick={() => onNavigate(backView)}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
             style={{ background: "rgba(132,147,79,0.08)", color: "#84934F" }}>
             <ChevronLeft className="h-4 w-4" />
