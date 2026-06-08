@@ -148,8 +148,8 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
 
       {/* Results */}
       <div className="flex-1 overflow-y-auto px-6 py-4 pb-20 md:pb-4">
-        {/* Recent searches — shown when query is empty */}
-        {!query && patterns.length === 0 && (
+        {/* Search shortcuts — shown when the user has patterns but no active query */}
+        {!query && patterns.length > 0 && (
           <div className="mb-5">
             <p className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: "#9A7868" }}>
               Try searching for

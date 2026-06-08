@@ -50,9 +50,24 @@ description: Bugs found and fixed during the full end-to-end code review of all 
 **10. ProjectsScreen invalid Tailwind class**
 - Stash shortcut icon used `h-4.5 w-4.5` (not a valid Tailwind utility). Changed to `h-5 w-5`.
 
+## Session 3 — confirmed bugs fixed
+
+**11. PatternLibrary custom queryFn + staleTime inconsistency**
+- PatternLibrary had its own `queryFn` and `staleTime: 2min` for `['/api/patterns']`. All other screens (ProjectsScreen, FavoritesScreen, SearchScreen, YarnRecsScreen) used the global default fetcher for the same key with no staleTime. The 2-min staleTime caused the Library to show up to 2-minute-stale data after changes on other screens. Removed the custom queryFn and staleTime; kept `retry: 3` and `retryDelay`.
+
+**12. PatternDetailScreen favMutation — no error handling**
+- If the API call failed, `isFav` would be left in the wrong state (showing favorited when the DB had not saved it). Added `onError` that reverts `isFav` to `!fav` and shows a destructive toast.
+
+**13. SearchScreen suggestion chips shown only to new users (zero patterns)**
+- Chips were shown when `patterns.length === 0`, meaning new users saw them but tapping always returned zero results (they had no patterns). Changed to `patterns.length > 0` so chips appear as useful quick-search shortcuts above the library grid for users who already have patterns. New users now see the more helpful "No patterns yet — Create with Yala →" empty state instead.
+
+**14. CommunitySubmitScreen — pattern text not required before Review step**
+- Step 2 (paste pattern) could be blank; the user could advance to the Review step with no content, then submit an empty pattern. Added validation: if `patternText` is empty at step 2, a toast blocks advancement.
+
 ## Key architecture notes (from walkthrough)
 - PatternViewer "Start Project" button (Overview tab) changes status `"pattern" → "active"` + sets `startedAt`. "Mark finished" → `"finished"`. Both via `updatePatternMutation`.
 - ProjectsScreen intentionally shows only `active` and `finished` — `"pattern"` status patterns live in the Library until user starts them. By design.
 - Server PUT `/api/patterns/:id` uses `patternSchema.partial()` — always safe to send partial bodies.
 - Notification bell on Home: `communityPatterns.length - lastSeenCount` (localStorage key `crochet-time-community-seen`). Dynamic, not hardcoded.
+- App.tsx viewer wrapper already has a "← Patterns" labelled back button — not a gap.
 - Default query fetcher: `queryKey.map(String).join("/")` — so `["/api/community", id]` → `/api/community/${id}`.

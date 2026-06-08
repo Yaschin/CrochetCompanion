@@ -30,6 +30,10 @@ export default function PatternDetailScreen({ pattern, onNavigate, onOpenPattern
       queryClient.invalidateQueries({ queryKey: ["/api/patterns"] });
       toast({ title: fav ? "Added to Favourites ❤️" : "Removed from Favourites" });
     },
+    onError: (_, fav) => {
+      setIsFav(!fav);
+      toast({ title: "Couldn't update favourite", description: "Please try again.", variant: "destructive" });
+    },
   });
 
   const handleCopy = () => {

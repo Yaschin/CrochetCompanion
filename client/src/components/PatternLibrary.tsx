@@ -34,24 +34,12 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
   const [sort, setSort] = useState<SortKey>('newest');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
 
-  // Fetch all patterns with better error handling and retry logic
+  // Fetch all patterns — uses the global default fetcher so all screens share
+  // the same cache behaviour. retry/retryDelay kept for resilience.
   const { data: patterns, isLoading, isError } = useQuery({
     queryKey: ['/api/patterns'],
-    queryFn: async () => {
-      try {
-        const response = await apiRequest('GET', '/api/patterns');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch patterns: ${response.statusText}`);
-        }
-        return await response.json();
-      } catch (err) {
-        console.error("Error fetching patterns:", err);
-        throw err;
-      }
-    },
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff
-    staleTime: 1000 * 60 * 2, // 2 minutes (data considered fresh)
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
   });
 
   // Delete pattern mutation

@@ -271,6 +271,10 @@ export default function CommunitySubmitScreen({ onNavigate }: CommunitySubmitScr
               toast({ title: "Pattern name required", description: "Please enter a name before continuing.", variant: "destructive" });
               return;
             }
+            if (step === 2 && !patternText.trim()) {
+              toast({ title: "Pattern text required", description: "Paste at least a few rows of your pattern before continuing.", variant: "destructive" });
+              return;
+            }
             step < STEPS.length - 1 ? setStep(s => s + 1) : submitMutation.mutate();
           }}
           disabled={submitMutation.isPending}
