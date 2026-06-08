@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, Download, Copy, Heart, RefreshCw, Printer } from "lucide-react";
+import { ChevronLeft, Download, Copy, Heart, RefreshCw, Printer, Users } from "lucide-react";
 import { printPattern } from "../lib/printPattern";
 import { motion } from "framer-motion";
 import { Pattern, ViewType } from "../lib/types";
@@ -8,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import StashCoverage from "../components/StashCoverage";
 import PatternAdaptCard from "../components/PatternAdaptCard";
+import { PatternThumb } from "@/components/PatternThumb";
 
 interface PatternDetailScreenProps {
   pattern: Pattern;
@@ -18,6 +19,7 @@ interface PatternDetailScreenProps {
 export default function PatternDetailScreen({ pattern, onNavigate, onOpenPattern }: PatternDetailScreenProps) {
   const { toast } = useToast();
   const [showMore, setShowMore] = useState(false);
+  const [heroImgFailed, setHeroImgFailed] = useState(false);
   const [isFav, setIsFav] = useState(pattern.favorite ?? false);
 
   const favMutation = useMutation({
@@ -96,12 +98,12 @@ export default function PatternDetailScreen({ pattern, onNavigate, onOpenPattern
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="px-5 mt-2"
       >
-        {pattern.endProductImage ? (
+        {pattern.endProductImage && !pattern.endProductImage.includes("placehold") && !heroImgFailed ? (
           <div className="relative rounded-3xl overflow-hidden"
             style={{ height: 260, boxShadow: "0 8px 40px rgba(194,78,107,0.18)" }}>
             <img src={pattern.endProductImage} alt={pattern.title}
-              className="w-full h-full object-cover" />
-            {/* Gradient overlay */}
+              className="w-full h-full object-cover"
+              onError={() => setHeroImgFailed(true)} />
             <div className="absolute inset-0"
               style={{ background: "linear-gradient(to top, rgba(61,35,24,0.5) 0%, transparent 60%)" }} />
             <div className="absolute bottom-4 left-4 right-4">
@@ -111,11 +113,16 @@ export default function PatternDetailScreen({ pattern, onNavigate, onOpenPattern
             </div>
           </div>
         ) : (
-          <div className="rounded-3xl flex flex-col items-center justify-center gap-3"
-            style={{ height: 220, background: "linear-gradient(135deg, rgba(194,78,107,0.1), rgba(124,95,168,0.1))",
-              border: "1.5px dashed rgba(140,100,55,0.25)" }}>
-            <span style={{ fontSize: 64 }}>🧶</span>
-            <h1 className="font-heading font-bold text-[20px]" style={{ color: "#3D2318" }}>{pattern.title}</h1>
+          <div className="relative rounded-3xl overflow-hidden"
+            style={{ height: 220, boxShadow: "0 4px 24px rgba(194,78,107,0.12)", containerType: "inline-size" }}>
+            <PatternThumb image={null} title={pattern.title} projectType={pattern.projectType} />
+            <div className="absolute inset-0"
+              style={{ background: "linear-gradient(to top, rgba(61,35,24,0.45) 0%, transparent 55%)" }} />
+            <div className="absolute bottom-4 left-4 right-4">
+              <h1 className="font-heading font-bold text-[20px] text-white leading-tight drop-shadow-md">
+                {pattern.title}
+              </h1>
+            </div>
           </div>
         )}
       </motion.div>
@@ -197,6 +204,15 @@ export default function PatternDetailScreen({ pattern, onNavigate, onOpenPattern
               border: "1.5px solid rgba(124,95,168,0.25)" }}>
             <Copy className="h-4 w-4" />
             Copy Pattern Text
+          </button>
+
+          <button
+            onClick={() => onNavigate("community-submit")}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-heading font-bold text-[14px] transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{ background: "rgba(60,143,163,0.10)", color: "#3D8FA3",
+              border: "1.5px solid rgba(60,143,163,0.25)" }}>
+            <Users className="h-4 w-4" />
+            Share to Community
           </button>
 
           <div className="grid grid-cols-2 gap-3">

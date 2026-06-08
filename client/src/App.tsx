@@ -282,7 +282,7 @@ function App() {
               )}
 
               {activeView === "community-submit" && (
-                <CommunitySubmitScreen onNavigate={navigateToView} />
+                <CommunitySubmitScreen onNavigate={navigateToView} initialPattern={currentPattern ?? undefined} />
               )}
 
               {activeView === "progress" && (

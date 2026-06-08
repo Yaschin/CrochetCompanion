@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Home, Wand2, BookOpen, Heart, FolderOpen } from "lucide-react";
+import { Home, Wand2, BookOpen, Heart, FolderOpen, Users } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { ViewType } from "../lib/types";
 
@@ -14,6 +14,7 @@ const TABS = [
   { view: "home"      as ViewType, label: "Home",      Icon: Home },
   { view: "input"     as ViewType, label: "Create",    Icon: Wand2 },
   { view: "library"   as ViewType, label: "Library",   Icon: BookOpen },
+  { view: "community" as ViewType, label: "Community", Icon: Users },
   { view: "favorites" as ViewType, label: "Favorites", Icon: Heart },
   { view: "projects"  as ViewType, label: "Projects",  Icon: FolderOpen },
 ];

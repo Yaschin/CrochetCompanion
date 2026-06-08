@@ -1,31 +1,43 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { ViewType } from "../lib/types";
+import { ViewType, Pattern } from "../lib/types";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface CommunitySubmitScreenProps {
   onNavigate: (view: ViewType) => void;
+  initialPattern?: Pattern;
 }
 
 const STEPS = ["Details", "Photos", "Pattern", "Review"];
 
-export default function CommunitySubmitScreen({ onNavigate }: CommunitySubmitScreenProps) {
+export default function CommunitySubmitScreen({ onNavigate, initialPattern }: CommunitySubmitScreenProps) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
-    name: "",
-    category: "Accessory",
-    skillLevel: "Easy",
-    yarnWeight: "DK (Light Worsted)",
-    description: "",
+    name: initialPattern?.title ?? "",
+    category: initialPattern?.projectType ?? "Accessory",
+    skillLevel: initialPattern?.skillLevel ?? "Easy",
+    yarnWeight: initialPattern?.yarnType ?? "DK (Light Worsted)",
+    description: initialPattern?.description ?? "",
   });
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const { toast } = useToast();
-  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
-  const [patternText, setPatternText] = useState("");
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(
+    initialPattern?.endProductImage && !initialPattern.endProductImage.includes("placehold")
+      ? initialPattern.endProductImage
+      : null
+  );
+  const [patternText, setPatternText] = useState(
+    initialPattern
+      ? initialPattern.sections
+          .filter(s => s.name.toLowerCase() !== "materials")
+          .flatMap(s => [`## ${s.name}`, ...s.steps.map(st => st.text)])
+          .join("\n")
+      : ""
+  );
 
   const onPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
