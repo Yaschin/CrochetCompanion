@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Pattern, ViewType } from "../lib/types";
+import { PatternThumb } from "@/components/PatternThumb";
 import { getStreak } from "../lib/activityLog";
 
 // ─── Notification helpers ──────────────────────────────────────────────────────
@@ -423,11 +424,10 @@ function ContinueProjectCard({
       {pattern ? (
         <div className="flex items-start gap-2.5 flex-1">
 
-          {pattern.endProductImage && !pattern.endProductImage.startsWith("https://placehold") && (
-            <img src={pattern.endProductImage} alt={pattern.title}
-              className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
-              style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.14)" }} />
-          )}
+          <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
+            style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.14)", containerType: "inline-size" }}>
+            <PatternThumb image={pattern.endProductImage} title={pattern.title} projectType={pattern.projectType} />
+          </div>
           <div className="flex-1 min-w-0">
             <p className="font-heading font-semibold text-[13px] truncate" style={{ color: "#3D2318" }}>
               {pattern.title}
@@ -571,17 +571,9 @@ function RecentPatternsSection({
         {patterns.map((p) => (
           <button key={p.id} onClick={() => onNavigate("library")}
             className="flex flex-col items-start gap-1 group flex-shrink-0" style={{ width: 82 }}>
-            <div className="w-full h-20 rounded-xl overflow-hidden craft-card p-0"
-              style={{ background: "#FBF1F4" }}>
-              {p.endProductImage && !p.endProductImage.startsWith("https://placehold") ? (
-                <img src={p.endProductImage} alt={p.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="font-heading font-bold text-2xl" style={{ color: "#C24E6B", opacity: 0.3 }}>
-                    {p.title[0]}
-                  </span>
-                </div>
-              )}
+            <div className="w-full h-20 rounded-xl overflow-hidden"
+              style={{ containerType: "inline-size" }}>
+              <PatternThumb image={p.endProductImage} title={p.title} projectType={p.projectType} />
             </div>
             <p className="text-[10.5px] font-semibold leading-tight text-left line-clamp-2" style={{ color: "#5C3A28" }}>
               {p.title}
@@ -618,14 +610,8 @@ function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) =
         className="craft-card p-3 flex gap-3 items-start w-full text-left hover:opacity-90 transition-opacity"
       >
         <div className="flex-shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #E8C8A8, #D4A880)" }}>
-          {top?.endProductImage ? (
-            <img src={top.endProductImage} alt={top.title} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="text-3xl">🌸</span>
-            </div>
-          )}
+          style={{ containerType: "inline-size" }}>
+          <PatternThumb image={top?.endProductImage} title={top?.title ?? "Community"} projectType={top ? undefined : undefined} />
         </div>
         <div className="flex-1 min-w-0 flex flex-col gap-1">
           <p className="font-heading font-semibold text-[12px] leading-tight" style={{ color: "#3D2318" }}>
@@ -786,11 +772,10 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
         {active ? (
           <div>
             <div className="flex items-start gap-2.5 mb-2">
-              {active.endProductImage && !active.endProductImage.startsWith("https://placehold") && (
-                <img src={active.endProductImage} alt={active.title}
-                  className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
-                  style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.12)" }} />
-              )}
+              <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
+                style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.12)", containerType: "inline-size" }}>
+                <PatternThumb image={active.endProductImage} title={active.title} projectType={active.projectType} />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="font-heading font-semibold text-[13px] truncate" style={{ color: "#3D2318" }}>
                   {active.title}
@@ -843,16 +828,10 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
               const pp = patternProgress(p);
               return (
                 <div key={p.id} className="flex items-center gap-2">
-                  {p.endProductImage && !p.endProductImage.startsWith("https://placehold") ? (
-                    <img src={p.endProductImage} className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: "#FBF1F4" }}>
-                      <span className="font-heading font-bold text-sm" style={{ color: "#C24E6B", opacity: 0.5 }}>
-                        {p.title[0]}
-                      </span>
-                    </div>
-                  )}
+                  <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0"
+                    style={{ containerType: "inline-size" }}>
+                    <PatternThumb image={p.endProductImage} title={p.title} projectType={p.projectType} />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11.5px] font-semibold truncate" style={{ color: "#3D2318" }}>{p.title}</p>
                     <p className="text-[10px]" style={{ color: "#9A7868" }}>In Progress</p>
@@ -1032,13 +1011,10 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWor
             <div className="craft-card p-4 flex gap-3 items-center"
               style={{ cursor: "pointer" }}
               onClick={() => onPatternSelected?.(activePattern)}>
-              {activePattern.endProductImage ? (
-                <img src={activePattern.endProductImage} alt={activePattern.title}
-                  className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
-              ) : (
-                <div className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl"
-                  style={{ background: "rgba(194,78,107,0.08)" }}>🧶</div>
-              )}
+              <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0"
+                style={{ containerType: "inline-size" }}>
+                <PatternThumb image={activePattern.endProductImage} title={activePattern.title} projectType={activePattern.projectType} />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="font-heading font-bold text-[14px] truncate" style={{ color: "#3D2318" }}>
                   {activePattern.title}

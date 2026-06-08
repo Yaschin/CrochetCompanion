@@ -1,5 +1,8 @@
 // Beautiful themed thumbnail for pattern cards.
-// Shows a real image if available, otherwise a gradient card styled by project type.
+// Shows a real image if available; falls back to a gradient card styled by project type.
+// Uses React state so broken URLs gracefully show the themed placeholder.
+
+import { useState } from "react";
 
 const TYPE_THEMES: Record<string, { gradient: string; color: string; emoji: string }> = {
   "Toy":        { gradient: "linear-gradient(145deg, #FBF1F4 0%, #EFC1D2 100%)", color: "#C24E6B", emoji: "🧸" },
@@ -26,7 +29,8 @@ interface PatternThumbProps {
 }
 
 export function PatternThumb({ image, title, projectType, className = "" }: PatternThumbProps) {
-  const isReal = !!image && !image.includes("placehold");
+  const [imgFailed, setImgFailed] = useState(false);
+  const isReal = !!image && !image.includes("placehold") && !imgFailed;
   const theme = getTheme(projectType);
 
   if (isReal) {
@@ -35,15 +39,11 @@ export function PatternThumb({ image, title, projectType, className = "" }: Patt
         src={image!}
         alt={title}
         className={`w-full h-full object-cover ${className}`}
-        onError={(e) => {
-          // If image fails to load, hide it so the parent shows the placeholder
-          (e.target as HTMLImageElement).style.display = "none";
-        }}
+        onError={() => setImgFailed(true)}
       />
     );
   }
 
-  // Beautiful themed placeholder
   return (
     <div
       className={`w-full h-full flex flex-col items-center justify-center select-none ${className}`}
@@ -51,7 +51,7 @@ export function PatternThumb({ image, title, projectType, className = "" }: Patt
     >
       <span
         className="leading-none mb-1.5"
-        style={{ fontSize: "clamp(1.6rem, 6cqw, 2.6rem)" }}
+        style={{ fontSize: "clamp(1.4rem, 6cqw, 2.4rem)" }}
         aria-hidden
       >
         {theme.emoji}
@@ -61,7 +61,7 @@ export function PatternThumb({ image, title, projectType, className = "" }: Patt
         style={{
           color: theme.color,
           opacity: 0.72,
-          fontSize: "clamp(0.55rem, 2.2cqw, 0.72rem)",
+          fontSize: "clamp(0.5rem, 2cqw, 0.7rem)",
           maxWidth: "90%",
           overflow: "hidden",
           display: "-webkit-box",

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Plus, Package } from "lucide-react";
 import { Pattern, ViewType } from "../lib/types";
+import { PatternThumb } from "@/components/PatternThumb";
 
 interface ProjectsScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -16,8 +17,6 @@ function patternProgress(p: Pattern) {
 
 function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect: () => void; index: number }) {
   const { pct, done, total } = patternProgress(pattern);
-  const thumb = pattern.endProductImage && !pattern.endProductImage.startsWith("https://placehold") ? pattern.endProductImage : null;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -26,14 +25,10 @@ function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect:
       onClick={onSelect}
       className="craft-card p-4 flex gap-3 items-center cursor-pointer transition-all hover:shadow-md active:scale-[0.99]"
     >
-      {thumb ? (
-        <img src={thumb} alt={pattern.title}
-          className="w-[60px] h-[60px] rounded-xl object-cover flex-shrink-0"
-          style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.14)" }} />
-      ) : (
-        <div className="w-[60px] h-[60px] rounded-xl flex items-center justify-center flex-shrink-0 text-2xl"
-          style={{ background: "rgba(194,78,107,0.08)", border: "1px dashed rgba(194,78,107,0.2)" }}>🧶</div>
-      )}
+      <div className="w-[60px] h-[60px] rounded-xl overflow-hidden flex-shrink-0"
+        style={{ boxShadow: "0 2px 8px rgba(80,45,10,0.14)", containerType: "inline-size" }}>
+        <PatternThumb image={pattern.endProductImage} title={pattern.title} projectType={pattern.projectType} />
+      </div>
 
       <div className="flex-1 min-w-0">
         <p className="font-heading font-bold text-[14px] truncate" style={{ color: "#3D2318" }}>{pattern.title}</p>
