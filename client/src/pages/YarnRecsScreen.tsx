@@ -3,6 +3,7 @@ import { ChevronLeft, Check, ShoppingBag, Sparkles, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { Pattern, StashItem, ViewType } from "../lib/types";
 import { rankByStash, RankedPattern } from "../lib/stashMatch";
+import { PatternThumb } from "@/components/PatternThumb";
 
 interface YarnRecsScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -21,10 +22,10 @@ function PatternRow({ rp, onClick }: { rp: RankedPattern; onClick?: () => void }
       className="craft-card p-3.5 flex items-center gap-3 text-left w-full transition-all hover:opacity-90"
     >
       <div
-        className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center font-heading font-bold text-[18px]"
-        style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B" }}
+        className="flex-shrink-0 w-11 h-11 rounded-xl overflow-hidden"
+        style={{ containerType: "inline-size" }}
       >
-        {pattern.title?.[0]?.toUpperCase() ?? "?"}
+        <PatternThumb image={pattern.endProductImage} title={pattern.title} projectType={pattern.projectType} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-heading font-bold text-[14px] truncate" style={{ color: "#3D2318" }}>
