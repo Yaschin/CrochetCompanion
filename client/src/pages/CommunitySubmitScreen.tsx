@@ -266,8 +266,14 @@ export default function CommunitySubmitScreen({ onNavigate }: CommunitySubmitScr
 
         {/* Next button */}
         <button
-          onClick={() => step < STEPS.length - 1 ? setStep(s => s + 1) : submitMutation.mutate()}
-          disabled={submitMutation.isPending || (step === STEPS.length - 1 && !form.name.trim())}
+          onClick={() => {
+            if (step === 0 && !form.name.trim()) {
+              toast({ title: "Pattern name required", description: "Please enter a name before continuing.", variant: "destructive" });
+              return;
+            }
+            step < STEPS.length - 1 ? setStep(s => s + 1) : submitMutation.mutate();
+          }}
+          disabled={submitMutation.isPending}
           className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-[15px] transition-all hover:opacity-90 mt-2 disabled:opacity-50"
           style={{ background: "#C24E6B", color: "white", boxShadow: "0 4px 20px rgba(194,78,107,0.4)" }}>
           {step < STEPS.length - 1 ? (

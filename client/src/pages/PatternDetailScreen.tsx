@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Pattern, ViewType } from "../lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import StashCoverage from "../components/StashCoverage";
 import PatternAdaptCard from "../components/PatternAdaptCard";
 
@@ -22,11 +22,12 @@ export default function PatternDetailScreen({ pattern, onNavigate, onOpenPattern
 
   const favMutation = useMutation({
     mutationFn: async (fav: boolean) => {
-      const res = await apiRequest("PUT", `/api/patterns/${pattern.id}`, { ...pattern, favorite: fav });
+      const res = await apiRequest("PUT", `/api/patterns/${pattern.id}`, { favorite: fav });
       return res.json();
     },
     onSuccess: (_, fav) => {
       setIsFav(fav);
+      queryClient.invalidateQueries({ queryKey: ["/api/patterns"] });
       toast({ title: fav ? "Added to Favourites ❤️" : "Removed from Favourites" });
     },
   });

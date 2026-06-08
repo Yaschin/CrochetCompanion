@@ -185,7 +185,7 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                   style={{ background: "rgba(140,100,55,0.1)" }}>
-                  <Package className="h-4.5 w-4.5" style={{ color: "#9A7868" }} />
+                  <Package className="h-5 w-5" style={{ color: "#9A7868" }} />
                 </div>
                 <div className="text-left">
                   <p className="font-heading font-semibold text-[13px]" style={{ color: "#5C3A28" }}>My Stash</p>

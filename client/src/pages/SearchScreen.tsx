@@ -152,7 +152,7 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
         {!query && patterns.length === 0 && (
           <div className="mb-5">
             <p className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: "#9A7868" }}>
-              Recent Searches
+              Try searching for
             </p>
             <div className="flex flex-wrap gap-2">
               {RECENT_SEARCHES.map((s) => (
