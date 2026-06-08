@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, X, SlidersHorizontal, ChevronLeft, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pattern, ViewType } from "../lib/types";
+import { PatternThumb } from "@/components/PatternThumb";
 
 interface SearchScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -232,18 +233,8 @@ export default function SearchScreen({ onNavigate, onPatternSelected }: SearchSc
                 onClick={() => { onPatternSelected(p); onNavigate("viewer"); }}
                 className="craft-card text-left overflow-hidden group"
               >
-                <div className="h-28 overflow-hidden"
-                  style={{ background: "linear-gradient(135deg, #FBF1F4, #F5EAF0)" }}>
-                  {p.endProductImage && !p.endProductImage.startsWith("https://placehold") ? (
-                    <img src={p.endProductImage} alt={p.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="font-heading font-bold text-4xl" style={{ color: "#C24E6B", opacity: 0.25 }}>
-                        {p.title[0]}
-                      </span>
-                    </div>
-                  )}
+                <div className="h-28 overflow-hidden" style={{ containerType: "inline-size" }}>
+                  <PatternThumb image={p.endProductImage} title={p.title} projectType={p.projectType} />
                 </div>
                 <div className="p-3">
                   <p className="font-heading font-semibold text-[12px] leading-tight" style={{ color: "#3D2318" }}>

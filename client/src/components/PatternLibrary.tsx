@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Pattern } from '../lib/types';
 import { cn } from '../lib/utils';
 import { FolderOpen, Trash, Calendar, Plus, Search, Heart } from 'lucide-react';
+import { PatternThumb } from '@/components/PatternThumb';
 
 interface PatternLibraryProps {
   onPatternSelected: (pattern: Pattern) => void;
@@ -216,14 +217,8 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
                     onClick={() => onPatternSelected(pattern)}
                   >
                     {/* Square image */}
-                    <div className="relative aspect-square overflow-hidden bg-gray-100">
-                      {pattern.endProductImage ? (
-                        <img src={pattern.endProductImage} alt={pattern.title} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[10px]" style={{ color: "#B0908A" }}>
-                          No image
-                        </div>
-                      )}
+                    <div className="relative aspect-square overflow-hidden" style={{ containerType: "inline-size" }}>
+                      <PatternThumb image={pattern.endProductImage} title={pattern.title} projectType={pattern.projectType} />
                       {/* Heart */}
                       <button
                         type="button"

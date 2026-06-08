@@ -4,3 +4,4 @@
 - [Walkthrough bugs fixed](walkthrough-bugs.md) — 4 bugs found and fixed during full app walkthrough; DB/seed/sort/activePattern issues.
 - [Deep review fixes](deep-review-fixes.md) — 5 bugs fixed in end-to-end review: noisy toast, wizardColors, cache invalidation, regenNote, editedNotes sync.
 - [Production audit fixes](production-audit-fixes.md) — 10 bugs fixed in production audit: DB schema push, SearchScreen isLoading/aria, FavoritesScreen touch target, CommunityDetail likeMutation onError, PatternDetail aria-expanded, YarnRecs loading skeleton, ProgressTracking SVG accessibility, Settings export fetch-with-error-handling, MaterialsInventory notes cache invalidation, PatternSection keyboard handler.
+- [Image & community system](image-community-system.md) — auto-image after POST /api/patterns (fire-and-forget); 40-pattern community seed; PatternThumb component; reseed threshold 30.

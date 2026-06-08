@@ -199,6 +199,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const pattern = await patternService.createPattern(result.data);
       res.status(201).json(pattern);
+
+      // Fire-and-forget: generate a product image in the background if none exists yet.
+      if (!pattern.endProductImage || pattern.endProductImage.includes("placehold")) {
+        (async () => {
+          try {
+            const prompt = `${pattern.title} — a ${pattern.skillLevel} crochet ${pattern.projectType}${pattern.description ? `. ${pattern.description}` : ""}`;
+            const imageUrl = await generateImage({
+              prompt,
+              type: "final",
+              projectType: pattern.projectType,
+              yarnType: pattern.yarnType ?? undefined,
+            });
+            if (imageUrl && !imageUrl.includes("placehold")) {
+              await patternService.updatePattern(pattern.id, { endProductImage: imageUrl });
+              console.log(`[auto-image] ✓ Generated image for "${pattern.title}" (${pattern.id})`);
+            }
+          } catch (e) {
+            console.error(`[auto-image] Failed for pattern "${pattern.title}":`, e);
+          }
+        })();
+      }
     } catch (error) {
       console.error("Error creating pattern:", error);
       res.status(500).json({ message: "Failed to create pattern", error: (error as Error).message });

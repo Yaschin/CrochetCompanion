@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Pattern, ViewType } from "../lib/types";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { PatternThumb } from "@/components/PatternThumb";
 
 interface FavoritesScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -70,23 +71,13 @@ export default function FavoritesScreen({ onNavigate, onPatternSelected }: Favor
         ) : (
           <div className="grid grid-cols-3 gap-3">
             {favorites.map((p) => {
-              const thumb = p.endProductImage && !p.endProductImage.startsWith("https://placehold") ? p.endProductImage : null;
               return (
                 <div key={p.id} className="relative rounded-2xl overflow-hidden cursor-pointer transition-transform active:scale-[0.98]"
                   onClick={() => open(p)}
                   style={{ background: "rgba(255,252,245,0.9)", boxShadow: "0 2px 12px rgba(80,40,10,0.10)", border: "1px solid rgba(140,100,55,0.12)" }}>
                   {/* Image */}
-                  <div className="relative aspect-square overflow-hidden">
-                    {thumb ? (
-                      <img src={thumb} alt={p.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center"
-                        style={{ background: "linear-gradient(135deg, #FBF1F4, #F5EAF0)" }}>
-                        <span className="font-heading font-bold text-3xl" style={{ color: "#C24E6B", opacity: 0.25 }}>
-                          {p.title[0]}
-                        </span>
-                      </div>
-                    )}
+                  <div className="relative aspect-square overflow-hidden" style={{ containerType: "inline-size" }}>
+                    <PatternThumb image={p.endProductImage} title={p.title} projectType={p.projectType} />
                     {/* Heart button */}
                     <button
                       onClick={(e) => { e.stopPropagation(); favoriteMutation.mutate({ id: p.id, favorite: false }); }}

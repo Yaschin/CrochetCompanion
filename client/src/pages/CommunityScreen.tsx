@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { ViewType } from "../lib/types";
 import type { CommunityPattern } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { PatternThumb } from "@/components/PatternThumb";
 
 interface CommunityScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -130,15 +131,8 @@ export default function CommunityScreen({ onNavigate, onPatternSelect }: Communi
                 className="rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
                 style={{ background: "rgba(255,252,245,0.95)", boxShadow: "0 2px 12px rgba(80,40,10,0.10)", border: "1px solid rgba(140,100,55,0.12)" }}>
                 {/* Image */}
-                <div className="relative aspect-square overflow-hidden">
-                  {p.endProductImage ? (
-                    <img src={p.endProductImage} alt={p.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center"
-                      style={{ background: "linear-gradient(135deg, #FBF1F4, #F5EAF0)" }}>
-                      <span className="font-heading font-bold text-2xl" style={{ color: "#C24E6B", opacity: 0.3 }}>{p.title[0]}</span>
-                    </div>
-                  )}
+                <div className="relative aspect-square overflow-hidden" style={{ containerType: "inline-size" }}>
+                  <PatternThumb image={p.endProductImage} title={p.title} projectType={p.projectType} />
                   {/* Difficulty badge */}
                   <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold"
                     style={{ background: "rgba(255,252,245,0.92)", color: diffColor(p.skillLevel) }}>
