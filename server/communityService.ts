@@ -89,21 +89,15 @@ export const communityService = {
     }
   },
 
-  // Seed 40 curated patterns. Re-seeds when the table has fewer than 30 entries
-  // (handles first-run and migration from the original 6-pattern seed).
+  // Seed 40 curated patterns on first run only (empty table). Never deletes
+  // existing rows — user submissions must survive restarts and seed changes.
   // On every startup also resumes image generation for any patterns still missing images.
   async seedIfEmpty(): Promise<void> {
     try {
       const existing = await db.select().from(communityPatterns);
 
-      if (existing.length < 30) {
-        // Clear old seeds and replace with the full curated gallery.
-        if (existing.length > 0) {
-          await db.delete(communityPatterns);
-          console.log("Community: cleared old seeds, replacing with full 40-pattern gallery…");
-        } else {
-          console.log("Community: seeding 40-pattern gallery for the first time…");
-        }
+      if (existing.length === 0) {
+        console.log("Community: seeding 40-pattern gallery for the first time…");
 
         const created: CommunityPattern[] = [];
         for (const seed of COMMUNITY_SEEDS) {

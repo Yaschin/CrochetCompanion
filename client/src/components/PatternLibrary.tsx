@@ -37,7 +37,7 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
 
   // Fetch all patterns — uses the global default fetcher so all screens share
   // the same cache behaviour. retry/retryDelay kept for resilience.
-  const { data: patterns, isLoading, isError } = useQuery({
+  const { data: patterns, isLoading, isError } = useQuery<Pattern[]>({
     queryKey: ['/api/patterns'],
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
@@ -96,13 +96,13 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
   // Unique project types for the filter dropdown
   const projectTypes = useMemo(() => {
     const set = new Set<string>();
-    ((patterns as Pattern[]) || []).forEach((p) => p.projectType && set.add(p.projectType));
+    (patterns || []).forEach((p) => p.projectType && set.add(p.projectType));
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [patterns]);
 
   // Apply search + type filter + sort (all client-side over fetched patterns)
   const visiblePatterns = useMemo(() => {
-    let list = [...((patterns as Pattern[]) || [])];
+    let list = [...(patterns || [])];
 
     const q = search.trim().toLowerCase();
     if (q) {
