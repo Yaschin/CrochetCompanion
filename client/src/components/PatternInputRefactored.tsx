@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
-import { Sparkles, Key, ExternalLink, AlertCircle, BookOpen, Plus, FileUp } from 'lucide-react';
+import { Sparkles, Key, ExternalLink, AlertCircle, BookOpen, Plus, FileUp, ChevronRight } from 'lucide-react';
 import { PatternInputFormData, Pattern } from '../lib/types';
 
 interface PatternInputProps {
@@ -61,7 +61,14 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   const [pdfParsing, setPdfParsing]   = useState(false);
   const [pdfResult, setPdfResult]     = useState<any>(null);
   const [pdfEditTitle, setPdfEditTitle] = useState("");
-  const [pdfSaving, setPdfSaving]     = useState(false);
+  const [pdfSaving, setPdfSaving]         = useState(false);
+  const [pdfEditType, setPdfEditType]     = useState("");
+  const [pdfEditSkill, setPdfEditSkill]   = useState("");
+  const [pdfEditYarnType, setPdfEditYarnType] = useState("");
+  const [pdfEditYarnReqs, setPdfEditYarnReqs] = useState<Array<{color: string; volume: string}>>([]);
+  const [pdfEditHooks, setPdfEditHooks]   = useState<Array<{size: string; note: string}>>([]);
+  const [pdfEditSections, setPdfEditSections] = useState<Array<{name: string; steps: Array<{instruction: string; count?: string}>}>>([]);
+  const [pdfExpandedSec, setPdfExpandedSec]   = useState<number | null>(null);
   const [pdfLoadingMsgIdx, setPdfLoadingMsgIdx] = useState(0);
 
   const PDF_LOADING_MSGS = [
@@ -206,6 +213,13 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       const result = await parsePdfMutation.mutateAsync(base64);
       setPdfResult(result);
       setPdfEditTitle(result.title || "Imported Pattern");
+      setPdfEditType(result.projectType || "Other");
+      setPdfEditSkill(result.skillLevel || "Beginner");
+      setPdfEditYarnType(result.yarnType || "Not specified");
+      setPdfEditYarnReqs(result.yarnRequirements || []);
+      setPdfEditHooks(result.hookRequirements || []);
+      setPdfEditSections(result.sections || []);
+      setPdfExpandedSec(null);
       setPdfStep(1);
     } catch (err: any) {
       const raw = err.message || "Something went wrong.";
@@ -226,13 +240,23 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
     setPdfSaving(true);
     try {
       const title = pdfEditTitle.trim() || pdfResult.title || "Imported Pattern";
+      const merged = {
+        ...pdfResult,
+        title,
+        projectType: pdfEditType || "Other",
+        skillLevel:  pdfEditSkill || "Beginner",
+        yarnType:    pdfEditYarnType === "Not specified" ? "" : (pdfEditYarnType || ""),
+        yarnRequirements: pdfEditYarnReqs.filter(y => y.color.trim()),
+        hookRequirements: pdfEditHooks.filter(h => h.size.trim()),
+        sections:    pdfEditSections,
+      };
       const patternToSave = buildPatternToSave(
-        { ...pdfResult, title },
+        merged,
         {
           prompt: title,
-          projectType: pdfResult.projectType || "Other",
-          skillLevel: pdfResult.skillLevel || "Beginner",
-          yarnType: pdfResult.yarnType || "",
+          projectType: merged.projectType,
+          skillLevel:  merged.skillLevel,
+          yarnType:    merged.yarnType,
           size: "",
         },
         undefined,
@@ -1034,12 +1058,12 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
             </div>
           )}
 
-          {/* Step 1 — Review */}
+          {/* Step 1 — Review & Edit */}
           {pdfStep === 1 && pdfResult && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Review & save</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Check everything looks right</p>
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Review & edit</h2>
+                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Fix anything the AI got wrong before saving</p>
               </div>
 
               {/* Import banner */}
@@ -1047,21 +1071,19 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
                 style={{ background: "rgba(61,143,163,0.09)", border: "1px solid rgba(61,143,163,0.28)" }}>
                 <span style={{ fontSize: 18, flexShrink: 0 }}>📄</span>
                 <p className="text-[12px] leading-snug" style={{ color: "#2A6B7D" }}>
-                  <strong>Imported from:</strong> {pdfFile?.name}<br />
-                  Diagrams and chart images in the PDF weren't imported — only written instructions.
+                  <strong>From:</strong> {pdfFile?.name} · Diagrams weren't imported, only written instructions.
                 </p>
               </div>
 
-              {/* Editable title */}
+              {/* ── Title ── */}
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
-                  Pattern title
-                </label>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Pattern name</label>
                 <input
                   type="text"
                   value={pdfEditTitle}
                   onChange={e => setPdfEditTitle(e.target.value)}
-                  className="w-full p-4 rounded-2xl text-[14px] outline-none transition-all"
+                  placeholder="Pattern name…"
+                  className="w-full p-3.5 rounded-2xl text-[14px] outline-none"
                   style={{
                     background: "rgba(255,252,245,0.95)",
                     border: `1.5px solid ${pdfEditTitle.trim() ? "#3D8FA3" : "rgba(140,100,55,0.22)"}`,
@@ -1070,75 +1092,199 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
                 />
               </div>
 
-              {/* Extracted metadata badges */}
-              <div className="flex flex-wrap gap-2">
-                {pdfResult.projectType && (
-                  <span className="px-3 py-1 rounded-full text-[12px] font-semibold"
-                    style={{ background: "rgba(61,143,163,0.12)", color: "#2A6B7D" }}>
-                    {CATEGORIES.find(c => c.id === pdfResult.projectType)?.emoji ?? "🧶"} {pdfResult.projectType}
-                  </span>
-                )}
-                {pdfResult.skillLevel && (
-                  <span className="px-3 py-1 rounded-full text-[12px] font-semibold"
-                    style={{ background: "rgba(132,147,79,0.12)", color: "#5A6E30" }}>
-                    {SKILL_LEVELS.find(s => s.id === pdfResult.skillLevel)?.emoji ?? "🌱"} {pdfResult.skillLevel}
-                  </span>
-                )}
-                {pdfResult.yarnType && (
-                  <span className="px-3 py-1 rounded-full text-[12px] font-semibold"
-                    style={{ background: "rgba(212,146,26,0.12)", color: "#A07010" }}>
-                    🧶 {pdfResult.yarnType}
-                  </span>
-                )}
+              {/* ── Project type ── */}
+              <div>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Type</label>
+                <div className="flex gap-2 flex-wrap">
+                  {CATEGORIES.map(c => (
+                    <button key={c.id} onClick={() => setPdfEditType(c.id)}
+                      className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all"
+                      style={{
+                        background: pdfEditType === c.id ? c.color : "rgba(140,100,55,0.08)",
+                        color: pdfEditType === c.id ? "white" : "#7A5A4A",
+                        border: pdfEditType === c.id ? "none" : "1.5px solid rgba(140,100,55,0.15)",
+                      }}>
+                      {c.emoji} {c.id}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Extracted summary card */}
-              <div className="craft-card p-4 flex flex-col gap-3">
-                <p className="text-[10.5px] font-semibold uppercase tracking-wider" style={{ color: "#B0908A" }}>What was extracted</p>
+              {/* ── Skill level ── */}
+              <div>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Skill level</label>
+                <div className="flex gap-2">
+                  {SKILL_LEVELS.map(s => (
+                    <button key={s.id} onClick={() => setPdfEditSkill(s.id)}
+                      className="flex-1 py-2 rounded-xl text-[12px] font-semibold transition-all"
+                      style={{
+                        background: pdfEditSkill === s.id ? "#3D2318" : "rgba(140,100,55,0.08)",
+                        color: pdfEditSkill === s.id ? "white" : "#7A5A4A",
+                        border: pdfEditSkill === s.id ? "none" : "1.5px solid rgba(140,100,55,0.15)",
+                      }}>
+                      {s.emoji} {s.id}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                {pdfResult.yarnRequirements?.length > 0 && (
-                  <div>
-                    <p className="text-[11px] font-semibold mb-1" style={{ color: "#5C3A28" }}>Yarn</p>
-                    <div className="flex flex-col gap-0.5">
-                      {pdfResult.yarnRequirements.slice(0, 4).map((y: any, i: number) => (
-                        <p key={i} className="text-[12px]" style={{ color: "#7A5A4A" }}>
-                          · {y.color}{y.volume ? ` — ${y.volume}` : ""}
-                        </p>
-                      ))}
-                      {pdfResult.yarnRequirements.length > 4 && (
-                        <p className="text-[11px]" style={{ color: "#9A7868" }}>+ {pdfResult.yarnRequirements.length - 4} more</p>
-                      )}
+              {/* ── Yarn type ── */}
+              <div>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Yarn type</label>
+                <div className="flex gap-1.5 flex-wrap">
+                  {YARN_TYPES.map(yt => (
+                    <button key={yt} onClick={() => setPdfEditYarnType(yt)}
+                      className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all"
+                      style={{
+                        background: pdfEditYarnType === yt ? "#D4921A" : "rgba(140,100,55,0.08)",
+                        color: pdfEditYarnType === yt ? "white" : "#7A5A4A",
+                        border: pdfEditYarnType === yt ? "none" : "1.5px solid rgba(140,100,55,0.15)",
+                      }}>
+                      {yt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Yarn requirements ── */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="font-heading font-semibold text-[13px]" style={{ color: "#5C3A28" }}>Yarn needed</label>
+                  <button onClick={() => setPdfEditYarnReqs(p => [...p, { color: "", volume: "" }])}
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg"
+                    style={{ background: "rgba(61,143,163,0.12)", color: "#2A6B7D" }}>
+                    + Add
+                  </button>
+                </div>
+                {pdfEditYarnReqs.length === 0 && (
+                  <p className="text-[12px] italic" style={{ color: "#B0908A" }}>Nothing detected — tap + Add to add yarn</p>
+                )}
+                {pdfEditYarnReqs.map((y, i) => (
+                  <div key={i} className="flex gap-2 mb-2 items-center">
+                    <input value={y.color}
+                      onChange={e => setPdfEditYarnReqs(p => p.map((r, j) => j === i ? { ...r, color: e.target.value } : r))}
+                      placeholder="Colour / name"
+                      className="flex-1 p-2.5 rounded-xl text-[12px] outline-none"
+                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: "#3D2318" }} />
+                    <input value={y.volume}
+                      onChange={e => setPdfEditYarnReqs(p => p.map((r, j) => j === i ? { ...r, volume: e.target.value } : r))}
+                      placeholder="Amount (e.g. 50g)"
+                      className="w-28 p-2.5 rounded-xl text-[12px] outline-none"
+                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: "#3D2318" }} />
+                    <button onClick={() => setPdfEditYarnReqs(p => p.filter((_, j) => j !== i))}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[15px] font-bold"
+                      style={{ background: "rgba(194,78,107,0.12)", color: "#C24E6B" }}>×</button>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Hook requirements ── */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="font-heading font-semibold text-[13px]" style={{ color: "#5C3A28" }}>Hook size</label>
+                  <button onClick={() => setPdfEditHooks(p => [...p, { size: "", note: "" }])}
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg"
+                    style={{ background: "rgba(61,143,163,0.12)", color: "#2A6B7D" }}>
+                    + Add
+                  </button>
+                </div>
+                {pdfEditHooks.length === 0 && (
+                  <p className="text-[12px] italic" style={{ color: "#B0908A" }}>Nothing detected — tap + Add to add a hook</p>
+                )}
+                {pdfEditHooks.map((h, i) => (
+                  <div key={i} className="flex gap-2 mb-2 items-center">
+                    <input value={h.size}
+                      onChange={e => setPdfEditHooks(p => p.map((r, j) => j === i ? { ...r, size: e.target.value } : r))}
+                      placeholder="e.g. 4.0mm"
+                      className="w-28 p-2.5 rounded-xl text-[12px] outline-none"
+                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: "#3D2318" }} />
+                    <input value={h.note}
+                      onChange={e => setPdfEditHooks(p => p.map((r, j) => j === i ? { ...r, note: e.target.value } : r))}
+                      placeholder="Note (optional)"
+                      className="flex-1 p-2.5 rounded-xl text-[12px] outline-none"
+                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: "#3D2318" }} />
+                    <button onClick={() => setPdfEditHooks(p => p.filter((_, j) => j !== i))}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[15px] font-bold"
+                      style={{ background: "rgba(194,78,107,0.12)", color: "#C24E6B" }}>×</button>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Sections & steps ── */}
+              <div>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
+                  Sections & steps
+                  <span className="ml-1.5 font-normal text-[11px]" style={{ color: "#9A7868" }}>tap a section to edit its steps</span>
+                </label>
+                {pdfEditSections.map((sec, si) => (
+                  <div key={si} className="mb-2 rounded-2xl overflow-hidden"
+                    style={{ border: "1.5px solid rgba(140,100,55,0.18)" }}>
+                    {/* Section header row */}
+                    <div className="flex items-center gap-2 px-3 py-2.5"
+                      style={{ background: pdfExpandedSec === si ? "rgba(61,143,163,0.08)" : "rgba(255,252,245,0.7)" }}>
+                      <span className="text-[11px] font-bold flex-shrink-0" style={{ color: "#3D8FA3" }}>§{si + 1}</span>
+                      <input
+                        value={sec.name}
+                        onChange={e => setPdfEditSections(p => p.map((s, j) => j === si ? { ...s, name: e.target.value } : s))}
+                        className="flex-1 bg-transparent outline-none text-[13px] font-semibold"
+                        style={{ color: "#3D2318" }}
+                        placeholder="Section name"
+                      />
+                      <button
+                        onClick={() => setPdfExpandedSec(pdfExpandedSec === si ? null : si)}
+                        className="flex items-center gap-1 flex-shrink-0"
+                        style={{ color: "#9A7868" }}>
+                        <span className="text-[10px]">{sec.steps?.length ?? 0} steps</span>
+                        <ChevronRight className="h-3.5 w-3.5 transition-transform"
+                          style={{ transform: pdfExpandedSec === si ? "rotate(90deg)" : "rotate(0deg)" }} />
+                      </button>
+                      <button onClick={() => { setPdfEditSections(p => p.filter((_, j) => j !== si)); if (pdfExpandedSec === si) setPdfExpandedSec(null); }}
+                        className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-[13px] font-bold"
+                        style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B" }}>×</button>
                     </div>
-                  </div>
-                )}
 
-                {pdfResult.hookRequirements?.length > 0 && (
-                  <div>
-                    <p className="text-[11px] font-semibold mb-1" style={{ color: "#5C3A28" }}>Hook</p>
-                    {pdfResult.hookRequirements.slice(0, 2).map((h: any, i: number) => (
-                      <p key={i} className="text-[12px]" style={{ color: "#7A5A4A" }}>· {h.size}{h.note ? ` — ${h.note}` : ""}</p>
-                    ))}
+                    {/* Steps (expanded) */}
+                    {pdfExpandedSec === si && (
+                      <div className="px-3 py-3 flex flex-col gap-2"
+                        style={{ background: "rgba(255,252,245,0.5)", borderTop: "1px solid rgba(140,100,55,0.10)" }}>
+                        {(sec.steps || []).map((step: any, sti: number) => (
+                          <div key={sti} className="flex gap-2 items-start">
+                            <span className="text-[10px] font-semibold mt-2.5 w-4 text-right flex-shrink-0" style={{ color: "#B0908A" }}>{sti + 1}</span>
+                            <textarea
+                              value={step.instruction}
+                              onChange={e => setPdfEditSections(p => p.map((s, j) => j === si
+                                ? { ...s, steps: s.steps.map((st: any, k: number) => k === sti ? { ...st, instruction: e.target.value } : st) }
+                                : s))}
+                              rows={2}
+                              className="flex-1 p-2 rounded-xl text-[12px] outline-none resize-none leading-snug"
+                              style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.15)", color: "#3D2318" }}
+                            />
+                            <button
+                              onClick={() => setPdfEditSections(p => p.map((s, j) => j === si
+                                ? { ...s, steps: s.steps.filter((_: any, k: number) => k !== sti) }
+                                : s))}
+                              className="w-6 h-6 mt-1.5 rounded-lg flex items-center justify-center flex-shrink-0 text-[13px] font-bold"
+                              style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B" }}>×</button>
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => setPdfEditSections(p => p.map((s, j) => j === si
+                            ? { ...s, steps: [...(s.steps || []), { instruction: "", count: "" }] }
+                            : s))}
+                          className="text-[11px] font-semibold py-1.5 rounded-xl w-full"
+                          style={{ background: "rgba(61,143,163,0.10)", color: "#2A6B7D" }}>
+                          + Add step
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-
-                {pdfResult.sections?.length > 0 && (
-                  <div>
-                    <p className="text-[11px] font-semibold mb-1" style={{ color: "#5C3A28" }}>
-                      {pdfResult.sections.length} section{pdfResult.sections.length !== 1 ? "s" : ""} · {" "}
-                      {pdfResult.sections.reduce((acc: number, s: any) => acc + (s.steps?.length ?? 0), 0)} steps total
-                    </p>
-                    <div className="flex flex-col gap-0.5">
-                      {pdfResult.sections.slice(0, 5).map((s: any, i: number) => (
-                        <p key={i} className="text-[12px]" style={{ color: "#7A5A4A" }}>
-                          · {s.name} ({s.steps?.length ?? 0} steps)
-                        </p>
-                      ))}
-                      {pdfResult.sections.length > 5 && (
-                        <p className="text-[11px]" style={{ color: "#9A7868" }}>+ {pdfResult.sections.length - 5} more sections</p>
-                      )}
-                    </div>
-                  </div>
-                )}
+                ))}
+                <button
+                  onClick={() => { setPdfEditSections(p => [...p, { name: "New section", steps: [{ instruction: "", count: "" }] }]); setPdfExpandedSec(pdfEditSections.length); }}
+                  className="w-full py-2 rounded-xl text-[12px] font-semibold mt-1"
+                  style={{ background: "rgba(140,100,55,0.06)", color: "#9A7868", border: "1.5px dashed rgba(140,100,55,0.22)" }}>
+                  + Add section
+                </button>
               </div>
 
               <button
