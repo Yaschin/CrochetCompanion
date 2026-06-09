@@ -4,6 +4,7 @@ import { existsSync } from "fs";
 import { resolve } from "path";
 import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
+import { parsePattern } from "./api/parsePattern";
 import { generateImage } from "./api/generateImage";
 import { analyzeAlignment } from "./api/analyzeAlignment";
 import { transformPattern } from "./api/transformPattern";
@@ -60,6 +61,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in generate-pattern endpoint:", error);
       res.status(500).json({ message: "Failed to generate pattern", error: (error as Error).message });
+    }
+  });
+
+  // Parse / import an existing pattern (structures raw text into sections + steps via AI)
+  app.post("/api/parse-pattern", async (req: Request, res: Response) => {
+    try {
+      const { title, projectType, skillLevel, yarnType, size, rawText } = req.body;
+      if (!title || !projectType || !skillLevel) {
+        return res.status(400).json({ message: "title, projectType, and skillLevel are required" });
+      }
+      const result = await parsePattern({ title, projectType, skillLevel, yarnType, size, rawText });
+      res.json(result);
+    } catch (error) {
+      console.error("Error in parse-pattern endpoint:", error);
+      res.status(500).json({ message: "Failed to parse pattern", error: (error as Error).message });
     }
   });
 
