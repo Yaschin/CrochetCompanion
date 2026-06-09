@@ -1,10 +1,11 @@
 import { useRef, useState } from "react";
-import { ChevronLeft, Download, Upload, Shield, Heart, Activity, CheckCircle2, XCircle, Sparkles } from "lucide-react";
+import { ChevronLeft, Download, Upload, Shield, Heart, HelpCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ViewType } from "../lib/types";
 import { getActiveProfile, withProfile } from "../lib/profile";
+import { restartTutorial } from "../components/TutorialSystem";
 
 interface SettingsScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -166,63 +167,26 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
           </button>
         </div>
 
-        {/* App health */}
+        {/* Take the tour */}
         <div className="craft-card p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <Activity className="h-4 w-4" style={{ color: "#C24E6B" }} />
-            <p className="font-heading font-semibold text-[15px]" style={{ color: "#3D2318" }}>App health</p>
-          </div>
-          <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "#7A5A48" }}>
-            Check that the database, photo storage and AI are all connected. The deep test runs a real
-            (tiny) AI generation, so it uses a little API credit.
+          <p className="font-heading font-semibold text-[13px] mb-1" style={{ color: "#3D2318" }}>
+            App tour
           </p>
-
-          <div className="flex gap-3">
-            <button
-              onClick={() => runChecks("quick")}
-              disabled={checking !== false}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13px] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
-              style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "1.5px solid rgba(194,78,107,0.25)" }}
-            >
-              <Activity className="h-4 w-4" />
-              {checking === "quick" ? "Checking…" : "Run checks"}
-            </button>
-            <button
-              onClick={() => runChecks("deep")}
-              disabled={checking !== false}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13px] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 4px 16px rgba(194,78,107,0.3)" }}
-            >
-              <Sparkles className="h-4 w-4" />
-              {checking === "deep" ? "Testing AI…" : "Deep AI test"}
-            </button>
-          </div>
-
-          {report && (
-            <div className="mt-4 flex flex-col gap-2" aria-live="polite">
-              {report.checks.map((c) => (
-                <div
-                  key={c.name}
-                  className="flex items-start gap-2.5 rounded-xl px-3 py-2.5"
-                  style={{ background: c.ok ? "rgba(132,147,79,0.08)" : "rgba(194,78,107,0.08)" }}
-                >
-                  {c.ok ? (
-                    <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "#84934F" }} />
-                  ) : (
-                    <XCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "#C24E6B" }} />
-                  )}
-                  <div className="min-w-0">
-                    <p className="text-[12.5px] font-bold" style={{ color: "#3D2318" }}>
-                      {c.name} <span className="font-normal" style={{ color: "#9A7868" }}>· {c.ms} ms</span>
-                    </p>
-                    <p className="text-[12px] leading-snug break-words" style={{ color: c.ok ? "#7A5A48" : "#A83050" }}>
-                      {c.detail}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <p className="text-[12px] mb-3" style={{ color: "#9A7868" }}>
+            Let Ashi walk you through every screen again from the beginning.
+          </p>
+          <button
+            onClick={() => restartTutorial()}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13px] transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{
+              background: "linear-gradient(135deg, #3D8FA3, #2A6E7E)",
+              color: "white",
+              boxShadow: "0 3px 12px rgba(61,143,163,0.35)",
+            }}
+          >
+            <HelpCircle className="h-4 w-4" />
+            Take the tour again
+          </button>
         </div>
 
         {/* About */}

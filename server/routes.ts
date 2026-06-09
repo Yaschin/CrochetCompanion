@@ -4,6 +4,7 @@ import { existsSync } from "fs";
 import { resolve } from "path";
 import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
+import { parsePattern } from "./api/parsePattern";
 import { generateImage } from "./api/generateImage";
 import { analyzeAlignment } from "./api/analyzeAlignment";
 import { transformPattern } from "./api/transformPattern";
@@ -11,6 +12,7 @@ import { communityService } from "./communityService";
 import { patternService } from "./patternService";
 import { stashService } from "./stashService";
 import { seedStarterContentOnce } from "./seedLibrary";
+import { seedLibraryImages } from "./seedLibraryImages";
 import { ensureSchema } from "./ensureSchema";
 import { runQuickDiagnostics, runDeepDiagnostics } from "./diagnostics";
 import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
@@ -26,13 +28,16 @@ function profileOf(req: Request): string {
 import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject, getObjectDataUrl } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Apply idempotent schema/data heals, then run the one-time seeds.
+  // Apply idempotent schema/data heals, then run the one-time seeds and
+  // resume background image generation for any library patterns missing images.
   ensureSchema()
     .then(() => {
-      communityService.seedIfEmpty().catch((e) => console.error("Community seed failed:", e));
-      seedStarterContentOnce().catch((e) => console.error("Library/stash seed failed:", e));
+      communityService.seedIfEmpty().catch((e: unknown) => console.error("Community seed failed:", e));
+      seedStarterContentOnce()
+        .then(() => seedLibraryImages())
+        .catch((e: unknown) => console.error("Library/stash seed failed:", e));
     })
-    .catch((e) => console.error("Schema ensure failed:", e));
+    .catch((e: unknown) => console.error("Schema ensure failed:", e));
 
   // Serve stored media objects from object storage
   app.get("/api/media/:key", async (req: Request, res: Response) => {
@@ -68,6 +73,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in generate-pattern endpoint:", error);
       res.status(500).json({ message: "Failed to generate pattern", error: (error as Error).message });
+    }
+  });
+
+  // Parse / import an existing pattern (structures raw text into sections + steps via AI)
+  app.post("/api/parse-pattern", async (req: Request, res: Response) => {
+    try {
+      const { title, projectType, skillLevel, yarnType, size, rawText } = req.body;
+      if (!title || !projectType || !skillLevel) {
+        return res.status(400).json({ message: "title, projectType, and skillLevel are required" });
+      }
+      const result = await parsePattern({ title, projectType, skillLevel, yarnType, size, rawText });
+      res.json(result);
+    } catch (error) {
+      console.error("Error in parse-pattern endpoint:", error);
+      res.status(500).json({ message: "Failed to parse pattern", error: (error as Error).message });
     }
   });
 
@@ -776,7 +796,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transformed = await transformPattern(original, mode, instruction.trim());
       transformed.title =
         mode === "resize" ? `${original.title} (resized)` : `${original.title} (${instruction.trim()})`;
-      const created = await patternService.createPattern(transformed);
+      // The adapted copy belongs to whoever requested the adaptation.
+      const created = await patternService.createPattern(transformed, profileOf(req));
       res.status(201).json(created);
     } catch (error) {
       console.error(`${mode} failed:`, error);

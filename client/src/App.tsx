@@ -28,6 +28,7 @@ import ProjectsScreen from "./pages/ProjectsScreen";
 import SettingsScreen from "./pages/SettingsScreen";
 import ProfilePickerScreen from "./pages/ProfilePickerScreen";
 import { getActiveProfileId, setActiveProfileId } from "./lib/profile";
+import TutorialSystem from "./components/TutorialSystem";
 import { Pattern, ViewType } from "./lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -126,9 +127,9 @@ function App() {
 
   const handleCommunitySelected = (id: string) => setLocation(pathFor("community-detail", { communityId: id }));
 
-  const handlePatternCreated = (pattern: Pattern) => {
+  const handlePatternCreated = (pattern: Pattern, skipLoading?: boolean) => {
     setCurrentPattern(pattern);
-    setLocation(pathFor("loading"));
+    setLocation(pathFor(skipLoading ? "viewer" : "loading", { patternId: pattern.id }));
   };
 
   const handlePatternLoaded = (pattern: Pattern) => {
@@ -361,6 +362,7 @@ function App() {
           </motion.div>
         </AnimatePresence>
       </AppShell>
+      <TutorialSystem onNavigate={navigateToView} activeView={activeView} />
       <Toaster />
     </QueryClientProvider>
   );

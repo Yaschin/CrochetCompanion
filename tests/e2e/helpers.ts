@@ -153,9 +153,13 @@ export async function mockApi(page: Page) {
 /** Load the app and get past the animated splash screen into the workbench. */
 export async function enterApp(page: Page) {
   // Pre-select a family profile so the splash flows straight to the workbench
-  // (the first-run profile picker has its own dedicated test).
+  // (the first-run profile picker has its own dedicated test), and mark the
+  // tutorial as seen so its welcome overlay doesn't intercept test clicks.
   await page.addInitScript(() => {
-    try { localStorage.setItem("crochet-time:profile", "larissa"); } catch { /* ignore */ }
+    try {
+      localStorage.setItem("crochet-time:profile", "larissa");
+      localStorage.setItem("crochet-time-tutorial-v1", "completed");
+    } catch { /* ignore */ }
   });
   await page.goto("/");
   const enter = page.getByRole("button", { name: /Enter Your Studio|Get Started|Skip/i }).first();
