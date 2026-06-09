@@ -1,3 +1,4 @@
+import { getActiveProfile } from "../lib/profile";
 import { Heart } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Pattern, ViewType } from "../lib/types";
@@ -39,7 +40,7 @@ export default function FavoritesScreen({ onNavigate, onPatternSelected }: Favor
         <div className="flex items-center gap-2.5">
           <Heart className="h-5 w-5 fill-current" style={{ color: "#C24E6B" }} />
           <h1 className="font-heading font-bold text-[20px]" style={{ color: "#3D2318" }}>
-            Larissa's Favorites
+            {getActiveProfile().name}'s Favorites
           </h1>
         </div>
       </div>

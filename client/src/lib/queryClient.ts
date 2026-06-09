@@ -1,4 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
+import { withProfile } from "./profile";
 
 /**
  * Query cache configuration with optimized settings
@@ -10,7 +11,7 @@ import { QueryClient } from "@tanstack/react-query";
 // Default fetcher: builds the URL from the query key (e.g. ["/api/community", id]
 // → "/api/community/<id>"). Screens can still pass an explicit queryFn to override.
 const defaultQueryFn = async ({ queryKey }: { queryKey: readonly unknown[] }) => {
-  const url = queryKey.map((part) => String(part)).join("/");
+  const url = withProfile(queryKey.map((part) => String(part)).join("/"));
   const res = await fetch(url, { credentials: "same-origin" });
   if (!res.ok) {
     throw new Error(`API request failed (${res.status})`);
@@ -63,7 +64,7 @@ export async function apiRequest(
   }
 
   try {
-    const response = await fetch(path, options);
+    const response = await fetch(withProfile(path), options);
 
     if (!response.ok) {
       // Get more detailed error information if available

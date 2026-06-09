@@ -2,16 +2,16 @@ import { storage } from "./storage";
 import { Pattern } from "@shared/schema";
 
 export const patternService = {
-  async createPattern(pattern: Omit<Pattern, "id" | "createdAt">): Promise<Pattern> {
-    return storage.createPattern(pattern);
+  async createPattern(pattern: Omit<Pattern, "id" | "createdAt">, ownerId?: string): Promise<Pattern> {
+    return storage.createPattern(pattern, ownerId);
   },
 
   async getPattern(id: string): Promise<Pattern | undefined> {
     return storage.getPattern(id);
   },
 
-  async getAllPatterns(): Promise<Pattern[]> {
-    return storage.getAllPatterns();
+  async getAllPatterns(ownerId?: string): Promise<Pattern[]> {
+    return storage.getAllPatterns(ownerId);
   },
 
   async updatePattern(id: string, pattern: Partial<Pattern>): Promise<Pattern | undefined> {

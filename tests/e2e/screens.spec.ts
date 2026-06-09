@@ -42,6 +42,27 @@ test("splash renders and enters the app", async ({ page, consoleErrors }, testIn
   expect(realConsoleErrors(consoleErrors)).toEqual([]);
 });
 
+// ── Family profile picker (first run, no stored profile) ─────────────────────
+test("first run shows the profile picker and entering as Mummy personalises home", async ({ page, consoleErrors }, testInfo) => {
+  // Keep the tutorial overlay out of the way; it has its own lifecycle.
+  await page.addInitScript(() => {
+    try { localStorage.setItem("crochet-time-tutorial-v1", "completed"); } catch { /* ignore */ }
+  });
+  await page.goto("/");
+  const enter = page.getByRole("button", { name: /Enter Your Studio|Get Started|Skip/i }).first();
+  try {
+    await enter.click({ timeout: 8000 });
+  } catch {
+    await page.waitForTimeout(4500);
+    await page.getByRole("button", { name: /Enter Your Studio/i }).first().click({ timeout: 6000 });
+  }
+  await expect(page.getByText(/Who's crocheting today/i)).toBeVisible({ timeout: 8000 });
+  await snap(page, testInfo, "profile-picker");
+  await page.getByRole("button", { name: /Continue as Mummy/i }).click();
+  await expect(page.getByText(/Mummy!/).first()).toBeVisible({ timeout: 8000 });
+  expect(realConsoleErrors(consoleErrors)).toEqual([]);
+});
+
 // ── Primary nav screens ─────────────────────────────────────────────────────────
 const PRIMARY: { name: string; labels?: string[]; expectText: RegExp }[] = [
   { name: "home", expectText: /Crochet|Larissa|Continue|Create|Favourites|Favorites/i },

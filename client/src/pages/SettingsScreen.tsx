@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ViewType } from "../lib/types";
+import { getActiveProfile, withProfile } from "../lib/profile";
 import { restartTutorial } from "../components/TutorialSystem";
 
 interface SettingsScreenProps {
@@ -34,13 +35,13 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const res = await fetch("/api/export");
+      const res = await fetch(withProfile("/api/export"));
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "crochet-time-backup.json";
+      a.download = `crochet-time-backup-${getActiveProfile().id}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -199,7 +200,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
           <div>
             <p className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>Crochet Time</p>
             <p className="text-[12px] flex items-center gap-1" style={{ color: "#C24E6B" }}>
-              Made with <Heart className="h-3 w-3" style={{ fill: "#C24E6B" }} /> for Larissa
+              Made with <Heart className="h-3 w-3" style={{ fill: "#C24E6B" }} /> for {getActiveProfile().name}
             </p>
           </div>
         </div>

@@ -11,21 +11,33 @@ import { transformPattern } from "./api/transformPattern";
 import { communityService } from "./communityService";
 import { patternService } from "./patternService";
 import { stashService } from "./stashService";
-import { seedLibraryIfEmpty } from "./seedLibrary";
-import { seedAdditionalPatterns } from "./seedAdditionalPatterns";
+import { seedStarterContentOnce } from "./seedLibrary";
 import { seedLibraryImages } from "./seedLibraryImages";
+import { ensureSchema } from "./ensureSchema";
+import { runQuickDiagnostics, runDeepDiagnostics } from "./diagnostics";
 import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
+import { PROFILES, isProfileId, profileById, DEFAULT_PROFILE_ID } from "../shared/profiles";
 import { z } from "zod";
+
+// Resolve the active family profile from ?profile=<id>. Defaults to Larissa so
+// pre-profile clients (and service-worker-cached requests) keep working.
+function profileOf(req: Request): string {
+  const p = String(req.query.profile ?? "").trim();
+  return isProfileId(p) ? p : DEFAULT_PROFILE_ID;
+}
 import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject, getObjectDataUrl } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Seed the community gallery on first boot (no-op if already populated).
-  communityService.seedIfEmpty().catch((e) => console.error("Community seed failed:", e));
-  // Seed Larissa's personal library and stash, then additional patterns, then generate missing images.
-  seedLibraryIfEmpty()
-    .then(() => seedAdditionalPatterns())
-    .then(() => seedLibraryImages())
-    .catch((e) => console.error("Library/stash seed failed:", e));
+  // Apply idempotent schema/data heals, then run the one-time seeds and
+  // resume background image generation for any library patterns missing images.
+  ensureSchema()
+    .then(() => {
+      communityService.seedIfEmpty().catch((e: unknown) => console.error("Community seed failed:", e));
+      seedStarterContentOnce()
+        .then(() => seedLibraryImages())
+        .catch((e: unknown) => console.error("Library/stash seed failed:", e));
+    })
+    .catch((e: unknown) => console.error("Schema ensure failed:", e));
 
   // Serve stored media objects from object storage
   app.get("/api/media/:key", async (req: Request, res: Response) => {
@@ -201,7 +213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid pattern data", errors: result.error.errors });
       }
       
-      const pattern = await patternService.createPattern(result.data);
+      const pattern = await patternService.createPattern(result.data, profileOf(req));
       res.status(201).json(pattern);
 
       // Fire-and-forget: generate a product image in the background if none exists yet.
@@ -230,9 +242,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/patterns", async (_req: Request, res: Response) => {
+  app.get("/api/patterns", async (req: Request, res: Response) => {
     try {
-      const patterns = await patternService.getAllPatterns();
+      const patterns = await patternService.getAllPatterns(profileOf(req));
       res.json(patterns);
     } catch (error) {
       console.error("Error getting patterns:", error);
@@ -404,9 +416,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stash CRUD endpoints
-  app.get("/api/stash", async (_req: Request, res: Response) => {
+  app.get("/api/stash", async (req: Request, res: Response) => {
     try {
-      const items = await stashService.getAllItems();
+      const items = await stashService.getAllItems(profileOf(req));
       res.json(items);
     } catch (error) {
       console.error("Error getting stash items:", error);
@@ -437,7 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid stash item data", errors: result.error.errors });
       }
       
-      const item = await stashService.createItem(result.data);
+      const item = await stashService.createItem(result.data, profileOf(req));
       res.status(201).json(item);
     } catch (error) {
       console.error("Error creating stash item:", error);
@@ -482,9 +494,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stash notes endpoints
-  app.get("/api/stash-notes", async (_req: Request, res: Response) => {
+  app.get("/api/stash-notes", async (req: Request, res: Response) => {
     try {
-      const notes = await stashService.getNotes();
+      const notes = await stashService.getNotes(profileOf(req));
       res.json({ content: notes }); // Using content key for consistency
     } catch (error) {
       console.error("Error getting stash notes:", error);
@@ -501,7 +513,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid notes data" });
       }
       
-      const updatedNotes = await stashService.updateNotes(content);
+      const updatedNotes = await stashService.updateNotes(content, profileOf(req));
       res.json({ content: updatedNotes }); // Using content key for consistency
     } catch (error) {
       console.error("Error updating stash notes:", error);
@@ -784,7 +796,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transformed = await transformPattern(original, mode, instruction.trim());
       transformed.title =
         mode === "resize" ? `${original.title} (resized)` : `${original.title} (${instruction.trim()})`;
-      const created = await patternService.createPattern(transformed);
+      // The adapted copy belongs to whoever requested the adaptation.
+      const created = await patternService.createPattern(transformed, profileOf(req));
       res.status(201).json(created);
     } catch (error) {
       console.error(`${mode} failed:`, error);
@@ -820,6 +833,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         parsed.endProductImage = await uploadBuffer(Buffer.from(base64, "base64"), contentType);
       }
 
+      // Stamp the real sharer — never trust the client-supplied creator.
+      const sharer = profileById(profileOf(req));
+      parsed.creator = sharer.name;
+      parsed.creatorId = sharer.id;
+
       const created = await communityService.create(parsed);
       res.status(201).json(created);
     } catch (error) {
@@ -835,6 +853,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const likes = await communityService.incrementLikes(req.params.id);
     if (likes === undefined) return res.status(404).json({ message: "Community pattern not found" });
     res.json({ success: true, likes });
+  });
+
+  // ── Family profiles ─────────────────────────────────────────────────────────
+  app.get("/api/profiles", (_req: Request, res: Response) => {
+    res.json(PROFILES);
   });
 
   // ── App health diagnostics ──────────────────────────────────────────────────
@@ -860,23 +883,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ── Backup: export & import all user data ───────────────────────────────────
-  app.get("/api/export", async (_req: Request, res: Response) => {
+  app.get("/api/export", async (req: Request, res: Response) => {
     try {
+      const profile = profileOf(req);
       const [patterns, stash, stashNotesContent] = await Promise.all([
-        patternService.getAllPatterns(),
-        stashService.getAllItems(),
-        stashService.getNotes(),
+        patternService.getAllPatterns(profile),
+        stashService.getAllItems(profile),
+        stashService.getNotes(profile),
       ]);
       const payload = {
         app: "crochet-time",
-        version: 1,
+        version: 2,
+        profile,
         exportedAt: new Date().toISOString(),
         patterns,
         stash,
         stashNotes: stashNotesContent,
       };
       const date = new Date().toISOString().slice(0, 10);
-      res.setHeader("Content-Disposition", `attachment; filename="crochet-time-backup-${date}.json"`);
+      res.setHeader("Content-Disposition", `attachment; filename="crochet-time-backup-${profile}-${date}.json"`);
       res.setHeader("Content-Type", "application/json");
       res.send(JSON.stringify(payload, null, 2));
     } catch (error) {
@@ -887,8 +912,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Additive restore: imported patterns/stash are created as new records
   // (never overwriting existing data), so re-importing is non-destructive.
+  // v1 backups (pre-profiles) and v2 backups both import into the ACTIVE profile.
   app.post("/api/import", async (req: Request, res: Response) => {
     try {
+      const profile = profileOf(req);
       const body = req.body ?? {};
       const patterns = Array.isArray(body.patterns) ? body.patterns : [];
       const stash = Array.isArray(body.stash) ? body.stash : [];
@@ -898,7 +925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const p of patterns) {
         if (p && typeof p.title === "string" && Array.isArray(p.sections)) {
           const { id: _id, createdAt: _createdAt, ...rest } = p;
-          await patternService.createPattern(rest);
+          await patternService.createPattern(rest, profile);
           importedPatterns++;
         }
       }
@@ -906,13 +933,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const s of stash) {
         const result = stashItemSchema.omit({ id: true }).safeParse(s);
         if (result.success) {
-          await stashService.createItem(result.data);
+          await stashService.createItem(result.data, profile);
           importedStash++;
         }
       }
 
       if (typeof body.stashNotes === "string" && body.stashNotes.trim()) {
-        await stashService.updateNotes(body.stashNotes);
+        await stashService.updateNotes(body.stashNotes, profile);
       }
 
       res.json({ success: true, importedPatterns, importedStash });

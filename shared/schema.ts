@@ -2,9 +2,18 @@ import { pgTable, text, varchar, timestamp, jsonb, integer, boolean } from "driz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Family profiles (no-login household separation; see shared/profiles.ts)
+export const profiles = pgTable("profiles", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  color: text("color").notNull(),
+  character: text("character").notNull(),
+});
+
 // Define stash items table
 export const stashItems = pgTable("stash_items", {
   id: varchar("id", { length: 36 }).primaryKey(),
+  ownerId: text("ownerId").notNull().default("larissa"),
   type: text("type").notNull(), // 'yarn', 'hook', 'notion', 'tool'
   name: text("name").notNull(),
   color: text("color"),
@@ -18,6 +27,7 @@ export const stashItems = pgTable("stash_items", {
 // Define stash notes table
 export const stashNotes = pgTable("stash_notes", {
   id: varchar("id", { length: 36 }).primaryKey(),
+  ownerId: text("ownerId").notNull().default("larissa"),
   content: text("content").default(""),
 });
 
@@ -44,6 +54,7 @@ export type InsertStashItem = z.infer<typeof insertStashItemSchema>;
 // Define the pattern schema structure
 export const patterns = pgTable("patterns", {
   id: varchar("id", { length: 36 }).primaryKey(),
+  ownerId: text("ownerId").notNull().default("larissa"),
   title: text("title").notNull(),
   projectType: text("projectType").notNull(),
   skillLevel: text("skillLevel").notNull(),
@@ -214,6 +225,7 @@ export const communityPatterns = pgTable("community_patterns", {
   id: varchar("id", { length: 36 }).primaryKey(),
   title: text("title").notNull(),
   creator: text("creator").notNull().default("Larissa"),
+  creatorId: text("creatorId"), // profile id for family shares; NULL for curated seeds
   projectType: text("projectType").notNull(),
   skillLevel: text("skillLevel").notNull(),
   description: text("description"),
@@ -234,6 +246,7 @@ export const communityPatterns = pgTable("community_patterns", {
 export const insertCommunityPatternSchema = z.object({
   title: z.string().min(1),
   creator: z.string().optional().default("Larissa"),
+  creatorId: z.string().nullable().optional(),
   projectType: z.string().min(1),
   skillLevel: z.string().min(1),
   description: z.string().optional().default(""),

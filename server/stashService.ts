@@ -4,10 +4,11 @@ import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 
 export const stashService = {
-  // Get all stash items
-  async getAllItems(): Promise<StashItem[]> {
+  // Get all stash items (scoped to a profile when provided)
+  async getAllItems(ownerId?: string): Promise<StashItem[]> {
     try {
-      const items = await db.select().from(stashItems);
+      const base = db.select().from(stashItems);
+      const items = await (ownerId ? base.where(eq(stashItems.ownerId, ownerId)) : base);
       return items.map(item => ({
         id: item.id,
         type: item.type as "yarn" | "hook" | "notion" | "tool",
@@ -50,10 +51,10 @@ export const stashService = {
   },
 
   // Create a new stash item
-  async createItem(item: Omit<StashItem, 'id'>): Promise<StashItem> {
+  async createItem(item: Omit<StashItem, 'id'>, ownerId?: string): Promise<StashItem> {
     try {
       const newItem = { ...item, id: uuidv4() };
-      await db.insert(stashItems).values(newItem);
+      await db.insert(stashItems).values({ ...newItem, ownerId: ownerId ?? 'larissa' });
       return newItem;
     } catch (error) {
       console.error('Error creating stash item:', error);
@@ -83,10 +84,10 @@ export const stashService = {
     }
   },
 
-  // Get stash notes
-  async getNotes(): Promise<string> {
+  // Get stash notes (one notes row per profile)
+  async getNotes(ownerId: string = 'larissa'): Promise<string> {
     try {
-      const results = await db.select().from(stashNotes);
+      const results = await db.select().from(stashNotes).where(eq(stashNotes.ownerId, ownerId));
       return results[0]?.content || '';
     } catch (error) {
       console.error('Error fetching stash notes:', error);
@@ -95,16 +96,16 @@ export const stashService = {
   },
 
   // Update stash notes
-  async updateNotes(content: string): Promise<string> {
+  async updateNotes(content: string, ownerId: string = 'larissa'): Promise<string> {
     try {
-      const results = await db.select().from(stashNotes);
-      
+      const results = await db.select().from(stashNotes).where(eq(stashNotes.ownerId, ownerId));
+
       if (results.length > 0) {
         await db.update(stashNotes).set({ content }).where(eq(stashNotes.id, results[0].id));
       } else {
-        await db.insert(stashNotes).values({ id: uuidv4(), content });
+        await db.insert(stashNotes).values({ id: uuidv4(), content, ownerId });
       }
-      
+
       return content;
     } catch (error) {
       console.error('Error updating stash notes:', error);

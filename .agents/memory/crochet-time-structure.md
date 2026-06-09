@@ -15,9 +15,18 @@ derives `activeView` + pattern/community ids from the URL (`parseLocation`) and
 navigates via `pathFor`. Deep links, back button, and shareable `/patterns/:id`
 URLs work. The current pattern hydrates from the route id on refresh.
 
+## Family profiles (Phase 6)
+- No-login profiles: larissa/vumsh/akka/mummy — defined in `shared/profiles.ts`.
+- Active profile in localStorage `crochet-time:profile`; appended as `?profile=` to every /api/ call centrally in `client/src/lib/queryClient.ts` (apiRequest + default queryFn) via `withProfile()`.
+- Server resolves with `profileOf(req)` (routes.ts), defaulting to larissa. Owner columns: patterns/stash_items/stash_notes `ownerId` (default 'larissa'); community has `creatorId`.
+- Picker screen: `/who` → ProfilePickerScreen (after splash on first run; header avatar + sidebar "Switch Profile" reopen it). Switching calls `queryClient.clear()`.
+- Per-profile localStorage: streaks (`crochet-time-activity:{id}`, larissa keeps legacy key), community-seen bell.
+- e2e: `enterApp()` presets profile via addInitScript; picker has its own test.
+
 ## ViewType → screen → URL map
 All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - splash → SplashScreen (`/`)
+- profile-picker → ProfilePickerScreen (`/who`)
 - home → HomeWorkbench (`/home`)
 - input → PatternInputRefactored (`/create`)
 - loading → GenerationLoadingScreen (`/loading`)

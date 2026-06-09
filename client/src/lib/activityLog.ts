@@ -3,7 +3,14 @@
  * Stored in localStorage (no backend / migration) — records the *days* on which
  * Larissa actually crocheted (counted rows, completed steps, finished a project).
  */
-const KEY = "crochet-time-activity";
+import { getActiveProfileId } from "./profile";
+
+// Per-profile streaks; pre-profile history stays under the legacy key, which
+// doubles as Larissa's (she owns all pre-profile data).
+function storageKey(): string {
+  const id = getActiveProfileId();
+  return !id || id === "larissa" ? "crochet-time-activity" : `crochet-time-activity:${id}`;
+}
 
 function todayKey(d = new Date()): string {
   // Local date YYYY-MM-DD
@@ -12,7 +19,7 @@ function todayKey(d = new Date()): string {
 
 function loadDays(): string[] {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) return parsed.filter((d) => typeof d === "string");
@@ -25,7 +32,7 @@ export function recordActivity(): void {
   try {
     const days = new Set(loadDays());
     days.add(todayKey());
-    localStorage.setItem(KEY, JSON.stringify([...days].sort()));
+    localStorage.setItem(storageKey(), JSON.stringify([...days].sort()));
   } catch { /* ignore */ }
 }
 

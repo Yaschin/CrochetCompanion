@@ -1,3 +1,4 @@
+import { profileById } from "@shared/profiles";
 import { useState } from "react";
 import { Search, Heart, ChevronDown, Sparkles } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -144,8 +145,9 @@ export default function CommunityScreen({ onNavigate, onPatternSelect }: Communi
                   <p className="font-heading font-bold text-[11px] leading-tight truncate" style={{ color: "#3D2318" }}>
                     {p.title}
                   </p>
-                  <p className="text-[10px] mt-0.5 truncate" style={{ color: "#9A7868" }}>
-                    by {p.creator}
+                  <p className="text-[10px] mt-0.5 truncate font-semibold"
+                    style={{ color: p.creatorId ? profileById(p.creatorId).color : "#9A7868" }}>
+                    by {p.creator}{p.creatorId ? " ♡" : ""}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
                     <button onClick={e => { e.stopPropagation(); likeMutation.mutate(p.id); }}>

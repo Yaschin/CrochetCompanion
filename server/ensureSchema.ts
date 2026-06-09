@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { db } from "./db";
+import { PROFILES } from "../shared/profiles";
 
 // Idempotent boot-time schema/data fixes. This project has no migration files
 // (schema changes go out via `drizzle-kit push`), so one-off DDL/data heals
@@ -19,6 +20,37 @@ export async function ensureSchema(): Promise<void> {
   // Per-pattern user notes (moved from device-local storage to the DB).
   await db.execute(
     sql`ALTER TABLE patterns ADD COLUMN IF NOT EXISTS "userNotes" text`
+  );
+
+  // ── Family profiles (Phase 6) ──────────────────────────────────────────────
+  // Owner columns default to 'larissa': all pre-profile data is hers, and old
+  // clients that omit ?profile= keep working unchanged.
+  await db.execute(
+    sql`CREATE TABLE IF NOT EXISTS profiles (
+      id text PRIMARY KEY,
+      name text NOT NULL,
+      color text NOT NULL,
+      character text NOT NULL
+    )`
+  );
+  for (const p of PROFILES) {
+    await db.execute(
+      sql`INSERT INTO profiles (id, name, color, character)
+          VALUES (${p.id}, ${p.name}, ${p.color}, ${p.character})
+          ON CONFLICT (id) DO NOTHING`
+    );
+  }
+  await db.execute(
+    sql`ALTER TABLE patterns ADD COLUMN IF NOT EXISTS "ownerId" text NOT NULL DEFAULT 'larissa'`
+  );
+  await db.execute(
+    sql`ALTER TABLE stash_items ADD COLUMN IF NOT EXISTS "ownerId" text NOT NULL DEFAULT 'larissa'`
+  );
+  await db.execute(
+    sql`ALTER TABLE stash_notes ADD COLUMN IF NOT EXISTS "ownerId" text NOT NULL DEFAULT 'larissa'`
+  );
+  await db.execute(
+    sql`ALTER TABLE community_patterns ADD COLUMN IF NOT EXISTS "creatorId" text`
   );
 }
 
