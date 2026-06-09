@@ -61,6 +61,7 @@ export interface Pattern {
   projectType: string;
   skillLevel: string;
   materialsNotes?: string;
+  userNotes?: string;
   yarnRequirements?: YarnRequirement[];
   hookRequirements?: HookRequirement[];
   notionsRequirements?: NotionsRequirement[];

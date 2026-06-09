@@ -3,53 +3,33 @@ import { ChevronLeft, RotateCcw, History, Plus, Minus, Volume2, Mic } from "luci
 import { motion, AnimatePresence } from "framer-motion";
 import { ViewType } from "../lib/types";
 import { recordActivity } from "../lib/activityLog";
+import { useStitchCounter, EMPTY_COUNTER, CounterHistoryEntry } from "../hooks/useStitchCounter";
 
 interface StitchCounterScreenProps {
   onNavigate: (view: ViewType) => void;
   backView?: ViewType;
-}
-
-interface CounterState {
-  stitches: number;
-  rows: number;
-}
-
-interface HistoryEntry {
-  id: string;
-  type: "stitch" | "row";
-  delta: number;
-  value: number;
-  time: string;
+  patternId?: string;
 }
 
 const MAX_STITCHES_PER_ROW = 20;
-const STORAGE_KEY = "crochet-time-counter";
 
-function loadState(): { counts: CounterState; history: HistoryEntry[] } {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return {
-        counts: parsed.counts ?? { stitches: 0, rows: 0 },
-        history: Array.isArray(parsed.history) ? parsed.history : [],
-      };
-    }
-  } catch { /* ignore */ }
-  return { counts: { stitches: 0, rows: 0 }, history: [] };
+function pushEntry(
+  history: CounterHistoryEntry[],
+  type: "stitch" | "row",
+  delta: number,
+  value: number,
+): CounterHistoryEntry[] {
+  const now = new Date();
+  const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, "0")}`;
+  return [{ id: Date.now().toString(), type, delta, value, time }, ...history.slice(0, 19)];
 }
 
-export default function StitchCounterScreen({ onNavigate, backView = "home" }: StitchCounterScreenProps) {
-  const [counts, setCounts] = useState<CounterState>(() => loadState().counts);
-  const [history, setHistory] = useState<HistoryEntry[]>(() => loadState().history);
+export default function StitchCounterScreen({ onNavigate, backView = "home", patternId }: StitchCounterScreenProps) {
+  // Shared per-pattern store — the same counts the in-viewer modal shows.
+  const [counts, setCounts] = useStitchCounter(patternId);
   const [showHistory, setShowHistory] = useState(false);
   const [sound, setSound] = useState(true);
   const [voice, setVoice] = useState(false);
-
-  // Persist counts + history across sessions.
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ counts, history })); } catch { /* ignore */ }
-  }, [counts, history]);
 
   // Keep the screen awake while counting (re-acquire after tab switches).
   useEffect(() => {
@@ -69,34 +49,26 @@ export default function StitchCounterScreen({ onNavigate, backView = "home" }: S
 
   const buzz = () => { if (sound) { try { navigator.vibrate?.(8); } catch { /* ignore */ } } };
 
-  const addEntry = (type: "stitch" | "row", delta: number, value: number) => {
-    if (delta > 0) recordActivity();
-    const now = new Date();
-    const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, "0")}`;
-    setHistory(h => [{ id: Date.now().toString(), type, delta, value, time }, ...h.slice(0, 19)]);
-  };
-
   const changeStitches = (delta: number) => {
     buzz();
+    if (delta > 0) recordActivity();
     setCounts(c => {
       const next = Math.max(0, c.stitches + delta);
-      addEntry("stitch", delta, next);
-      return { ...c, stitches: next };
+      return { ...c, stitches: next, history: pushEntry(c.history, "stitch", delta, next) };
     });
   };
 
   const changeRows = (delta: number) => {
     buzz();
+    if (delta > 0) recordActivity();
     setCounts(c => {
       const next = Math.max(0, c.rows + delta);
-      addEntry("row", delta, next);
-      return { ...c, rows: next };
+      return { ...c, rows: next, history: pushEntry(c.history, "row", delta, next) };
     });
   };
 
   const reset = () => {
-    setCounts({ stitches: 0, rows: 0 });
-    setHistory([]);
+    setCounts(EMPTY_COUNTER);
   };
 
   // Latest handlers for the voice recognizer (avoids stale closures / effect churn).
@@ -316,13 +288,13 @@ export default function StitchCounterScreen({ onNavigate, backView = "home" }: S
                 <p className="font-heading font-semibold text-[13px] mb-3" style={{ color: "#3D2318" }}>
                   Recent Activity
                 </p>
-                {history.length === 0 ? (
+                {counts.history.length === 0 ? (
                   <p className="text-[12px] text-center py-3" style={{ color: "#B0908A" }}>
                     No activity yet — start counting!
                   </p>
                 ) : (
                   <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
-                    {history.map((h) => (
+                    {counts.history.map((h) => (
                       <div key={h.id} className="flex items-center justify-between text-[11.5px]">
                         <span className="font-semibold" style={{ color: h.type === "stitch" ? "#C24E6B" : "#84934F" }}>
                           {h.type === "stitch" ? "Stitch" : "Row"} {h.delta > 0 ? "+" : ""}{h.delta}

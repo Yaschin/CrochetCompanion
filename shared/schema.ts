@@ -52,6 +52,7 @@ export const patterns = pgTable("patterns", {
   endProductImage: text("endProductImage"),
   description: text("description"),
   materialsNotes: text("materialsNotes"),
+  userNotes: text("userNotes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   sections: jsonb("sections").notNull(),
   yarnRequirements: jsonb("yarnRequirements"),
@@ -126,6 +127,7 @@ export const patternSchema = z.object({
   size: z.string().optional(),
   endProductImage: z.string().optional(),
   materialsNotes: z.string().optional().default(""),
+  userNotes: z.string().optional(),
   createdAt: z.string(),
   sections: z.array(
     z.object({

@@ -3,6 +3,8 @@ import { stashService } from "./stashService";
 import { db } from "./db";
 import { patterns, stashItems } from "../shared/schema";
 import { sql } from "drizzle-orm";
+import { getMeta, setMeta } from "./ensureSchema";
+import { seedAdditionalPatterns } from "./seedAdditionalPatterns";
 
 const SEED_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "createdAt">[] = [
   {
@@ -88,7 +90,7 @@ const SEED_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "createdAt"
     description: "A breezy summer bucket hat worked top-down in the round. Textured SC brim and a relaxed fit that suits everyone.",
     materialsNotes: "Block lightly after finishing to even the brim.",
     favorite: false,
-    status: "project",
+    status: "active",
     startedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     finishedAt: undefined,
     endProductImage: undefined,
@@ -288,7 +290,7 @@ const SEED_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "createdAt"
     description: "An open-mesh market bag in a simple chainspace pattern. Sturdy enough for shopping, pretty enough for the beach.",
     materialsNotes: "Stretch the bag slightly when wet to open the mesh.",
     favorite: false,
-    status: "project",
+    status: "active",
     startedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     finishedAt: undefined,
     endProductImage: undefined,
@@ -421,17 +423,29 @@ const SEED_STASH: Omit<import("../shared/schema").StashItem, "id">[] = [
   { type: "tool", name: "Yarn Swift + Ball Winder", description: "Tabletop yarn swift with metal ball winder", quantity: 1, notes: "Saves so much time winding skeins" },
 ];
 
-export async function seedLibraryIfEmpty(): Promise<void> {
+// Starter content is a one-time gift: it seeds only on a genuinely fresh install
+// (empty tables, no marker) and never returns once the marker is set — so user
+// deletions stick across restarts. Installs that already have content just get
+// the marker so they are never re-seeded either.
+const STARTER_FLAG = "starter_content_seeded_v1";
+
+export async function seedStarterContentOnce(): Promise<void> {
   try {
+    if (await getMeta(STARTER_FLAG)) {
+      console.log("Library/stash: starter content already handled, skipping.");
+      return;
+    }
+
     const existingPatterns = await db.select({ id: patterns.id }).from(patterns);
-    if (existingPatterns.length < 5) {
-      console.log(`Library: only ${existingPatterns.length} patterns found, seeding starters…`);
+    if (existingPatterns.length === 0) {
+      console.log("Library: fresh install — seeding starter patterns…");
       for (const p of SEED_PATTERNS) {
         await patternService.createPattern(p);
       }
-      console.log("Library: 6 starter patterns seeded ✓");
+      await seedAdditionalPatterns();
+      console.log("Library: starter patterns seeded ✓");
     } else {
-      console.log(`Library: ${existingPatterns.length} patterns already exist, skipping seed.`);
+      console.log(`Library: ${existingPatterns.length} patterns already exist — marking starter content as seeded.`);
     }
 
     const existingStash = await db.select({ id: stashItems.id }).from(stashItems);
@@ -444,6 +458,8 @@ export async function seedLibraryIfEmpty(): Promise<void> {
     } else {
       console.log(`Stash: ${existingStash.length} items already exist, skipping seed.`);
     }
+
+    await setMeta(STARTER_FLAG, new Date().toISOString());
   } catch (error) {
     console.error("Library/stash seed error:", error);
   }

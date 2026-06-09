@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ChevronLeft, Download, Upload, Shield, Heart } from "lucide-react";
+import { ChevronLeft, Download, Upload, Shield, Heart, Activity, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +7,19 @@ import { ViewType } from "../lib/types";
 
 interface SettingsScreenProps {
   onNavigate: (view: ViewType) => void;
+}
+
+interface DiagnosticCheck {
+  name: string;
+  ok: boolean;
+  detail: string;
+  ms: number;
+}
+
+interface DiagnosticsReport {
+  ok: boolean;
+  ranAt: string;
+  checks: DiagnosticCheck[];
 }
 
 export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
@@ -40,6 +53,36 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
       });
     } finally {
       setExporting(false);
+    }
+  };
+
+  const [report, setReport] = useState<DiagnosticsReport | null>(null);
+  const [checking, setChecking] = useState<false | "quick" | "deep">(false);
+
+  const runChecks = async (mode: "quick" | "deep") => {
+    setChecking(mode);
+    try {
+      const res =
+        mode === "quick"
+          ? await fetch("/api/diagnostics")
+          : await apiRequest("POST", "/api/diagnostics/deep", {});
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const data: DiagnosticsReport = await res.json();
+      setReport(data);
+      toast(
+        data.ok
+          ? { title: "All checks passed ✓", description: "Everything is connected and working." }
+          : { title: "Some checks failed", description: "See the results below for what needs attention.", variant: "destructive" },
+      );
+    } catch (err) {
+      setReport(null);
+      toast({
+        title: "Couldn't run checks",
+        description: err instanceof Error ? err.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setChecking(false);
     }
   };
 
@@ -120,6 +163,65 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
             <Upload className="h-4 w-4" />
             {importing ? "Restoring…" : "Restore from backup"}
           </button>
+        </div>
+
+        {/* App health */}
+        <div className="craft-card p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <Activity className="h-4 w-4" style={{ color: "#C24E6B" }} />
+            <p className="font-heading font-semibold text-[15px]" style={{ color: "#3D2318" }}>App health</p>
+          </div>
+          <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "#7A5A48" }}>
+            Check that the database, photo storage and AI are all connected. The deep test runs a real
+            (tiny) AI generation, so it uses a little API credit.
+          </p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => runChecks("quick")}
+              disabled={checking !== false}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13px] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
+              style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "1.5px solid rgba(194,78,107,0.25)" }}
+            >
+              <Activity className="h-4 w-4" />
+              {checking === "quick" ? "Checking…" : "Run checks"}
+            </button>
+            <button
+              onClick={() => runChecks("deep")}
+              disabled={checking !== false}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13px] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
+              style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 4px 16px rgba(194,78,107,0.3)" }}
+            >
+              <Sparkles className="h-4 w-4" />
+              {checking === "deep" ? "Testing AI…" : "Deep AI test"}
+            </button>
+          </div>
+
+          {report && (
+            <div className="mt-4 flex flex-col gap-2" aria-live="polite">
+              {report.checks.map((c) => (
+                <div
+                  key={c.name}
+                  className="flex items-start gap-2.5 rounded-xl px-3 py-2.5"
+                  style={{ background: c.ok ? "rgba(132,147,79,0.08)" : "rgba(194,78,107,0.08)" }}
+                >
+                  {c.ok ? (
+                    <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "#84934F" }} />
+                  ) : (
+                    <XCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "#C24E6B" }} />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-[12.5px] font-bold" style={{ color: "#3D2318" }}>
+                      {c.name} <span className="font-normal" style={{ color: "#9A7868" }}>· {c.ms} ms</span>
+                    </p>
+                    <p className="text-[12px] leading-snug break-words" style={{ color: c.ok ? "#7A5A48" : "#A83050" }}>
+                      {c.detail}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* About */}

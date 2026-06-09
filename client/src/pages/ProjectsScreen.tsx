@@ -59,11 +59,48 @@ function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect:
   );
 }
 
+// Trophy-shelf card for the finished gallery: photo-first, with finish date
+// and how long the project took.
+function TrophyCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect: () => void; index: number }) {
+  const finished = pattern.finishedAt ? new Date(pattern.finishedAt) : null;
+  const started = pattern.startedAt ? new Date(pattern.startedAt) : null;
+  const days =
+    finished && started
+      ? Math.max(1, Math.round((finished.getTime() - started.getTime()) / 86_400_000))
+      : null;
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.06, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      onClick={onSelect}
+      className="craft-card overflow-hidden text-left cursor-pointer transition-all hover:shadow-md active:scale-[0.98]"
+    >
+      <div className="aspect-square w-full overflow-hidden" style={{ containerType: "inline-size" }}>
+        <PatternThumb image={pattern.endProductImage} title={pattern.title} projectType={pattern.projectType} />
+      </div>
+      <div className="p-2.5">
+        <p className="font-heading font-bold text-[12.5px] truncate" style={{ color: "#3D2318" }}>
+          {pattern.title}
+        </p>
+        <p className="text-[10.5px] mt-0.5" style={{ color: "#84934F" }}>
+          {finished
+            ? `✓ ${finished.toLocaleDateString(undefined, { day: "numeric", month: "short" })}`
+            : "✓ Completed"}
+          {days ? ` · ${days} ${days === 1 ? "day" : "days"}` : ""}
+        </p>
+      </div>
+    </motion.button>
+  );
+}
+
 export default function ProjectsScreen({ onNavigate, onPatternSelected }: ProjectsScreenProps) {
   const { data: patterns = [], isLoading } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
 
   const inProgress = patterns.filter(p => p.status === 'active');
-  const completed = patterns.filter(p => p.status === 'finished');
+  const completed = patterns
+    .filter(p => p.status === 'finished')
+    .sort((a, b) => new Date(b.finishedAt ?? 0).getTime() - new Date(a.finishedAt ?? 0).getTime());
 
   return (
     <div className="flex flex-col h-full">
@@ -152,21 +189,24 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
               </div>
             )}
 
-            {/* Completed */}
+            {/* Completed — trophy shelf gallery */}
             {completed.length > 0 && (
               <div>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-1">
                   <h2 className="font-heading font-bold text-[14px]" style={{ color: "#3D2318" }}>
-                    ✨ Completed
+                    ✨ Trophy Shelf
                   </h2>
                   <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold"
                     style={{ background: "rgba(132,147,79,0.10)", color: "#84934F" }}>
                     {completed.length}
                   </span>
                 </div>
-                <div className="flex flex-col gap-3">
+                <p className="text-[11.5px] mb-3" style={{ color: "#9A7868" }}>
+                  Every finished make, side by side — be proud!
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {completed.map((p, i) => (
-                    <ProjectCard key={p.id} pattern={p} onSelect={() => onPatternSelected(p)} index={inProgress.length + i} />
+                    <TrophyCard key={p.id} pattern={p} onSelect={() => onPatternSelected(p)} index={i} />
                   ))}
                 </div>
               </div>

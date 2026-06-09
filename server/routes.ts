@@ -10,19 +10,21 @@ import { transformPattern } from "./api/transformPattern";
 import { communityService } from "./communityService";
 import { patternService } from "./patternService";
 import { stashService } from "./stashService";
-import { seedLibraryIfEmpty } from "./seedLibrary";
-import { seedAdditionalPatterns } from "./seedAdditionalPatterns";
+import { seedStarterContentOnce } from "./seedLibrary";
+import { ensureSchema } from "./ensureSchema";
+import { runQuickDiagnostics, runDeepDiagnostics } from "./diagnostics";
 import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
 import { z } from "zod";
 import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject, getObjectDataUrl } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Seed the community gallery on first boot (no-op if already populated).
-  communityService.seedIfEmpty().catch((e) => console.error("Community seed failed:", e));
-  // Seed Larissa's personal library and stash, then additional patterns (chained to avoid race condition).
-  seedLibraryIfEmpty()
-    .then(() => seedAdditionalPatterns())
-    .catch((e) => console.error("Library/stash seed failed:", e));
+  // Apply idempotent schema/data heals, then run the one-time seeds.
+  ensureSchema()
+    .then(() => {
+      communityService.seedIfEmpty().catch((e) => console.error("Community seed failed:", e));
+      seedStarterContentOnce().catch((e) => console.error("Library/stash seed failed:", e));
+    })
+    .catch((e) => console.error("Schema ensure failed:", e));
 
   // Serve stored media objects from object storage
   app.get("/api/media/:key", async (req: Request, res: Response) => {
@@ -124,26 +126,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error checking character images:", error);
       res.status(500).json({ message: "Failed to check character images" });
-    }
-  });
-
-  // POST /api/characters/store-file — store a locally generated PNG into object storage
-  app.post("/api/characters/store-file", async (req: Request, res: Response) => {
-    try {
-      const { characterId, filePath } = req.body;
-      if (!characterId || !CHARACTER_DEFS[characterId] || !filePath) {
-        return res.status(400).json({ message: "Invalid characterId or filePath" });
-      }
-      const fs = await import("fs/promises");
-      const path = await import("path");
-      const absPath = path.resolve(process.cwd(), filePath);
-      const buffer = await fs.readFile(absPath);
-      const key = `char-${characterId}`;
-      const url = await uploadBufferWithKey(key, buffer, "image/png");
-      res.json({ url });
-    } catch (error) {
-      console.error("Error storing character file:", error);
-      res.status(500).json({ message: "Failed to store character file", error: (error as Error).message });
     }
   });
 
@@ -837,6 +819,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const likes = await communityService.incrementLikes(req.params.id);
     if (likes === undefined) return res.status(404).json({ message: "Community pattern not found" });
     res.json({ success: true, likes });
+  });
+
+  // ── App health diagnostics ──────────────────────────────────────────────────
+  // Quick: DB, object storage, OpenAI key + model availability (no generation).
+  app.get("/api/diagnostics", async (_req: Request, res: Response) => {
+    try {
+      res.json(await runQuickDiagnostics());
+    } catch (error) {
+      console.error("Diagnostics failed:", error);
+      res.status(500).json({ message: "Diagnostics failed", error: (error as Error).message });
+    }
+  });
+
+  // Deep: one tiny live text generation + one live image generation (costs a
+  // small amount of API credit; user-initiated from Settings only).
+  app.post("/api/diagnostics/deep", async (_req: Request, res: Response) => {
+    try {
+      res.json(await runDeepDiagnostics());
+    } catch (error) {
+      console.error("Deep diagnostics failed:", error);
+      res.status(500).json({ message: "Deep diagnostics failed", error: (error as Error).message });
+    }
   });
 
   // ── Backup: export & import all user data ───────────────────────────────────

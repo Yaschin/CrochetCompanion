@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-07
 **Branch:** `claude/project-status-audit-HkgQL` (identical to `main` — no divergence at time of writing)
-**Status of this document:** **Current source of truth.** Supersedes `CROCHET_TIME_CURRENT_STATE_ASSESSMENT.md` and `CROCHET_TIME_UPGRADE_ROADMAP.md` (both dated 2026-06-06), which describe an earlier, broken state that no longer matches the code.
+**Status of this document:** **Historical record — superseded for sequencing/backlog by `CROCHET_TIME_ROADMAP_2026-06-09.md`.** Notable updates since this was written: the Jun-8 Replit session pushed ~19 commits to `main` (library/stash/community seed content, regen confirmations, ~24 bug fixes — see `.agents/memory/`); the Playwright e2e suite is now **confirmed green** on CI and locally (retires the §2 P0 item); `tsc` is **red again** (9 errors introduced Jun-8, fixed in roadmap Phase 1). This doc still supersedes `CROCHET_TIME_CURRENT_STATE_ASSESSMENT.md` and `CROCHET_TIME_UPGRADE_ROADMAP.md` (both 2026-06-06).
 **Method:** Read every `.md`; cross-checked claims against source; ran `tsc` (0 real errors); mapped the REST surface; traced each screen to its data source. No application code was changed in producing this document.
 
 ---
