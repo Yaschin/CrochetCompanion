@@ -7,10 +7,12 @@ import PatternSection from './PatternSection';
 import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
 import StitchCounter from './StitchCounter';
+import FollowMode from './FollowMode';
 import CelebrationOverlay from './CelebrationOverlay';
 import { recordActivity } from '../lib/activityLog';
 import { cn } from '../lib/utils';
-import { RefreshCw, Download, Plus, Image, Hash, Heart, CheckCircle2, Play, Share2, Scissors, Shuffle } from 'lucide-react';
+import { RefreshCw, Download, FileText, Plus, Image, Hash, Heart, CheckCircle2, Play, Share2, Scissors, Shuffle } from 'lucide-react';
+import { printPattern } from '../lib/printPattern';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
@@ -54,6 +56,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const [regenAllConfirmOpen, setRegenAllConfirmOpen] = useState(false);
   const [regenAllNote, setRegenAllNote] = useState("");
   const [shareConfirmOpen, setShareConfirmOpen] = useState(false);
+  const [followOpen, setFollowOpen] = useState(false);
   const [adaptOpen, setAdaptOpen] = useState(false);
   const [adaptMode, setAdaptMode] = useState<"resize" | "substitute">("resize");
   const [adaptInstruction, setAdaptInstruction] = useState("");
@@ -733,6 +736,12 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         patternId={pattern.id}
         patternTitle={pattern.title}
       />
+      <FollowMode
+        pattern={pattern}
+        open={followOpen}
+        onClose={() => setFollowOpen(false)}
+        onUpdateStep={updateStep}
+      />
 
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-3">
@@ -847,6 +856,13 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                   ))}
                 </div>
                 <div className="flex gap-2 mt-3 flex-wrap">
+                  <button
+                    onClick={() => printPattern(pattern)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
+                    style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B", border: "1px solid rgba(194,78,107,0.2)" }}
+                  >
+                    <FileText className="h-3 w-3" /> Print / PDF
+                  </button>
                   <button
                     onClick={handleExportPattern}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
@@ -1006,9 +1022,20 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       {/* ── Pattern tab ── */}
       {activeTab === "pattern" && (
         <div className="flex flex-col gap-4">
+          <button
+            onClick={() => setFollowOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13.5px] transition-all hover:opacity-90 active:scale-[0.99]"
+            style={{ background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.35)" }}
+          >
+            <Play className="h-4 w-4" /> Follow step-by-step
+          </button>
           {pattern.sections
-            .filter(section => section.name.toLowerCase() !== "materials")
-            .map((section, sectionIndex) => (
+            // Keep the original index — updateStep addresses pattern.sections,
+            // so filtering before mapping would corrupt edits whenever a
+            // "Materials" section sits before the crochet sections.
+            .map((section, sectionIndex) => ({ section, sectionIndex }))
+            .filter(({ section }) => section.name.toLowerCase() !== "materials")
+            .map(({ section, sectionIndex }) => (
             <div key={`section-${sectionIndex}`} className="flex flex-col gap-1.5">
               <PatternSection
                 section={{...section, patternId: pattern.id}}

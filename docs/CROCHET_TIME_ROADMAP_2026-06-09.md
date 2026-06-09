@@ -87,8 +87,13 @@ Multi-user auth / real social community; AI provider swaps; offline write-sync q
 
 ## Progress log
 
-- [ ] Phase 1 — Green & Safe
-- [ ] Phase 2 — Trust & sync
-- [ ] Phase 3 — AI diagnostics
-- [ ] Phase 4 — F1 gallery · F2 continue · F3 PDF · F4 follow mode
+- [x] Phase 1 — Green & Safe *(2026-06-09: B1–B6 done; B7 verified already-implemented — the generate flow has a full error taxonomy + retry via re-enabled button. tsc/build/e2e green)*
+- [x] Phase 2 — Trust & sync *(2026-06-09: T1 notes→DB with legacy localStorage migration; T2 share confirm dialog; T3 shared per-pattern counter hook)*
+- [x] Phase 3 — AI diagnostics *(2026-06-09: GET /api/diagnostics + POST /api/diagnostics/deep + Settings "App health" panel. Run the deep test on the live deploy to validate AI end-to-end)*
+- [x] Phase 4 — F1 trophy-shelf gallery · F2 continue-where-left-off · F3 branded Print/PDF · F4 row-by-row follow mode *(2026-06-09; also fixed a latent Pattern-tab index bug where filtering "materials" sections before mapping could corrupt step edits)*
 - [ ] Phase 5 — deferred polish (not scheduled)
+
+**Post-deploy checklist for Yash (live Replit app):**
+1. Deploy this branch; watch boot logs for `ensureSchema` + seed messages.
+2. Settings → App health → "Run checks", then "Deep AI test" — all should pass.
+3. Spot-check: Projects shows seeded WIP patterns under In Progress; delete a seed pattern, restart, confirm it stays deleted; save a note on a pattern and reload; counter shows same rows in viewer modal and full-screen counter; "Follow step-by-step" advances and persists check-offs; Print/PDF renders with cover photo.
