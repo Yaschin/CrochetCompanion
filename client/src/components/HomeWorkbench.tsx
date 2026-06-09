@@ -9,6 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Pattern, ViewType } from "../lib/types";
 import { PatternThumb } from "@/components/PatternThumb";
 import { getStreak } from "../lib/activityLog";
+import { loadCounter } from "../hooks/useStitchCounter";
 
 // ─── Notification helpers ──────────────────────────────────────────────────────
 const NOTIF_KEY = "crochet-time-community-seen";
@@ -38,6 +39,7 @@ interface HomeWorkbenchProps {
   onNavigate: (view: ViewType) => void;
   currentPattern?: Pattern | null;
   onPatternSelected?: (p: Pattern) => void;
+  onResumeCounting?: (p: Pattern) => void;
 }
 
 const CHAR = {
@@ -402,12 +404,15 @@ function HeroZone({
 // ─── Action cards — overlap hero by 32px ──────────────────────────────────────
 
 function ContinueProjectCard({
-  pattern, onNavigate,
-}: { pattern: Pattern | null; onNavigate: (v: ViewType) => void }) {
+  pattern, onNavigate, onResumeCounting,
+}: { pattern: Pattern | null; onNavigate: (v: ViewType) => void; onResumeCounting?: (p: Pattern) => void }) {
   const pct = pattern ? patternProgress(pattern) : 0;
   const steps = pattern?.sections?.flatMap(s => s.steps) ?? [];
   const totalRows = steps.length;
   const doneRows = steps.filter(s => s.completed).length;
+  // Last counted row from the shared per-pattern counter store — lets the
+  // "resume counting" shortcut say exactly where Larissa left off.
+  const counterRows = pattern ? loadCounter(pattern.id).rows : 0;
 
   return (
     <div className="craft-card craft-card-rose flex flex-col gap-2.5 p-4 h-full">
@@ -461,6 +466,15 @@ function ContinueProjectCard({
       >
         {pattern ? "Open Project" : "Start Creating"} →
       </button>
+      {pattern && onResumeCounting && (
+        <button
+          onClick={() => onResumeCounting(pattern)}
+          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-80"
+          style={{ background: "rgba(132,147,79,0.10)", color: "#84934F", border: "1.5px solid rgba(132,147,79,0.25)" }}
+        >
+          🧶 {counterRows > 0 ? `Resume counting · Row ${counterRows}` : "Start counting rows"}
+        </button>
+      )}
     </div>
   );
 }
@@ -866,7 +880,7 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWorkbenchProps) {
+export default function HomeWorkbench({ onNavigate, onPatternSelected, onResumeCounting }: HomeWorkbenchProps) {
   const qc = useQueryClient();
   const { text, emoji } = greeting();
 
@@ -990,7 +1004,7 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected }: HomeWor
         {/* Action cards — slight overlap on sm+, flush on mobile so characters don't clash */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10 mt-3 sm:-mt-7">
           <div style={{ minHeight: 190 }}>
-            <ContinueProjectCard pattern={activePattern} onNavigate={onNavigate} />
+            <ContinueProjectCard pattern={activePattern} onNavigate={onNavigate} onResumeCounting={onResumeCounting} />
           </div>
           <div style={{ minHeight: 190 }}>
             <CreateWithYalaCard onNavigate={onNavigate} />

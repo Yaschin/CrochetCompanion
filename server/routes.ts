@@ -145,26 +145,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // POST /api/characters/store-file — store a locally generated PNG into object storage
-  app.post("/api/characters/store-file", async (req: Request, res: Response) => {
-    try {
-      const { characterId, filePath } = req.body;
-      if (!characterId || !CHARACTER_DEFS[characterId] || !filePath) {
-        return res.status(400).json({ message: "Invalid characterId or filePath" });
-      }
-      const fs = await import("fs/promises");
-      const path = await import("path");
-      const absPath = path.resolve(process.cwd(), filePath);
-      const buffer = await fs.readFile(absPath);
-      const key = `char-${characterId}`;
-      const url = await uploadBufferWithKey(key, buffer, "image/png");
-      res.json({ url });
-    } catch (error) {
-      console.error("Error storing character file:", error);
-      res.status(500).json({ message: "Failed to store character file", error: (error as Error).message });
-    }
-  });
-
   // POST /api/characters/generate — generate a single character image
   app.post("/api/characters/generate", async (req: Request, res: Response) => {
     try {
@@ -855,6 +835,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const likes = await communityService.incrementLikes(req.params.id);
     if (likes === undefined) return res.status(404).json({ message: "Community pattern not found" });
     res.json({ success: true, likes });
+  });
+
+  // ── App health diagnostics ──────────────────────────────────────────────────
+  // Quick: DB, object storage, OpenAI key + model availability (no generation).
+  app.get("/api/diagnostics", async (_req: Request, res: Response) => {
+    try {
+      res.json(await runQuickDiagnostics());
+    } catch (error) {
+      console.error("Diagnostics failed:", error);
+      res.status(500).json({ message: "Diagnostics failed", error: (error as Error).message });
+    }
+  });
+
+  // Deep: one tiny live text generation + one live image generation (costs a
+  // small amount of API credit; user-initiated from Settings only).
+  app.post("/api/diagnostics/deep", async (_req: Request, res: Response) => {
+    try {
+      res.json(await runDeepDiagnostics());
+    } catch (error) {
+      console.error("Deep diagnostics failed:", error);
+      res.status(500).json({ message: "Deep diagnostics failed", error: (error as Error).message });
+    }
   });
 
   // ── Backup: export & import all user data ───────────────────────────────────

@@ -133,6 +133,12 @@ function App() {
     setLocation(pathFor("viewer", { patternId: pattern.id }));
   };
 
+  // "Continue where I left off" — jump straight into the counter for a pattern.
+  const handleResumeCounting = (pattern: Pattern) => {
+    setCurrentPattern(pattern);
+    setLocation(pathFor("stitch-counter", { patternId: pattern.id }));
+  };
+
   const handleLoadingComplete = (view: ViewType) =>
     setLocation(pathFor(view, { patternId: currentPattern?.id }));
 
@@ -188,6 +194,7 @@ function App() {
                   onNavigate={navigateToView}
                   currentPattern={currentPattern}
                   onPatternSelected={handlePatternLoaded}
+                  onResumeCounting={handleResumeCounting}
                 />
               )}
 
@@ -300,6 +307,7 @@ function App() {
                 <StitchCounterScreen
                   onNavigate={navigateToView}
                   backView={currentPattern ? "viewer" : "home"}
+                  patternId={patternId ?? currentPattern?.id}
                 />
               )}
 

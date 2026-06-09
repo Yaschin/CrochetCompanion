@@ -10,6 +10,19 @@ interface SettingsScreenProps {
   onNavigate: (view: ViewType) => void;
 }
 
+interface DiagnosticCheck {
+  name: string;
+  ok: boolean;
+  detail: string;
+  ms: number;
+}
+
+interface DiagnosticsReport {
+  ok: boolean;
+  ranAt: string;
+  checks: DiagnosticCheck[];
+}
+
 export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -41,6 +54,36 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
       });
     } finally {
       setExporting(false);
+    }
+  };
+
+  const [report, setReport] = useState<DiagnosticsReport | null>(null);
+  const [checking, setChecking] = useState<false | "quick" | "deep">(false);
+
+  const runChecks = async (mode: "quick" | "deep") => {
+    setChecking(mode);
+    try {
+      const res =
+        mode === "quick"
+          ? await fetch("/api/diagnostics")
+          : await apiRequest("POST", "/api/diagnostics/deep", {});
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const data: DiagnosticsReport = await res.json();
+      setReport(data);
+      toast(
+        data.ok
+          ? { title: "All checks passed ✓", description: "Everything is connected and working." }
+          : { title: "Some checks failed", description: "See the results below for what needs attention.", variant: "destructive" },
+      );
+    } catch (err) {
+      setReport(null);
+      toast({
+        title: "Couldn't run checks",
+        description: err instanceof Error ? err.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setChecking(false);
     }
   };
 

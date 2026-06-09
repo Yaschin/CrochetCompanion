@@ -1,6 +1,4 @@
 import { patternService } from "./patternService";
-import { db } from "./db";
-import { patterns } from "../shared/schema";
 
 const ADDITIONAL_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "createdAt">[] = [
 
@@ -184,7 +182,7 @@ const ADDITIONAL_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "crea
     description: "The internet-famous crochet octopus! Said to comfort premature babies in NICUs. A round squishy head with 8 curling tentacles. Based on The Danish Octo Friends pattern.",
     materialsNotes: "Tentacles curl naturally as you crochet — do not stretch them flat.",
     favorite: true,
-    status: "project",
+    status: "active",
     startedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
     finishedAt: undefined,
     endProductImage: undefined,
@@ -332,7 +330,7 @@ const ADDITIONAL_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "crea
     description: "A stumpy-legged pembroke corgi with big pointed ears and a fluffy cream chest patch. Based on popular Ravelry corgi amigurumi patterns.",
     materialsNotes: "Wire the legs if you want Scout to stand independently.",
     favorite: false,
-    status: "project",
+    status: "active",
     startedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     finishedAt: undefined,
     endProductImage: undefined,
@@ -598,7 +596,7 @@ const ADDITIONAL_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "crea
     description: "A summer crop top with a raised bubble stitch texture panel. Worked flat in rows. Based on the Mara and Maria and Knit.Love.Wool type beach tops that went viral on Instagram.",
     materialsNotes: "Cotton yarn is essential for drape and breathability. Block after washing.",
     favorite: false,
-    status: "project",
+    status: "active",
     startedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
     finishedAt: undefined,
     endProductImage: undefined,
@@ -768,7 +766,7 @@ const ADDITIONAL_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "crea
     description: "A multi-round sunburst mandala in warm terracotta, cream, and sage, designed to be mounted on a wooden dowel. Inspired by numerous Ravelry mandala patterns and Nicki's Homemade Crafts.",
     materialsNotes: "Block the mandala flat before hanging — cotton responds well to wet blocking.",
     favorite: true,
-    status: "project",
+    status: "active",
     startedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
     finishedAt: undefined,
     endProductImage: undefined,
@@ -1010,7 +1008,7 @@ const ADDITIONAL_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "crea
     description: "A structured 9-square tote bag made from large granny squares joined together. One of the most popular free patterns on Ravelry and Crochet.com — perfect stash buster.",
     materialsNotes: "Stiffen with fabric starch spray after assembling for a more structured bag.",
     favorite: false,
-    status: "project",
+    status: "active",
     startedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
     finishedAt: undefined,
     endProductImage: undefined,
@@ -1194,7 +1192,7 @@ const ADDITIONAL_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "crea
     description: "A structured mini crossbody bag with a magnetic snap and a long adjustable strap. Uses a linen stitch for a woven fabric look. Based on Jayda InStitches and similar trending bag patterns.",
     materialsNotes: "Stiffen with iron-on interfacing inside for a bag that holds its shape.",
     favorite: false,
-    status: "project",
+    status: "active",
     startedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     finishedAt: undefined,
     endProductImage: undefined,
@@ -1306,15 +1304,10 @@ const ADDITIONAL_PATTERNS: Omit<import("../shared/schema").Pattern, "id" | "crea
   },
 ];
 
+// Inserts the additional curated patterns unconditionally — only called from
+// seedStarterContentOnce() on a fresh install (one-time, marker-guarded).
 export async function seedAdditionalPatterns(): Promise<void> {
   try {
-    const existingRows = await db.select({ id: patterns.id }).from(patterns);
-
-    if (existingRows.length >= 25) {
-      console.log(`Library: ${existingRows.length} patterns already exist, skipping additional seed.`);
-      return;
-    }
-
     console.log(`Library: seeding ${ADDITIONAL_PATTERNS.length} additional curated patterns…`);
     for (const p of ADDITIONAL_PATTERNS) {
       await patternService.createPattern(p);
