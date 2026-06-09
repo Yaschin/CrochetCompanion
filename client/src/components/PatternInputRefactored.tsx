@@ -7,7 +7,7 @@ import { Sparkles, Key, ExternalLink, AlertCircle, BookOpen, Plus } from 'lucide
 import { PatternInputFormData, Pattern } from '../lib/types';
 
 interface PatternInputProps {
-  onPatternCreated: (pattern: Pattern) => void;
+  onPatternCreated: (pattern: Pattern, skipLoading?: boolean) => void;
 }
 
 const CATEGORIES = [
@@ -41,7 +41,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
 
   // ── AI wizard state ──────────────────────────────────────────────────────────
   const [formData, setFormData] = useState<PatternInputFormData>({
-    prompt: '', projectType: '', skillLevel: '', yarnType: '', size: '10 cm',
+    prompt: '', projectType: '', skillLevel: '', yarnType: '', size: '',
   });
   const [file, setFile]               = useState<File | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -59,7 +59,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
     setMode(m);
     setWizardStep(0);
     setOwnStep(0);
-    setFormData({ prompt: '', projectType: '', skillLevel: '', yarnType: '', size: '10 cm' });
+    setFormData({ prompt: '', projectType: '', skillLevel: '', yarnType: '', size: '' });
     setOwnTitle("");
     setOwnRawText("");
     setWizardColors([]);
@@ -190,7 +190,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
 
       const savedPattern = await savePatternMutation.mutateAsync(patternToSave);
       queryClient.invalidateQueries({ queryKey: ['/api/patterns'] });
-      onPatternCreated(savedPattern);
+      onPatternCreated(savedPattern, true);
       toast({
         title: "Pattern added! 🎉",
         description: `"${savedPattern.title}" is in your library. Tap any step to tick it off as you work.`,

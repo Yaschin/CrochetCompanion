@@ -12,7 +12,7 @@ interface SidebarProps {
 
 const PRIMARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Home }[] = [
   { id: "home",      view: "home",      label: "Home",      icon: Home },
-  { id: "studio",    view: "input",     label: "AI Studio", icon: Wand2 },
+  { id: "studio",    view: "input",     label: "Create",    icon: Wand2 },
   { id: "library",   view: "library",   label: "Library",   icon: BookOpen },
   { id: "favorites", view: "favorites", label: "Favorites", icon: Heart },
   { id: "projects",  view: "projects",  label: "Projects",  icon: BasketIcon as typeof Home },

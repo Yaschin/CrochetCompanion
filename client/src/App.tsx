@@ -122,9 +122,9 @@ function App() {
 
   const handleCommunitySelected = (id: string) => setLocation(pathFor("community-detail", { communityId: id }));
 
-  const handlePatternCreated = (pattern: Pattern) => {
+  const handlePatternCreated = (pattern: Pattern, skipLoading?: boolean) => {
     setCurrentPattern(pattern);
-    setLocation(pathFor("loading"));
+    setLocation(pathFor(skipLoading ? "viewer" : "loading", { patternId: pattern.id }));
   };
 
   const handlePatternLoaded = (pattern: Pattern) => {
