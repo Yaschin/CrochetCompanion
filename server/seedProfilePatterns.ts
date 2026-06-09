@@ -1,6 +1,7 @@
 import { patternService } from "./patternService";
+import { stashService } from "./stashService";
 import { getMeta, setMeta } from "./ensureSchema";
-import type { Pattern } from "../shared/schema";
+import type { Pattern, StashItem } from "../shared/schema";
 
 type SeedPattern = Omit<Pattern, "id" | "createdAt">;
 
@@ -759,6 +760,73 @@ const MUMMY_PATTERNS: SeedPattern[] = [
 ];
 
 const PROFILE_SEED_FLAG = "profile_content_seeded_v1";
+
+// ── Starter stash items ────────────────────────────────────────────────────────
+
+type SeedStash = Omit<StashItem, "id">;
+
+const VUMSH_STASH: SeedStash[] = [
+  { type: "yarn", name: "Paintbox Simply DK", color: "Jungle Green", volume: "~200g / 450 yards", quantity: 2, description: "Main colour for Roary & Cactus Buddy" },
+  { type: "yarn", name: "Paintbox Simply DK", color: "Midnight Navy", volume: "~150g / 340 yards", quantity: 1, description: "Galaxy Beanie main colour" },
+  { type: "yarn", name: "4-ply Fingering", color: "Pixel Red", volume: "~50g / 150 yards", quantity: 1, description: "Pixel Heart Keyring" },
+  { type: "yarn", name: "Paintbox Simply DK", color: "Charcoal Grey", volume: "~100g / 225 yards", quantity: 1, description: "Controller Pouch main colour" },
+  { type: "hook", name: "Prym Ergonomics Hook", size: "3.5mm", quantity: 1, description: "Go-to hook for DK amigurumi" },
+  { type: "hook", name: "Clover Soft Touch Hook", size: "2.5mm", quantity: 1, description: "Fingering weight — keyring projects" },
+  { type: "notion", name: "Safety Eyes", description: "Assorted black: 6mm, 9mm, 12mm", quantity: 12 },
+  { type: "notion", name: "Polyester Fibrefill", description: "Premium grade, 200g bag", quantity: 1 },
+  { type: "tool", name: "Tapestry Needles", description: "Pack of 6 assorted sizes", quantity: 1 },
+];
+
+const AKKA_STASH: SeedStash[] = [
+  { type: "yarn", name: "Paintbox Cotton DK", color: "Oat Beige", volume: "~200g / 440 yards", quantity: 2, description: "Spring Daisy Headband + neutral projects" },
+  { type: "yarn", name: "Paintbox Cotton DK", color: "Soft Lavender", volume: "~100g / 220 yards", quantity: 1, description: "Lavender Eye Mask" },
+  { type: "yarn", name: "Paintbox Cotton DK", color: "Sunflower Yellow", volume: "~100g / 220 yards", quantity: 1, description: "Sunflower Coasters" },
+  { type: "yarn", name: "Paintbox Cotton Aran", color: "Natural Cream", volume: "~250g / 400 yards", quantity: 1, description: "Market Tote Bag" },
+  { type: "hook", name: "Clover Amour Hook", size: "3.5mm", quantity: 1, description: "Cotton DK projects" },
+  { type: "hook", name: "Clover Amour Hook", size: "5mm", quantity: 1, description: "Aran weight tote bag" },
+  { type: "notion", name: "Locking Stitch Markers", description: "Pack of 20 mixed colours", quantity: 1 },
+  { type: "notion", name: "Elastic Band", description: "1cm wide, 50cm lengths — for headband & eye mask", quantity: 3 },
+  { type: "tool", name: "Tapestry Needle", description: "Blunt-tip sewing up needle", quantity: 2 },
+];
+
+const MUMMY_STASH: SeedStash[] = [
+  { type: "yarn", name: "Lion Brand Wool-Ease Thick & Quick", color: "Oatmeal", volume: "~400g / 320 yards", quantity: 2, description: "Chunky Cushion Cover main colour" },
+  { type: "yarn", name: "Lion Brand 24/7 Cotton", color: "Dusty Rose", volume: "~200g / 380 yards", quantity: 1, description: "Kitchen Dishcloths + delicate makes" },
+  { type: "yarn", name: "Paintbox Simply Aran", color: "Rust Orange", volume: "~200g / 400 yards", quantity: 1, description: "Autumn Leaf Runner + seasonal projects" },
+  { type: "hook", name: "Boye Ergonomic Hook", size: "8mm", quantity: 1, description: "Chunky yarn — cushion cover" },
+  { type: "hook", name: "Clover Amour Hook", size: "5mm", quantity: 1, description: "Aran weight projects" },
+  { type: "hook", name: "Clover Amour Hook", size: "3.5mm", quantity: 1, description: "Cotton DK dishcloths" },
+  { type: "notion", name: "Locking Stitch Markers", description: "Pack of 10", quantity: 1 },
+  { type: "tool", name: "Tapestry Needle Set", description: "3 blunt-tip sizes", quantity: 1 },
+  { type: "tool", name: "Fabric Scissors", description: "Dedicated yarn scissors", quantity: 1 },
+];
+
+const PROFILE_STASH_FLAG = "profile_stash_seeded_v1";
+
+export async function seedProfileStash(): Promise<void> {
+  try {
+    if (await getMeta(PROFILE_STASH_FLAG)) {
+      console.log("Profile stash: already done, skipping.");
+      return;
+    }
+
+    console.log("Profile stash: seeding starter materials for Vumsh, Akka, Mummy…");
+
+    for (const s of VUMSH_STASH) await stashService.createItem(s, "vumsh");
+    console.log(`  Vumsh: ${VUMSH_STASH.length} stash items seeded ✓`);
+
+    for (const s of AKKA_STASH) await stashService.createItem(s, "akka");
+    console.log(`  Akka: ${AKKA_STASH.length} stash items seeded ✓`);
+
+    for (const s of MUMMY_STASH) await stashService.createItem(s, "mummy");
+    console.log(`  Mummy: ${MUMMY_STASH.length} stash items seeded ✓`);
+
+    await setMeta(PROFILE_STASH_FLAG, new Date().toISOString());
+    console.log("Profile stash: complete ✓");
+  } catch (error) {
+    console.error("Profile stash seed error:", error);
+  }
+}
 
 export async function seedProfilePatterns(): Promise<void> {
   try {

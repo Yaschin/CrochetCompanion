@@ -28,9 +28,17 @@ ensureSchema()
   })
 ```
 
+## Stash seeding
+`seedProfileStash()` also in `server/seedProfilePatterns.ts`; flag: `profile_stash_seeded_v1`
+- Vumsh: 9 items (4 yarn, 2 hooks, 2 notions, 1 tool — DK/fingering in bold colours, amigurumi supplies)
+- Akka: 9 items (4 yarn, 2 hooks, 2 notions, 1 tool — cotton DK in pastels/naturals)
+- Mummy: 9 items (3 yarn, 3 hooks, 1 notion, 2 tools — chunky/aran in neutrals)
+
+Startup chain: `seedProfilePatterns() → seedProfileStash() → seedLibraryImages()`
+
 ## Pattern counts (after dedup)
-- larissa: ~26 unique patterns
-- vumsh/akka/mummy: 5 each
+- larissa: ~26 unique patterns + 16 stash items
+- vumsh/akka/mummy: 5 patterns + 9 stash items each
 
 ## Deduplication
 `ensureSchema()` runs a DISTINCT ON dedup on every boot — keeps oldest row per (ownerId, title). Guards against multi-phase seed re-runs that happened before the one-time flags were set.
