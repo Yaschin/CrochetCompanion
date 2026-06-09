@@ -4,7 +4,7 @@ import { existsSync } from "fs";
 import { resolve } from "path";
 import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
-import { parsePattern } from "./api/parsePattern";
+import { parsePattern, parsePdfText } from "./api/parsePattern";
 import { generateImage } from "./api/generateImage";
 import { analyzeAlignment } from "./api/analyzeAlignment";
 import { transformPattern } from "./api/transformPattern";
@@ -80,6 +80,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Parse / import an existing pattern (structures raw text into sections + steps via AI)
+  // PDF import: extract text from base64-encoded PDF then AI-structure it
+  app.post("/api/parse-pdf", async (req: Request, res: Response) => {
+    try {
+      const { fileBase64 } = req.body;
+      if (!fileBase64 || typeof fileBase64 !== "string") {
+        return res.status(400).json({ message: "fileBase64 is required" });
+      }
+      const buffer = Buffer.from(fileBase64, "base64");
+      if (buffer.length > 10 * 1024 * 1024) {
+        return res.status(400).json({ message: "PDF too large — maximum size is 10 MB." });
+      }
+      const pdfParse = (await import("pdf-parse")).default;
+      const data = await pdfParse(buffer);
+      const text = (data.text || "").trim();
+      if (text.length < 50) {
+        return res.status(422).json({
+          message: "Could not extract text from this PDF. It may be image-based — try copying and pasting the text manually using 'Add my own' instead.",
+        });
+      }
+      const result = await parsePdfText(text);
+      res.json(result);
+    } catch (error) {
+      console.error("Error in parse-pdf endpoint:", error);
+      res.status(500).json({ message: "Failed to process PDF", error: (error as Error).message });
+    }
+  });
+
   app.post("/api/parse-pattern", async (req: Request, res: Response) => {
     try {
       const { title, projectType, skillLevel, yarnType, size, rawText } = req.body;

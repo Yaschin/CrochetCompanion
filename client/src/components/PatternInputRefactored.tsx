@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
-import { Sparkles, Key, ExternalLink, AlertCircle, BookOpen, Plus } from 'lucide-react';
+import { Sparkles, Key, ExternalLink, AlertCircle, BookOpen, Plus, FileUp } from 'lucide-react';
 import { PatternInputFormData, Pattern } from '../lib/types';
 
 interface PatternInputProps {
@@ -30,14 +30,15 @@ const COLOR_PALETTE = [
 ];
 const SIZE_OPTIONS = ["5 cm", "10 cm", "15 cm", "20 cm", "30 cm", "40 cm+"];
 
-const AI_STEPS    = ["Item", "Details", "Yarn & Colours", "Inspiration", "Review"];
-const OWN_STEPS   = ["Pattern", "Details", "Paste & Save"];
+const AI_STEPS  = ["Item", "Details", "Yarn & Colours", "Inspiration", "Review"];
+const OWN_STEPS = ["Pattern", "Details", "Paste & Save"];
+const PDF_STEPS = ["Upload", "Review"];
 
 const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
   const { toast } = useToast();
 
   // ── Shared mode toggle ───────────────────────────────────────────────────────
-  const [mode, setMode] = useState<"ai" | "own">("ai");
+  const [mode, setMode] = useState<"ai" | "own" | "pdf">("ai");
 
   // ── AI wizard state ──────────────────────────────────────────────────────────
   const [formData, setFormData] = useState<PatternInputFormData>({
@@ -54,16 +55,28 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   const [ownRawText, setOwnRawText]   = useState("");
   const [ownParsing, setOwnParsing]   = useState(false);
 
-  // Reset both wizards when switching mode
-  const switchMode = (m: "ai" | "own") => {
+  // ── PDF import state ─────────────────────────────────────────────────────────
+  const [pdfStep, setPdfStep]         = useState(0);
+  const [pdfFile, setPdfFile]         = useState<File | null>(null);
+  const [pdfParsing, setPdfParsing]   = useState(false);
+  const [pdfResult, setPdfResult]     = useState<any>(null);
+  const [pdfEditTitle, setPdfEditTitle] = useState("");
+  const [pdfSaving, setPdfSaving]     = useState(false);
+
+  // Reset all wizards when switching mode
+  const switchMode = (m: "ai" | "own" | "pdf") => {
     setMode(m);
     setWizardStep(0);
     setOwnStep(0);
+    setPdfStep(0);
     setFormData({ prompt: '', projectType: '', skillLevel: '', yarnType: '', size: '' });
     setOwnTitle("");
     setOwnRawText("");
     setWizardColors([]);
     setFile(null);
+    setPdfFile(null);
+    setPdfResult(null);
+    setPdfEditTitle("");
   };
 
   // ── Mutations ────────────────────────────────────────────────────────────────
@@ -111,11 +124,33 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
     },
   });
 
+  const parsePdfMutation = useMutation({
+    mutationFn: async (fileBase64: string) => {
+      const res = await apiRequest('POST', '/api/parse-pdf', { fileBase64 });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to process PDF');
+      }
+      return res.json();
+    },
+  });
+
   // ── Helpers ──────────────────────────────────────────────────────────────────
   const fileToDataUrl = (f: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload  = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(f);
+    });
+
+  const fileToBase64 = (f: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1]);
+      };
       reader.onerror = reject;
       reader.readAsDataURL(f);
     });
@@ -132,6 +167,72 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
     setFile(f);
     setFormData(p => ({ ...p, prompt: p.prompt || `Create a crochet pattern based on the attached reference image.` }));
     toast({ title: "Reference Image Added", description: "Used as a reference during generation." });
+  };
+
+  // ── PDF handlers ─────────────────────────────────────────────────────────────
+  const handlePdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    const f = e.target.files[0];
+    if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+      toast({ title: "PDF files only", description: "Please select a .pdf file.", variant: "destructive" }); return;
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 10 MB.", variant: "destructive" }); return;
+    }
+    setPdfFile(f);
+  };
+
+  const handlePdfUpload = async () => {
+    if (!pdfFile) return;
+    setPdfParsing(true);
+    try {
+      const base64 = await fileToBase64(pdfFile);
+      const result = await parsePdfMutation.mutateAsync(base64);
+      setPdfResult(result);
+      setPdfEditTitle(result.title || "Imported Pattern");
+      setPdfStep(1);
+    } catch (err: any) {
+      toast({
+        title: "Couldn't read PDF",
+        description: err.message || "Something went wrong. Try 'Add my own' and paste the text manually.",
+        variant: "destructive",
+        duration: 8000,
+      });
+    } finally {
+      setPdfParsing(false);
+    }
+  };
+
+  const handlePdfSave = async () => {
+    if (!pdfResult) return;
+    setPdfSaving(true);
+    try {
+      const title = pdfEditTitle.trim() || pdfResult.title || "Imported Pattern";
+      const patternToSave = buildPatternToSave(
+        { ...pdfResult, title },
+        {
+          prompt: title,
+          projectType: pdfResult.projectType || "Other",
+          skillLevel: pdfResult.skillLevel || "Beginner",
+          yarnType: pdfResult.yarnType || "",
+          size: "",
+        },
+        undefined,
+      );
+      const savedPattern = await savePatternMutation.mutateAsync(patternToSave);
+      queryClient.invalidateQueries({ queryKey: ['/api/patterns'] });
+      onPatternCreated(savedPattern, true);
+      toast({
+        title: "Pattern imported! 🎉",
+        description: `"${savedPattern.title}" is now in your library. Tap any step to edit it.`,
+        duration: 6000,
+      });
+    } catch (err) {
+      console.error('Error saving PDF pattern:', err);
+      toast({ title: "Couldn't save", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } finally {
+      setPdfSaving(false);
+    }
   };
 
   // ── AI wizard: can advance? ──────────────────────────────────────────────────
@@ -281,6 +382,10 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
     "Tell me the yarn and skill level — it helps with tracking 🧶",
     "Paste your pattern text and I'll organise it into sections for you ✨",
   ];
+  const PDF_TIPS = [
+    "Upload a PDF from Etsy, Ravelry or anywhere — I'll read it and organise it for you 📄",
+    "Check the title and details look right, then save to your library 🎉",
+  ];
 
   // ── Shared category / skill / yarn / size pickers ────────────────────────────
   const CategoryPicker = () => (
@@ -377,9 +482,15 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   };
 
   // ── Render ────────────────────────────────────────────────────────────────────
-  const steps       = mode === "ai" ? AI_STEPS  : OWN_STEPS;
-  const currentStep = mode === "ai" ? wizardStep : ownStep;
-  const tips        = mode === "ai" ? AI_TIPS    : OWN_TIPS;
+  const steps       = mode === "ai" ? AI_STEPS  : mode === "own" ? OWN_STEPS : PDF_STEPS;
+  const currentStep = mode === "ai" ? wizardStep : mode === "own" ? ownStep : pdfStep;
+  const tips        = mode === "ai" ? AI_TIPS    : mode === "own" ? OWN_TIPS : PDF_TIPS;
+
+  const modeAccent = mode === "ai" ? "#C24E6B" : mode === "own" ? "#84934F" : "#3D8FA3";
+  const modeAccentRgb = mode === "ai" ? "194,78,107" : mode === "own" ? "132,147,79" : "61,143,163";
+  const charImg = mode === "ai"
+    ? "/characters/char-yala-transparent.png"
+    : "/characters/char-ashi-transparent.png";
 
   return (
     <div className="flex flex-col gap-0 max-w-lg mx-auto w-full">
@@ -389,23 +500,33 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
         style={{ background: "rgba(140,100,55,0.08)", border: "1px solid rgba(140,100,55,0.18)" }}>
         <button
           onClick={() => switchMode("ai")}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold transition-all"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all"
           style={{
             background: mode === "ai" ? "linear-gradient(135deg, #C24E6B, #A83050)" : "transparent",
             color: mode === "ai" ? "white" : "#9A7868",
             boxShadow: mode === "ai" ? "0 3px 12px rgba(194,78,107,0.35)" : "none",
           }}>
-          <Sparkles className="h-4 w-4" /> Create with AI
+          <Sparkles className="h-3.5 w-3.5" /> Create with AI
         </button>
         <button
           onClick={() => switchMode("own")}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold transition-all"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all"
           style={{
             background: mode === "own" ? "linear-gradient(135deg, #84934F, #5A6E30)" : "transparent",
             color: mode === "own" ? "white" : "#9A7868",
             boxShadow: mode === "own" ? "0 3px 12px rgba(132,147,79,0.35)" : "none",
           }}>
-          <BookOpen className="h-4 w-4" /> Add my own
+          <BookOpen className="h-3.5 w-3.5" /> Add my own
+        </button>
+        <button
+          onClick={() => switchMode("pdf")}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all"
+          style={{
+            background: mode === "pdf" ? "linear-gradient(135deg, #3D8FA3, #2A6B7D)" : "transparent",
+            color: mode === "pdf" ? "white" : "#9A7868",
+            boxShadow: mode === "pdf" ? "0 3px 12px rgba(61,143,163,0.35)" : "none",
+          }}>
+          <FileUp className="h-3.5 w-3.5" /> Import PDF
         </button>
       </div>
 
@@ -416,14 +537,14 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
             <div className="flex flex-col items-center gap-1 flex-shrink-0">
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all"
                 style={{
-                  background: i < currentStep ? "#84934F" : i === currentStep ? (mode === "ai" ? "#C24E6B" : "#84934F") : "rgba(140,100,55,0.12)",
+                  background: i < currentStep ? "#84934F" : i === currentStep ? modeAccent : "rgba(140,100,55,0.12)",
                   color: i <= currentStep ? "white" : "#9A7868",
-                  boxShadow: i === currentStep ? `0 3px 10px rgba(${mode === "ai" ? "194,78,107" : "132,147,79"},0.35)` : "none",
+                  boxShadow: i === currentStep ? `0 3px 10px rgba(${modeAccentRgb},0.35)` : "none",
                 }}>
                 {i < currentStep ? "✓" : i + 1}
               </div>
               <span className="text-[9px] font-semibold whitespace-nowrap"
-                style={{ color: i === currentStep ? (mode === "ai" ? "#C24E6B" : "#84934F") : i < currentStep ? "#84934F" : "#B0908A" }}>
+                style={{ color: i === currentStep ? modeAccent : i < currentStep ? "#84934F" : "#B0908A" }}>
                 {label}
               </span>
             </div>
@@ -438,8 +559,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       {/* ── Character tip ── */}
       <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl mb-5"
         style={{ background: "rgba(124,95,168,0.07)", border: "1px dashed rgba(124,95,168,0.22)" }}>
-        <img src={mode === "ai" ? "/characters/char-yala-transparent.png" : "/characters/char-ashi-transparent.png"}
-          alt={mode === "ai" ? "Yala" : "Ashi"}
+        <img src={charImg} alt="Helper"
           style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }}
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
         <p className="text-[12px] italic leading-snug" style={{ color: "#7C5FA8" }}>
@@ -776,6 +896,219 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
               </button>
             )}
           </div>
+        </>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          IMPORT PDF WIZARD
+      ═══════════════════════════════════════════════════════════════════════ */}
+      {mode === "pdf" && (
+        <>
+          {/* Step 0 — Upload */}
+          {pdfStep === 0 && (
+            <div className="flex flex-col gap-4">
+              <div className="text-center mb-1">
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Upload your PDF</h2>
+                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>From Etsy, Ravelry, a blog — anywhere</p>
+              </div>
+
+              {/* Drop zone */}
+              <div
+                onClick={() => document.getElementById("pdf-file-input")?.click()}
+                className="border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
+                style={{
+                  borderColor: pdfFile ? "#3D8FA3" : "rgba(61,143,163,0.40)",
+                  background: pdfFile ? "rgba(61,143,163,0.06)" : "rgba(255,252,245,0.7)",
+                  minHeight: 200,
+                }}>
+                <input
+                  id="pdf-file-input"
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className="hidden"
+                  onChange={handlePdfFileChange}
+                />
+                {pdfFile ? (
+                  <div className="text-center px-4">
+                    <span style={{ fontSize: 44 }}>📄</span>
+                    <p className="font-semibold text-[14px] mt-2" style={{ color: "#3D8FA3" }}>{pdfFile.name}</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: "#9A7868" }}>
+                      {(pdfFile.size / 1024 / 1024).toFixed(1)} MB
+                    </p>
+                    <button
+                      onClick={e => { e.stopPropagation(); setPdfFile(null); }}
+                      className="text-[11px] mt-1.5 underline"
+                      style={{ color: "#9A7868" }}>
+                      Choose a different file
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <FileUp className="h-10 w-10" style={{ color: "rgba(61,143,163,0.55)" }} />
+                    <div className="text-center">
+                      <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Tap to choose a PDF</p>
+                      <p className="text-[12px] mt-0.5" style={{ color: "#9A7868" }}>Max 10 MB · Text-based PDFs only</p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Personal use note */}
+              <p className="text-[11px] text-center" style={{ color: "#B0908A" }}>
+                📋 Imported patterns are for your personal use only
+              </p>
+
+              <button
+                onClick={handlePdfUpload}
+                disabled={!pdfFile || pdfParsing}
+                className="w-full py-4 rounded-2xl font-heading font-bold text-[16px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
+                style={{
+                  background: !pdfFile || pdfParsing ? "rgba(61,143,163,0.35)" : "linear-gradient(135deg, #3D8FA3, #2A6B7D)",
+                  color: "white",
+                  boxShadow: !pdfFile || pdfParsing ? "none" : "0 6px 24px rgba(61,143,163,0.38)",
+                }}>
+                {pdfParsing
+                  ? <><span className="animate-spin">📄</span> Reading your pattern…</>
+                  : <><FileUp className="h-5 w-5" /> Read & Extract Pattern</>}
+              </button>
+
+              {pdfParsing && (
+                <p className="text-[11px] text-center" style={{ color: "#9A7868" }}>
+                  This takes 10–30 seconds — AI is reading through your PDF
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Step 1 — Review */}
+          {pdfStep === 1 && pdfResult && (
+            <div className="flex flex-col gap-4">
+              <div className="text-center mb-1">
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Review & save</h2>
+                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Check everything looks right</p>
+              </div>
+
+              {/* Import banner */}
+              <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-2xl"
+                style={{ background: "rgba(61,143,163,0.09)", border: "1px solid rgba(61,143,163,0.28)" }}>
+                <span style={{ fontSize: 18, flexShrink: 0 }}>📄</span>
+                <p className="text-[12px] leading-snug" style={{ color: "#2A6B7D" }}>
+                  <strong>Imported from:</strong> {pdfFile?.name}<br />
+                  Diagrams and chart images in the PDF weren't imported — only written instructions.
+                </p>
+              </div>
+
+              {/* Editable title */}
+              <div>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
+                  Pattern title
+                </label>
+                <input
+                  type="text"
+                  value={pdfEditTitle}
+                  onChange={e => setPdfEditTitle(e.target.value)}
+                  className="w-full p-4 rounded-2xl text-[14px] outline-none transition-all"
+                  style={{
+                    background: "rgba(255,252,245,0.95)",
+                    border: `1.5px solid ${pdfEditTitle.trim() ? "#3D8FA3" : "rgba(140,100,55,0.22)"}`,
+                    color: "#3D2318",
+                  }}
+                />
+              </div>
+
+              {/* Extracted metadata badges */}
+              <div className="flex flex-wrap gap-2">
+                {pdfResult.projectType && (
+                  <span className="px-3 py-1 rounded-full text-[12px] font-semibold"
+                    style={{ background: "rgba(61,143,163,0.12)", color: "#2A6B7D" }}>
+                    {CATEGORIES.find(c => c.id === pdfResult.projectType)?.emoji ?? "🧶"} {pdfResult.projectType}
+                  </span>
+                )}
+                {pdfResult.skillLevel && (
+                  <span className="px-3 py-1 rounded-full text-[12px] font-semibold"
+                    style={{ background: "rgba(132,147,79,0.12)", color: "#5A6E30" }}>
+                    {SKILL_LEVELS.find(s => s.id === pdfResult.skillLevel)?.emoji ?? "🌱"} {pdfResult.skillLevel}
+                  </span>
+                )}
+                {pdfResult.yarnType && (
+                  <span className="px-3 py-1 rounded-full text-[12px] font-semibold"
+                    style={{ background: "rgba(212,146,26,0.12)", color: "#A07010" }}>
+                    🧶 {pdfResult.yarnType}
+                  </span>
+                )}
+              </div>
+
+              {/* Extracted summary card */}
+              <div className="craft-card p-4 flex flex-col gap-3">
+                <p className="text-[10.5px] font-semibold uppercase tracking-wider" style={{ color: "#B0908A" }}>What was extracted</p>
+
+                {pdfResult.yarnRequirements?.length > 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold mb-1" style={{ color: "#5C3A28" }}>Yarn</p>
+                    <div className="flex flex-col gap-0.5">
+                      {pdfResult.yarnRequirements.slice(0, 4).map((y: any, i: number) => (
+                        <p key={i} className="text-[12px]" style={{ color: "#7A5A4A" }}>
+                          · {y.color}{y.volume ? ` — ${y.volume}` : ""}
+                        </p>
+                      ))}
+                      {pdfResult.yarnRequirements.length > 4 && (
+                        <p className="text-[11px]" style={{ color: "#9A7868" }}>+ {pdfResult.yarnRequirements.length - 4} more</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {pdfResult.hookRequirements?.length > 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold mb-1" style={{ color: "#5C3A28" }}>Hook</p>
+                    {pdfResult.hookRequirements.slice(0, 2).map((h: any, i: number) => (
+                      <p key={i} className="text-[12px]" style={{ color: "#7A5A4A" }}>· {h.size}{h.note ? ` — ${h.note}` : ""}</p>
+                    ))}
+                  </div>
+                )}
+
+                {pdfResult.sections?.length > 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold mb-1" style={{ color: "#5C3A28" }}>
+                      {pdfResult.sections.length} section{pdfResult.sections.length !== 1 ? "s" : ""} · {" "}
+                      {pdfResult.sections.reduce((acc: number, s: any) => acc + (s.steps?.length ?? 0), 0)} steps total
+                    </p>
+                    <div className="flex flex-col gap-0.5">
+                      {pdfResult.sections.slice(0, 5).map((s: any, i: number) => (
+                        <p key={i} className="text-[12px]" style={{ color: "#7A5A4A" }}>
+                          · {s.name} ({s.steps?.length ?? 0} steps)
+                        </p>
+                      ))}
+                      {pdfResult.sections.length > 5 && (
+                        <p className="text-[11px]" style={{ color: "#9A7868" }}>+ {pdfResult.sections.length - 5} more sections</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={handlePdfSave}
+                disabled={pdfSaving || !pdfEditTitle.trim()}
+                className="w-full py-4 rounded-2xl font-heading font-bold text-[16px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
+                style={{
+                  background: pdfSaving ? "rgba(61,143,163,0.35)" : "linear-gradient(135deg, #3D8FA3, #2A6B7D)",
+                  color: "white",
+                  boxShadow: pdfSaving ? "none" : "0 6px 24px rgba(61,143,163,0.38)",
+                }}>
+                {pdfSaving
+                  ? <><span className="animate-spin">🧶</span> Saving…</>
+                  : <><Plus className="h-5 w-5" /> Save to my library</>}
+              </button>
+
+              <button
+                onClick={() => { setPdfStep(0); setPdfResult(null); setPdfFile(null); }}
+                className="w-full py-2.5 rounded-xl text-[13px] font-semibold"
+                style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868" }}>
+                ← Try a different PDF
+              </button>
+            </div>
+          )}
         </>
       )}
 
