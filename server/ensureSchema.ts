@@ -15,6 +15,11 @@ export async function ensureSchema(): Promise<void> {
   await db.execute(
     sql`UPDATE patterns SET status = 'active' WHERE status = 'project'`
   );
+
+  // Per-pattern user notes (moved from device-local storage to the DB).
+  await db.execute(
+    sql`ALTER TABLE patterns ADD COLUMN IF NOT EXISTS "userNotes" text`
+  );
 }
 
 export async function getMeta(key: string): Promise<string | null> {

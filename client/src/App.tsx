@@ -299,6 +299,7 @@ function App() {
                 <StitchCounterScreen
                   onNavigate={navigateToView}
                   backView={currentPattern ? "viewer" : "home"}
+                  patternId={patternId ?? currentPattern?.id}
                 />
               )}
 

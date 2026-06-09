@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Minus, Plus, RotateCcw, X, ArrowRight } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useStitchCounter, loadCounter, EMPTY_COUNTER } from '../hooks/useStitchCounter';
 
 interface StitchCounterProps {
   patternId: string;
@@ -9,24 +10,15 @@ interface StitchCounterProps {
   onClose: () => void;
 }
 
-interface CounterState {
-  stitches: number;
-  rows: number;
-  target: number; // 0 = no target
-}
-
-const EMPTY: CounterState = { stitches: 0, rows: 0, target: 0 };
-const storageKey = (id: string) => `crochet-time:counter:${id}`;
-
 /**
  * A mobile-first, full-screen stitch counter built for crocheting with the
  * phone in hand: a giant tap-to-count target, separate row tracking, and
- * keep-awake. Counts persist to localStorage per pattern (durable DB
- * persistence will arrive with the schema phase). Respects reduced-motion
+ * keep-awake. Counts persist per pattern via the shared useStitchCounter
+ * store (also used by the full-screen counter). Respects reduced-motion
  * via the global guard in index.css.
  */
 const StitchCounter = ({ patternId, patternTitle, open, onClose }: StitchCounterProps) => {
-  const [state, setState] = useState<CounterState>(EMPTY);
+  const [state, setState] = useStitchCounter(patternId);
   const [celebrate, setCelebrate] = useState(false);
   const wakeLockRef = useRef<any>(null);
 
@@ -34,22 +26,13 @@ const StitchCounter = ({ patternId, patternTitle, open, onClose }: StitchCounter
     try { navigator.vibrate?.(ms); } catch { /* unsupported */ }
   };
 
-  // Load saved counts when opened
+  // Re-load saved counts when opened (the full-screen counter may have
+  // changed them since this component mounted).
   useEffect(() => {
     if (!open) return;
-    try {
-      const raw = localStorage.getItem(storageKey(patternId));
-      setState(raw ? { ...EMPTY, ...JSON.parse(raw) } : EMPTY);
-    } catch {
-      setState(EMPTY);
-    }
+    setState(loadCounter(patternId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, patternId]);
-
-  // Persist on change
-  useEffect(() => {
-    if (!open) return;
-    try { localStorage.setItem(storageKey(patternId), JSON.stringify(state)); } catch { /* ignore */ }
-  }, [state, open, patternId]);
 
   // Keep the screen awake + lock body scroll while counting
   useEffect(() => {
@@ -112,10 +95,10 @@ const StitchCounter = ({ patternId, patternTitle, open, onClose }: StitchCounter
 
   const resetAll = useCallback(() => {
     if (window.confirm('Reset stitch and row counts to zero?')) {
-      setState(EMPTY);
+      setState(EMPTY_COUNTER);
       buzz(20);
     }
-  }, []);
+  }, [setState]);
 
   // Keyboard support (desktop): space/up to count, down to undo, Esc to close
   useEffect(() => {

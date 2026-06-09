@@ -44,12 +44,16 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const [activeTab, setActiveTab] = useState<"overview" | "pattern" | "notes">("overview");
   const [regenSection, setRegenSection] = useState<number | null>(null);
   const [regenNote, setRegenNote] = useState("");
+  // Notes live in the DB (pattern.userNotes); fall back to the legacy
+  // device-local note so nothing written before the migration is lost.
   const [notes, setNotes] = useState(() => {
+    if (pattern.userNotes) return pattern.userNotes;
     try { return localStorage.getItem(`crochet-time:notes:${pattern.id}`) || ""; } catch { return ""; }
   });
   const [showCelebration, setShowCelebration] = useState(false);
   const [regenAllConfirmOpen, setRegenAllConfirmOpen] = useState(false);
   const [regenAllNote, setRegenAllNote] = useState("");
+  const [shareConfirmOpen, setShareConfirmOpen] = useState(false);
   const [adaptOpen, setAdaptOpen] = useState(false);
   const [adaptMode, setAdaptMode] = useState<"resize" | "substitute">("resize");
   const [adaptInstruction, setAdaptInstruction] = useState("");
@@ -57,9 +61,15 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const [alignmentLoading, setAlignmentLoading] = useState<Record<number, boolean>>({});
   const regenerationTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Sync notes from localStorage whenever the pattern changes (e.g. navigating between patterns).
+  // Re-load notes whenever the pattern changes (e.g. navigating between patterns).
   useEffect(() => {
+    if (pattern.userNotes) {
+      setNotes(pattern.userNotes);
+      return;
+    }
     try { setNotes(localStorage.getItem(`crochet-time:notes:${pattern.id}`) || ""); } catch { /* ignore */ }
+    // Only re-run on pattern switch — not on every keystroke round-trip.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pattern.id]);
 
   // Clean up timeout to prevent memory leaks
@@ -107,6 +117,31 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     },
   });
 
+  // Save user notes to the DB so they survive cache clears and follow the
+  // pattern across devices. The legacy localStorage copy is removed on success
+  // and used as a safety net if the server is unreachable (e.g. offline).
+  const saveNotesMutation = useMutation({
+    mutationFn: async (userNotes: string) => {
+      const res = await apiRequest('PUT', `/api/patterns/${pattern.id}`, { userNotes });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      onPatternUpdated(data);
+      queryClient.invalidateQueries({ queryKey: ['/api/patterns'] });
+      try { localStorage.removeItem(`crochet-time:notes:${pattern.id}`); } catch { /* ignore */ }
+      toast({ title: "Notes saved! ♡", description: "Your notes are saved with this pattern." });
+    },
+    onError: (_err, userNotes) => {
+      try { localStorage.setItem(`crochet-time:notes:${pattern.id}`, userNotes); } catch { /* ignore */ }
+      toast({
+        title: "Saved on this device only",
+        description: "Couldn't reach the server — your note is kept locally. Try saving again when you're back online.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Publish this pattern to the Community Library (publish-from-library path)
   const shareToCommunityMutation = useMutation({
     mutationFn: async () => {
@@ -131,6 +166,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       return res.json();
     },
     onSuccess: () => {
+      setShareConfirmOpen(false);
       queryClient.invalidateQueries({ queryKey: ['/api/community'] });
       toast({ title: 'Shared to Community ✨', description: 'Your pattern is now in the Community Library.' });
     },
@@ -826,7 +862,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                     <RefreshCw className="h-3 w-3" /> New Image
                   </button>
                   <button
-                    onClick={() => shareToCommunityMutation.mutate()}
+                    onClick={() => setShareConfirmOpen(true)}
                     disabled={shareToCommunityMutation.isPending}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
                     style={{ background: "rgba(124,95,168,0.1)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.2)" }}
@@ -1118,14 +1154,12 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
           />
           <div className="flex justify-end mt-3">
             <button
-              className="px-5 py-2 rounded-xl font-semibold text-[12.5px] transition-all hover:opacity-90"
+              className="px-5 py-2 rounded-xl font-semibold text-[12.5px] transition-all hover:opacity-90 disabled:opacity-60"
               style={{ background: "#C24E6B", color: "white" }}
-              onClick={() => {
-                try { localStorage.setItem(`crochet-time:notes:${pattern.id}`, notes); } catch { /* ignore */ }
-                toast({ title: "Notes saved! ♡", description: "Your notes have been saved." });
-              }}
+              disabled={saveNotesMutation.isPending}
+              onClick={() => saveNotesMutation.mutate(notes)}
             >
-              Save Notes
+              {saveNotesMutation.isPending ? "Saving…" : "Save Notes"}
             </button>
           </div>
         </div>
@@ -1167,6 +1201,35 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                 <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Regenerating…</>
               ) : (
                 <><RefreshCw className="h-4 w-4 mr-2" />Yes, Regenerate All</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Share to Community Confirmation Dialog ── */}
+      <Dialog open={shareConfirmOpen} onOpenChange={setShareConfirmOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Share to the Community Library?</DialogTitle>
+            <DialogDescription>
+              This publishes “{pattern.title}” — its photo, materials and all written
+              instructions — to the public Community Library for others to browse and make.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setShareConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={shareToCommunityMutation.isPending}
+              onClick={() => shareToCommunityMutation.mutate()}
+            >
+              {shareToCommunityMutation.isPending ? (
+                <><Share2 className="h-4 w-4 mr-2 animate-pulse" />Sharing…</>
+              ) : (
+                <><Share2 className="h-4 w-4 mr-2" />Yes, Share Pattern</>
               )}
             </Button>
           </DialogFooter>

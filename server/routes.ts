@@ -12,6 +12,7 @@ import { patternService } from "./patternService";
 import { stashService } from "./stashService";
 import { seedStarterContentOnce } from "./seedLibrary";
 import { ensureSchema } from "./ensureSchema";
+import { runQuickDiagnostics, runDeepDiagnostics } from "./diagnostics";
 import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
 import { z } from "zod";
 import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject, getObjectDataUrl } from "./objectStorage";
@@ -818,6 +819,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const likes = await communityService.incrementLikes(req.params.id);
     if (likes === undefined) return res.status(404).json({ message: "Community pattern not found" });
     res.json({ success: true, likes });
+  });
+
+  // ── App health diagnostics ──────────────────────────────────────────────────
+  // Quick: DB, object storage, OpenAI key + model availability (no generation).
+  app.get("/api/diagnostics", async (_req: Request, res: Response) => {
+    try {
+      res.json(await runQuickDiagnostics());
+    } catch (error) {
+      console.error("Diagnostics failed:", error);
+      res.status(500).json({ message: "Diagnostics failed", error: (error as Error).message });
+    }
+  });
+
+  // Deep: one tiny live text generation + one live image generation (costs a
+  // small amount of API credit; user-initiated from Settings only).
+  app.post("/api/diagnostics/deep", async (_req: Request, res: Response) => {
+    try {
+      res.json(await runDeepDiagnostics());
+    } catch (error) {
+      console.error("Deep diagnostics failed:", error);
+      res.status(500).json({ message: "Deep diagnostics failed", error: (error as Error).message });
+    }
   });
 
   // ── Backup: export & import all user data ───────────────────────────────────

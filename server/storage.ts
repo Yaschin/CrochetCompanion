@@ -30,6 +30,7 @@ function rowToPattern(row: typeof patternsTable.$inferSelect): Pattern {
     endProductImage: row.endProductImage || undefined,
     description: row.description || "",
     materialsNotes: row.materialsNotes || "",
+    userNotes: row.userNotes || "",
     createdAt,
     sections: (row.sections ?? []) as Pattern["sections"],
     yarnRequirements: (row.yarnRequirements ?? []) as Pattern["yarnRequirements"],
@@ -56,6 +57,7 @@ function patternToColumns(pattern: Partial<Pattern>) {
   if (pattern.endProductImage !== undefined) columns.endProductImage = pattern.endProductImage || null;
   if (pattern.description !== undefined) columns.description = pattern.description || null;
   if (pattern.materialsNotes !== undefined) columns.materialsNotes = pattern.materialsNotes || "";
+  if (pattern.userNotes !== undefined) columns.userNotes = pattern.userNotes || "";
   if (pattern.sections !== undefined) columns.sections = pattern.sections;
   if (pattern.yarnRequirements !== undefined) columns.yarnRequirements = pattern.yarnRequirements || [];
   if (pattern.hookRequirements !== undefined) columns.hookRequirements = pattern.hookRequirements || [];
