@@ -52,6 +52,18 @@ export async function ensureSchema(): Promise<void> {
   await db.execute(
     sql`ALTER TABLE community_patterns ADD COLUMN IF NOT EXISTS "creatorId" text`
   );
+
+  // ── Deduplicate patterns (idempotent) ──────────────────────────────────────
+  // Guard against re-seeds that ran before the one-time flag was set:
+  // keep only the earliest row for each (ownerId, title) pair.
+  await db.execute(sql`
+    DELETE FROM patterns
+    WHERE id NOT IN (
+      SELECT DISTINCT ON ("ownerId", title) id
+      FROM patterns
+      ORDER BY "ownerId", title, "createdAt" ASC
+    )
+  `);
 }
 
 export async function getMeta(key: string): Promise<string | null> {

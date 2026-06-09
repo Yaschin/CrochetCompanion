@@ -13,6 +13,7 @@ import { patternService } from "./patternService";
 import { stashService } from "./stashService";
 import { seedStarterContentOnce } from "./seedLibrary";
 import { seedLibraryImages } from "./seedLibraryImages";
+import { seedProfilePatterns } from "./seedProfilePatterns";
 import { ensureSchema } from "./ensureSchema";
 import { runQuickDiagnostics, runDeepDiagnostics } from "./diagnostics";
 import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
@@ -34,6 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     .then(() => {
       communityService.seedIfEmpty().catch((e: unknown) => console.error("Community seed failed:", e));
       seedStarterContentOnce()
+        .then(() => seedProfilePatterns())
         .then(() => seedLibraryImages())
         .catch((e: unknown) => console.error("Library/stash seed failed:", e));
     })
