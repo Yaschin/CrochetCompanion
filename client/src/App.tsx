@@ -26,6 +26,7 @@ import CommunitySubmitScreen from "./pages/CommunitySubmitScreen";
 import PatternDetailScreen from "./pages/PatternDetailScreen";
 import ProjectsScreen from "./pages/ProjectsScreen";
 import SettingsScreen from "./pages/SettingsScreen";
+import TutorialSystem from "./components/TutorialSystem";
 import { Pattern, ViewType } from "./lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -322,6 +323,7 @@ function App() {
           </motion.div>
         </AnimatePresence>
       </AppShell>
+      <TutorialSystem onNavigate={navigateToView} activeView={activeView} />
       <Toaster />
     </QueryClientProvider>
   );

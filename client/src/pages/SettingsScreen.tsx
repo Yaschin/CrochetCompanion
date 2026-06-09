@@ -1,9 +1,10 @@
 import { useRef, useState } from "react";
-import { ChevronLeft, Download, Upload, Shield, Heart } from "lucide-react";
+import { ChevronLeft, Download, Upload, Shield, Heart, HelpCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ViewType } from "../lib/types";
+import { restartTutorial } from "../components/TutorialSystem";
 
 interface SettingsScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -119,6 +120,28 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
           >
             <Upload className="h-4 w-4" />
             {importing ? "Restoring…" : "Restore from backup"}
+          </button>
+        </div>
+
+        {/* Take the tour */}
+        <div className="craft-card p-5">
+          <p className="font-heading font-semibold text-[13px] mb-1" style={{ color: "#3D2318" }}>
+            App tour
+          </p>
+          <p className="text-[12px] mb-3" style={{ color: "#9A7868" }}>
+            Let Ashi walk you through every screen again from the beginning.
+          </p>
+          <button
+            onClick={() => restartTutorial()}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13px] transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{
+              background: "linear-gradient(135deg, #3D8FA3, #2A6E7E)",
+              color: "white",
+              boxShadow: "0 3px 12px rgba(61,143,163,0.35)",
+            }}
+          >
+            <HelpCircle className="h-4 w-4" />
+            Take the tour again
           </button>
         </div>
 
