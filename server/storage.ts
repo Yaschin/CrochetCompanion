@@ -6,8 +6,8 @@ import { desc, eq } from "drizzle-orm";
 // Storage interface with CRUD methods
 export interface IStorage {
   getPattern(id: string): Promise<Pattern | undefined>;
-  getAllPatterns(): Promise<Pattern[]>;
-  createPattern(pattern: Omit<Pattern, "id" | "createdAt">): Promise<Pattern>;
+  getAllPatterns(ownerId?: string): Promise<Pattern[]>;
+  createPattern(pattern: Omit<Pattern, "id" | "createdAt">, ownerId?: string): Promise<Pattern>;
   updatePattern(id: string, pattern: Partial<Pattern>): Promise<Pattern | undefined>;
   deletePattern(id: string): Promise<boolean>;
 }
@@ -86,9 +86,11 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getAllPatterns(): Promise<Pattern[]> {
+  async getAllPatterns(ownerId?: string): Promise<Pattern[]> {
     try {
-      const result = await db.select().from(patternsTable).orderBy(desc(patternsTable.createdAt));
+      const base = db.select().from(patternsTable);
+      const result = await (ownerId ? base.where(eq(patternsTable.ownerId, ownerId)) : base)
+        .orderBy(desc(patternsTable.createdAt));
       return result.map(rowToPattern);
     } catch (error) {
       console.error("Error getting all patterns:", error);
@@ -96,12 +98,13 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async createPattern(pattern: Omit<Pattern, "id" | "createdAt">): Promise<Pattern> {
+  async createPattern(pattern: Omit<Pattern, "id" | "createdAt">, ownerId?: string): Promise<Pattern> {
     try {
       const id = uuidv4();
 
       const dbRecord = {
         id,
+        ownerId: ownerId ?? "larissa",
         ...patternToColumns(pattern),
         // sections is required (NOT NULL) — ensure it is always present
         sections: pattern.sections ?? [],

@@ -10,14 +10,17 @@ import { Pattern, ViewType } from "../lib/types";
 import { PatternThumb } from "@/components/PatternThumb";
 import { getStreak } from "../lib/activityLog";
 import { loadCounter } from "../hooks/useStitchCounter";
+import { getActiveProfile } from "../lib/profile";
 
 // ─── Notification helpers ──────────────────────────────────────────────────────
-const NOTIF_KEY = "crochet-time-community-seen";
+// Evaluated per call (not at module load) so in-session profile switches
+// pick up the right per-person key.
+const notifKey = () => `crochet-time-community-seen:${getActiveProfile().id}`;
 function getLastSeenCount(): number {
-  try { return parseInt(localStorage.getItem(NOTIF_KEY) ?? "0", 10) || 0; } catch { return 0; }
+  try { return parseInt(localStorage.getItem(notifKey()) ?? "0", 10) || 0; } catch { return 0; }
 }
 function markCommunityRead(count: number): void {
-  try { localStorage.setItem(NOTIF_KEY, String(count)); } catch { /* ignore */ }
+  try { localStorage.setItem(notifKey(), String(count)); } catch { /* ignore */ }
 }
 
 // ─── Time helpers ──────────────────────────────────────────────────────────────
@@ -528,7 +531,7 @@ function FavoritesCard({
         <div className="flex items-center gap-2 mb-0.5">
           <Heart className="h-4 w-4 flex-shrink-0" style={{ color: "#84934F" }} fill="#84934F" />
           <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
-            Larissa's Favorites
+            {getActiveProfile().name}'s Favorites
           </span>
         </div>
         <p className="text-[11px]" style={{ color: "#9A7868" }}>Your saved patterns</p>
@@ -936,7 +939,7 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected, onResumeC
         <div>
           <h1 className="font-heading font-bold" style={{ fontSize: 28, color: "#3D2318", letterSpacing: "-0.02em" }}>
             {text},{" "}
-            <span className="font-script" style={{ fontSize: 30, color: "#A83050" }}>Larissa!</span>{" "}
+            <span className="font-script" style={{ fontSize: 30, color: "#A83050" }}>{getActiveProfile().name}!</span>{" "}
             {emoji}
           </h1>
           <p className="text-[13px] mt-0.5" style={{ color: "#9A7868" }}>
@@ -976,12 +979,13 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected, onResumeC
                 style={{ background: "#C24E6B" }}>{unreadCount > 9 ? "9+" : unreadCount}</span>
             )}
           </button>
-          {/* Avatar + chevron → Settings */}
-          <button onClick={() => onNavigate("settings")} className="flex items-center gap-1 cursor-pointer group">
+          {/* Avatar + chevron → switch profile */}
+          <button onClick={() => onNavigate("profile-picker")} aria-label="Switch profile"
+            className="flex items-center gap-1 cursor-pointer group">
             <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center font-script text-lg"
-              style={{ background: "linear-gradient(135deg,#E0A0B0,#C24E6B)", color: "white", fontWeight: 700,
-                boxShadow: "0 2px 8px rgba(194,78,107,0.3)" }}>
-              L
+              style={{ background: `linear-gradient(135deg, ${getActiveProfile().color}99, ${getActiveProfile().color})`,
+                color: "white", fontWeight: 700, boxShadow: `0 2px 8px ${getActiveProfile().color}4D` }}>
+              {getActiveProfile().name[0]}
             </div>
             <ChevronRight className="h-3.5 w-3.5 rotate-90 group-hover:opacity-70 transition-opacity" style={{ color: "#9A7868" }} />
           </button>

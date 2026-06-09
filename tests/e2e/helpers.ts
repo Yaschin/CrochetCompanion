@@ -133,6 +133,13 @@ export async function mockApi(page: Page) {
     if (/^\/api\/community\/[^/]+$/.test(path)) return json(COMMUNITY[0]);
     if (path === "/api/stash") return method === "GET" ? json([]) : json({ success: true });
     if (path === "/api/stash-notes") return json({ content: "" });
+    if (path === "/api/profiles")
+      return json([
+        { id: "larissa", name: "Larissa", color: "#C24E6B", character: "aloo" },
+        { id: "vumsh", name: "Vumsh", color: "#7C5FA8", character: "yala" },
+        { id: "akka", name: "Akka", color: "#84934F", character: "ashi" },
+        { id: "mummy", name: "Mummy", color: "#D4921A", character: "bee" },
+      ]);
     if (path === "/api/characters") return json({});
     if (path === "/api/generate-pattern") return json(PATTERNS[0]);
     if (path === "/api/generate-image") return json({ url: "/api/media/x" });
@@ -145,6 +152,11 @@ export async function mockApi(page: Page) {
 
 /** Load the app and get past the animated splash screen into the workbench. */
 export async function enterApp(page: Page) {
+  // Pre-select a family profile so the splash flows straight to the workbench
+  // (the first-run profile picker has its own dedicated test).
+  await page.addInitScript(() => {
+    try { localStorage.setItem("crochet-time:profile", "larissa"); } catch { /* ignore */ }
+  });
   await page.goto("/");
   const enter = page.getByRole("button", { name: /Enter Your Studio|Get Started|Skip/i }).first();
   try {

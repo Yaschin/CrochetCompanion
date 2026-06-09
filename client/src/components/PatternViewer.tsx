@@ -150,7 +150,6 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     mutationFn: async () => {
       const body = {
         title: pattern.title,
-        creator: 'Larissa',
         projectType: pattern.projectType,
         skillLevel: pattern.skillLevel,
         description: pattern.description || '',

@@ -96,6 +96,7 @@ export interface StashItem {
 export type ViewType =
   | "home"
   | "splash"
+  | "profile-picker"
   | "input"
   | "loading"
   | "viewer"

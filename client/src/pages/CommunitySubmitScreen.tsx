@@ -56,7 +56,6 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
       }));
       const body = {
         title: form.name,
-        creator: "Larissa",
         projectType: form.category,
         skillLevel: form.skillLevel,
         description: form.description,

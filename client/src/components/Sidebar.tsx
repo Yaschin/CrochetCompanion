@@ -1,3 +1,4 @@
+import { getActiveProfile } from "../lib/profile";
 import { FC, useState } from "react";
 import {
   Home, Wand2, BookOpen, Heart, Users, User, Settings, Sparkles,
@@ -21,7 +22,7 @@ const PRIMARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Hom
 const SECONDARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Home }[] = [
   { id: "community", view: "community",  label: "Community Library", icon: Users },
   { id: "yarn-recs", view: "yarn-recs",  label: "Yarn Recs",         icon: Sparkles },
-  { id: "profile",   view: "home",       label: "My Profile",        icon: User },
+  { id: "profile",   view: "profile-picker", label: "Switch Profile",    icon: User },
   { id: "settings",  view: "settings",   label: "Settings",          icon: Settings },
 ];
 
@@ -268,7 +269,7 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
             Made with love for
           </p>
           <p className="font-script text-xl leading-tight" style={{ color: "#C24E6B", fontWeight: 700 }}>
-            Larissa
+            {getActiveProfile().name}
           </p>
           <p className="text-xs" style={{ color: "#C24E6B" }}>♡</p>
         </div>

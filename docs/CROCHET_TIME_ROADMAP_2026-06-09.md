@@ -71,9 +71,13 @@ Order chosen so each step builds on the previous:
 - Adopt drizzle migration files as the long-term replacement for boot-time ensure.
 - Unit tests for yarn-estimate + stash-match math.
 
+## Phase 6 — Family Profiles (approved 2026-06-09)
+
+Netflix-style no-login profiles (Larissa, Vumsh, Akka, Mummy): per-profile library/stash/notes/streaks, shared community with real creator attribution, picker after splash. Full detail in `CROCHET_TIME_PROFILES_PLAN_2026-06-09.md`.
+
 ## Explicitly not pursued (agreed scope guard)
 
-Multi-user auth / real social community; AI provider swaps; offline write-sync queue. Each adds large surface area against the deliberate single-user design.
+Multi-user **auth** / real social community; AI provider swaps; offline write-sync queue. Each adds large surface area against the household design. (Phase 6 profiles are trust-based convenience separation, not auth.)
 
 ---
 
@@ -92,6 +96,7 @@ Multi-user auth / real social community; AI provider swaps; offline write-sync q
 - [x] Phase 3 — AI diagnostics *(2026-06-09: GET /api/diagnostics + POST /api/diagnostics/deep + Settings "App health" panel. Run the deep test on the live deploy to validate AI end-to-end)*
 - [x] Phase 4 — F1 trophy-shelf gallery · F2 continue-where-left-off · F3 branded Print/PDF · F4 row-by-row follow mode *(2026-06-09; also fixed a latent Pattern-tab index bug where filtering "materials" sections before mapping could corrupt step edits)*
 - [ ] Phase 5 — deferred polish (not scheduled)
+- [x] Phase 6 — Family profiles *(2026-06-09: profiles table + ownerId scoping (patterns/stash/notes), `?profile=` resolved centrally (apiRequest + default queryFn + SW-cache-safe), picker at `/who` after splash, per-profile streaks/bell/export-import v2, community shares stamped with the real family creator. Pre-profile data backfills to Larissa; old clients default to Larissa.)*
 
 **Post-deploy checklist for Yash (live Replit app):**
 1. Deploy this branch; watch boot logs for `ensureSchema` + seed messages.

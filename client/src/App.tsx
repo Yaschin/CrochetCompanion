@@ -26,6 +26,8 @@ import CommunitySubmitScreen from "./pages/CommunitySubmitScreen";
 import PatternDetailScreen from "./pages/PatternDetailScreen";
 import ProjectsScreen from "./pages/ProjectsScreen";
 import SettingsScreen from "./pages/SettingsScreen";
+import ProfilePickerScreen from "./pages/ProfilePickerScreen";
+import { getActiveProfileId, setActiveProfileId } from "./lib/profile";
 import { Pattern, ViewType } from "./lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -41,6 +43,7 @@ function pathFor(view: ViewType, opts: NavOpts = {}): string {
   const cid = opts.communityId;
   switch (view) {
     case "splash": return "/";
+    case "profile-picker": return "/who";
     case "home": return "/home";
     case "input": return "/create";
     case "loading": return "/loading";
@@ -69,6 +72,7 @@ function parseLocation(loc: string): { view: ViewType; patternId?: string; commu
   if (segs.length === 0) return { view: "splash" };
   const [a, b, c] = segs;
   switch (a) {
+    case "who": return { view: "profile-picker" };
     case "home": return { view: "home" };
     case "create": return { view: "input" };
     case "loading": return { view: "loading" };
@@ -141,12 +145,39 @@ function App() {
   const handleLoadingComplete = (view: ViewType) =>
     setLocation(pathFor(view, { patternId: currentPattern?.id }));
 
-  // Splash screen — full-screen, no shell
+  // Splash screen — full-screen, no shell. First-ever visit (no stored
+  // profile) flows into the family profile picker instead of home.
   if (activeView === "splash") {
     return (
       <QueryClientProvider client={queryClient}>
         <div style={{ width: "100vw", height: "100vh" }}>
-          <SplashScreen onNavigate={navigateToView} />
+          <SplashScreen
+            onNavigate={(view) => {
+              if (!getActiveProfileId()) setLocation(pathFor("profile-picker"));
+              else navigateToView(view);
+            }}
+          />
+        </div>
+        <Toaster />
+      </QueryClientProvider>
+    );
+  }
+
+  // Family profile picker — full-screen, no shell
+  if (activeView === "profile-picker") {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <div style={{ width: "100vw", height: "100vh" }}>
+          <ProfilePickerScreen
+            onProfileChosen={(id) => {
+              setActiveProfileId(id);
+              setCurrentPattern(null);
+              // Drop every cached query — they were fetched as someone else.
+              queryClient.clear();
+              setLocation(pathFor("home"));
+            }}
+            onOpenSettings={() => setLocation(pathFor("settings"))}
+          />
         </div>
         <Toaster />
       </QueryClientProvider>
