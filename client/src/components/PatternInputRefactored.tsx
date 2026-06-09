@@ -22,7 +22,7 @@ const SKILL_LEVELS = [
   { id: "Intermediate", emoji: "🌿", desc: "Some experience needed" },
   { id: "Advanced",     emoji: "🌳", desc: "Complex techniques" },
 ];
-const YARN_TYPES = ["Cotton", "Wool", "Acrylic", "Blend", "Mohair", "Let AI decide"];
+const YARN_TYPES = ["Cotton", "Wool", "Acrylic", "Blend", "Mohair", "Not specified"];
 const COLOR_PALETTE = [
   "#C24E6B","#7C5FA8","#84934F","#D4921A","#3D8FA3",
   "#F0C840","#E88050","#C8A0D8","#90C898","#F0A0B8",
@@ -335,12 +335,12 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       <div className="flex flex-wrap gap-2">
         {YARN_TYPES.map((yt) => (
           <button key={yt}
-            onClick={() => setFormData(p => ({ ...p, yarnType: yt === "Let AI decide" ? "" : yt }))}
+            onClick={() => setFormData(p => ({ ...p, yarnType: yt === "Not specified" ? "" : yt }))}
             className="px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-all"
             style={{
-              background: (formData.yarnType === yt || (yt === "Let AI decide" && !formData.yarnType)) ? "rgba(212,146,26,0.14)" : "rgba(255,252,245,0.9)",
-              border: `1.5px solid ${(formData.yarnType === yt || (yt === "Let AI decide" && !formData.yarnType)) ? "#D4921A" : "rgba(140,100,55,0.18)"}`,
-              color: (formData.yarnType === yt || (yt === "Let AI decide" && !formData.yarnType)) ? "#D4921A" : "#5C3A28",
+              background: (formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? "rgba(212,146,26,0.14)" : "rgba(255,252,245,0.9)",
+              border: `1.5px solid ${(formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? "#D4921A" : "rgba(140,100,55,0.18)"}`,
+              color: (formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? "#D4921A" : "#5C3A28",
             }}>
             {yt}
           </button>
@@ -422,7 +422,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
                 }}>
                 {i < currentStep ? "✓" : i + 1}
               </div>
-              <span className="text-[9px] font-semibold whitespace-nowrap hidden sm:block"
+              <span className="text-[9px] font-semibold whitespace-nowrap"
                 style={{ color: i === currentStep ? (mode === "ai" ? "#C24E6B" : "#84934F") : i < currentStep ? "#84934F" : "#B0908A" }}>
                 {label}
               </span>
@@ -459,7 +459,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
                 <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>What are you making?</h2>
                 <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Pick a category to get started</p>
               </div>
-              <CategoryPicker />
+              {CategoryPicker()}
             </div>
           )}
 
@@ -479,7 +479,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
                   className="w-full p-4 rounded-2xl text-[13px] leading-relaxed outline-none resize-none transition-all"
                   style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.22)", color: "#3D2318" }} />
               </div>
-              <SkillPicker />
+              {SkillPicker()}
               <div>
                 <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Approximate Size</label>
                 <div className="flex flex-wrap gap-2">
@@ -504,7 +504,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
                 <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Yarn & Colours</h2>
                 <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Choose your materials (optional)</p>
               </div>
-              <YarnPicker />
+              {YarnPicker()}
               <div>
                 <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
                   Colour Palette
@@ -662,7 +662,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
               </div>
               <div>
                 <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Pattern type *</label>
-                <CategoryPicker />
+                {CategoryPicker()}
               </div>
             </div>
           )}
@@ -674,9 +674,28 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
                 <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>A few details</h2>
                 <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Helps with tracking and yarn recs</p>
               </div>
-              <SkillPicker />
-              <YarnPicker />
-              <SizePicker />
+              <div>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
+                  Skill Level <span style={{ color: "#C24E6B" }}>*</span>
+                </label>
+                <div className="flex gap-2">
+                  {SKILL_LEVELS.map((lvl) => (
+                    <button key={lvl.id}
+                      onClick={() => setFormData(p => ({ ...p, skillLevel: lvl.id }))}
+                      className="flex-1 flex flex-col items-center gap-1 p-3 rounded-2xl transition-all"
+                      style={{
+                        background: formData.skillLevel === lvl.id ? "rgba(194,78,107,0.10)" : "rgba(255,252,245,0.9)",
+                        border: `1.5px solid ${formData.skillLevel === lvl.id ? "#C24E6B" : "rgba(140,100,55,0.18)"}`,
+                      }}>
+                      <span style={{ fontSize: 22 }}>{lvl.emoji}</span>
+                      <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? "#C24E6B" : "#5C3A28" }}>{lvl.id}</span>
+                      <span className="text-[9.5px] text-center" style={{ color: "#9A7868" }}>{lvl.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {YarnPicker()}
+              {SizePicker()}
             </div>
           )}
 
