@@ -89,27 +89,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     _require("pdf-parse/lib/pdf-parse");
 
   app.post("/api/parse-pdf", async (req: Request, res: Response) => {
+    const { fileBase64 } = req.body;
+    if (!fileBase64 || typeof fileBase64 !== "string") {
+      return res.status(400).json({ message: "fileBase64 is required" });
+    }
+    const buffer = Buffer.from(fileBase64, "base64");
+    if (buffer.length > 10 * 1024 * 1024) {
+      return res.status(400).json({ message: "PDF too large — maximum size is 10 MB." });
+    }
+
+    // Step 1: extract text — catch PDF-level errors with a user-friendly message
+    let text = "";
     try {
-      const { fileBase64 } = req.body;
-      if (!fileBase64 || typeof fileBase64 !== "string") {
-        return res.status(400).json({ message: "fileBase64 is required" });
-      }
-      const buffer = Buffer.from(fileBase64, "base64");
-      if (buffer.length > 10 * 1024 * 1024) {
-        return res.status(400).json({ message: "PDF too large — maximum size is 10 MB." });
-      }
       const data = await pdfParseFn(buffer);
-      const text = (data.text || "").trim();
-      if (text.length < 50) {
-        return res.status(422).json({
-          message: "Could not extract text from this PDF. It may be image-based — try copying and pasting the text manually using 'Add my own' instead.",
-        });
-      }
+      text = (data.text || "").trim();
+    } catch (pdfErr: any) {
+      const msg = (pdfErr?.message || "") + " " + (pdfErr?.details || "");
+      const isStructure = /invalid|corrupt|bad xref|password|damaged|format/i.test(msg);
+      return res.status(422).json({
+        message: isStructure
+          ? "This file doesn't look like a valid PDF — it may be corrupt or password-protected. Try re-exporting it from the original source."
+          : "Couldn't read this PDF. Try re-saving it and uploading again, or use 'Add my own' to paste the text.",
+      });
+    }
+
+    if (text.length < 50) {
+      return res.status(422).json({
+        message: "No readable text found in this PDF — it may be image-based (scanned). Try copying the text manually and using 'Add my own' instead.",
+      });
+    }
+
+    // Step 2: AI structuring
+    try {
       const result = await parsePdfText(text);
       res.json(result);
-    } catch (error) {
-      console.error("Error in parse-pdf endpoint:", error);
-      res.status(500).json({ message: "Failed to process PDF", error: (error as Error).message });
+    } catch (aiErr) {
+      console.error("AI structuring error in parse-pdf:", aiErr);
+      res.status(500).json({ message: "Pattern text was extracted but AI structuring failed — please try again." });
     }
   });
 
