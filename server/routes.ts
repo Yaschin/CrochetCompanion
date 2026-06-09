@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import { createRequire } from "module";
 import { existsSync } from "fs";
 import { resolve } from "path";
 import { storage } from "./storage";
@@ -81,6 +82,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Parse / import an existing pattern (structures raw text into sections + steps via AI)
   // PDF import: extract text from base64-encoded PDF then AI-structure it
+  // Lazy-load pdf-parse via createRequire to avoid the index.js test-runner
+  // bug in pdf-parse@1.1.1 which expects ./test/data/ relative to CWD.
+  const _require = createRequire(import.meta.url);
+  const pdfParseFn: (buf: Buffer) => Promise<{ text: string; numpages: number }> =
+    _require("pdf-parse/lib/pdf-parse");
+
   app.post("/api/parse-pdf", async (req: Request, res: Response) => {
     try {
       const { fileBase64 } = req.body;
@@ -91,8 +98,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (buffer.length > 10 * 1024 * 1024) {
         return res.status(400).json({ message: "PDF too large — maximum size is 10 MB." });
       }
-      const pdfParse = (await import("pdf-parse")).default;
-      const data = await pdfParse(buffer);
+      const data = await pdfParseFn(buffer);
       const text = (data.text || "").trim();
       if (text.length < 50) {
         return res.status(422).json({

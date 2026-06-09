@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -62,6 +62,22 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   const [pdfResult, setPdfResult]     = useState<any>(null);
   const [pdfEditTitle, setPdfEditTitle] = useState("");
   const [pdfSaving, setPdfSaving]     = useState(false);
+  const [pdfLoadingMsgIdx, setPdfLoadingMsgIdx] = useState(0);
+
+  const PDF_LOADING_MSGS = [
+    "Reading your PDF…",
+    "Finding the materials list…",
+    "Spotting the stitch counts…",
+    "Organising into sections…",
+    "Checking yarn requirements…",
+    "Almost ready…",
+  ];
+
+  useEffect(() => {
+    if (!pdfParsing) { setPdfLoadingMsgIdx(0); return; }
+    const id = setInterval(() => setPdfLoadingMsgIdx(i => (i + 1) % PDF_LOADING_MSGS.length), 2800);
+    return () => clearInterval(id);
+  }, [pdfParsing]);
 
   // Reset all wizards when switching mode
   const switchMode = (m: "ai" | "own" | "pdf") => {
@@ -192,9 +208,11 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       setPdfEditTitle(result.title || "Imported Pattern");
       setPdfStep(1);
     } catch (err: any) {
+      const raw = err.message || "Something went wrong.";
+      const clean = raw.replace(/^API request failed \(\d+\):\s*/i, "");
       toast({
         title: "Couldn't read PDF",
-        description: err.message || "Something went wrong. Try 'Add my own' and paste the text manually.",
+        description: clean || "Try 'Add my own' and paste the text manually.",
         variant: "destructive",
         duration: 8000,
       });
@@ -907,75 +925,111 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
           {/* Step 0 — Upload */}
           {pdfStep === 0 && (
             <div className="flex flex-col gap-4">
-              <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Upload your PDF</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>From Etsy, Ravelry, a blog — anywhere</p>
-              </div>
 
-              {/* Drop zone */}
-              <div
-                onClick={() => document.getElementById("pdf-file-input")?.click()}
-                className="border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
-                style={{
-                  borderColor: pdfFile ? "#3D8FA3" : "rgba(61,143,163,0.40)",
-                  background: pdfFile ? "rgba(61,143,163,0.06)" : "rgba(255,252,245,0.7)",
-                  minHeight: 200,
-                }}>
-                <input
-                  id="pdf-file-input"
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  className="hidden"
-                  onChange={handlePdfFileChange}
-                />
-                {pdfFile ? (
-                  <div className="text-center px-4">
-                    <span style={{ fontSize: 44 }}>📄</span>
-                    <p className="font-semibold text-[14px] mt-2" style={{ color: "#3D8FA3" }}>{pdfFile.name}</p>
-                    <p className="text-[11px] mt-0.5" style={{ color: "#9A7868" }}>
-                      {(pdfFile.size / 1024 / 1024).toFixed(1)} MB
-                    </p>
-                    <button
-                      onClick={e => { e.stopPropagation(); setPdfFile(null); }}
-                      className="text-[11px] mt-1.5 underline"
-                      style={{ color: "#9A7868" }}>
-                      Choose a different file
-                    </button>
+              {/* ── Aloo loading card (shown while processing) ── */}
+              {pdfParsing ? (
+                <div className="flex flex-col items-center gap-5 py-8 px-4">
+                  {/* Aloo with bounce animation */}
+                  <div style={{ animation: "alooFloat 2s ease-in-out infinite" }}>
+                    <img
+                      src="/characters/char-aloo-transparent.png"
+                      alt="Aloo is reading your pattern"
+                      style={{ width: 110, height: 110, objectFit: "contain" }}
+                      onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
                   </div>
-                ) : (
-                  <>
-                    <FileUp className="h-10 w-10" style={{ color: "rgba(61,143,163,0.55)" }} />
-                    <div className="text-center">
-                      <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Tap to choose a PDF</p>
-                      <p className="text-[12px] mt-0.5" style={{ color: "#9A7868" }}>Max 10 MB · Text-based PDFs only</p>
-                    </div>
-                  </>
-                )}
-              </div>
 
-              {/* Personal use note */}
-              <p className="text-[11px] text-center" style={{ color: "#B0908A" }}>
-                📋 Imported patterns are for your personal use only
-              </p>
+                  <div className="text-center">
+                    <p className="font-heading font-bold text-[18px] mb-1" style={{ color: "#3D2318" }}>
+                      Aloo is on it!
+                    </p>
+                    <p className="text-[14px] transition-all duration-700" style={{ color: "#3D8FA3" }}>
+                      {PDF_LOADING_MSGS[pdfLoadingMsgIdx]}
+                    </p>
+                  </div>
 
-              <button
-                onClick={handlePdfUpload}
-                disabled={!pdfFile || pdfParsing}
-                className="w-full py-4 rounded-2xl font-heading font-bold text-[16px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{
-                  background: !pdfFile || pdfParsing ? "rgba(61,143,163,0.35)" : "linear-gradient(135deg, #3D8FA3, #2A6B7D)",
-                  color: "white",
-                  boxShadow: !pdfFile || pdfParsing ? "none" : "0 6px 24px rgba(61,143,163,0.38)",
-                }}>
-                {pdfParsing
-                  ? <><span className="animate-spin">📄</span> Reading your pattern…</>
-                  : <><FileUp className="h-5 w-5" /> Read & Extract Pattern</>}
-              </button>
+                  {/* Animated dots */}
+                  <div className="flex gap-2">
+                    {[0, 1, 2].map(i => (
+                      <div key={i} className="w-2.5 h-2.5 rounded-full"
+                        style={{
+                          background: "#3D8FA3",
+                          opacity: 0.3 + (pdfLoadingMsgIdx % 3 === i ? 0.7 : 0),
+                          transform: pdfLoadingMsgIdx % 3 === i ? "scale(1.4)" : "scale(1)",
+                          transition: "all 0.4s ease",
+                        }} />
+                    ))}
+                  </div>
 
-              {pdfParsing && (
-                <p className="text-[11px] text-center" style={{ color: "#9A7868" }}>
-                  This takes 10–30 seconds — AI is reading through your PDF
-                </p>
+                  <p className="text-[11px] text-center" style={{ color: "#B0908A" }}>
+                    This usually takes 10–30 seconds
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="text-center mb-1">
+                    <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Upload your PDF</h2>
+                    <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>From Etsy, Ravelry, a blog — anywhere</p>
+                  </div>
+
+                  {/* Drop zone */}
+                  <div
+                    onClick={() => document.getElementById("pdf-file-input")?.click()}
+                    className="border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
+                    style={{
+                      borderColor: pdfFile ? "#3D8FA3" : "rgba(61,143,163,0.40)",
+                      background: pdfFile ? "rgba(61,143,163,0.06)" : "rgba(255,252,245,0.7)",
+                      minHeight: 200,
+                    }}>
+                    <input
+                      id="pdf-file-input"
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      className="hidden"
+                      onChange={handlePdfFileChange}
+                    />
+                    {pdfFile ? (
+                      <div className="text-center px-4">
+                        <span style={{ fontSize: 44 }}>📄</span>
+                        <p className="font-semibold text-[14px] mt-2" style={{ color: "#3D8FA3" }}>{pdfFile.name}</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: "#9A7868" }}>
+                          {(pdfFile.size / 1024 / 1024).toFixed(1)} MB
+                        </p>
+                        <button
+                          onClick={e => { e.stopPropagation(); setPdfFile(null); }}
+                          className="text-[11px] mt-1.5 underline"
+                          style={{ color: "#9A7868" }}>
+                          Choose a different file
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <FileUp className="h-10 w-10" style={{ color: "rgba(61,143,163,0.55)" }} />
+                        <div className="text-center">
+                          <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Tap to choose a PDF</p>
+                          <p className="text-[12px] mt-0.5" style={{ color: "#9A7868" }}>Max 10 MB · Text-based PDFs only</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Personal use note */}
+                  <p className="text-[11px] text-center" style={{ color: "#B0908A" }}>
+                    📋 Imported patterns are for your personal use only
+                  </p>
+
+                  <button
+                    onClick={handlePdfUpload}
+                    disabled={!pdfFile}
+                    className="w-full py-4 rounded-2xl font-heading font-bold text-[16px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
+                    style={{
+                      background: !pdfFile ? "rgba(61,143,163,0.35)" : "linear-gradient(135deg, #3D8FA3, #2A6B7D)",
+                      color: "white",
+                      boxShadow: !pdfFile ? "none" : "0 6px 24px rgba(61,143,163,0.38)",
+                    }}>
+                    <FileUp className="h-5 w-5" /> Read & Extract Pattern
+                  </button>
+                </>
               )}
             </div>
           )}
