@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search, Bell, Loader2, ChevronRight,
-  Heart, Wand2, FolderOpen, Trophy, ChevronRight as ChevRight,
+  Heart, Wand2, FolderOpen, Trophy, ChevronRight as ChevRight, BookOpen,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Pattern, ViewType } from "../lib/types";
@@ -472,14 +472,13 @@ function CreateWithYalaCard({ onNavigate }: { onNavigate: (v: ViewType) => void 
         <div className="flex items-center gap-2 mb-0.5">
           <Wand2 className="h-4 w-4 flex-shrink-0" style={{ color: "#7C5FA8" }} />
           <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
-            Create with Yala
+            Create a Pattern
           </span>
         </div>
-        <p className="text-[11px]" style={{ color: "#9A7868" }}>Design a pattern with AI</p>
+        <p className="text-[11px]" style={{ color: "#9A7868" }}>AI-generated or bring your own</p>
       </div>
 
       <div className="flex flex-1 gap-2.5 items-center">
-        {/* Yala character */}
         <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 68, height: 68 }}>
           <img
             src="/characters/char-yala-transparent.png"
@@ -489,17 +488,20 @@ function CreateWithYalaCard({ onNavigate }: { onNavigate: (v: ViewType) => void 
         </div>
         <div className="flex-1 flex flex-col gap-1.5">
           <p className="text-[12px] leading-snug" style={{ color: "#6A4A5A" }}>
-            Describe your idea and Yala will bring it to life.
+            Describe an idea and Yala brings it to life — or paste in a pattern you already have.
           </p>
-          <div className="rounded-xl px-2.5 py-1.5 text-[11px] italic"
-            style={{ background: "rgba(124,95,168,0.1)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.2)" }}>
-            e.g. A cosy sunflower bag for everyday use
-          </div>
         </div>
       </div>
 
       <button onClick={() => onNavigate("input")} className="btn-craft btn-plum w-full justify-center text-[12px] py-2">
-        Start Creating →
+        <Wand2 className="h-3.5 w-3.5" /> Create with AI →
+      </button>
+      <button
+        onClick={() => onNavigate("input")}
+        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11.5px] font-semibold transition-all hover:opacity-80"
+        style={{ background: "rgba(132,147,79,0.12)", color: "#5A6E30", border: "1px solid rgba(132,147,79,0.25)" }}
+      >
+        <BookOpen className="h-3.5 w-3.5" /> Add my own pattern
       </button>
     </div>
   );
