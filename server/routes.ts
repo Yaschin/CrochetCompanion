@@ -1,10 +1,11 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import { createRequire } from "module";
 import { existsSync } from "fs";
 import { resolve } from "path";
 import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
-import { parsePattern } from "./api/parsePattern";
+import { parsePattern, parsePdfText } from "./api/parsePattern";
 import { generateImage } from "./api/generateImage";
 import { analyzeAlignment } from "./api/analyzeAlignment";
 import { transformPattern } from "./api/transformPattern";
@@ -13,6 +14,7 @@ import { patternService } from "./patternService";
 import { stashService } from "./stashService";
 import { seedStarterContentOnce } from "./seedLibrary";
 import { seedLibraryImages } from "./seedLibraryImages";
+import { seedProfilePatterns, seedProfileStash } from "./seedProfilePatterns";
 import { ensureSchema } from "./ensureSchema";
 import { runQuickDiagnostics, runDeepDiagnostics } from "./diagnostics";
 import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
@@ -42,6 +44,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     .then(() => {
       communityService.seedIfEmpty().catch((e: unknown) => console.error("Community seed failed:", e));
       seedStarterContentOnce()
+        .then(() => seedProfilePatterns())
+        .then(() => seedProfileStash())
         .then(() => seedLibraryImages())
         .catch((e: unknown) => console.error("Library/stash seed failed:", e));
     })
@@ -85,6 +89,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Parse / import an existing pattern (structures raw text into sections + steps via AI)
+  // PDF import: extract text from base64-encoded PDF then AI-structure it
+  // Lazy-load pdf-parse via createRequire to avoid the index.js test-runner
+  // bug in pdf-parse@1.1.1 which expects ./test/data/ relative to CWD.
+  const _require = createRequire(import.meta.url);
+  const pdfParseFn: (buf: Buffer) => Promise<{ text: string; numpages: number }> =
+    _require("pdf-parse/lib/pdf-parse");
+
+  app.post("/api/parse-pdf", async (req: Request, res: Response) => {
+    const { fileBase64 } = req.body;
+    if (!fileBase64 || typeof fileBase64 !== "string") {
+      return res.status(400).json({ message: "fileBase64 is required" });
+    }
+    const buffer = Buffer.from(fileBase64, "base64");
+    if (buffer.length > 10 * 1024 * 1024) {
+      return res.status(400).json({ message: "PDF too large — maximum size is 10 MB." });
+    }
+
+    // Step 1: extract text — catch PDF-level errors with a user-friendly message
+    let text = "";
+    try {
+      const data = await pdfParseFn(buffer);
+      text = (data.text || "").trim();
+    } catch (pdfErr: any) {
+      const msg = (pdfErr?.message || "") + " " + (pdfErr?.details || "");
+      const isStructure = /invalid|corrupt|bad xref|password|damaged|format/i.test(msg);
+      return res.status(422).json({
+        message: isStructure
+          ? "This file doesn't look like a valid PDF — it may be corrupt or password-protected. Try re-exporting it from the original source."
+          : "Couldn't read this PDF. Try re-saving it and uploading again, or use 'Add my own' to paste the text.",
+      });
+    }
+
+    if (text.length < 50) {
+      return res.status(422).json({
+        message: "No readable text found in this PDF — it may be image-based (scanned). Try copying the text manually and using 'Add my own' instead.",
+      });
+    }
+
+    // Step 2: AI structuring
+    try {
+      const result = await parsePdfText(text);
+      res.json(result);
+    } catch (aiErr) {
+      console.error("AI structuring error in parse-pdf:", aiErr);
+      res.status(500).json({ message: "Pattern text was extracted but AI structuring failed — please try again." });
+    }
+  });
+
   app.post("/api/parse-pattern", async (req: Request, res: Response) => {
     try {
       const { title, projectType, skillLevel, yarnType, size, rawText } = req.body;

@@ -70,6 +70,18 @@ export async function ensureSchema(): Promise<void> {
   // The legacy project_events table predates shared/schema.ts and has no code
   // references anywhere — confirmed orphaned in the Jun-8 walkthrough.
   await db.execute(sql`DROP TABLE IF EXISTS project_events`);
+
+  // ── Deduplicate patterns (idempotent) ──────────────────────────────────────
+  // Guard against re-seeds that ran before the one-time flag was set:
+  // keep only the earliest row for each (ownerId, title) pair.
+  await db.execute(sql`
+    DELETE FROM patterns
+    WHERE id NOT IN (
+      SELECT DISTINCT ON ("ownerId", title) id
+      FROM patterns
+      ORDER BY "ownerId", title, "createdAt" ASC
+    )
+  `);
 }
 
 export async function getMeta(key: string): Promise<string | null> {

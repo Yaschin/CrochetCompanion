@@ -199,6 +199,11 @@
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
+@keyframes alooFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
