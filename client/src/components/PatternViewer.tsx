@@ -9,6 +9,7 @@ import PatternProgressBar from './PatternProgressBar';
 import StitchCounter from './StitchCounter';
 import FollowMode from './FollowMode';
 import CelebrationOverlay from './CelebrationOverlay';
+import StashCoverage from './StashCoverage';
 import { recordActivity } from '../lib/activityLog';
 import { cn } from '../lib/utils';
 import { RefreshCw, Download, FileText, Plus, Image, Hash, Heart, CheckCircle2, Play, Share2, Scissors, Shuffle } from 'lucide-react';
@@ -740,6 +741,11 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         open={followOpen}
         onClose={() => setFollowOpen(false)}
         onUpdateStep={updateStep}
+        onMarkFinished={() => {
+          // Close first so the confetti celebration is visible.
+          setFollowOpen(false);
+          updatePatternMutation.mutate({ ...pattern, status: "finished", finishedAt: new Date().toISOString() });
+        }}
       />
 
       {/* ── Header ── */}
@@ -929,7 +935,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
               { emoji: "🧮", label: "Row Counter",  action: () => setCounterOpen(true),         color: "#7C5FA8" },
               { emoji: "📊", label: "Progress",      action: () => onNavigate?.("progress"),    color: "#84934F" },
               { emoji: "📷", label: "Photos",         action: () => onNavigate?.("photo-upload"),color: "#3D8FA3" },
-              { emoji: "🧶", label: "Yarn Info",     action: () => onNavigate?.("yarn-recs"),   color: "#D4921A" },
+              { emoji: "🧶", label: "From My Stash", action: () => onNavigate?.("yarn-recs"),   color: "#D4921A" },
             ].map(({ emoji, label, action, color }) => (
               <button
                 key={label}
@@ -994,6 +1000,17 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
               </div>
             )}
           </div>
+
+          {/* Description (was on the retired Details screen) */}
+          {pattern.description && (
+            <div className="surface-card p-4">
+              <p className="font-heading font-semibold text-[13px] mb-1.5" style={{ color: "#5C3A28" }}>About this pattern</p>
+              <p className="text-[13px] leading-relaxed" style={{ color: "#7A5A48" }}>{pattern.description}</p>
+            </div>
+          )}
+
+          {/* Can I make this? — stash coverage (was on the retired Details screen) */}
+          <StashCoverage pattern={pattern} onOpenStash={() => onNavigate?.("stash")} />
 
           {/* Materials */}
           <EnhancedMaterialsList

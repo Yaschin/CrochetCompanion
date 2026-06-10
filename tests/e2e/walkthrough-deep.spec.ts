@@ -155,15 +155,6 @@ test("J4 library interactions", async ({ page }, ti) => {
   await snap(page, ti, "j4b-library-favorites-only");
 });
 
-// ── J5: search screen ─────────────────────────────────────────────────────────
-test("J5 search interactions", async ({ page }, ti) => {
-  await enterApp(page);
-  await page.goto("/search");
-  await settle(page);
-  await page.locator("input[type=search], input").first().fill("coaster");
-  await settle(page);
-  await snap(page, ti, "j5a-search-typed");
-});
 
 // ── J6: stash add-material + notes ───────────────────────────────────────────
 test("J6 stash interactions", async ({ page }, ti) => {
@@ -324,15 +315,6 @@ test("J13 counter screen", async ({ page }, ti) => {
   await snap(page, ti, "j13b-counter-voice-attempt");
 });
 
-// ── J14: pattern detail show-more + adapt card ───────────────────────────────
-test("J14 pattern detail", async ({ page }, ti) => {
-  await enterApp(page);
-  await page.goto("/patterns/p1/details");
-  await settle(page, 900);
-  await tryClick(page, page.getByRole("button", { name: /Show more/i }), "show more");
-  await settle(page);
-  await snap(page, ti, "j14-detail-expanded");
-});
 
 // ── J15: settings — run checks, deep test, restart tour ──────────────────────
 test("J15 settings diagnostics", async ({ page }, ti) => {

@@ -9,11 +9,7 @@ interface ProjectsScreenProps {
   onPatternSelected: (p: Pattern) => void;
 }
 
-function patternProgress(p: Pattern) {
-  const steps = p.sections?.flatMap((s) => s.steps) ?? [];
-  const done = steps.filter((s) => s.completed).length;
-  return { pct: steps.length > 0 ? Math.round((done / steps.length) * 100) : 0, done, total: steps.length };
-}
+import { patternProgress } from "@/lib/progress";
 
 function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect: () => void; index: number }) {
   const { pct, done, total } = patternProgress(pattern);

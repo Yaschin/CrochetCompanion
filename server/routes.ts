@@ -334,8 +334,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!result.success) {
         return res.status(400).json({ message: "Invalid pattern data", errors: result.error.errors });
       }
-      
-      const updatedPattern = await patternService.updatePattern(req.params.id, result.data);
+
+      // Doing = starting: the moment real crochet work arrives (a completed
+      // step or a non-zero counter), a saved pattern becomes an active
+      // project automatically — no bureaucratic "Start project" click needed.
+      const update = result.data;
+      if (update.status === undefined) {
+        const existing = await patternService.getPattern(req.params.id);
+        if (existing && existing.status === "pattern") {
+          const counted =
+            update.counterState != null &&
+            ((update.counterState.rows ?? 0) > 0 || (update.counterState.stitches ?? 0) > 0);
+          const stepDone =
+            Array.isArray(update.sections) &&
+            update.sections.some(
+              (sec) => sec.name.toLowerCase() !== "materials" && sec.steps.some((st) => st.completed)
+            );
+          if (counted || stepDone) {
+            update.status = "active";
+            update.startedAt = existing.startedAt ?? new Date().toISOString();
+          }
+        }
+      }
+
+      const updatedPattern = await patternService.updatePattern(req.params.id, update);
       
       if (!updatedPattern) {
         return res.status(404).json({ message: "Pattern not found" });

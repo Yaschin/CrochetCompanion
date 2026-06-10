@@ -10,8 +10,9 @@ const PatternProgressBar: FC<PatternProgressBarProps> = ({ sections }) => {
     let completed = 0;
     let total = 0;
 
-    // Count completed steps across all sections
-    sections.forEach(section => {
+    // Count completed steps across crochet sections (materials checklists
+    // are not rounds — keep the denominator consistent with lib/progress).
+    sections.filter(section => section.name.toLowerCase() !== 'materials').forEach(section => {
       section.steps.forEach(step => {
         total++;
         if (step.completed) {

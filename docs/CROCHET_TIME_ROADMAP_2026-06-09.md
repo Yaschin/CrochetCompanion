@@ -102,6 +102,17 @@ Order chosen so each step builds on the previous:
 
 Netflix-style no-login profiles (Larissa, Vumsh, Akka, Mummy): per-profile library/stash/notes/streaks, shared community with real creator attribution, picker after splash. Full detail in `CROCHET_TIME_PROFILES_PLAN_2026-06-09.md`.
 
+## Phase 7 — IA & craft-logic restructure (approved 2026-06-10, "change everything pre-launch")
+
+Deep critique of navigation/logic intuitiveness led to:
+- **Doing = starting**: completing a step or counting on a saved pattern auto-promotes it to an active project server-side (`PUT /api/patterns/:id` heals status) — the "Start project" button is optional, not required. Follow Mode offers **"Mark project finished ♡"** when every step is done.
+- **One denominator**: materials checklists excluded from progress everywhere (`client/src/lib/progress.ts` is the single source).
+- **5-tab nav**: Home · Create · Library · Projects · Community. Favorites demoted to Library filter + Home card + sidebar secondary; **My Stash & Make-From-My-Stash get real entry points** (Home quick row, sidebar, relabelled viewer tool — was the unreachable "Yarn Info").
+- **Search merged into Library** (route redirects), **Details screen merged into the viewer Overview** (description + stash coverage moved in; duplicate adapt card deleted).
+- **Naming pass**: Community (not "Community Library"), My Stash (not "My Materials"), Create everywhere.
+- **Unified counting**: Follow Mode embeds a stitch tally whose target parses from the round's trailing "(N)".
+- AI prompt hardening (round labels/counts, US terms, skill-level stitch vocabulary) tracked as the remaining craft-content item.
+
 ## Explicitly not pursued (agreed scope guard)
 
 Multi-user **auth** / real social community; AI provider swaps; offline write-sync queue. Each adds large surface area against the household design. (Phase 6 profiles are trust-based convenience separation, not auth.)

@@ -17,7 +17,6 @@ import GenerationLoadingScreen from "./pages/GenerationLoadingScreen";
 // Secondary screens are code-split: they load on first visit, shrinking the
 // initial bundle. Core screens (home/create/library/viewer) stay eager.
 const MaterialsInventory = lazy(() => import("./components/MaterialsInventory"));
-const SearchScreen = lazy(() => import("./pages/SearchScreen"));
 const ProgressTrackingScreen = lazy(() => import("./pages/ProgressTrackingScreen"));
 const PhotoUploadScreen = lazy(() => import("./pages/PhotoUploadScreen"));
 const StitchCounterScreen = lazy(() => import("./pages/StitchCounterScreen"));
@@ -26,7 +25,6 @@ const FavoritesScreen = lazy(() => import("./pages/FavoritesScreen"));
 const CommunityScreen = lazy(() => import("./pages/CommunityScreen"));
 const CommunityDetailScreen = lazy(() => import("./pages/CommunityDetailScreen"));
 const CommunitySubmitScreen = lazy(() => import("./pages/CommunitySubmitScreen"));
-const PatternDetailScreen = lazy(() => import("./pages/PatternDetailScreen"));
 const ProjectsScreen = lazy(() => import("./pages/ProjectsScreen"));
 const SettingsScreen = lazy(() => import("./pages/SettingsScreen"));
 const ProfilePickerScreen = lazy(() => import("./pages/ProfilePickerScreen"));
@@ -62,7 +60,7 @@ function pathFor(view: ViewType, opts: NavOpts = {}): string {
     case "input": return "/create";
     case "loading": return "/loading";
     case "library": return "/library";
-    case "search": return "/search";
+    case "search": return "/library";
     case "stash": return "/stash";
     case "favorites": return "/favorites";
     case "projects": return "/projects";
@@ -72,7 +70,7 @@ function pathFor(view: ViewType, opts: NavOpts = {}): string {
     case "community-submit": return "/community/submit";
     case "community-detail": return cid ? `/community/${cid}` : "/community";
     case "viewer": return pid ? `/patterns/${pid}` : "/library";
-    case "pattern-detail": return pid ? `/patterns/${pid}/details` : "/library";
+    case "pattern-detail": return pid ? `/patterns/${pid}` : "/library";
     case "progress": return pid ? `/patterns/${pid}/progress` : "/library";
     case "photo-upload": return pid ? `/patterns/${pid}/photos` : "/library";
     case "stitch-counter": return pid ? `/patterns/${pid}/counter` : "/library";
@@ -91,7 +89,7 @@ function parseLocation(loc: string): { view: ViewType; patternId?: string; commu
     case "create": return { view: "input" };
     case "loading": return { view: "loading" };
     case "library": return { view: "library" };
-    case "search": return { view: "search" };
+    case "search": return { view: "library" }; // merged into Library
     case "stash": return { view: "stash" };
     case "favorites": return { view: "favorites" };
     case "projects": return { view: "projects" };
@@ -103,7 +101,7 @@ function parseLocation(loc: string): { view: ViewType; patternId?: string; commu
       return { view: "community-detail", communityId: b };
     case "patterns":
       if (!b) return { view: "library" };
-      if (c === "details") return { view: "pattern-detail", patternId: b };
+      if (c === "details") return { view: "viewer", patternId: b }; // Details merged into the viewer
       if (c === "progress") return { view: "progress", patternId: b };
       if (c === "photos") return { view: "photo-upload", patternId: b };
       if (c === "counter") return { view: "stitch-counter", patternId: b };
@@ -266,13 +264,6 @@ function App() {
                       <ChevronLeft className="h-3.5 w-3.5" />
                       Patterns
                     </button>
-                    <button
-                      onClick={() => navigateToView("pattern-detail")}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
-                      style={{ color: "#84934F", background: "rgba(132,147,79,0.08)", border: "1px solid rgba(132,147,79,0.2)" }}
-                    >
-                      Details →
-                    </button>
                   </div>
                   <PatternViewer
                     pattern={currentPattern}
@@ -311,13 +302,6 @@ function App() {
 
               {activeView === "projects" && (
                 <ProjectsScreen
-                  onNavigate={navigateToView}
-                  onPatternSelected={handlePatternLoaded}
-                />
-              )}
-
-              {activeView === "search" && (
-                <SearchScreen
                   onNavigate={navigateToView}
                   onPatternSelected={handlePatternLoaded}
                 />
@@ -364,14 +348,6 @@ function App() {
 
               {activeView === "yarn-recs" && (
                 <YarnRecsScreen onNavigate={navigateToView} onPatternSelected={handlePatternLoaded} />
-              )}
-
-              {activeView === "pattern-detail" && currentPattern && (
-                <PatternDetailScreen
-                  pattern={currentPattern}
-                  onNavigate={navigateToView}
-                  onOpenPattern={handlePatternLoaded}
-                />
               )}
 
               {activeView === "settings" && (

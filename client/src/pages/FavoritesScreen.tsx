@@ -115,7 +115,7 @@ export default function FavoritesScreen({ onNavigate, onPatternSelected }: Favor
           <button onClick={() => onNavigate("community")}
             className="px-5 py-2 rounded-full font-bold text-[12px]"
             style={{ background: "#C24E6B", color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.35)" }}>
-            Community Library →
+            Community →
           </button>
         </div>
       </div>

@@ -191,7 +191,7 @@ const MaterialsInventory: FC = () => {
   return (
     <div className="surface-card mb-8 p-5 sm:p-7">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">My Materials</h2>
+        <h2 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">My Stash</h2>
         <button
           onClick={openAdd}
           className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-600 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
