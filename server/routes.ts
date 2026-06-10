@@ -370,6 +370,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Set a real photo of the finished object as the pattern's cover image
+  // (replaces the AI render on the trophy shelf, library and home cards).
+  app.post("/api/patterns/:id/cover-photo", async (req: Request, res: Response) => {
+    try {
+      const { imageBase64 } = req.body;
+      if (!imageBase64 || typeof imageBase64 !== "string" || !imageBase64.startsWith("data:image/")) {
+        return res.status(400).json({ message: "imageBase64 (data:image/… URL) is required" });
+      }
+      const mimeMatch = imageBase64.match(/^data:(image\/\w+);base64,/);
+      const contentType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+      const buffer = Buffer.from(imageBase64.replace(/^data:image\/\w+;base64,/, ""), "base64");
+      if (buffer.length > 8 * 1024 * 1024) {
+        return res.status(400).json({ message: "Photo too large — maximum 8 MB." });
+      }
+      const url = await uploadBuffer(buffer, contentType);
+      const updated = await patternService.updatePattern(req.params.id, { endProductImage: url });
+      if (!updated) return res.status(404).json({ message: "Pattern not found" });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error setting cover photo:", error);
+      res.status(500).json({ message: "Failed to set cover photo", error: (error as Error).message });
+    }
+  });
+
   app.delete("/api/patterns/:id", async (req: Request, res: Response) => {
     try {
       const success = await patternService.deletePattern(req.params.id);

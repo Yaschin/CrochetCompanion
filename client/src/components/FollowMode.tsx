@@ -89,6 +89,26 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
   }, [open]);
 
   const current = steps[pos];
+
+  // Per-section shape of the whole design — powers the "you are here" map.
+  const sectionMap = useMemo(() => {
+    const seen = new Map<number, { name: string; total: number; done: number; firstPos: number }>();
+    steps.forEach((fs, i) => {
+      const entry = seen.get(fs.sectionIndex) ?? { name: fs.sectionName, total: 0, done: 0, firstPos: i };
+      entry.total += 1;
+      if (fs.step.completed) entry.done += 1;
+      seen.set(fs.sectionIndex, entry);
+    });
+    return [...seen.entries()].map(([sectionIndex, v]) => ({ sectionIndex, ...v }));
+  }, [steps]);
+
+  const withinSection = current
+    ? steps.filter((fs) => fs.sectionIndex === current.sectionIndex).findIndex(
+        (fs) => fs.stepIndex === current.stepIndex
+      ) + 1
+    : 0;
+  const sectionTotal = current ? sectionMap.find((m) => m.sectionIndex === current.sectionIndex)?.total ?? 0 : 0;
+
   // The conventional stitch count at the end of a round, e.g. "… (24)".
   const matches = current ? [...current.step.text.matchAll(/\((\d+)\)/g)] : [];
   const stitchTarget = matches.length ? parseInt(matches[matches.length - 1][1], 10) : 0;
@@ -145,7 +165,10 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
             {current.sectionName}
           </p>
           <p className="truncate font-heading text-[16px] font-semibold" style={{ color: "#3D2318" }}>
-            Step {pos + 1} of {steps.length}
+            Step {withinSection} of {sectionTotal}
+            <span className="ml-2 font-sans text-[11.5px] font-semibold" style={{ color: "#9A7868" }}>
+              · {pos + 1}/{steps.length} overall
+            </span>
           </p>
         </div>
         <button
@@ -158,12 +181,40 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
         </button>
       </div>
 
-      {/* Progress */}
+      {/* Progress + the whole-design map: every section, your position, tap to jump */}
       <div className="px-4 pt-3">
         <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(140,100,55,0.15)" }}>
           <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "linear-gradient(90deg, #84934F, #6A7A3A)" }} />
         </div>
         <p className="text-[11px] mt-1" style={{ color: "#9A7868" }}>{doneCount} of {steps.length} steps done · {pct}%</p>
+        <div className="mt-2 flex gap-1.5 overflow-x-auto no-scrollbar pb-1" role="tablist" aria-label="Pattern sections">
+          {sectionMap.map((m) => {
+            const isCurrent = current && m.sectionIndex === current.sectionIndex;
+            const sectionDone = m.done === m.total;
+            return (
+              <button
+                key={m.sectionIndex}
+                role="tab"
+                aria-selected={!!isCurrent}
+                onClick={() => {
+                  // Jump to the section's first unfinished step (or its start).
+                  const idx = steps.findIndex(
+                    (fs) => fs.sectionIndex === m.sectionIndex && !fs.step.completed
+                  );
+                  setPos(idx !== -1 ? idx : m.firstPos);
+                }}
+                className="flex-shrink-0 px-2.5 py-1 rounded-full text-[10.5px] font-bold transition-all hover:opacity-85"
+                style={isCurrent
+                  ? { background: "#84934F", color: "white", boxShadow: "0 2px 8px rgba(132,147,79,0.35)" }
+                  : sectionDone
+                    ? { background: "rgba(132,147,79,0.12)", color: "#84934F", border: "1px solid rgba(132,147,79,0.3)" }
+                    : { background: "rgba(140,100,55,0.07)", color: "#9A7868", border: "1px dashed rgba(140,100,55,0.3)" }}
+              >
+                {sectionDone ? "✓ " : ""}{m.name} {m.done}/{m.total}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Current step */}

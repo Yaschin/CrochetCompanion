@@ -9,6 +9,7 @@ interface StitchCounterScreenProps {
   onNavigate: (view: ViewType) => void;
   backView?: ViewType;
   patternId?: string;
+  patternTitle?: string;
 }
 
 const MAX_STITCHES_PER_ROW = 20;
@@ -24,7 +25,7 @@ function pushEntry(
   return [{ id: Date.now().toString(), type, delta, value, time }, ...history.slice(0, 19)];
 }
 
-export default function StitchCounterScreen({ onNavigate, backView = "home", patternId }: StitchCounterScreenProps) {
+export default function StitchCounterScreen({ onNavigate, backView = "home", patternId, patternTitle }: StitchCounterScreenProps) {
   // Shared per-pattern store — the same counts the in-viewer modal shows.
   const [counts, setCounts] = useStitchCounter(patternId);
   const [showHistory, setShowHistory] = useState(false);
@@ -118,7 +119,9 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
             <h1 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>
               Stitch Counter
             </h1>
-            <p className="text-[12px]" style={{ color: "#9A7868" }}>Track your stitches & rows</p>
+            <p className="text-[12px] truncate max-w-[180px]" style={{ color: "#9A7868" }}>
+              {patternTitle ? `Counting for “${patternTitle}”` : "Track your stitches & rows"}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">

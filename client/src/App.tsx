@@ -343,6 +343,7 @@ function App() {
                   onNavigate={navigateToView}
                   backView={currentPattern ? "viewer" : "home"}
                   patternId={patternId ?? currentPattern?.id}
+                  patternTitle={currentPattern?.title}
                 />
               )}
 
