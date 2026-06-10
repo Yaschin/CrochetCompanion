@@ -31,13 +31,13 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - input → PatternInputRefactored (`/create`)
 - loading → GenerationLoadingScreen (`/loading`)
 - viewer → PatternViewer (`/patterns/:id`)
-- pattern-detail → PatternDetailScreen (`/patterns/:id/details`)
+- pattern-detail → MERGED into viewer (`/patterns/:id/details` redirects; PatternDetailScreen deleted; description+StashCoverage now in Overview)
 - progress → ProgressTrackingScreen (`/patterns/:id/progress`)
 - photo-upload → PhotoUploadScreen (`/patterns/:id/photos`)
 - stitch-counter → StitchCounterScreen (`/patterns/:id/counter`)
 - regenerate → (no dedicated screen; resolves to viewer)
 - library → PatternLibrary (`/library`)
-- search → SearchScreen (`/search`)
+- search → MERGED into Library (`/search` redirects; SearchScreen deleted)
 - stash → MaterialsInventory (`/stash`) — NOTE: replaced the old StashScreen/YarnStash
 - projects → ProjectsScreen (`/projects`) — a real lifecycle screen, NOT an alias for stash
 - favorites → FavoritesScreen (`/favorites`)
@@ -54,8 +54,9 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - e2e presets BOTH localStorage flags (profile + tutorial-seen) in `enterApp()`.
 
 ## Navigation chrome
-- Mobile bottom nav (`AppShell.tsx`, `md:hidden`): 5 tabs — Home→"home",
-  Create→"input", Library→"library", Favorites→"favorites", Projects→"projects".
+- Mobile bottom nav (`AppShell.tsx`, `md:hidden`): 5 tabs — Home, Create,
+  Library, Projects, Community. (Favorites demoted to Library filter/Home
+  card/sidebar-secondary in the Phase 7 IA restructure.)
 - Desktop/tablet (`Sidebar.tsx`, `md+`): Home / AI Studio (input) / Library /
   Favorites / Projects, plus Community Library, My Profile, Settings.
 - Community is reached via the Sidebar or the Favorites CTA (NOT the bottom nav).

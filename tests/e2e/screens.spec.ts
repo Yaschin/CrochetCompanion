@@ -68,7 +68,6 @@ const PRIMARY: { name: string; labels?: string[]; expectText: RegExp }[] = [
   { name: "home", expectText: /Crochet|Larissa|Continue|Create|Favourites|Favorites/i },
   { name: "create", labels: ["Create", "AI Studio"], expectText: /pattern|create|describe|generate|step/i },
   { name: "library", labels: ["Library"], expectText: /Librar|pattern|Favorites|Search/i },
-  { name: "favorites", labels: ["Favorites"], expectText: /Favorites/i },
   { name: "projects", labels: ["Projects"], expectText: /Project/i },
 ];
 
@@ -83,6 +82,15 @@ for (const screen of PRIMARY) {
   });
 }
 
+// ── Favorites (a Library filter + Home card; direct route kept) ──────────────────
+test("favorites renders cleanly", async ({ page, consoleErrors }, testInfo) => {
+  await enterApp(page);
+  await page.goto("/favorites");
+  await expect(page.locator("main").getByText(/Favorites/i).first()).toBeVisible({ timeout: 10000 });
+  await snap(page, testInfo, "favorites");
+  expect(realConsoleErrors(consoleErrors)).toEqual([]);
+});
+
 // ── Community (sidebar on md+, via Favorites CTA on mobile) ──────────────────────
 test("community gallery renders cleanly", async ({ page, consoleErrors }, testInfo) => {
   await enterApp(page);
@@ -95,7 +103,7 @@ test("community gallery renders cleanly", async ({ page, consoleErrors }, testIn
     await page.getByRole("button", { name: /Community Library/i }).first().click();
     await page.waitForTimeout(350);
   }
-  await expect(page.locator("main").getByText(/Community Library/i).first()).toBeVisible({ timeout: 10000 });
+  await expect(page.locator("main").getByText(/Community/i).first()).toBeVisible({ timeout: 10000 });
   await snap(page, testInfo, "community");
   expect(realConsoleErrors(consoleErrors)).toEqual([]);
 });
@@ -163,13 +171,13 @@ test("stitch counter modal opens from the viewer", async ({ page, consoleErrors 
   expect(realConsoleErrors(consoleErrors)).toEqual([]);
 });
 
-test("pattern detail screen renders from the viewer", async ({ page, consoleErrors }, testInfo) => {
+test("stash coverage shows on the viewer overview (Details merged in)", async ({ page, consoleErrors }, testInfo) => {
   await enterApp(page);
   await navByLabel(page, ["Library"]);
   await page.getByText("Cuddle Bunny").first().click();
-  await page.getByRole("button", { name: /Details/i }).first().click();
+  await expect(page.getByText(/in stash|make this now/i).first()).toBeVisible({ timeout: 10000 });
   await page.waitForTimeout(400);
   await expectNoHorizontalOverflow(page);
-  await page.screenshot({ path: `test-results/${testInfo.project.name}-pattern-detail.png`, fullPage: true });
+  await page.screenshot({ path: `test-results/${testInfo.project.name}-viewer-stash-coverage.png`, fullPage: true });
   expect(realConsoleErrors(consoleErrors)).toEqual([]);
 });

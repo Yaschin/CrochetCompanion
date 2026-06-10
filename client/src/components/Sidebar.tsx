@@ -1,3 +1,4 @@
+import { Package } from "lucide-react";
 import { getActiveProfile } from "../lib/profile";
 import { FC, useState } from "react";
 import {
@@ -15,13 +16,14 @@ const PRIMARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Hom
   { id: "home",      view: "home",      label: "Home",      icon: Home },
   { id: "studio",    view: "input",     label: "Create",    icon: Wand2 },
   { id: "library",   view: "library",   label: "Library",   icon: BookOpen },
-  { id: "favorites", view: "favorites", label: "Favorites", icon: Heart },
   { id: "projects",  view: "projects",  label: "Projects",  icon: BasketIcon as typeof Home },
+  { id: "community", view: "community", label: "Community", icon: Users },
 ];
 
 const SECONDARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Home }[] = [
-  { id: "community", view: "community",  label: "Community Library", icon: Users },
-  { id: "yarn-recs", view: "yarn-recs",  label: "Yarn Recs",         icon: Sparkles },
+  { id: "stash",     view: "stash",      label: "My Stash",          icon: Package },
+  { id: "yarn-recs", view: "yarn-recs",  label: "Make From My Stash", icon: Sparkles },
+  { id: "favorites", view: "favorites",  label: "Favorites",         icon: Heart },
   { id: "profile",   view: "profile-picker", label: "Switch Profile",    icon: User },
   { id: "settings",  view: "settings",   label: "Settings",          icon: Settings },
 ];
@@ -29,9 +31,10 @@ const SECONDARY_NAV: { id: string; view: ViewType; label: string; icon: typeof H
 function resolveActiveId(view: ViewType): string {
   if (view === "home") return "home";
   if (view === "input" || view === "viewer") return "studio";
-  if (view === "library") return "library";
+  if (view === "library" || view === "search") return "library";
   if (view === "favorites") return "favorites";
-  if (view === "stash" || view === "projects") return "projects";
+  if (view === "stash") return "stash";
+  if (view === "projects") return "projects";
   if (view === "community" || view === "community-detail" || view === "community-submit") return "community";
   if (view === "yarn-recs") return "yarn-recs";
   if (view === "settings") return "settings";

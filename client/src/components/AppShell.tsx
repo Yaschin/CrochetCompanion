@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Home, Wand2, BookOpen, Heart, FolderOpen, Users } from "lucide-react";
+import { Home, Wand2, BookOpen, FolderOpen, Users } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { ViewType } from "../lib/types";
 
@@ -10,13 +10,14 @@ interface AppShellProps {
   children: ReactNode;
 }
 
+// Five tabs: one per *concept*. Favorites is a Library filter (heart toggle)
+// and a Home card, not a destination of its own.
 const TABS = [
   { view: "home"      as ViewType, label: "Home",      Icon: Home },
   { view: "input"     as ViewType, label: "Create",    Icon: Wand2 },
   { view: "library"   as ViewType, label: "Library",   Icon: BookOpen },
-  { view: "community" as ViewType, label: "Community", Icon: Users },
-  { view: "favorites" as ViewType, label: "Favorites", Icon: Heart },
   { view: "projects"  as ViewType, label: "Projects",  Icon: FolderOpen },
+  { view: "community" as ViewType, label: "Community", Icon: Users },
 ];
 
 export default function AppShell({ activeView, onNavigate, rightPanel, children }: AppShellProps) {

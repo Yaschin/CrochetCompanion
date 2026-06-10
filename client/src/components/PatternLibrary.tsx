@@ -6,6 +6,7 @@ import { Pattern } from '../lib/types';
 import { cn } from '../lib/utils';
 import { FolderOpen, Trash, Calendar, Plus, Search, Heart } from 'lucide-react';
 import { PatternThumb } from '@/components/PatternThumb';
+import { patternProgress } from '../lib/progress';
 
 interface PatternLibraryProps {
   onPatternSelected: (pattern: Pattern) => void;
@@ -14,18 +15,7 @@ interface PatternLibraryProps {
 
 type SortKey = 'newest' | 'oldest' | 'title' | 'progress';
 
-// Progress percentage across all steps in a pattern
-const progressOf = (pattern: Pattern) => {
-  let completed = 0;
-  let total = 0;
-  pattern.sections.forEach((section) => {
-    section.steps.forEach((step) => {
-      total++;
-      if (step.completed) completed++;
-    });
-  });
-  return total > 0 ? Math.round((completed / total) * 100) : 0;
-};
+const progressOf = (pattern: Pattern) => patternProgress(pattern).pct;
 
 const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNew }) => {
   const { toast } = useToast();
@@ -206,7 +196,7 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
           </div>
 
           {visiblePatterns.length > 0 ? (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {visiblePatterns.map((pattern) => {
                 const progressPercent = progressOf(pattern);
                 return (

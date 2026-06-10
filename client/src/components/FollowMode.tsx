@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Minus, X } from 'lucide-react';
 import { Pattern, PatternStep } from '../lib/types';
 
 interface FollowModeProps {
@@ -7,6 +7,7 @@ interface FollowModeProps {
   open: boolean;
   onClose: () => void;
   onUpdateStep: (sectionIndex: number, stepIndex: number, step: PatternStep) => void;
+  onMarkFinished?: () => void;
 }
 
 interface FlatStep {
@@ -22,7 +23,7 @@ interface FlatStep {
  * persistence path as the section list) and advances; progress survives
  * closing because it derives from the steps' completed flags.
  */
-const FollowMode = ({ pattern, open, onClose, onUpdateStep }: FollowModeProps) => {
+const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: FollowModeProps) => {
   const steps = useMemo<FlatStep[]>(
     () =>
       pattern.sections.flatMap((section, sectionIndex) =>
@@ -46,6 +47,8 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep }: FollowModeProps) =
   }, [steps]);
 
   const [pos, setPos] = useState(firstOpen);
+  // In-round stitch tally: target parsed from the round's trailing "(N)".
+  const [tally, setTally] = useState(0);
   const wakeLockRef = useRef<any>(null);
 
   // Resume from the first unfinished step each time follow mode opens.
@@ -53,6 +56,11 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep }: FollowModeProps) =
     if (open) setPos(firstOpen);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  // Fresh tally for every round.
+  useEffect(() => {
+    setTally(0);
+  }, [pos, open]);
 
   // Keep the screen awake + lock body scroll while following.
   useEffect(() => {
@@ -81,6 +89,9 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep }: FollowModeProps) =
   }, [open]);
 
   const current = steps[pos];
+  // The conventional stitch count at the end of a round, e.g. "… (24)".
+  const matches = current ? [...current.step.text.matchAll(/\((\d+)\)/g)] : [];
+  const stitchTarget = matches.length ? parseInt(matches[matches.length - 1][1], 10) : 0;
   const doneCount = steps.filter((s) => s.step.completed).length;
   const allDone = doneCount === steps.length && steps.length > 0;
   const buzz = (ms: number) => { try { navigator.vibrate?.(ms); } catch { /* unsupported */ } };
@@ -173,10 +184,50 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep }: FollowModeProps) =
             “{current.step.notes}”
           </p>
         )}
-        {allDone && (
-          <p className="text-[14px] font-semibold" style={{ color: "#84934F" }}>
-            🎉 Every step is done — time to mark the project finished!
-          </p>
+
+        {/* In-round stitch tally — the counter lives where the crocheting is.
+            Target comes straight from the "(N)" in the round text. */}
+        {stitchTarget > 0 && !current.step.completed && (
+          <div className="flex items-center gap-3 mt-2" aria-live="polite">
+            <button
+              onClick={() => { setTally((t) => Math.max(0, t - 1)); }}
+              aria-label="Remove a stitch from the tally"
+              className="flex h-12 w-12 items-center justify-center rounded-full transition-all hover:opacity-80"
+              style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868", border: "1.5px solid rgba(140,100,55,0.2)" }}
+            >
+              <Minus className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => {
+                setTally((t) => {
+                  const next = Math.min(stitchTarget, t + 1);
+                  buzz(next === stitchTarget ? 30 : 8);
+                  return next;
+                });
+              }}
+              aria-label={`Count a stitch. ${tally} of ${stitchTarget} done`}
+              className="px-7 py-3.5 rounded-2xl font-heading font-bold transition-all active:scale-[0.97]"
+              style={tally >= stitchTarget
+                ? { background: "rgba(132,147,79,0.15)", color: "#84934F", border: "2px solid rgba(132,147,79,0.4)", fontSize: 18 }
+                : { background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "2px dashed rgba(194,78,107,0.35)", fontSize: 18 }}
+            >
+              {tally >= stitchTarget ? `${stitchTarget} / ${stitchTarget} 🎉` : `Stitch ${tally} / ${stitchTarget} — tap`}
+            </button>
+          </div>
+        )}
+        {allDone && pattern.status !== "finished" && onMarkFinished && (
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-[14px] font-semibold" style={{ color: "#84934F" }}>
+              🎉 Every step is done!
+            </p>
+            <button
+              onClick={onMarkFinished}
+              className="px-6 py-3 rounded-2xl font-heading font-bold text-[15px] transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 4px 16px rgba(194,78,107,0.4)" }}
+            >
+              Mark project finished ♡
+            </button>
+          </div>
         )}
       </div>
 

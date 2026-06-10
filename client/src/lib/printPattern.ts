@@ -101,6 +101,12 @@ export function printPattern(pattern: Pattern): void {
     ${cover}
   </div>
   ${materials ? `<section><h2>Materials</h2>${materials}</section>` : ""}
+  <section><h2>Abbreviations (US terms)</h2>
+    <p class="notes">CH chain · SL ST slip stitch · SC single crochet · HDC half double crochet ·
+    DC double crochet · MR magic ring · INC increase · DEC decrease · ST(S) stitch(es) ·
+    RND round — the number in parentheses at the end of a round, e.g. (24), is the stitch
+    count you should have when the round is complete.</p>
+  </section>
   ${body}
   ${userNotes}
   <p class="footer">Made with Crochet Time ♡ — printed ${esc(new Date().toLocaleDateString())}. Tick each step as you go!</p>

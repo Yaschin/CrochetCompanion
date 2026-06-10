@@ -11,6 +11,7 @@ import { PatternThumb } from "@/components/PatternThumb";
 import { getStreak } from "../lib/activityLog";
 import { loadCounter } from "../hooks/useStitchCounter";
 import { getActiveProfile } from "../lib/profile";
+import { patternProgress as sharedProgress, craftSections } from "../lib/progress";
 
 // ─── Notification helpers ──────────────────────────────────────────────────────
 // Evaluated per call (not at module load) so in-session profile switches
@@ -61,9 +62,7 @@ function greeting() {
 }
 
 function patternProgress(p: Pattern) {
-  const steps = p.sections?.flatMap((s) => s.steps) ?? [];
-  const done  = steps.filter((s) => s.completed).length;
-  return steps.length > 0 ? Math.round((done / steps.length) * 100) : 0;
+  return sharedProgress(p).pct;
 }
 
 // ─── SVG decorations ──────────────────────────────────────────────────────────
@@ -966,7 +965,7 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected, onResumeC
         </div>
         <div className="flex items-center gap-2.5">
           <button
-            onClick={() => onNavigate("search")}
+            onClick={() => onNavigate("library")}
             aria-label="Search patterns"
             className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
             style={{ background: "rgba(255,252,245,0.8)", border: "1px solid rgba(140,100,55,0.2)" }}>
@@ -1012,12 +1011,31 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected, onResumeC
           <div style={{ minHeight: 190 }}>
             <ContinueProjectCard pattern={activePattern} onNavigate={onNavigate} onResumeCounting={onResumeCounting} />
           </div>
+
           <div style={{ minHeight: 190 }}>
             <CreateWithYalaCard onNavigate={onNavigate} />
           </div>
           <div style={{ minHeight: 190 }}>
             <FavoritesCard count={favoritesCount} onNavigate={onNavigate} />
           </div>
+        </div>
+
+        {/* Stash quick access — materials are a first-class concept */}
+        <div className="flex gap-2.5 mt-3 relative z-10">
+          <button
+            onClick={() => onNavigate("stash")}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[12px] font-bold transition-all hover:opacity-85"
+            style={{ background: "rgba(140,100,55,0.08)", color: "#7A5A48", border: "1.5px dashed rgba(140,100,55,0.3)" }}
+          >
+            🧺 My Stash
+          </button>
+          <button
+            onClick={() => onNavigate("yarn-recs")}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[12px] font-bold transition-all hover:opacity-85"
+            style={{ background: "rgba(132,147,79,0.10)", color: "#84934F", border: "1.5px dashed rgba(132,147,79,0.35)" }}
+          >
+            ✨ Make From My Stash
+          </button>
         </div>
 
         {/* Active Projects — mobile main column (desktop has right panel) */}

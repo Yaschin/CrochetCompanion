@@ -59,7 +59,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect }: Communi
       <div className="flex-shrink-0 px-5 pt-5 pb-3" style={{ borderBottom: "1px solid rgba(140,100,55,0.12)" }}>
         <div className="flex items-center justify-between mb-3">
           <h1 className="font-heading font-bold text-[20px]" style={{ color: "#3D2318" }}>
-            Community Library
+            Community
           </h1>
           <button onClick={() => onNavigate("community-submit")}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold"
@@ -118,13 +118,13 @@ export default function CommunityScreen({ onNavigate, onPatternSelect }: Communi
       {/* Grid */}
       <div className="px-4 pt-4">
         {isLoading ? (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} className="rounded-2xl aspect-square animate-pulse" style={{ background: "rgba(140,100,55,0.08)" }} />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {filtered.map(p => (
               <div
                 key={p.id}
