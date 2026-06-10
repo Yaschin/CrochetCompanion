@@ -80,8 +80,18 @@ export async function generatePattern(inputData: PatternInputData) {
 
     Be comprehensive with materials to ensure the crafter has everything needed before starting.
 
-    Use standard crochet terms: SC (Single Crochet), MR (Magic Ring), INC (Increase), DEC (Decrease).
-    Organize the pattern into logical sections (e.g., Head, Body, etc.) with clear, numbered steps.
+    Use standard US crochet terminology: CH (Chain), SL ST (Slip Stitch), SC (Single Crochet),
+    HDC (Half Double Crochet), DC (Double Crochet), MR (Magic Ring), INC (Increase), DEC (Decrease).
+    Organize the pattern into logical sections (e.g., Head, Body, etc.).
+
+    CRITICAL formatting rules for steps (these make the pattern followable and self-checking):
+    - Each step is ONE round or row (or an explicit range like "Rounds 6-10" for repeated rounds).
+    - Prefix every crochet step with its round/row label, e.g. "Round 3:" or "Row 5:".
+    - End every crochet round/row with the resulting stitch count in parentheses, e.g. "(24)" —
+      this is how the crafter verifies their work. Assembly/finishing steps don't need counts.
+    - Match the stitch vocabulary to the skill level: Beginner patterns may only use
+      CH, SL ST, SC, INC, DEC and MR; Intermediate may add HDC, DC, TR and simple colour
+      changes; only Advanced patterns may use clusters, post stitches, cables or lacework.
 
     For patterns with multiple parts (like amigurumi, stuffed animals, dolls, or multi-piece garments),
     ALWAYS include an "Assembly and Finishing" section at the end with detailed steps on:
