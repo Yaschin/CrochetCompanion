@@ -5,12 +5,37 @@ Supersedes the backlog sections (§2, §4, §5) of `CROCHET_TIME_STATUS_REVIEW_2
 
 **Branch policy:** all work on `claude/focused-albattani-6l3u6p`, PR'd to `main` as draft.
 
-**Verified baseline (2026-06-09):**
+---
+
+## Current state (updated 2026-06-09, end of day)
+
+- **Phases 1–4 are MERGED to `main`** (PR #23, merged by Yash 2026-06-09 19:25).
+- **Phase 6 (family profiles) is in PR #24** (draft, CI green), which also merges in the
+  Replit session's same-day additions and **repairs `main`'s typecheck** (see below).
+- **Delivered outside this roadmap** by a Replit session on `main` (post-#23):
+  interactive **tutorial/onboarding system** (`TutorialSystem.tsx`, restartable from
+  Settings), **import existing patterns** (`POST /api/parse-pattern` + wizard path),
+  **library image backfill** (`seedLibraryImages.ts`, non-destructive), dashboard
+  discoverability polish, and the app was **published/deployed**.
+- ⚠️ That session also edited `server/routes.ts` against a stale base, reverting the
+  Phase 1/3 startup imports — `main`'s typecheck is **red** until PR #24 merges
+  (the PR restores `ensureSchema()` → one-time seeds → `seedLibraryImages()` and the
+  diagnostics imports, keeping all the new features).
+- Verification at PR #24 head: `tsc` clean · build OK · Playwright e2e **42/42**
+  (mobile/tablet/desktop) locally and on CI.
+- Still outstanding: the **live post-deploy checklist** below (especially
+  Settings → App health → Deep AI test) and Phase 5.
+
+---
+
+## Original baseline & decisions (2026-06-09, morning — for the record)
+
+**Verified baseline at audit time:**
 - `main` = `8f544c0`; the Jun-8 Replit session pushed ~19 polish commits directly to main (seed content, 40-pattern community gallery, regen confirmations, ~24 bug fixes logged in `.agents/memory/`).
 - Production build: ✅ green (719 kB main chunk — splitting tracked in Phase 5).
 - Playwright e2e: ✅ green (39/39 across mobile/tablet/desktop, on CI and re-run locally).
-- `tsc` / CI typecheck: ❌ **RED** — 9 errors introduced Jun-8 (see B1/B2).
-- Live AI flows: never formally validated (diagnostics panel will close this — Phase 3).
+- `tsc` / CI typecheck: ❌ RED — 9 errors introduced Jun-8 (fixed in Phase 1).
+- Live AI flows: never formally validated (diagnostics panel closes this — Phase 3).
 
 **Owner decisions (2026-06-09, Yash):**
 1. AI validation → build a **self-test diagnostics panel** in Settings (not a manual checklist).
@@ -61,15 +86,17 @@ Order chosen so each step builds on the previous:
 | F3 | **PDF pattern export** — branded printable view (extends existing `printPattern` save-as-PDF) | — | Medium |
 | F4 | **Row-by-row follow mode** — viewer mode binding the counter to actual pattern steps; auto-advance + check-off | T3 | Medium |
 
-## Phase 5 — Deferred polish & tech debt (P2)
+## Phase 5 — Polish & tech debt — ✅ DONE 2026-06-09 (except one consciously deferred item)
 
-- Streak/activity + counter positions → DB (extends T1 pattern).
-- Remove dead code: `server/replit_integrations/object_storage/*` (unused duplicate), `sectionImageFocus` param (`server/api/generatePattern.ts:33`), `tests/yarn-calculator.test.js` (no runner), orphaned `project_events` table.
-- Route-level code splitting (719 kB chunk), `React.memo` on thumbs, font-display.
-- Accessibility pass: aria-labels on icon buttons, counter ARIA live region; voice-counter transcript feedback.
-- Length-cap user text interpolated into AI prompts (`userNote`, `refinements`).
-- Adopt drizzle migration files as the long-term replacement for boot-time ensure.
-- Unit tests for yarn-estimate + stash-match math.
+- [x] **Streaks → DB**: `activity_days` table + `GET/POST /api/activity`; client write-through (localStorage fast path) with two-way `syncActivity()` reconcile on app load and profile switch.
+- [x] **Counter positions → DB**: `patterns.counterState` jsonb; `useStitchCounter` adopts the server copy when the device has none and saves back debounced (1.5 s) — offline-safe.
+- [x] **Dead code removed**: `server/replit_integrations/object_storage/*` (GCS client init inlined into `server/objectStorage.ts`), `sectionImageFocus` param, orphaned Jest file; `project_events` table dropped via ensureSchema.
+- [x] **Code splitting**: 14 secondary screens are `React.lazy` chunks behind Suspense; main bundle 719 kB → 650 kB and screens load on demand.
+- [x] **Accessibility**: aria-labels on icon-only buttons (home search/bell, counter toggles), `aria-pressed` on toggles, `aria-live` count regions, voice counter now shows "Heard: …" transcript feedback.
+- [x] **AI prompt caps**: `capText()` (500 chars) on `userNote`, `refinements`, resize/substitute `instruction`.
+- [x] **Unit tests**: vitest (`npm run test:unit`, in the CI typecheck job) — 14 tests over yarn-complexity/colour/volume estimation and stash coverage/ranking; replaces the orphaned Jest file.
+- [x] **Per-profile tutorial**: each family member gets Ashi's tour on their first session (key `crochet-time-tutorial-v1:{profileId}`, legacy flag migrates to Larissa); Settings → App tour restarts it for the active person.
+- [ ] **Drizzle migration files** — consciously deferred: `ensureSchema()` is the working migration mechanism (idempotent boot heals) and swapping workflows can't be safely validated without the live DB. Revisit in a maintenance window.
 
 ## Phase 6 — Family Profiles (approved 2026-06-09)
 
@@ -91,12 +118,12 @@ Multi-user **auth** / real social community; AI provider swaps; offline write-sy
 
 ## Progress log
 
-- [x] Phase 1 — Green & Safe *(2026-06-09: B1–B6 done; B7 verified already-implemented — the generate flow has a full error taxonomy + retry via re-enabled button. tsc/build/e2e green)*
-- [x] Phase 2 — Trust & sync *(2026-06-09: T1 notes→DB with legacy localStorage migration; T2 share confirm dialog; T3 shared per-pattern counter hook)*
-- [x] Phase 3 — AI diagnostics *(2026-06-09: GET /api/diagnostics + POST /api/diagnostics/deep + Settings "App health" panel. Run the deep test on the live deploy to validate AI end-to-end)*
-- [x] Phase 4 — F1 trophy-shelf gallery · F2 continue-where-left-off · F3 branded Print/PDF · F4 row-by-row follow mode *(2026-06-09; also fixed a latent Pattern-tab index bug where filtering "materials" sections before mapping could corrupt step edits)*
+- [x] Phase 1 — Green & Safe *(2026-06-09: B1–B6 done; B7 verified already-implemented — the generate flow has a full error taxonomy + retry via re-enabled button. tsc/build/e2e green. **Merged in PR #23.**)*
+- [x] Phase 2 — Trust & sync *(2026-06-09: T1 notes→DB with legacy localStorage migration; T2 share confirm dialog; T3 shared per-pattern counter hook. **Merged in PR #23.**)*
+- [x] Phase 3 — AI diagnostics *(2026-06-09: GET /api/diagnostics + POST /api/diagnostics/deep + Settings "App health" panel. **Merged in PR #23.** Run the deep test on the live deploy to validate AI end-to-end)*
+- [x] Phase 4 — F1 trophy-shelf gallery · F2 continue-where-left-off · F3 branded Print/PDF · F4 row-by-row follow mode *(2026-06-09; also fixed a latent Pattern-tab index bug where filtering "materials" sections before mapping could corrupt step edits. **Merged in PR #23.**)*
 - [ ] Phase 5 — deferred polish (not scheduled)
-- [x] Phase 6 — Family profiles *(2026-06-09: profiles table + ownerId scoping (patterns/stash/notes), `?profile=` resolved centrally (apiRequest + default queryFn + SW-cache-safe), picker at `/who` after splash, per-profile streaks/bell/export-import v2, community shares stamped with the real family creator. Pre-profile data backfills to Larissa; old clients default to Larissa.)*
+- [x] Phase 6 — Family profiles *(2026-06-09: profiles table + ownerId scoping (patterns/stash/notes), `?profile=` resolved centrally (apiRequest + default queryFn + SW-cache-safe), picker at `/who` after splash, per-profile streaks/bell/export-import v2, community shares stamped with the real family creator. Pre-profile data backfills to Larissa; old clients default to Larissa. **In PR #24** together with the main-merge: tutorial + pattern-import + library-images kept, adapt-copies owner-stamped, main's reverted startup block restored.)*
 
 **Post-deploy checklist for Yash (live Replit app):**
 1. Deploy this branch; watch boot logs for `ensureSchema` + seed messages.

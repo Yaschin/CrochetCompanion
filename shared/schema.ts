@@ -72,6 +72,7 @@ export const patterns = pgTable("patterns", {
   toolRequirements: jsonb("toolRequirements"),
   needsStuffing: text("needsStuffing"),
   favorite: boolean("favorite").notNull().default(false),
+  counterState: jsonb("counterState"),
   status: text("status").notNull().default("pattern"),
   startedAt: timestamp("started_at"),
   finishedAt: timestamp("finished_at"),
@@ -139,6 +140,15 @@ export const patternSchema = z.object({
   endProductImage: z.string().optional(),
   materialsNotes: z.string().optional().default(""),
   userNotes: z.string().optional(),
+  counterState: z
+    .object({
+      stitches: z.number(),
+      rows: z.number(),
+      target: z.number().default(0),
+      history: z.array(z.any()).default([]),
+    })
+    .nullable()
+    .optional(),
   createdAt: z.string(),
   sections: z.array(
     z.object({

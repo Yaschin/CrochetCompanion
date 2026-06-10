@@ -47,6 +47,12 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - community-submit → CommunitySubmitScreen (`/community/submit`)
 - settings → SettingsScreen (`/settings`) — backup/export/import
 
+## Tutorial & pattern import (added on main by Replit session, 2026-06-09)
+- `client/src/components/TutorialSystem.tsx` — overlay tour (Ashi), rendered inside the shell in App.tsx; auto-opens once per DEVICE (localStorage `crochet-time-tutorial-v1`); restartable from Settings → "App tour" (`restartTutorial()`).
+- `POST /api/parse-pattern` (`server/api/parsePattern.ts`) — AI-structures pasted pattern text; client then saves via the profile-stamped `POST /api/patterns`.
+- `server/seedLibraryImages.ts` — boot-time, non-destructive backfill of missing pattern images (runs after seeds in the ensureSchema chain).
+- e2e presets BOTH localStorage flags (profile + tutorial-seen) in `enterApp()`.
+
 ## Navigation chrome
 - Mobile bottom nav (`AppShell.tsx`, `md:hidden`): 5 tabs — Home→"home",
   Create→"input", Library→"library", Favorites→"favorites", Projects→"projects".

@@ -20,12 +20,20 @@ import { runQuickDiagnostics, runDeepDiagnostics } from "./diagnostics";
 import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
 import { PROFILES, isProfileId, profileById, DEFAULT_PROFILE_ID } from "../shared/profiles";
 import { z } from "zod";
+import { sql } from "drizzle-orm";
+import { db } from "./db";
 
 // Resolve the active family profile from ?profile=<id>. Defaults to Larissa so
 // pre-profile clients (and service-worker-cached requests) keep working.
 function profileOf(req: Request): string {
   const p = String(req.query.profile ?? "").trim();
   return isProfileId(p) ? p : DEFAULT_PROFILE_ID;
+}
+
+// Cap free-text that gets interpolated into AI prompts — keeps a stray paste
+// (or anything malicious) from ballooning token spend or hijacking the prompt.
+function capText(value: unknown, max = 500): string {
+  return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 import { uploadBuffer, uploadBufferWithKey, objectExists, streamObject, getObjectDataUrl } from "./objectStorage";
 
@@ -370,7 +378,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create a base prompt from the pattern title and additional refinements
       let prompt = pattern.title;
       if (refinements) {
-        prompt += `. ${refinements}`;
+        prompt += `. ${capText(refinements)}`;
       }
       
       // Get yarn colors for additional context
@@ -430,7 +438,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate image for the section
       let prompt = `A detailed illustration of the ${section.name.toLowerCase()} part of a crocheted ${pattern.projectType}`;
       if (refinements) {
-        prompt += `. ${refinements}`;
+        prompt += `. ${capText(refinements)}`;
       }
       
       const colors = pattern.yarnRequirements && pattern.yarnRequirements.length > 0
@@ -798,8 +806,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Call pattern generation with the original pattern for reference
       const basePrompt = originalPattern.title;
-      const fullPrompt = (userNote && typeof userNote === "string" && userNote.trim())
-        ? `${basePrompt}. Additional instructions: ${userNote.trim()}`
+      const cappedNote = capText(userNote);
+      const fullPrompt = cappedNote
+        ? `${basePrompt}. Additional instructions: ${cappedNote}`
         : basePrompt;
 
       const regeneratedPattern = await generatePattern({
@@ -814,7 +823,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // the locked originals instead of regenerating the whole pattern from scratch.
         unlockedStepsOnly: true,
         // If regenerating based on specific section image, tell the API which image to focus on
-        sectionImageFocus: basedOnImage ? Number(sectionIndex) : undefined,
         // The actual section image, sent to the vision model (true image-driven regen).
         referenceImage: sectionReferenceImage,
       });
@@ -845,7 +853,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const original = await patternService.getPattern(req.params.id);
       if (!original) return res.status(404).json({ message: "Pattern not found" });
 
-      const transformed = await transformPattern(original, mode, instruction.trim());
+      const transformed = await transformPattern(original, mode, capText(instruction));
       transformed.title =
         mode === "resize" ? `${original.title} (resized)` : `${original.title} (${instruction.trim()})`;
       // The adapted copy belongs to whoever requested the adaptation.
@@ -910,6 +918,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ── Family profiles ─────────────────────────────────────────────────────────
   app.get("/api/profiles", (_req: Request, res: Response) => {
     res.json(PROFILES);
+  });
+
+  // ── Crochet-activity days (drives the streak; synced from localStorage) ─────
+  app.get("/api/activity", async (req: Request, res: Response) => {
+    try {
+      const result = await db.execute(
+        sql`SELECT day FROM activity_days WHERE "ownerId" = ${profileOf(req)} ORDER BY day`
+      );
+      res.json({ days: (result.rows ?? []).map((r) => (r as { day: string }).day) });
+    } catch (error) {
+      console.error("Error reading activity:", error);
+      res.status(500).json({ message: "Failed to read activity" });
+    }
+  });
+
+  app.post("/api/activity", async (req: Request, res: Response) => {
+    try {
+      // Accept a list of YYYY-MM-DD days (defaults to "today" server-side is
+      // wrong across timezones — the client supplies its local date).
+      const days: string[] = Array.isArray(req.body?.days) ? req.body.days : [];
+      const valid = days.filter((d) => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)).slice(0, 400);
+      const profile = profileOf(req);
+      for (const day of valid) {
+        await db.execute(
+          sql`INSERT INTO activity_days ("ownerId", day) VALUES (${profile}, ${day})
+              ON CONFLICT ("ownerId", day) DO NOTHING`
+        );
+      }
+      res.json({ success: true, recorded: valid.length });
+    } catch (error) {
+      console.error("Error recording activity:", error);
+      res.status(500).json({ message: "Failed to record activity" });
+    }
   });
 
   // ── App health diagnostics ──────────────────────────────────────────────────

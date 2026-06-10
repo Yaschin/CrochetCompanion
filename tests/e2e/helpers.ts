@@ -158,7 +158,7 @@ export async function enterApp(page: Page) {
   await page.addInitScript(() => {
     try {
       localStorage.setItem("crochet-time:profile", "larissa");
-      localStorage.setItem("crochet-time-tutorial-v1", "completed");
+      localStorage.setItem("crochet-time-tutorial-v1:larissa", "completed");
     } catch { /* ignore */ }
   });
   await page.goto("/");

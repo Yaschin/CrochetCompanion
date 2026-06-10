@@ -15,10 +15,24 @@ For **every primary screen** and the key **deep flows**, at **three viewports**
 and saves a **full-page screenshot** per screen per viewport into `test-results/`
 for visual responsive review.
 
-Screens exercised: splash, home, create (AI Studio), library, favorites,
-projects, community, community detail, community submit wizard, pattern viewer
-(+ Overview/Pattern/Notes tabs), the stitch-counter modal, and the pattern
-detail screen.
+Screens exercised: splash, the first-run **family profile picker** (splash →
+"Who's crocheting today?" → enter as Mummy → personalised home), home, create
+(AI Studio), library, favorites, projects, community, community detail,
+community submit wizard, pattern viewer (+ Overview/Pattern/Notes tabs), the
+stitch-counter modal, and the pattern detail screen — **14 scenarios × 3
+viewports = 42 tests**.
+
+Two device-local flags are preset by `enterApp()` (via `addInitScript`) so
+ordinary tests skip first-run flows deterministically:
+
+- `crochet-time:profile = "larissa"` — skips the profile picker;
+- `crochet-time-tutorial-v1 = "completed"` — keeps the tutorial welcome
+  overlay from intercepting clicks.
+
+The picker has its own dedicated test that deliberately leaves the profile
+unset. Fixtures also mock `GET /api/profiles`, and the mock router dispatches
+on `pathname`, so the `?profile=` query parameter appended to every API call
+is transparently tolerated.
 
 ## No database required
 
