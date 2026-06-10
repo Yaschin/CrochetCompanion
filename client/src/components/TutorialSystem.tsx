@@ -368,7 +368,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
           <motion.button
             key="help-btn"
             onClick={openHelp}
-            className="fixed right-4 bottom-[76px] md:bottom-5 z-[200]
+            className="fixed right-4 bottom-[76px] md:bottom-5 z-40
                        w-10 h-10 rounded-full flex items-center justify-center shadow-lg
                        transition-all hover:scale-110 active:scale-95"
             style={{

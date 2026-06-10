@@ -10,3 +10,4 @@ vite.config.ts.*
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+walkthrough-shots/

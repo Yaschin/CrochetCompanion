@@ -204,7 +204,7 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
                 <p className="text-[11.5px] mb-3" style={{ color: "#9A7868" }}>
                   Every finished make, side by side — be proud!
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                   {completed.map((p, i) => (
                     <TrophyCard key={p.id} pattern={p} onSelect={() => onPatternSelected(p)} index={i} />
                   ))}

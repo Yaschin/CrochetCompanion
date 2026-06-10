@@ -48,7 +48,7 @@ export default function FavoritesScreen({ onNavigate, onPatternSelected }: Favor
       {/* Grid */}
       <div className="px-4 pt-4">
         {isLoading ? (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="rounded-2xl aspect-square animate-pulse"
                 style={{ background: "rgba(140,100,55,0.08)" }} />
@@ -70,7 +70,7 @@ export default function FavoritesScreen({ onNavigate, onPatternSelected }: Favor
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {favorites.map((p) => {
               return (
                 <div key={p.id} className="relative rounded-2xl overflow-hidden cursor-pointer transition-transform active:scale-[0.98]"
