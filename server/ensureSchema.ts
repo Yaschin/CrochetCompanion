@@ -52,6 +52,24 @@ export async function ensureSchema(): Promise<void> {
   await db.execute(
     sql`ALTER TABLE community_patterns ADD COLUMN IF NOT EXISTS "creatorId" text`
   );
+
+  // ── Device-local data made durable (Phase 5) ───────────────────────────────
+  // Crochet-activity days drive the streak; the counter position rides on the
+  // pattern row. Both still write-through localStorage for offline use.
+  await db.execute(
+    sql`CREATE TABLE IF NOT EXISTS activity_days (
+      "ownerId" text NOT NULL,
+      day text NOT NULL,
+      PRIMARY KEY ("ownerId", day)
+    )`
+  );
+  await db.execute(
+    sql`ALTER TABLE patterns ADD COLUMN IF NOT EXISTS "counterState" jsonb`
+  );
+
+  // The legacy project_events table predates shared/schema.ts and has no code
+  // references anywhere — confirmed orphaned in the Jun-8 walkthrough.
+  await db.execute(sql`DROP TABLE IF EXISTS project_events`);
 }
 
 export async function getMeta(key: string): Promise<string | null> {

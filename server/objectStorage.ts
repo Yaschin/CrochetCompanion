@@ -1,6 +1,27 @@
-import { objectStorageClient } from "./replit_integrations/object_storage/objectStorage";
+import { Storage } from "@google-cloud/storage";
 import { randomUUID } from "crypto";
 import type { Response } from "express";
+
+// GCS client authenticated through the Replit sidecar (the only piece this
+// module needed from the removed replit_integrations/object_storage bundle).
+const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
+const objectStorageClient = new Storage({
+  credentials: {
+    audience: "replit",
+    subject_token_type: "access_token",
+    token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
+    type: "external_account",
+    credential_source: {
+      url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
+      format: {
+        type: "json",
+        subject_token_field_name: "access_token",
+      },
+    },
+    universe_domain: "googleapis.com",
+  },
+  projectId: "",
+});
 
 function getPublicBucketAndPrefix(): { bucketName: string; prefix: string } {
   const pathsStr = process.env.PUBLIC_OBJECT_SEARCH_PATHS || "";

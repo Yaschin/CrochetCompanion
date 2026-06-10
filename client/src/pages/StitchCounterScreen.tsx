@@ -30,6 +30,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
   const [showHistory, setShowHistory] = useState(false);
   const [sound, setSound] = useState(true);
   const [voice, setVoice] = useState(false);
+  const [lastHeard, setLastHeard] = useState<string | null>(null);
 
   // Keep the screen awake while counting (re-acquire after tab switches).
   useEffect(() => {
@@ -78,7 +79,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
   // Hands-free voice control: say "next"/"row" (+1 row), "stitch" (+1 stitch),
   // "back"/"undo" (−1 row), "reset". Uses the Web Speech API where available.
   useEffect(() => {
-    if (!voice) return;
+    if (!voice) { setLastHeard(null); return; }
     const SR = (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).SpeechRecognition
       || (window as unknown as { webkitSpeechRecognition?: any }).webkitSpeechRecognition;
     if (!SR) { setVoice(false); return; }
@@ -88,6 +89,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
     rec.lang = "en-US";
     rec.onresult = (e: any) => {
       const t = String(e.results[e.results.length - 1][0].transcript || "").toLowerCase();
+      setLastHeard(t.trim());
       const h = handlersRef.current;
       if (/(reset|clear)/.test(t)) h.reset();
       else if (/(back|undo|minus|down)/.test(t)) h.changeRows(-1);
@@ -123,18 +125,24 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
           <button
             onClick={() => setVoice(v => !v)}
             title="Hands-free voice counting"
+            aria-label="Toggle hands-free voice counting"
+            aria-pressed={voice}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
             style={{ background: voice ? "rgba(194,78,107,0.15)" : "rgba(255,252,245,0.9)", color: voice ? "#C24E6B" : "#9A7868", border: "1px solid rgba(140,100,55,0.2)" }}>
             <Mic className="h-4 w-4" />
           </button>
           <button
             onClick={() => setSound(s => !s)}
+            aria-label="Toggle haptic feedback"
+            aria-pressed={sound}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
             style={{ background: sound ? "rgba(132,147,79,0.12)" : "rgba(180,160,140,0.1)", color: sound ? "#84934F" : "#B0908A" }}>
             <Volume2 className="h-4 w-4" />
           </button>
           <button
             onClick={() => setShowHistory(s => !s)}
+            aria-label="Toggle activity history"
+            aria-pressed={showHistory}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
             style={{ background: showHistory ? "rgba(124,95,168,0.15)" : "rgba(255,252,245,0.9)", color: showHistory ? "#7C5FA8" : "#9A7868",
               border: "1px solid rgba(140,100,55,0.2)" }}>
@@ -152,8 +160,12 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
           className="w-full rounded-3xl flex flex-col items-center justify-center gap-1"
           style={{ minHeight: 92, background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 6px 20px rgba(132,147,79,0.4)" }}>
           <span className="font-heading font-bold text-[18px]">Tap to count a row</span>
-          <span className="text-[11px] opacity-85">
-            {voice ? "🎙️ Listening — say “next”, “stitch”, “back”" : "or turn on 🎙️ voice for hands-free"}
+          <span className="text-[11px] opacity-85" aria-live="polite">
+            {voice
+              ? lastHeard
+                ? `🎙️ Heard: “${lastHeard}”`
+                : "🎙️ Listening — say “next”, “stitch”, “back”"
+              : "or turn on 🎙️ voice for hands-free"}
           </span>
         </motion.button>
 
@@ -172,7 +184,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
               <Minus className="h-7 w-7" />
             </motion.button>
 
-            <div className="text-center">
+            <div className="text-center" aria-live="polite" aria-atomic="true">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={counts.rows}

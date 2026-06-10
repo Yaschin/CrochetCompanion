@@ -146,6 +146,8 @@ const StitchCounter = ({ patternId, patternTitle, open, onClose }: StitchCounter
           Row {state.rows + 1}
         </span>
         <span
+          aria-live="polite"
+          aria-atomic="true"
           className={cn(
             'font-sans text-8xl font-extrabold tabular-nums leading-none text-primary-700 sm:text-9xl',
             celebrate && 'motion-safe:animate-pulse',

@@ -46,7 +46,7 @@ test("splash renders and enters the app", async ({ page, consoleErrors }, testIn
 test("first run shows the profile picker and entering as Mummy personalises home", async ({ page, consoleErrors }, testInfo) => {
   // Keep the tutorial overlay out of the way; it has its own lifecycle.
   await page.addInitScript(() => {
-    try { localStorage.setItem("crochet-time-tutorial-v1", "completed"); } catch { /* ignore */ }
+    try { localStorage.setItem("crochet-time-tutorial-v1:mummy", "completed"); } catch { /* ignore */ }
   });
   await page.goto("/");
   const enter = page.getByRole("button", { name: /Enter Your Studio|Get Started|Skip/i }).first();

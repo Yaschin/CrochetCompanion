@@ -86,15 +86,17 @@ Order chosen so each step builds on the previous:
 | F3 | **PDF pattern export** — branded printable view (extends existing `printPattern` save-as-PDF) | — | Medium |
 | F4 | **Row-by-row follow mode** — viewer mode binding the counter to actual pattern steps; auto-advance + check-off | T3 | Medium |
 
-## Phase 5 — Deferred polish & tech debt (P2)
+## Phase 5 — Polish & tech debt — ✅ DONE 2026-06-09 (except one consciously deferred item)
 
-- Streak/activity + counter positions → DB (extends T1 pattern).
-- Remove dead code: `server/replit_integrations/object_storage/*` (unused duplicate), `sectionImageFocus` param (`server/api/generatePattern.ts:33`), `tests/yarn-calculator.test.js` (no runner), orphaned `project_events` table.
-- Route-level code splitting (719 kB chunk), `React.memo` on thumbs, font-display.
-- Accessibility pass: aria-labels on icon buttons, counter ARIA live region; voice-counter transcript feedback.
-- Length-cap user text interpolated into AI prompts (`userNote`, `refinements`).
-- Adopt drizzle migration files as the long-term replacement for boot-time ensure.
-- Unit tests for yarn-estimate + stash-match math.
+- [x] **Streaks → DB**: `activity_days` table + `GET/POST /api/activity`; client write-through (localStorage fast path) with two-way `syncActivity()` reconcile on app load and profile switch.
+- [x] **Counter positions → DB**: `patterns.counterState` jsonb; `useStitchCounter` adopts the server copy when the device has none and saves back debounced (1.5 s) — offline-safe.
+- [x] **Dead code removed**: `server/replit_integrations/object_storage/*` (GCS client init inlined into `server/objectStorage.ts`), `sectionImageFocus` param, orphaned Jest file; `project_events` table dropped via ensureSchema.
+- [x] **Code splitting**: 14 secondary screens are `React.lazy` chunks behind Suspense; main bundle 719 kB → 650 kB and screens load on demand.
+- [x] **Accessibility**: aria-labels on icon-only buttons (home search/bell, counter toggles), `aria-pressed` on toggles, `aria-live` count regions, voice counter now shows "Heard: …" transcript feedback.
+- [x] **AI prompt caps**: `capText()` (500 chars) on `userNote`, `refinements`, resize/substitute `instruction`.
+- [x] **Unit tests**: vitest (`npm run test:unit`, in the CI typecheck job) — 14 tests over yarn-complexity/colour/volume estimation and stash coverage/ranking; replaces the orphaned Jest file.
+- [x] **Per-profile tutorial**: each family member gets Ashi's tour on their first session (key `crochet-time-tutorial-v1:{profileId}`, legacy flag migrates to Larissa); Settings → App tour restarts it for the active person.
+- [ ] **Drizzle migration files** — consciously deferred: `ensureSchema()` is the working migration mechanism (idempotent boot heals) and swapping workflows can't be safely validated without the live DB. Revisit in a maintenance window.
 
 ## Phase 6 — Family Profiles (approved 2026-06-09)
 

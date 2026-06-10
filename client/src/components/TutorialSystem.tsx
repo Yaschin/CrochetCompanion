@@ -1,9 +1,27 @@
 import { useState, useEffect, useCallback } from "react";
+import { getActiveProfile } from "../lib/profile";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, ChevronLeft, HelpCircle } from "lucide-react";
 import { ViewType } from "../lib/types";
 
-const STORAGE_KEY = "crochet-time-tutorial-v1";
+// Per-family-member: each person gets the tour on their first session, and
+// "App tour" in Settings restarts it for whoever is active right now.
+const LEGACY_KEY = "crochet-time-tutorial-v1";
+const storageKey = () => `crochet-time-tutorial-v1:${getActiveProfile().id}`;
+
+function tutorialSeen(): string | null {
+  try {
+    // Migrate: a pre-profiles "seen" flag belonged to Larissa (she owned the device).
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy && getActiveProfile().id === "larissa" && !localStorage.getItem(storageKey())) {
+      localStorage.setItem(storageKey(), legacy);
+      localStorage.removeItem(LEGACY_KEY);
+    }
+    return localStorage.getItem(storageKey());
+  } catch {
+    return "completed"; // storage unavailable — never block the app with a tour
+  }
+}
 
 interface Step {
   id: string;
@@ -67,7 +85,7 @@ const STEPS: Step[] = [
 ];
 
 export function restartTutorial() {
-  localStorage.removeItem(STORAGE_KEY);
+  try { localStorage.removeItem(storageKey()); } catch { /* ignore */ }
   window.dispatchEvent(new CustomEvent("crochet-start-tutorial"));
 }
 
@@ -81,7 +99,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    const seen = localStorage.getItem(STORAGE_KEY);
+    const seen = tutorialSeen();
     if (!seen && activeView !== "splash" && activeView !== "loading") {
       const t = setTimeout(() => setPhase("welcome"), 1200);
       return () => clearTimeout(t);
@@ -102,11 +120,11 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
 
   const startTour = useCallback(() => { setStep(0); setPhase("touring"); }, []);
   const dismiss = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, "declined");
+    try { localStorage.setItem(storageKey(), "declined"); } catch { /* ignore */ }
     setPhase("idle");
   }, []);
   const finish = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, "completed");
+    try { localStorage.setItem(storageKey(), "completed"); } catch { /* ignore */ }
     setPhase("idle");
   }, []);
   const handleNext = useCallback(() => {

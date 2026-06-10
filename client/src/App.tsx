@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
@@ -11,23 +11,36 @@ import HomeWorkbench, { HomeRightPanel } from "./components/HomeWorkbench";
 import PatternInputRefactored from "./components/PatternInputRefactored";
 import PatternViewer from "./components/PatternViewer";
 import PatternLibrary from "./components/PatternLibrary";
-import MaterialsInventory from "./components/MaterialsInventory";
 import SplashScreen from "./pages/SplashScreen";
 import GenerationLoadingScreen from "./pages/GenerationLoadingScreen";
-import SearchScreen from "./pages/SearchScreen";
-import ProgressTrackingScreen from "./pages/ProgressTrackingScreen";
-import PhotoUploadScreen from "./pages/PhotoUploadScreen";
-import StitchCounterScreen from "./pages/StitchCounterScreen";
-import YarnRecsScreen from "./pages/YarnRecsScreen";
-import FavoritesScreen from "./pages/FavoritesScreen";
-import CommunityScreen from "./pages/CommunityScreen";
-import CommunityDetailScreen from "./pages/CommunityDetailScreen";
-import CommunitySubmitScreen from "./pages/CommunitySubmitScreen";
-import PatternDetailScreen from "./pages/PatternDetailScreen";
-import ProjectsScreen from "./pages/ProjectsScreen";
-import SettingsScreen from "./pages/SettingsScreen";
-import ProfilePickerScreen from "./pages/ProfilePickerScreen";
+
+// Secondary screens are code-split: they load on first visit, shrinking the
+// initial bundle. Core screens (home/create/library/viewer) stay eager.
+const MaterialsInventory = lazy(() => import("./components/MaterialsInventory"));
+const SearchScreen = lazy(() => import("./pages/SearchScreen"));
+const ProgressTrackingScreen = lazy(() => import("./pages/ProgressTrackingScreen"));
+const PhotoUploadScreen = lazy(() => import("./pages/PhotoUploadScreen"));
+const StitchCounterScreen = lazy(() => import("./pages/StitchCounterScreen"));
+const YarnRecsScreen = lazy(() => import("./pages/YarnRecsScreen"));
+const FavoritesScreen = lazy(() => import("./pages/FavoritesScreen"));
+const CommunityScreen = lazy(() => import("./pages/CommunityScreen"));
+const CommunityDetailScreen = lazy(() => import("./pages/CommunityDetailScreen"));
+const CommunitySubmitScreen = lazy(() => import("./pages/CommunitySubmitScreen"));
+const PatternDetailScreen = lazy(() => import("./pages/PatternDetailScreen"));
+const ProjectsScreen = lazy(() => import("./pages/ProjectsScreen"));
+const SettingsScreen = lazy(() => import("./pages/SettingsScreen"));
+const ProfilePickerScreen = lazy(() => import("./pages/ProfilePickerScreen"));
+
+// Minimal, theme-matched fallback while a lazy chunk downloads.
+function ScreenLoading() {
+  return (
+    <div className="flex h-full w-full items-center justify-center py-16">
+      <div className="h-10 w-10 animate-spin rounded-full border-b-2" style={{ borderColor: "#C24E6B" }} />
+    </div>
+  );
+}
 import { getActiveProfileId, setActiveProfileId } from "./lib/profile";
+import { syncActivity } from "./lib/activityLog";
 import TutorialSystem from "./components/TutorialSystem";
 import { Pattern, ViewType } from "./lib/types";
 import { AnimatePresence, motion } from "framer-motion";
@@ -109,6 +122,9 @@ function App() {
 
   const [currentPattern, setCurrentPattern] = useState<Pattern | null>(null);
 
+  // Reconcile the streak/activity log with the server once per app load.
+  useEffect(() => { syncActivity(); }, []);
+
   // Hydrate the current pattern from the URL id on deep-link / refresh, when it
   // isn't already loaded in memory.
   useEffect(() => {
@@ -169,16 +185,19 @@ function App() {
     return (
       <QueryClientProvider client={queryClient}>
         <div style={{ width: "100vw", height: "100vh" }}>
+          <Suspense fallback={<ScreenLoading />}>
           <ProfilePickerScreen
             onProfileChosen={(id) => {
               setActiveProfileId(id);
               setCurrentPattern(null);
               // Drop every cached query — they were fetched as someone else.
               queryClient.clear();
+              syncActivity();
               setLocation(pathFor("home"));
             }}
             onOpenSettings={() => setLocation(pathFor("settings"))}
           />
+          </Suspense>
         </div>
         <Toaster />
       </QueryClientProvider>
@@ -219,6 +238,7 @@ function App() {
             className="flex flex-col h-full"
           >
             <ErrorBoundary key={activeView} componentName={activeView}>
+              <Suspense fallback={<ScreenLoading />}>
 
               {activeView === "home" && (
                 <HomeWorkbench
@@ -358,6 +378,7 @@ function App() {
                 <SettingsScreen onNavigate={navigateToView} />
               )}
 
+              </Suspense>
             </ErrorBoundary>
           </motion.div>
         </AnimatePresence>

@@ -30,7 +30,6 @@ interface PatternInputData {
   patternId?: string;
   unlockedStepsOnly?: boolean;
   originalPattern?: any;
-  sectionImageFocus?: number; // Index of section whose image should influence regeneration
   referenceImage?: string; // data URL (or fetchable URL) of a user-supplied reference image
 }
 
@@ -411,7 +410,8 @@ async function calculateYarnRequirements(pattern: any, projectType: string): Pro
 }
 
 // Helper function to calculate pattern complexity (0-10 scale)
-function calculatePatternComplexity(pattern: any, projectType: string): number {
+// (exported for unit tests)
+export function calculatePatternComplexity(pattern: any, projectType: string): number {
   // Base complexity based on project type
   let baseComplexity = 5;
 
@@ -434,8 +434,8 @@ function calculatePatternComplexity(pattern: any, projectType: string): number {
   return Math.max(1, Math.min(10, baseComplexity + stepComplexity + sectionComplexity));
 }
 
-// Extract color mentions from pattern text
-function extractColorMentions(pattern: any): string[] {
+// Extract color mentions from pattern text (exported for unit tests)
+export function extractColorMentions(pattern: any): string[] {
   const commonColors = [
     'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black',
     'white', 'gray', 'grey', 'brown', 'beige', 'cream', 'teal', 'navy',
@@ -465,7 +465,7 @@ function extractColorMentions(pattern: any): string[] {
  * @param yarnWeight - Optional yarn weight information to include in the volume description
  * @returns Array of YarnRequirement objects
  */
-function generateDefaultYarnRequirements(
+export function generateDefaultYarnRequirements(
   pattern: any,
   projectType: string,
   complexityScore: number = 5,

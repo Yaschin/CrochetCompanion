@@ -62,6 +62,7 @@ export interface Pattern {
   skillLevel: string;
   materialsNotes?: string;
   userNotes?: string;
+  counterState?: { stitches: number; rows: number; target: number; history?: unknown[] } | null;
   yarnRequirements?: YarnRequirement[];
   hookRequirements?: HookRequirement[];
   notionsRequirements?: NotionsRequirement[];

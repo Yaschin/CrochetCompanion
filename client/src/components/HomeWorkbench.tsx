@@ -967,12 +967,14 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected, onResumeC
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => onNavigate("search")}
+            aria-label="Search patterns"
             className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
             style={{ background: "rgba(255,252,245,0.8)", border: "1px solid rgba(140,100,55,0.2)" }}>
             <Search className="h-4 w-4" style={{ color: "#9A7868" }} />
           </button>
           <button
             onClick={handleBellClick}
+            aria-label="Community notifications"
             className="relative w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
             style={{ background: "rgba(255,252,245,0.8)", border: "1px solid rgba(140,100,55,0.2)" }}>
             <Bell className="h-4 w-4" style={{ color: "#9A7868" }} />
