@@ -1,4 +1,5 @@
-- [Crochet Time app structure](crochet-time-structure.md) — key files, character paths, ViewType navigation map, and CSS conventions for this project.
+- [Crochet Time app structure](crochet-time-structure.md) — key files, character paths, ViewType navigation map, family-profiles system, tutorial/import systems, and CSS conventions.
+- Delivery state lives in `docs/CROCHET_TIME_ROADMAP_2026-06-09.md` (SSOT): Phases 1–4 merged (PR #23); Phase 6 family profiles + main-merge in PR #24; Phase 5 polish unscheduled; live AI deep-test still pending.
 - [PatternViewer tabs design](patternviewer-tabs.md) — viewer has Overview/Pattern/Notes tabs; Notes persist in localStorage keyed by pattern.id; "Created {date}" shows real date; Adapt panel is live.
 - [PatternInput wizard](patternInput-wizard.md) — 5-step wizard replaced JSX-only (mutations kept); stale old return block required manual sed deletion.
 - [Walkthrough bugs fixed](walkthrough-bugs.md) — 4 bugs found and fixed during full app walkthrough; DB/seed/sort/activePattern issues.

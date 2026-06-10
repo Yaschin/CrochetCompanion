@@ -1,6 +1,11 @@
 # Phase 6 — Family Profiles (detailed plan)
 
-**Date:** 2026-06-09 · **Status:** Approved, in build
+**Date:** 2026-06-09 · **Status: IMPLEMENTED — in PR #24 (CI green), awaiting merge.**
+All acceptance criteria below verified via tsc/build + Playwright (42/42, incl. a dedicated first-run picker test). Implementation notes from the build:
+- PR #24 also merges main's same-day Replit additions (tutorial system, pattern import, library image backfill) and restores main's accidentally-reverted Phase 1/3 startup block in `routes.ts`.
+- AI resize/substitute copies are owner-stamped (`profileOf(req)`) so adaptations land in the adapter's library.
+- The tutorial cannot overlay the picker (the picker renders outside the app shell); a new user's flow is splash → pick yourself → Ashi's tour on Home. Tutorial "seen" state is per-device, not per-profile (flag if per-person tours are wanted).
+
 **Decisions (Yash):** ① other profiles start empty ② avatar map approved (Larissa→Aloo/rose, Vumsh→Yala/plum, Akka→Ashi/sage, Mummy→Bee/honey) ③ picker shown after splash ④ build proceeds on the same branch; PR #23 merge can happen in parallel (schema heals are idempotent).
 
 **Concept:** Netflix-style profiles, no passwords. Convenience separation for a household — explicitly NOT security. Anyone at the device can switch. Real auth remains out of scope.
