@@ -11,6 +11,17 @@ export async function ensureSchema(): Promise<void> {
     sql`CREATE TABLE IF NOT EXISTS app_meta (key text PRIMARY KEY, value text NOT NULL)`
   );
 
+  // The base tables (patterns, stash_items, …) are owned by drizzle-kit
+  // (`npm run db:push`). On a brand-new database they don't exist yet — skip
+  // the heals that depend on them instead of crashing the whole boot chain.
+  const base = await db.execute(sql`SELECT to_regclass('patterns') AS t`);
+  if (!(base.rows?.[0] as { t?: string | null } | undefined)?.t) {
+    console.error(
+      "ensureSchema: base tables missing — run `npm run db:push` against this database, then restart."
+    );
+    return;
+  }
+
   // Heal rows written with the invalid "project" status by the Jun-8 seed bug —
   // they carried a startedAt date but were invisible in the Projects screen.
   await db.execute(
