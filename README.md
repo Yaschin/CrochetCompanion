@@ -16,12 +16,17 @@ is the source of truth.
   materials, sections and steps; per-section regeneration preserves locked steps
 - **Family profiles** — "Who's crocheting today?" (Larissa, Vumsh, Akka,
   Mummy): no passwords, each with their own library, projects, stash, notes,
-  streaks and backups; community is the shared space
-- **Making tools** — row-by-row follow mode, voice-controlled stitch counter
-  with wake-lock, progress photos with AI alignment-check, AI resize / yarn
-  substitution, branded Print/PDF export
+  streaks, gauge, up-next pin and backups; community is the shared space with
+  **family make-alongs** (everyone makes the same pattern, shared race board)
+- **Making tools** — row-by-row follow mode with a "you are here" section map,
+  in-round stitch tally, voice control ("done"/"back"/"stitch"), tappable stitch
+  glossary with how-to videos, 25/50/75% milestone moments, and Ashi the AI
+  coach for "I'm stuck on this exact round"; voice stitch counter with
+  wake-lock; progress photos with AI alignment-check; gauge-aware AI resize /
+  yarn substitution; branded Print/PDF export; shareable project story cards
 - **Trust** — durable object storage for media, JSON backup/restore,
-  installable offline-first PWA, Settings → App health self-diagnostics
+  installable offline-first PWA, Settings → App health self-diagnostics,
+  📸 ball-band scanner (photo a yarn label → stash item pre-filled)
 - **Guided onboarding** — interactive tour (restartable from Settings)
 
 ## Stack
@@ -38,7 +43,23 @@ npm install
 npm run dev        # needs DATABASE_URL (+ OPENAI_API_KEY for AI features)
 npm run check      # typecheck
 npm run build      # production build
-npm run test:e2e   # Playwright suite — fully mocked API, no DB/key needed
+npm run test:e2e   # Playwright browser suite — fully mocked API, no DB/key needed
+npm run test:unit  # vitest — yarn-estimate + stash-match math
+npm run smoke      # full-stack API smoke vs a REAL server + Postgres (see below)
+npm run walkthrough        # on-demand: screenshot every screen (mobile+desktop)
+npm run walkthrough:deep   # on-demand: 17 interaction journeys (mobile+tablet)
+```
+
+### Full-stack testing locally
+
+`server/db.ts` speaks Neon WebSocket in production and plain node-postgres for
+localhost URLs, so a real end-to-end run needs only a local Postgres:
+
+```bash
+createdb crochet
+psql crochet -f scripts/create-base-tables.sql
+DATABASE_URL=postgresql://localhost/crochet npx tsx server/index.ts &
+npm run smoke      # 31 assertions; also runs in CI via a postgres:16 service
 ```
 
 Schema changes apply automatically at boot via idempotent heals in

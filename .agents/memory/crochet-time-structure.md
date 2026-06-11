@@ -53,6 +53,18 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - `server/seedLibraryImages.ts` — boot-time, non-destructive backfill of missing pattern images (runs after seeds in the ensureSchema chain).
 - e2e presets BOTH localStorage flags (profile + tutorial-seen) in `enterApp()`.
 
+## Phase 8 systems (2026-06-11)
+- Follow Mode (`components/FollowMode.tsx`) now hosts: section-map chips, in-round tally (target parsed from trailing "(N)"), voice control, milestone moments, glossary chips (`lib/glossary.ts`), and Ashi coach (`components/CoachChat.tsx` → `POST /api/patterns/:id/coach`, `server/api/coach.ts`).
+- Ball-band scanner: `POST /api/stash/scan-label` (`server/api/scanLabel.ts`) ← 📷 button in MaterialsInventory dialog.
+- Make-alongs: `server/makealongService.ts`, tables `makealongs`/`makealong_members` (ensureSchema), board UI in CommunityScreen, start button in CommunityDetailScreen.
+- Per-profile app_meta keys: `upnext:{id}`, `gauge:{id}` (`/api/up-next`, `/api/gauge`); story cards `lib/storyCard.ts`; cover photo `POST /api/patterns/:id/cover-photo`.
+- Doing=starting: PUT /api/patterns/:id auto-promotes status pattern→active when a step completes or counterState>0 (server-side).
+
+## Testing infrastructure
+- `server/db.ts` dual driver: Neon WebSocket (prod) vs node-postgres (localhost) — enables real-server testing anywhere.
+- `npm run smoke` (`scripts/fullstack-smoke.mjs`): 31 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
+- ensureSchema degrades gracefully on a virgin DB (logs db:push hint) — fresh-DB boot crash fixed 2026-06-11; communityService creatorId persistence fixed same day.
+
 ## Navigation chrome
 - Mobile bottom nav (`AppShell.tsx`, `md:hidden`): 5 tabs — Home, Create,
   Library, Projects, Community. (Favorites demoted to Library filter/Home
