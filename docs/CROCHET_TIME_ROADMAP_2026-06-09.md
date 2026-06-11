@@ -113,6 +113,22 @@ Deep critique of navigation/logic intuitiveness led to:
 - **Unified counting**: Follow Mode embeds a stitch tally whose target parses from the round's trailing "(N)".
 - AI prompt hardening (round labels/counts, US terms, skill-level stitch vocabulary) tracked as the remaining craft-content item.
 
+## Phase 8 — Innovations (approved 2026-06-11: all Tier 1 + #6/#7/#8/#9)
+
+- **Tier 1 delight**: voice control in Follow Mode (done/back/stitch); tappable stitch-glossary
+  chips with explainers + how-to video links (`lib/glossary.ts`); "Up next" pinned pattern
+  (Home card + viewer chip, app_meta per profile); mid-make milestone moments at 25/50/75%;
+  shareable project story card (`lib/storyCard.ts`, canvas → native share/download).
+- **#6 Ball-band scanner**: `POST /api/stash/scan-label` (vision) + 📷 button in the stash
+  dialog pre-fills the form from a photo of the label.
+- **#7 Family make-alongs**: `makealongs`/`makealong_members` tables, start from any community
+  pattern, join imports a personal copy, shared progress board on Community with per-member
+  colour bars and 🏆 finishes.
+- **#8 Gauge-aware resize**: per-profile gauge (Settings card, `/api/gauge`); resize prompts
+  automatically include the maker's tension.
+- **#9 Ashi the coach**: `POST /api/patterns/:id/coach` (capped, contextual) + chat sheet in
+  Follow Mode — answers about the exact round you're on.
+
 ## Explicitly not pursued (agreed scope guard)
 
 Multi-user **auth** / real social community; AI provider swaps; offline write-sync queue. Each adds large surface area against the household design. (Phase 6 profiles are trust-based convenience separation, not auth.)

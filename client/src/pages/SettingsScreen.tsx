@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Download, Upload, Shield, Heart, HelpCircle, Activity, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -85,6 +85,28 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
       });
     } finally {
       setChecking(false);
+    }
+  };
+
+  // Personal gauge (tension) — used by AI resize to fit YOUR hands.
+  const [gauge, setGauge] = useState<{ stitches: string; rows: string }>({ stitches: "", rows: "" });
+  const [savingGauge, setSavingGauge] = useState(false);
+  useEffect(() => {
+    fetch(withProfile("/api/gauge"), { credentials: "same-origin" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((g) => { if (g) setGauge({ stitches: g.stitches ? String(g.stitches) : "", rows: g.rows ? String(g.rows) : "" }); })
+      .catch(() => {});
+  }, []);
+  const saveGauge = async () => {
+    setSavingGauge(true);
+    try {
+      const res = await apiRequest("PUT", "/api/gauge", { stitches: Number(gauge.stitches) || null, rows: Number(gauge.rows) || null });
+      if (!res.ok) throw new Error("save failed");
+      toast({ title: "Gauge saved 📏", description: "Resizing will now use your tension." });
+    } catch {
+      toast({ title: "Couldn't save gauge", variant: "destructive" });
+    } finally {
+      setSavingGauge(false);
     }
   };
 
@@ -187,6 +209,45 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
             <HelpCircle className="h-4 w-4" />
             Take the tour again
           </button>
+        </div>
+
+        {/* My gauge */}
+        <div className="craft-card p-5">
+          <p className="font-heading font-semibold text-[13px] mb-1" style={{ color: "#3D2318" }}>
+            My gauge 📏
+          </p>
+          <p className="text-[12px] mb-3" style={{ color: "#9A7868" }}>
+            Crochet a 10×10&nbsp;cm square in SC, count the stitches and rows, and save them here —
+            pattern resizing will use <em>your</em> tension instead of a generic one.
+          </p>
+          <div className="flex items-end gap-3">
+            <label className="flex-1 text-[11.5px] font-semibold" style={{ color: "#7A5A48" }}>
+              Stitches / 10cm
+              <input
+                type="number" min={1} inputMode="numeric" value={gauge.stitches}
+                onChange={(e) => setGauge((g) => ({ ...g, stitches: e.target.value }))}
+                className="mt-1 w-full rounded-xl px-3 py-2 text-[13px] outline-none"
+                style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.25)", color: "#3D2318" }}
+              />
+            </label>
+            <label className="flex-1 text-[11.5px] font-semibold" style={{ color: "#7A5A48" }}>
+              Rows / 10cm
+              <input
+                type="number" min={1} inputMode="numeric" value={gauge.rows}
+                onChange={(e) => setGauge((g) => ({ ...g, rows: e.target.value }))}
+                className="mt-1 w-full rounded-xl px-3 py-2 text-[13px] outline-none"
+                style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.25)", color: "#3D2318" }}
+              />
+            </label>
+            <button
+              onClick={saveGauge}
+              disabled={savingGauge}
+              className="px-4 py-2.5 rounded-xl text-[12.5px] font-bold disabled:opacity-60"
+              style={{ background: "#84934F", color: "white" }}
+            >
+              {savingGauge ? "…" : "Save"}
+            </button>
+          </div>
         </div>
 
         {/* App health */}

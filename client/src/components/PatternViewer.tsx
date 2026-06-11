@@ -12,8 +12,11 @@ import CelebrationOverlay from './CelebrationOverlay';
 import StashCoverage from './StashCoverage';
 import { recordActivity } from '../lib/activityLog';
 import { cn } from '../lib/utils';
-import { RefreshCw, Download, FileText, Plus, Image, Hash, Heart, CheckCircle2, Play, Share2, Scissors, Shuffle } from 'lucide-react';
+import { RefreshCw, Download, FileText, Plus, Image, Hash, Heart, CheckCircle2, Pencil, Play, Share2, Scissors, Shuffle } from 'lucide-react';
 import { printPattern } from '../lib/printPattern';
+import { shareStoryCard } from '../lib/storyCard';
+import { getActiveProfile } from '../lib/profile';
+import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
@@ -58,6 +61,9 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
   const [regenAllNote, setRegenAllNote] = useState("");
   const [shareConfirmOpen, setShareConfirmOpen] = useState(false);
   const [followOpen, setFollowOpen] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(pattern.title);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const [adaptOpen, setAdaptOpen] = useState(false);
   const [adaptMode, setAdaptMode] = useState<"resize" | "substitute">("resize");
   const [adaptInstruction, setAdaptInstruction] = useState("");
@@ -144,6 +150,74 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
         variant: "destructive",
       });
     },
+  });
+
+  // Set a real photo of the finished object as the cover image.
+  const coverPhotoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const imageBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await apiRequest('POST', `/api/patterns/${pattern.id}/cover-photo`, { imageBase64 });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      onPatternUpdated(data);
+      queryClient.invalidateQueries({ queryKey: ['/api/patterns'] });
+      toast({ title: "Beautiful! 📷", description: "Your photo is now the cover — trophy shelf included." });
+    },
+    onError: () => toast({ title: "Couldn't save the photo", description: "Please try again.", variant: "destructive" }),
+  });
+
+  // "Up next" — one pinned pattern per profile.
+  const { data: upNext } = useQuery<{ patternId: string | null }>({ queryKey: ["/api/up-next"] });
+  const isUpNext = upNext?.patternId === pattern.id;
+  const upNextMutation = useMutation({
+    mutationFn: async (pin: boolean) => {
+      const res = await apiRequest('PUT', '/api/up-next', { patternId: pin ? pattern.id : "" });
+      if (!res.ok) throw new Error('failed');
+      return res.json();
+    },
+    onSuccess: (_d, pin) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/up-next"] });
+      toast(pin ? { title: "Pinned as up next ⏭", description: "It'll be waiting on your Home screen." } : { title: "Unpinned" });
+    },
+    onError: () => toast({ title: "Couldn't update", variant: "destructive" }),
+  });
+
+  const [sharingStory, setSharingStory] = useState(false);
+  const handleStoryCard = async () => {
+    setSharingStory(true);
+    try {
+      await shareStoryCard(pattern, getActiveProfile().name);
+      toast({ title: "Story card ready 🎞", description: "Shared (or downloaded) — straight to the family chat!" });
+    } catch (e) {
+      if ((e as Error)?.name !== "AbortError") {
+        toast({ title: "Couldn't make the card", variant: "destructive" });
+      }
+    } finally {
+      setSharingStory(false);
+    }
+  };
+
+  // Rename the pattern (AI titles can be quirky).
+  const renameMutation = useMutation({
+    mutationFn: async (title: string) => {
+      const res = await apiRequest('PUT', `/api/patterns/${pattern.id}`, { title });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      onPatternUpdated(data);
+      queryClient.invalidateQueries({ queryKey: ['/api/patterns'] });
+      setEditingTitle(false);
+      toast({ title: "Renamed ♡" });
+    },
+    onError: () => toast({ title: "Couldn't rename", variant: "destructive" }),
   });
 
   // Publish this pattern to the Community Library (publish-from-library path)
@@ -751,9 +825,44 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h2 className="font-heading text-xl font-bold leading-tight" style={{ color: "#3D2318" }}>
-            {pattern.title}
-          </h2>
+          {editingTitle ? (
+            <div className="flex items-center gap-2">
+              <input
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                aria-label="Pattern name"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && titleDraft.trim()) renameMutation.mutate(titleDraft.trim());
+                  if (e.key === 'Escape') { setEditingTitle(false); setTitleDraft(pattern.title); }
+                }}
+                className="font-heading text-xl font-bold leading-tight flex-1 min-w-0 rounded-lg px-2 py-1 outline-none"
+                style={{ color: "#3D2318", background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(194,78,107,0.4)" }}
+              />
+              <button
+                onClick={() => titleDraft.trim() && renameMutation.mutate(titleDraft.trim())}
+                disabled={renameMutation.isPending || !titleDraft.trim()}
+                aria-label="Save name"
+                className="px-3 py-1.5 rounded-lg text-[12px] font-bold disabled:opacity-50"
+                style={{ background: "#C24E6B", color: "white" }}
+              >
+                {renameMutation.isPending ? "…" : "Save"}
+              </button>
+            </div>
+          ) : (
+            <h2 className="font-heading text-xl font-bold leading-tight group" style={{ color: "#3D2318" }}>
+              {pattern.title}
+              <button
+                onClick={() => { setTitleDraft(pattern.title); setEditingTitle(true); }}
+                aria-label="Rename pattern"
+                title="Rename pattern"
+                className="ml-2 inline-flex align-middle opacity-50 hover:opacity-100 transition-opacity"
+                style={{ color: "#9A7868" }}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            </h2>
+          )}
           <div className="flex flex-wrap gap-1.5 mt-2">
             {pattern.status === 'active' && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-100 text-yellow-700">In progress</span>
@@ -861,6 +970,47 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                   ))}
                 </div>
                 <div className="flex gap-2 mt-3 flex-wrap">
+                  {pattern.status === 'pattern' && (
+                    <button
+                      onClick={() => upNextMutation.mutate(!isUpNext)}
+                      disabled={upNextMutation.isPending}
+                      aria-pressed={isUpNext}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+                      style={isUpNext
+                        ? { background: "#7C5FA8", color: "white" }
+                        : { background: "rgba(124,95,168,0.10)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.25)" }}
+                    >
+                      ⏭ {isUpNext ? "Up next ✓" : "Make this next"}
+                    </button>
+                  )}
+                  {pattern.status === 'finished' && (
+                    <>
+                      <button
+                        onClick={handleStoryCard}
+                        disabled={sharingStory}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+                        style={{ background: "rgba(124,95,168,0.10)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.25)" }}
+                      >
+                        🎞 {sharingStory ? "Making…" : "Story card"}
+                      </button>
+                      <input
+                        ref={coverInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) coverPhotoMutation.mutate(f); e.target.value = ''; }}
+                      />
+                      <button
+                        onClick={() => coverInputRef.current?.click()}
+                        disabled={coverPhotoMutation.isPending}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+                        style={{ background: "rgba(132,147,79,0.12)", color: "#84934F", border: "1px solid rgba(132,147,79,0.3)" }}
+                      >
+                        📷 {coverPhotoMutation.isPending ? "Saving…" : "Finished photo"}
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => printPattern(pattern)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"

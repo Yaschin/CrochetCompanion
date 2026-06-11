@@ -927,6 +927,9 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected, onResumeC
   };
 
   const activePattern = patterns.find((p) => p.status === "active") ?? patterns.find((p) => p.status !== "finished") ?? patterns[0] ?? null;
+  const { data: upNextData } = useQuery<{ patternId: string | null }>({ queryKey: ["/api/up-next"] });
+  const upNextPattern =
+    patterns.find((p) => p.id === upNextData?.patternId && p.status === "pattern" && p.id !== activePattern?.id) ?? null;
   const favoritesCount = patterns.filter((p) => p.favorite).length;
   const projectsCount = patterns.length;
   const milestonesCount = patterns.filter((p) => p.status === 'finished').length;
@@ -1037,6 +1040,24 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected, onResumeC
             ✨ Make From My Stash
           </button>
         </div>
+
+        {/* Up next — the one pattern pinned to make after the current project */}
+        {upNextPattern && (
+          <button
+            onClick={() => onPatternSelected?.(upNextPattern)}
+            className="w-full mt-3 flex items-center gap-3 p-3 rounded-2xl text-left transition-all hover:shadow-md active:scale-[0.99]"
+            style={{ background: "rgba(124,95,168,0.08)", border: "1.5px dashed rgba(124,95,168,0.35)" }}
+          >
+            <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0" style={{ containerType: "inline-size" }}>
+              <PatternThumb image={upNextPattern.endProductImage} title={upNextPattern.title} projectType={upNextPattern.projectType} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10.5px] font-bold uppercase tracking-wide" style={{ color: "#7C5FA8" }}>⏭ Up next</p>
+              <p className="font-heading font-bold text-[13.5px] truncate" style={{ color: "#3D2318" }}>{upNextPattern.title}</p>
+            </div>
+            <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "#7C5FA8" }} />
+          </button>
+        )}
 
         {/* Active Projects — mobile main column (desktop has right panel) */}
         {activePattern && (

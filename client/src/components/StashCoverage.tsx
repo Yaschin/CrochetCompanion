@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Check, X, ShoppingBag, Sparkles } from "lucide-react";
 import { Pattern, StashItem } from "../lib/types";
 import { analyzeStashCoverage } from "../lib/stashMatch";
+import { useToast } from "../hooks/use-toast";
 
 interface StashCoverageProps {
   pattern: Pattern;
@@ -15,7 +16,18 @@ interface StashCoverageProps {
  * against the real materials inventory (`/api/stash`).
  */
 export default function StashCoverage({ pattern, compact, onOpenStash }: StashCoverageProps) {
+  const { toast } = useToast();
   const { data: stash = [], isLoading } = useQuery<StashItem[]>({ queryKey: ["/api/stash"] });
+
+  const copyShoppingList = async (missing: string[]) => {
+    const text = `Shopping list for "${pattern.title}":\n${missing.map((m) => `• ${m}`).join("\n")}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Shopping list copied 🛍️", description: "Paste it into your notes or a message." });
+    } catch {
+      toast({ title: "Couldn't copy automatically", description: text, duration: 10000 });
+    }
+  };
 
   const coverage = analyzeStashCoverage(pattern, stash);
 
@@ -90,15 +102,26 @@ export default function StashCoverage({ pattern, compact, onOpenStash }: StashCo
         ))}
       </div>
 
-      {!coverage.canMake && onOpenStash && (
-        <button
-          onClick={onOpenStash}
-          className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold transition-all hover:opacity-90"
-          style={{ background: "rgba(212,146,26,0.12)", color: "#A8761A", border: "1px dashed rgba(212,146,26,0.4)" }}
-        >
-          <ShoppingBag className="h-3.5 w-3.5" />
-          Check my stash
-        </button>
+      {!coverage.canMake && (
+        <div className="flex gap-2 mt-3">
+          {onOpenStash && (
+            <button
+              onClick={onOpenStash}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold transition-all hover:opacity-90"
+              style={{ background: "rgba(212,146,26,0.12)", color: "#A8761A", border: "1px dashed rgba(212,146,26,0.4)" }}
+            >
+              <ShoppingBag className="h-3.5 w-3.5" />
+              Check my stash
+            </button>
+          )}
+          <button
+            onClick={() => copyShoppingList(coverage.missing)}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold transition-all hover:opacity-90"
+            style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "1px dashed rgba(194,78,107,0.35)" }}
+          >
+            📋 Copy shopping list
+          </button>
+        </div>
       )}
     </div>
   );
