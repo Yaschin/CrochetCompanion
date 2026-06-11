@@ -17,6 +17,10 @@ import { seedLibraryImages } from "./seedLibraryImages";
 import { seedProfilePatterns, seedProfileStash } from "./seedProfilePatterns";
 import { ensureSchema } from "./ensureSchema";
 import { runQuickDiagnostics, runDeepDiagnostics } from "./diagnostics";
+import { scanLabel } from "./api/scanLabel";
+import { askCoach } from "./api/coach";
+import { makealongService } from "./makealongService";
+import { getMeta, setMeta } from "./ensureSchema";
 import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
 import { PROFILES, isProfileId, profileById, DEFAULT_PROFILE_ID } from "../shared/profiles";
 import { z } from "zod";
@@ -899,7 +903,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const original = await patternService.getPattern(req.params.id);
       if (!original) return res.status(404).json({ message: "Pattern not found" });
 
-      const transformed = await transformPattern(original, mode, capText(instruction));
+      let gaugeNote = "";
+      if (mode === "resize") {
+        try {
+          const raw = await getMeta(`gauge:${profileOf(req)}`);
+          const g = raw ? JSON.parse(raw) : null;
+          if (g?.stitches && g?.rows) {
+            gaugeNote = ` The maker's personal gauge is ${g.stitches} SC and ${g.rows} rows per 10cm — recalculate stitch counts and the finished size against THIS tension, not a generic one.`;
+          }
+        } catch { /* no gauge saved */ }
+      }
+      const transformed = await transformPattern(original, mode, capText(instruction) + gaugeNote);
       transformed.title =
         mode === "resize" ? `${original.title} (resized)` : `${original.title} (${instruction.trim()})`;
       // The adapted copy belongs to whoever requested the adaptation.
@@ -996,6 +1010,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error recording activity:", error);
       res.status(500).json({ message: "Failed to record activity" });
+    }
+  });
+
+  // ── Yarn ball-band scanner: photo → pre-filled stash item ──────────────────
+  app.post("/api/stash/scan-label", async (req: Request, res: Response) => {
+    try {
+      const { imageBase64 } = req.body;
+      if (!imageBase64 || typeof imageBase64 !== "string" || !imageBase64.startsWith("data:image/")) {
+        return res.status(400).json({ message: "imageBase64 (data:image/… URL) is required" });
+      }
+      res.json(await scanLabel(imageBase64));
+    } catch (error) {
+      console.error("Label scan failed:", error);
+      res.status(500).json({ message: (error as Error).message || "Could not read the label" });
+    }
+  });
+
+  // ── Ashi the crochet coach: contextual help on the current round ────────────
+  app.post("/api/patterns/:id/coach", async (req: Request, res: Response) => {
+    try {
+      const { question, history, sectionName, stepText } = req.body;
+      if (!question || typeof question !== "string" || !question.trim()) {
+        return res.status(400).json({ message: "question is required" });
+      }
+      const pattern = await patternService.getPattern(req.params.id);
+      if (!pattern) return res.status(404).json({ message: "Pattern not found" });
+      const answer = await askCoach(
+        question.trim(),
+        {
+          patternTitle: pattern.title,
+          skillLevel: pattern.skillLevel,
+          sectionName: capText(sectionName, 80) || undefined,
+          stepText: capText(stepText, 300) || undefined,
+        },
+        Array.isArray(history) ? history.filter((t) => t && (t.role === "user" || t.role === "assistant")) : []
+      );
+      res.json({ answer });
+    } catch (error) {
+      console.error("Coach failed:", error);
+      res.status(500).json({ message: (error as Error).message || "Ashi couldn't answer" });
+    }
+  });
+
+  // ── "Up next" — one pinned pattern per profile ──────────────────────────────
+  app.get("/api/up-next", async (req: Request, res: Response) => {
+    try {
+      const patternId = await getMeta(`upnext:${profileOf(req)}`);
+      res.json({ patternId: patternId || null });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to read up-next" });
+    }
+  });
+
+  app.put("/api/up-next", async (req: Request, res: Response) => {
+    try {
+      const { patternId } = req.body;
+      await setMeta(`upnext:${profileOf(req)}`, typeof patternId === "string" ? patternId : "");
+      res.json({ success: true, patternId: patternId || null });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to set up-next" });
+    }
+  });
+
+  // ── Personal gauge (tension) per profile ───────────────────────────────────
+  app.get("/api/gauge", async (req: Request, res: Response) => {
+    try {
+      const raw = await getMeta(`gauge:${profileOf(req)}`);
+      res.json(raw ? JSON.parse(raw) : { stitches: null, rows: null });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to read gauge" });
+    }
+  });
+
+  app.put("/api/gauge", async (req: Request, res: Response) => {
+    try {
+      const stitches = Number(req.body?.stitches) || null;
+      const rows = Number(req.body?.rows) || null;
+      await setMeta(`gauge:${profileOf(req)}`, JSON.stringify({ stitches, rows }));
+      res.json({ stitches, rows });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to save gauge" });
+    }
+  });
+
+  // ── Family make-alongs ──────────────────────────────────────────────────────
+  app.get("/api/makealongs", async (_req: Request, res: Response) => {
+    try {
+      res.json(await makealongService.getAll());
+    } catch (error) {
+      console.error("Make-along list failed:", error);
+      res.status(500).json({ message: "Failed to list make-alongs" });
+    }
+  });
+
+  app.post("/api/makealongs", async (req: Request, res: Response) => {
+    try {
+      const { communityId } = req.body;
+      if (!communityId || typeof communityId !== "string") {
+        return res.status(400).json({ message: "communityId is required" });
+      }
+      res.status(201).json(await makealongService.create(communityId, profileOf(req)));
+    } catch (error) {
+      console.error("Make-along create failed:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to start make-along" });
+    }
+  });
+
+  app.post("/api/makealongs/:id/join", async (req: Request, res: Response) => {
+    try {
+      await makealongService.join(req.params.id, profileOf(req));
+      res.json(await makealongService.getById(req.params.id));
+    } catch (error) {
+      console.error("Make-along join failed:", error);
+      res.status(500).json({ message: (error as Error).message || "Failed to join make-along" });
     }
   });
 

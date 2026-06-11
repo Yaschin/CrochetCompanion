@@ -312,7 +312,7 @@ function App() {
               )}
 
               {activeView === "community" && (
-                <CommunityScreen onNavigate={navigateToView} onPatternSelect={handleCommunitySelected} />
+                <CommunityScreen onNavigate={navigateToView} onPatternSelect={handleCommunitySelected} onOpenPattern={handlePatternLoaded} />
               )}
 
               {activeView === "community-detail" && (

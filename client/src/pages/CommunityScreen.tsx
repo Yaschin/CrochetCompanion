@@ -2,7 +2,9 @@ import { profileById } from "@shared/profiles";
 import { useState } from "react";
 import { Search, Heart, ChevronDown, Sparkles } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ViewType } from "../lib/types";
+import { Pattern, ViewType } from "../lib/types";
+import { useToast } from "@/hooks/use-toast";
+import { getActiveProfile } from "../lib/profile";
 import type { CommunityPattern } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { PatternThumb } from "@/components/PatternThumb";
@@ -10,6 +12,24 @@ import { PatternThumb } from "@/components/PatternThumb";
 interface CommunityScreenProps {
   onNavigate: (view: ViewType) => void;
   onPatternSelect?: (id: string) => void;
+  onOpenPattern?: (p: Pattern) => void;
+}
+
+interface MakeAlongMember {
+  profileId: string;
+  name: string;
+  color: string;
+  patternId: string;
+  pct: number;
+  finished: boolean;
+}
+
+interface MakeAlong {
+  id: string;
+  title: string;
+  communityId: string;
+  createdAt: string;
+  members: MakeAlongMember[];
 }
 
 const TYPE_FILTERS = ["All Types", "Toy", "Wearable", "Home Decor", "Accessory"];
@@ -23,7 +43,35 @@ function diffColor(skill: string): string {
   return "#84934F";
 }
 
-export default function CommunityScreen({ onNavigate, onPatternSelect }: CommunityScreenProps) {
+export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPattern }: CommunityScreenProps) {
+  const { toast } = useToast();
+  const myId = getActiveProfile().id;
+  const { data: makealongsRaw } = useQuery<MakeAlong[]>({ queryKey: ["/api/makealongs"] });
+  const makealongs = Array.isArray(makealongsRaw) ? makealongsRaw : [];
+
+  const joinMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiRequest("POST", `/api/makealongs/${id}/join`, {});
+      if (!res.ok) throw new Error("join failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/makealongs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/patterns"] });
+      toast({ title: "You're in! 🏁", description: "A copy is now in your library — happy racing!" });
+    },
+    onError: () => toast({ title: "Couldn't join", variant: "destructive" }),
+  });
+
+  const openMyCopy = async (patternId: string) => {
+    try {
+      const res = await fetch(`/api/patterns/${patternId}`, { credentials: "same-origin" });
+      if (!res.ok) throw new Error();
+      onOpenPattern?.(await res.json());
+    } catch {
+      toast({ title: "Couldn't open your copy", variant: "destructive" });
+    }
+  };
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All Types");
   const [skillFilter, setSkillFilter] = useState("All Skill Levels");
@@ -114,6 +162,66 @@ export default function CommunityScreen({ onNavigate, onPatternSelect }: Communi
           </div>
         </div>
       </div>
+
+      {/* Family make-alongs — the shared race board */}
+      {makealongs.length > 0 && (
+        <div className="px-4 pt-4">
+          <h2 className="font-heading font-bold text-[14px] mb-2" style={{ color: "#3D2318" }}>
+            🏁 Family make-alongs
+          </h2>
+          <div className="flex flex-col gap-3">
+            {makealongs.map((ma) => {
+              const mine = ma.members.find((m) => m.profileId === myId);
+              return (
+                <div key={ma.id} className="craft-card p-4">
+                  <div className="flex items-center justify-between gap-2 mb-2.5">
+                    <p className="font-heading font-bold text-[13.5px] truncate" style={{ color: "#3D2318" }}>
+                      {ma.title}
+                    </p>
+                    {mine ? (
+                      <button
+                        onClick={() => openMyCopy(mine.patternId)}
+                        className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold hover:opacity-85"
+                        style={{ background: "#84934F", color: "white" }}>
+                        Open my copy →
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => joinMutation.mutate(ma.id)}
+                        disabled={joinMutation.isPending}
+                        className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold hover:opacity-85 disabled:opacity-60"
+                        style={{ background: "#7C5FA8", color: "white" }}>
+                        {joinMutation.isPending ? "Joining…" : "Join in 🏁"}
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    {ma.members.map((m) => (
+                      <div key={m.profileId} className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0"
+                          style={{ background: m.color }}>
+                          {m.name[0]}
+                        </span>
+                        <span className="text-[11px] font-semibold w-14 truncate" style={{ color: "#5C3A28" }}>{m.name}</span>
+                        <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(140,100,55,0.12)" }}>
+                          <div className="h-full rounded-full transition-all"
+                            style={{ width: `${m.finished ? 100 : m.pct}%`, background: m.color }} />
+                        </div>
+                        <span className="text-[10.5px] font-bold w-9 text-right" style={{ color: m.finished ? "#84934F" : "#9A7868" }}>
+                          {m.finished ? "✓ 🏆" : `${m.pct}%`}
+                        </span>
+                      </div>
+                    ))}
+                    {ma.members.length === 0 && (
+                      <p className="text-[11px]" style={{ color: "#9A7868" }}>Nobody has joined yet — be first!</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Grid */}
       <div className="px-4 pt-4">

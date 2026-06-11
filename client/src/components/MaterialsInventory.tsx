@@ -1,4 +1,5 @@
 import { FC, useEffect, useMemo, useState } from 'react';
+import { useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -63,6 +64,43 @@ const MaterialsInventory: FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm());
+  const scanInputRef = useRef<HTMLInputElement>(null);
+
+  // Photo of a ball band → AI vision → pre-filled form. The reason stashes
+  // stay empty is typing; this removes the typing.
+  const scanMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const imageBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await apiRequest('POST', '/api/stash/scan-label', { imageBase64 });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Could not read the label');
+      }
+      return res.json() as Promise<{ type: StashItemType; name: string; color?: string; volume?: string; size?: string; notes?: string }>;
+    },
+    onSuccess: (scanned) => {
+      if (!scanned.name) {
+        toast({ title: "Couldn't read a label", description: scanned.notes || 'Try a clearer, closer photo of the ball band.', variant: 'destructive' });
+        return;
+      }
+      setForm((f) => ({
+        ...f,
+        type: scanned.type || f.type,
+        name: scanned.name,
+        color: scanned.color ?? f.color,
+        volume: scanned.volume ?? f.volume,
+        size: scanned.size ?? f.size,
+        notes: scanned.notes ?? f.notes,
+      }));
+      toast({ title: 'Label read! 📷', description: 'Check the details and tweak anything I misread.' });
+    },
+    onError: (err) => toast({ title: "Couldn't scan the label", description: err instanceof Error ? err.message : 'Please try again.', variant: 'destructive' }),
+  });
   const [notes, setNotes] = useState('');
 
   const { data: items, isLoading, isError } = useQuery<StashItem[]>({
@@ -311,6 +349,25 @@ const MaterialsInventory: FC = () => {
             <DialogTitle className="font-heading">{editingId ? 'Edit material' : 'Add material'}</DialogTitle>
             <DialogDescription>Track what&rsquo;s in your stash so patterns can reference it.</DialogDescription>
           </DialogHeader>
+
+          {/* Scan a ball band instead of typing */}
+          <input
+            ref={scanInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) scanMutation.mutate(f); e.target.value = ''; }}
+          />
+          <button
+            type="button"
+            onClick={() => scanInputRef.current?.click()}
+            disabled={scanMutation.isPending}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12.5px] font-bold transition-all hover:opacity-90 disabled:opacity-60"
+            style={{ background: 'rgba(124,95,168,0.10)', color: '#7C5FA8', border: '1.5px dashed rgba(124,95,168,0.4)' }}
+          >
+            📷 {scanMutation.isPending ? 'Reading the label…' : 'Scan the ball band — I\'ll fill this in'}
+          </button>
 
           <div className="grid gap-4 py-2">
             <div className="grid gap-1.5">

@@ -14,6 +14,9 @@ import { recordActivity } from '../lib/activityLog';
 import { cn } from '../lib/utils';
 import { RefreshCw, Download, FileText, Plus, Image, Hash, Heart, CheckCircle2, Pencil, Play, Share2, Scissors, Shuffle } from 'lucide-react';
 import { printPattern } from '../lib/printPattern';
+import { shareStoryCard } from '../lib/storyCard';
+import { getActiveProfile } from '../lib/profile';
+import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
@@ -169,6 +172,37 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     },
     onError: () => toast({ title: "Couldn't save the photo", description: "Please try again.", variant: "destructive" }),
   });
+
+  // "Up next" — one pinned pattern per profile.
+  const { data: upNext } = useQuery<{ patternId: string | null }>({ queryKey: ["/api/up-next"] });
+  const isUpNext = upNext?.patternId === pattern.id;
+  const upNextMutation = useMutation({
+    mutationFn: async (pin: boolean) => {
+      const res = await apiRequest('PUT', '/api/up-next', { patternId: pin ? pattern.id : "" });
+      if (!res.ok) throw new Error('failed');
+      return res.json();
+    },
+    onSuccess: (_d, pin) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/up-next"] });
+      toast(pin ? { title: "Pinned as up next ⏭", description: "It'll be waiting on your Home screen." } : { title: "Unpinned" });
+    },
+    onError: () => toast({ title: "Couldn't update", variant: "destructive" }),
+  });
+
+  const [sharingStory, setSharingStory] = useState(false);
+  const handleStoryCard = async () => {
+    setSharingStory(true);
+    try {
+      await shareStoryCard(pattern, getActiveProfile().name);
+      toast({ title: "Story card ready 🎞", description: "Shared (or downloaded) — straight to the family chat!" });
+    } catch (e) {
+      if ((e as Error)?.name !== "AbortError") {
+        toast({ title: "Couldn't make the card", variant: "destructive" });
+      }
+    } finally {
+      setSharingStory(false);
+    }
+  };
 
   // Rename the pattern (AI titles can be quirky).
   const renameMutation = useMutation({
@@ -936,8 +970,29 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                   ))}
                 </div>
                 <div className="flex gap-2 mt-3 flex-wrap">
+                  {pattern.status === 'pattern' && (
+                    <button
+                      onClick={() => upNextMutation.mutate(!isUpNext)}
+                      disabled={upNextMutation.isPending}
+                      aria-pressed={isUpNext}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+                      style={isUpNext
+                        ? { background: "#7C5FA8", color: "white" }
+                        : { background: "rgba(124,95,168,0.10)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.25)" }}
+                    >
+                      ⏭ {isUpNext ? "Up next ✓" : "Make this next"}
+                    </button>
+                  )}
                   {pattern.status === 'finished' && (
                     <>
+                      <button
+                        onClick={handleStoryCard}
+                        disabled={sharingStory}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+                        style={{ background: "rgba(124,95,168,0.10)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.25)" }}
+                      >
+                        🎞 {sharingStory ? "Making…" : "Story card"}
+                      </button>
                       <input
                         ref={coverInputRef}
                         type="file"

@@ -12,6 +12,24 @@ interface CommunityDetailScreenProps {
 }
 
 export default function CommunityDetailScreen({ onNavigate, communityId, onPatternSelected }: CommunityDetailScreenProps) {
+  const makealongMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/makealongs", { communityId });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "failed");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/makealongs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/patterns"] });
+      toast({ title: "Make-along started! 🏁", description: "A copy is in your library — the family can join from the Community page." });
+      onNavigate("community");
+    },
+    onError: (e) => toast({ title: "Couldn't start the make-along", description: e instanceof Error ? e.message : undefined, variant: "destructive" }),
+  });
+
   const { toast } = useToast();
 
   const { data: pattern, isLoading } = useQuery<CommunityPattern>({
@@ -181,6 +199,15 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
               ))}
             </div>
           </div>
+
+          {/* Family make-along: everyone makes it together */}
+          <button
+            onClick={() => makealongMutation.mutate()}
+            disabled={makealongMutation.isPending}
+            className="w-full py-3 rounded-2xl font-bold text-[13.5px] transition-all hover:opacity-85 flex items-center justify-center gap-2 disabled:opacity-60"
+            style={{ background: "rgba(124,95,168,0.12)", color: "#7C5FA8", border: "1.5px dashed rgba(124,95,168,0.45)" }}>
+            🏁 {makealongMutation.isPending ? "Starting…" : "Start a family make-along"}
+          </button>
 
           {/* Action buttons */}
           <div className="grid grid-cols-2 gap-3 pb-2">

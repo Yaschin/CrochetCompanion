@@ -71,6 +71,26 @@ export async function ensureSchema(): Promise<void> {
   // references anywhere — confirmed orphaned in the Jun-8 walkthrough.
   await db.execute(sql`DROP TABLE IF EXISTS project_events`);
 
+  // ── Family make-alongs (Phase 8) ───────────────────────────────────────────
+  // One shared challenge per community pattern; each member crochets their own
+  // library copy, so progress comes from the data that already exists.
+  await db.execute(
+    sql`CREATE TABLE IF NOT EXISTS makealongs (
+      id text PRIMARY KEY,
+      title text NOT NULL,
+      "communityId" text NOT NULL,
+      "createdAt" text NOT NULL
+    )`
+  );
+  await db.execute(
+    sql`CREATE TABLE IF NOT EXISTS makealong_members (
+      "makealongId" text NOT NULL,
+      "profileId" text NOT NULL,
+      "patternId" text NOT NULL,
+      PRIMARY KEY ("makealongId", "profileId")
+    )`
+  );
+
   // ── Deduplicate patterns (idempotent) ──────────────────────────────────────
   // Guard against re-seeds that ran before the one-time flag was set:
   // keep only the earliest row for each (ownerId, title) pair.

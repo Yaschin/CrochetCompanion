@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronLeft, ChevronRight, Minus, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Mic, Minus, X } from 'lucide-react';
+import CoachChat from './CoachChat';
+import { termsInText, videoUrl, GlossaryEntry } from '../lib/glossary';
 import { Pattern, PatternStep } from '../lib/types';
 
 interface FollowModeProps {
@@ -49,6 +51,11 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
   const [pos, setPos] = useState(firstOpen);
   // In-round stitch tally: target parsed from the round's trailing "(N)".
   const [tally, setTally] = useState(0);
+  const [voice, setVoice] = useState(false);
+  const [lastHeard, setLastHeard] = useState<string | null>(null);
+  const [milestone, setMilestone] = useState<string | null>(null);
+  const [glossaryOpen, setGlossaryOpen] = useState<GlossaryEntry | null>(null);
+  const [coachOpen, setCoachOpen] = useState(false);
   const wakeLockRef = useRef<any>(null);
 
   // Resume from the first unfinished step each time follow mode opens.
@@ -129,9 +136,20 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
     if (!current.step.completed) {
       onUpdateStep(current.sectionIndex, current.stepIndex, { ...current.step, completed: true });
       buzz(20);
+      // Mid-make milestones: a little fuel at the quarter marks.
+      const before = Math.round((doneCount / steps.length) * 100);
+      const after = Math.round(((doneCount + 1) / steps.length) * 100);
+      for (const [mark, msg] of [[25, "A quarter done! 🌱"], [50, "Halfway there! 🎉"], [75, "Three quarters — so close! ✨"]] as const) {
+        if (before < mark && after >= mark) {
+          setMilestone(msg);
+          buzz(40);
+          setTimeout(() => setMilestone(null), 1800);
+          break;
+        }
+      }
     }
     if (pos < steps.length - 1) advance();
-  }, [current, pos, steps.length, onUpdateStep, advance]);
+  }, [current, pos, steps.length, doneCount, onUpdateStep, advance]);
 
   const unmark = useCallback(() => {
     if (!current || !current.step.completed) return;
@@ -150,6 +168,30 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open, markDoneAndAdvance, back, advance, onClose]);
+
+  // Hands-free voice: "done"/"next" advance, "back" goes back, "stitch" tallies.
+  const voiceRefs = useRef({ markDoneAndAdvance, back });
+  voiceRefs.current = { markDoneAndAdvance, back };
+  useEffect(() => {
+    if (!open || !voice) { setLastHeard(null); return; }
+    const SR = (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).SpeechRecognition
+      || (window as unknown as { webkitSpeechRecognition?: any }).webkitSpeechRecognition;
+    if (!SR) { setVoice(false); return; }
+    const rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = false;
+    rec.lang = "en-US";
+    rec.onresult = (e: any) => {
+      const t = String(e.results[e.results.length - 1][0].transcript || "").toLowerCase();
+      setLastHeard(t.trim());
+      if (/(back|undo)/.test(t)) voiceRefs.current.back();
+      else if (/(stitch|count)/.test(t)) setTally((v) => v + 1);
+      else if (/(done|next|finished)/.test(t)) voiceRefs.current.markDoneAndAdvance();
+    };
+    rec.onend = () => { try { rec.start(); } catch { /* stopped */ } };
+    try { rec.start(); } catch { /* needs gesture / unsupported */ }
+    return () => { rec.onend = null; try { rec.stop(); } catch { /* ignore */ } };
+  }, [open, voice]);
 
   if (!open || !current) return null;
 
@@ -171,6 +213,27 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
             </span>
           </p>
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setVoice((v) => !v)}
+            aria-label="Toggle hands-free voice"
+            aria-pressed={voice}
+            title="Hands-free: say done, back, or stitch"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:opacity-70"
+            style={voice
+              ? { background: "rgba(194,78,107,0.15)", color: "#C24E6B", border: "1.5px solid rgba(194,78,107,0.4)" }
+              : { background: "rgba(140,100,55,0.08)", color: "#9A7868" }}
+          >
+            <Mic className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => setCoachOpen(true)}
+            aria-label="Ask Ashi for help with this round"
+            className="flex h-11 items-center gap-1.5 px-3 shrink-0 justify-center rounded-full text-[12px] font-bold hover:opacity-80"
+            style={{ background: "rgba(61,143,163,0.12)", color: "#3D8FA3", border: "1.5px solid rgba(61,143,163,0.3)" }}
+          >
+            💬 Ashi
+          </button>
         <button
           onClick={onClose}
           aria-label="Close follow mode"
@@ -179,6 +242,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
         >
           <X className="h-6 w-6" />
         </button>
+        </div>
       </div>
 
       {/* Progress + the whole-design map: every section, your position, tap to jump */}
@@ -233,6 +297,28 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
         {current.step.notes && (
           <p className="text-[13.5px] italic max-w-[480px]" style={{ color: "#7A5A48" }}>
             “{current.step.notes}”
+          </p>
+        )}
+
+        {/* Stitch glossary — tap an abbreviation for a plain-language explainer */}
+        {termsInText(current.step.text).length > 0 && (
+          <div className="flex flex-wrap justify-center gap-1.5">
+            {termsInText(current.step.text).map((g) => (
+              <button
+                key={g.abbr}
+                onClick={() => setGlossaryOpen(g)}
+                className="px-2.5 py-1 rounded-full text-[10.5px] font-bold hover:opacity-80"
+                style={{ background: "rgba(124,95,168,0.10)", color: "#7C5FA8", border: "1px dashed rgba(124,95,168,0.35)" }}
+              >
+                {g.abbr}?
+              </button>
+            ))}
+          </div>
+        )}
+
+        {voice && (
+          <p className="text-[11.5px]" aria-live="polite" style={{ color: "#C24E6B" }}>
+            {lastHeard ? `🎙️ Heard: “${lastHeard}”` : "🎙️ Listening — say “done”, “back” or “stitch”"}
           </p>
         )}
 
@@ -313,6 +399,52 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
           <ChevronRight className="h-6 w-6" />
         </button>
       </div>
+      {/* Milestone moment */}
+      {milestone && (
+        <div className="absolute inset-x-0 top-1/3 flex justify-center pointer-events-none">
+          <div className="px-6 py-3 rounded-2xl font-heading font-bold text-[18px] animate-bounce"
+            style={{ background: "rgba(132,147,79,0.95)", color: "white", boxShadow: "0 8px 32px rgba(132,147,79,0.5)" }}>
+            {milestone}
+          </div>
+        </div>
+      )}
+
+      {/* Glossary explainer */}
+      {glossaryOpen && (
+        <div className="absolute inset-x-0 bottom-0 z-[65] rounded-t-3xl px-5 pt-4 pb-[max(1.2rem,env(safe-area-inset-bottom))]"
+          style={{ background: "#FFFCF5", borderTop: "1.5px solid rgba(124,95,168,0.3)", boxShadow: "0 -8px 30px rgba(80,45,10,0.15)" }}
+          role="dialog" aria-label={`${glossaryOpen.name} explained`}>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-heading font-bold text-[16px]" style={{ color: "#3D2318" }}>
+                {glossaryOpen.abbr} — {glossaryOpen.name}
+              </p>
+              <p className="text-[13px] leading-relaxed mt-1" style={{ color: "#7A5A48" }}>
+                {glossaryOpen.explain}
+              </p>
+              <a href={videoUrl(glossaryOpen)} target="_blank" rel="noreferrer"
+                className="inline-flex items-center gap-1.5 mt-3 px-3.5 py-2 rounded-xl text-[12px] font-bold"
+                style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "1px solid rgba(194,78,107,0.25)" }}>
+                ▶ Watch a how-to video
+              </a>
+            </div>
+            <button onClick={() => setGlossaryOpen(null)} aria-label="Close glossary"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:opacity-70"
+              style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868" }}>
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Ashi the coach */}
+      <CoachChat
+        patternId={pattern.id}
+        sectionName={current.sectionName}
+        stepText={current.step.text}
+        open={coachOpen}
+        onClose={() => setCoachOpen(false)}
+      />
     </div>
   );
 };
