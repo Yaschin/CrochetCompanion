@@ -7,24 +7,32 @@ Supersedes the backlog sections (§2, §4, §5) of `CROCHET_TIME_STATUS_REVIEW_2
 
 ---
 
-## Current state (updated 2026-06-09, end of day)
+## Current state — ✅ ROADMAP FULLY DELIVERED (2026-06-11)
 
-- **Phases 1–4 are MERGED to `main`** (PR #23, merged by Yash 2026-06-09 19:25).
-- **Phase 6 (family profiles) is in PR #24** (draft, CI green), which also merges in the
-  Replit session's same-day additions and **repairs `main`'s typecheck** (see below).
-- **Delivered outside this roadmap** by a Replit session on `main` (post-#23):
-  interactive **tutorial/onboarding system** (`TutorialSystem.tsx`, restartable from
-  Settings), **import existing patterns** (`POST /api/parse-pattern` + wizard path),
-  **library image backfill** (`seedLibraryImages.ts`, non-destructive), dashboard
-  discoverability polish, and the app was **published/deployed**.
-- ⚠️ That session also edited `server/routes.ts` against a stale base, reverting the
-  Phase 1/3 startup imports — `main`'s typecheck is **red** until PR #24 merges
-  (the PR restores `ensureSchema()` → one-time seeds → `seedLibraryImages()` and the
-  diagnostics imports, keeping all the new features).
-- Verification at PR #24 head: `tsc` clean · build OK · Playwright e2e **42/42**
-  (mobile/tablet/desktop) locally and on CI.
-- Still outstanding: the **live post-deploy checklist** below (especially
-  Settings → App health → Deep AI test) and Phase 5.
+Every phase is built, verified and **merged to `main`**:
+
+| Delivered via | Contents |
+|---|---|
+| PR #23 | Phases 1–4: CI/data-safety fixes, notes→DB, diagnostics, trophy shelf, follow mode, PDF |
+| PR #24 | Phase 6: family profiles (+ repaired a Replit-session typecheck break) |
+| PR #25 | Phase 5: durable streaks/counters, per-member tutorial, code splitting, a11y, unit tests |
+| PR #26 | Phase 7: IA restructure (5-tab nav, doing=starting, merged screens) + walkthrough tools |
+| PR #27 | Sense-of-place batch + Phase 8 innovations (voice follow, glossary, up-next, milestones, story cards, ball-band scanner, make-alongs, gauge resize, Ashi coach) |
+| PR #28 | True full-stack e2e: real-server+Postgres smoke in CI (caught & fixed the fresh-DB boot crash and the dead `creatorId`) |
+| Replit sessions | Tutorial system, pattern/PDF import, per-profile starter content, library image backfill |
+
+**Test layers, all green in CI on every PR:** typecheck · 14 unit tests · 42 browser e2e
+(mocked API, 3 viewports) · **31-assertion full-stack smoke against real Postgres** ·
+on-demand visual walkthroughs (`npm run walkthrough`, `npm run walkthrough:deep`).
+
+**The only outstanding item — live verification on the deployed app (Yash, ~15 min):**
+App health → Run checks + Deep AI test · scan a real ball band · ask Ashi a question ·
+start/join a make-along across two profiles · share a pattern (check family colour) ·
+set a finished photo (exercises object storage).
+
+**Consciously deferred:** drizzle migration files (boot-time `ensureSchema` is the working,
+now smoke-tested mechanism); per-person community likes; count-by-N voice commands.
+**Still not pursued by design:** real auth, public social, AR row-counting, offline write-queue.
 
 ---
 
