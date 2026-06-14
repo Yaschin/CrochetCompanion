@@ -4,7 +4,7 @@
 |---|---|---|---|
 | Unit | `npm run test:unit` | CI (typecheck job) | yarn-estimate + stash-coverage math |
 | Browser e2e | `npm run test:e2e` | CI | every screen & journey, mocked API, 3 viewports |
-| **Full-stack smoke** | `npm run smoke` | **CI (postgres:16 service)** | 31 assertions vs a real server + real Postgres: scoping, doing=starting, make-alongs, exports, AI fallbacks |
+| **Full-stack smoke** | `npm run smoke` | **CI (postgres:16 service)** | 34 assertions vs a real server + real Postgres: scoping, doing=starting, make-alongs, exports, AI fallbacks, same-title dedup safety |
 | Visual walkthroughs | `npm run walkthrough[:deep]` | on demand | full-page screenshots of every screen / 17 interaction journeys |
 
 The full-stack smoke needs `scripts/create-base-tables.sql` + a localhost

@@ -5,6 +5,7 @@ import { Pattern, ViewType } from "../lib/types";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { PatternThumb } from "@/components/PatternThumb";
+import { QueryError } from "@/components/QueryError";
 
 interface FavoritesScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -13,7 +14,7 @@ interface FavoritesScreenProps {
 
 export default function FavoritesScreen({ onNavigate, onPatternSelected }: FavoritesScreenProps) {
   const { toast } = useToast();
-  const { data: patterns = [], isLoading } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
+  const { data: patterns = [], isLoading, isError, refetch, isFetching } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
 
   const favorites = patterns.filter((p) => p.favorite);
 
@@ -54,6 +55,8 @@ export default function FavoritesScreen({ onNavigate, onPatternSelected }: Favor
                 style={{ background: "rgba(140,100,55,0.08)" }} />
             ))}
           </div>
+        ) : isError ? (
+          <QueryError onRetry={() => refetch()} isRetrying={isFetching} compact />
         ) : favorites.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Heart className="h-12 w-12" style={{ color: "rgba(194,78,107,0.25)" }} />

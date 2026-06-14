@@ -5,6 +5,7 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
 import { Sparkles, Key, ExternalLink, AlertCircle, BookOpen, Plus, FileUp, ChevronRight } from 'lucide-react';
 import { PatternInputFormData, Pattern } from '../lib/types';
+import GenerationLoadingScreen from '../pages/GenerationLoadingScreen';
 
 interface PatternInputProps {
   onPatternCreated: (pattern: Pattern, skipLoading?: boolean) => void;
@@ -46,6 +47,10 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   });
   const [file, setFile]               = useState<File | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  // Real generation progress (0–100) for the controlled loading screen. It only
+  // jumps forward when an actual phase completes; a gentle trickle keeps it
+  // alive during the long AI call without ever lying that it's finished.
+  const [genProgress, setGenProgress] = useState(0);
   const [wizardStep, setWizardStep]   = useState(0);
   const [wizardColors, setWizardColors] = useState<string[]>([]);
 
@@ -291,20 +296,49 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
       return;
     }
     setIsGenerating(true);
+    setGenProgress(8);
+    // Gentle trickle so the ring keeps moving during the long AI call; it never
+    // passes 90 until a real phase completes, so it can't claim to be done early.
+    const trickle = setInterval(() => {
+      setGenProgress((p) => (p < 90 ? p + 1 : p));
+    }, 600);
     try {
       const generatedPatternData = await generatePatternMutation.mutateAsync({ ...formData, colors: wizardColors });
+      setGenProgress((p) => Math.max(p, 70));
+
       const imagePrompt = generatedPatternData.title || formData.prompt;
       const imageResponse = await generateImageMutation.mutateAsync({
         prompt: imagePrompt, projectType: formData.projectType, yarnType: formData.yarnType,
       });
+      setGenProgress((p) => Math.max(p, 90));
+
       const patternToSave = buildPatternToSave(generatedPatternData, formData, imageResponse.url);
       const savedPattern  = await savePatternMutation.mutateAsync(patternToSave);
+      setGenProgress(100);
+      clearInterval(trickle);
       queryClient.invalidateQueries({ queryKey: ['/api/patterns'] });
-      onPatternCreated(savedPattern);
-      toast({ title: "Pattern Generated!", description: `"${savedPattern.title}" is ready.`, duration: 5000 });
+      // The pattern is already saved — go straight to the viewer. The real wait
+      // above WAS the loading screen; no fake post-hoc timer.
+      onPatternCreated(savedPattern, true);
+
+      if ((generatedPatternData as any)?.aiUnavailable) {
+        // The server returned a generic sample because the OpenAI key is missing
+        // or invalid — make that unmistakable instead of passing it off as a
+        // real AI-generated make.
+        toast({
+          title: "AI is offline — sample pattern saved",
+          description: `"${savedPattern.title}" is a generic starter you can edit. Add an OpenAI key in Settings to generate real patterns.`,
+          variant: "destructive",
+          duration: 9000,
+        });
+      } else {
+        toast({ title: "Pattern Generated!", description: `"${savedPattern.title}" is ready.`, duration: 5000 });
+      }
     } catch (error) {
+      clearInterval(trickle);
       handleGenerationError(error);
     } finally {
+      clearInterval(trickle);
       setIsGenerating(false);
     }
   };
@@ -533,6 +567,12 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   const charImg = mode === "ai"
     ? "/characters/char-yala-transparent.png"
     : "/characters/char-ashi-transparent.png";
+
+  // While the AI request is actually in flight, show the honest, progress-bound
+  // loading screen — the real wait, not a fake timer played after the fact.
+  if (isGenerating) {
+    return <GenerationLoadingScreen progress={genProgress} />;
+  }
 
   return (
     <div className="flex flex-col gap-0 max-w-lg mx-auto w-full">

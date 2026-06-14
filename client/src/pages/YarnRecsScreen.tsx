@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Pattern, StashItem, ViewType } from "../lib/types";
 import { rankByStash, RankedPattern } from "../lib/stashMatch";
 import { PatternThumb } from "@/components/PatternThumb";
+import { QueryError } from "@/components/QueryError";
 
 interface YarnRecsScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -50,8 +51,9 @@ function PatternRow({ rp, onClick }: { rp: RankedPattern; onClick?: () => void }
 }
 
 export default function YarnRecsScreen({ onNavigate, onPatternSelected }: YarnRecsScreenProps) {
-  const { data: patterns = [], isLoading: loadingPatterns } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
-  const { data: stash = [], isLoading: loadingStash } = useQuery<StashItem[]>({ queryKey: ["/api/stash"] });
+  const { data: patterns = [], isLoading: loadingPatterns, isError: errPatterns, refetch: refetchPatterns, isFetching: fetchingPatterns } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
+  const { data: stash = [], isLoading: loadingStash, isError: errStash, refetch: refetchStash, isFetching: fetchingStash } = useQuery<StashItem[]>({ queryKey: ["/api/stash"] });
+  const isError = errPatterns || errStash;
 
   const ranked = rankByStash(patterns, stash);
   const ready = ranked.filter((r) => r.coverage.canMake && r.coverage.totalCount > 0);
@@ -124,8 +126,17 @@ export default function YarnRecsScreen({ onNavigate, onPatternSelected }: YarnRe
           </div>
         )}
 
+        {/* Couldn't reach the server */}
+        {!isLoading && isError && (
+          <QueryError
+            onRetry={() => { refetchPatterns(); refetchStash(); }}
+            isRetrying={fetchingPatterns || fetchingStash}
+            compact
+          />
+        )}
+
         {/* Empty: no stash yet */}
-        {!isLoading && stash.length === 0 && (
+        {!isLoading && !isError && stash.length === 0 && (
           <div className="craft-card p-6 flex flex-col items-center text-center gap-3">
             <ShoppingBag className="h-7 w-7" style={{ color: "#84934F" }} />
             <p className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>Your stash is empty</p>

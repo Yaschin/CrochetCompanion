@@ -62,7 +62,7 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 
 ## Testing infrastructure
 - `server/db.ts` dual driver: Neon WebSocket (prod) vs node-postgres (localhost) — enables real-server testing anywhere.
-- `npm run smoke` (`scripts/fullstack-smoke.mjs`): 31 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
+- `npm run smoke` (`scripts/fullstack-smoke.mjs`): 34 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
 - ensureSchema degrades gracefully on a virgin DB (logs db:push hint) — fresh-DB boot crash fixed 2026-06-11; communityService creatorId persistence fixed same day.
 
 ## Navigation chrome

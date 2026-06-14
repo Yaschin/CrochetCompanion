@@ -102,17 +102,26 @@ export async function ensureSchema(): Promise<void> {
     )`
   );
 
-  // ── Deduplicate patterns (idempotent) ──────────────────────────────────────
-  // Guard against re-seeds that ran before the one-time flag was set:
-  // keep only the earliest row for each (ownerId, title) pair.
-  await db.execute(sql`
-    DELETE FROM patterns
-    WHERE id NOT IN (
-      SELECT DISTINCT ON ("ownerId", title) id
-      FROM patterns
-      ORDER BY "ownerId", title, "createdAt" ASC
-    )
-  `);
+  // ── Deduplicate patterns (ONE-TIME, marker-guarded) ────────────────────────
+  // This exists to undo re-seeds that ran before the one-time seed flags
+  // existed: it keeps only the earliest row per (ownerId, title) pair.
+  //
+  // It MUST NOT run on every boot. Doing so silently deletes *legitimate* user
+  // data — any two patterns a person saves under the same title (and any
+  // freshly-imported duplicates, since /api/import is additive) — on the next
+  // restart. Guard it behind an app_meta marker so it cleans up the historical
+  // double-seeds exactly once, then never touches user patterns again.
+  if (!(await getMeta("patterns_deduped_v1"))) {
+    await db.execute(sql`
+      DELETE FROM patterns
+      WHERE id NOT IN (
+        SELECT DISTINCT ON ("ownerId", title) id
+        FROM patterns
+        ORDER BY "ownerId", title, "createdAt" ASC
+      )
+    `);
+    await setMeta("patterns_deduped_v1", new Date().toISOString());
+  }
 }
 
 export async function getMeta(key: string): Promise<string | null> {

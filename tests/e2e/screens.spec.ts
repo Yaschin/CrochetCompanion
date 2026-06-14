@@ -91,18 +91,13 @@ test("favorites renders cleanly", async ({ page, consoleErrors }, testInfo) => {
   expect(realConsoleErrors(consoleErrors)).toEqual([]);
 });
 
-// ── Community (sidebar on md+, via Favorites CTA on mobile) ──────────────────────
+// ── Community (desktop sidebar + Home cards; off the 5-slot mobile bottom nav) ────
 test("community gallery renders cleanly", async ({ page, consoleErrors }, testInfo) => {
   await enterApp(page);
-  // Sidebar exposes "Community Library" directly (tablet/desktop).
-  try {
-    await navByLabel(page, ["Community Library", "Community"]);
-  } catch {
-    // Mobile: reach Community via the Favorites screen CTA.
-    await navByLabel(page, ["Favorites"]);
-    await page.getByRole("button", { name: /Community Library/i }).first().click();
-    await page.waitForTimeout(350);
-  }
+  // Community is deep-linkable, so reach it by URL — viewport-independent now
+  // that the mobile bottom nav carries My Stash instead of Community.
+  await page.goto("/community");
+  await page.waitForTimeout(350);
   await expect(page.locator("main").getByText(/Community/i).first()).toBeVisible({ timeout: 10000 });
   await snap(page, testInfo, "community");
   expect(realConsoleErrors(consoleErrors)).toEqual([]);
@@ -110,13 +105,8 @@ test("community gallery renders cleanly", async ({ page, consoleErrors }, testIn
 
 test("community detail renders from a card", async ({ page, consoleErrors }, testInfo) => {
   await enterApp(page);
-  try {
-    await navByLabel(page, ["Community Library", "Community"]);
-  } catch {
-    await navByLabel(page, ["Favorites"]);
-    await page.getByRole("button", { name: /Community Library/i }).first().click();
-    await page.waitForTimeout(350);
-  }
+  await page.goto("/community");
+  await page.waitForTimeout(350);
   await page.getByText("Bumblebee Amigurumi").first().click();
   await expect(page.getByText(/Pattern Detail/i).first()).toBeVisible({ timeout: 10000 });
   await snap(page, testInfo, "community-detail");
@@ -125,13 +115,8 @@ test("community detail renders from a card", async ({ page, consoleErrors }, tes
 
 test("community submit wizard renders", async ({ page, consoleErrors }, testInfo) => {
   await enterApp(page);
-  try {
-    await navByLabel(page, ["Community Library", "Community"]);
-  } catch {
-    await navByLabel(page, ["Favorites"]);
-    await page.getByRole("button", { name: /Community Library/i }).first().click();
-    await page.waitForTimeout(350);
-  }
+  await page.goto("/community");
+  await page.waitForTimeout(350);
   await page.getByRole("button", { name: /Share Pattern/i }).first().click();
   await expect(page.getByText(/Share Your Pattern/i).first()).toBeVisible({ timeout: 10000 });
   await snap(page, testInfo, "community-submit");
