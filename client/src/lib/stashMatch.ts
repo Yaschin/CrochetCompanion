@@ -114,6 +114,24 @@ export function analyzeStashCoverage(pattern: Pattern, stash: StashItem[]): Stas
   return { categories, haveCount, totalCount, missing, canMake, coveragePct };
 }
 
+/**
+ * The distinct stash items a pattern's YARN requirements match. Used to offer
+ * "deduct what you used" when a project is finished — only yarn is consumable,
+ * so hooks/notions/tools are deliberately excluded.
+ */
+export function matchedYarnsForPattern(pattern: Pattern, stash: StashItem[]): StashItem[] {
+  const seen = new Set<string>();
+  const out: StashItem[] = [];
+  for (const req of pattern.yarnRequirements ?? []) {
+    const match = findYarn(stash, req.color);
+    if (match && !seen.has(match.id)) {
+      seen.add(match.id);
+      out.push(match);
+    }
+  }
+  return out;
+}
+
 export interface RankedPattern {
   pattern: Pattern;
   coverage: StashCoverage;

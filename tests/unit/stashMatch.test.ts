@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { analyzeStashCoverage, rankByStash } from "../../client/src/lib/stashMatch";
+import { analyzeStashCoverage, rankByStash, matchedYarnsForPattern } from "../../client/src/lib/stashMatch";
 import type { Pattern } from "../../client/src/lib/types";
 import type { StashItem } from "../../shared/schema";
 
@@ -59,6 +59,34 @@ describe("analyzeStashCoverage", () => {
     const cov = analyzeStashCoverage(basePattern({}), []);
     expect(cov.canMake).toBe(true);
     expect(cov.coveragePct).toBe(100);
+  });
+});
+
+describe("matchedYarnsForPattern", () => {
+  it("returns the stash yarns a pattern's yarn requirements match (excludes hooks)", () => {
+    const pattern = basePattern({
+      yarnRequirements: [{ color: "Cream", volume: "~50g" }, { color: "Sage", volume: "~30g" }],
+    });
+    const matched = matchedYarnsForPattern(pattern, [
+      yarn("Soft cotton", "cream"),
+      yarn("Wool", "sage green"),
+      hook("3.5mm"),
+    ]);
+    expect(matched.map((m) => m.id).sort()).toEqual(["Soft cotton", "Wool"]);
+  });
+
+  it("returns each matched item once even if two requirements hit it", () => {
+    const pattern = basePattern({
+      yarnRequirements: [{ color: "cream", volume: "~50g" }, { color: "Cream", volume: "~20g" }],
+    });
+    expect(matchedYarnsForPattern(pattern, [yarn("Cream Aran", "cream")])).toHaveLength(1);
+  });
+
+  it("returns empty when nothing matches or there are no yarn requirements", () => {
+    expect(
+      matchedYarnsForPattern(basePattern({ yarnRequirements: [{ color: "Teal", volume: "~50g" }] }), [yarn("Cotton", "cream")]),
+    ).toEqual([]);
+    expect(matchedYarnsForPattern(basePattern({}), [yarn("Cotton", "cream")])).toEqual([]);
   });
 });
 
