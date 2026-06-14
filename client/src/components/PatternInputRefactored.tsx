@@ -1371,7 +1371,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
               </button>
 
               <button
-                onClick={() => { setPdfStep(0); setPdfResult(null); setPdfFile(null); }}
+                onClick={() => { setPdfStep(0); setPdfResult(null); setPdfFiles([]); }}
                 className="w-full py-2.5 rounded-xl text-[13px] font-semibold"
                 style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868" }}>
                 ← Try a different PDF
