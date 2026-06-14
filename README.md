@@ -59,7 +59,7 @@ localhost URLs, so a real end-to-end run needs only a local Postgres:
 createdb crochet
 psql crochet -f scripts/create-base-tables.sql
 DATABASE_URL=postgresql://localhost/crochet npx tsx server/index.ts &
-npm run smoke      # 35 assertions; also runs in CI via a postgres:16 service
+npm run smoke      # 36 assertions; also runs in CI via a postgres:16 service
 ```
 
 Schema changes apply automatically at boot via idempotent heals in

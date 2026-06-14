@@ -1,6 +1,6 @@
 # Photo "Fix-My-Mistake" Coach — Design (build-later)
 
-**Status:** Designed 2026-06-14, **not yet built** (chosen as the next innovation; deferred to a later phase by decision). This is a complete, build-ready spec.
+**Status:** Designed **and built** 2026-06-14. This documents the shipped feature; the build checklist at the end is complete.
 
 **Owner decisions (Yash, 2026-06-14):**
 1. **Tone:** *Gentle observation + nudges* — supportive, low false-alarm, never prescribes drastic fixes (e.g. no "frog 3 rounds").
@@ -105,9 +105,9 @@ export async function checkWork(input: {
 ## 9. Explicitly out of scope (for this feature)
 Standalone (non-Follow-Mode) entry point; saving check photos; auto-corrective actions ("frog N rounds"); numeric match scores; multi-photo batches. Each can be revisited later if the gentle v1 proves valuable.
 
-## 10. Build checklist (for a coding agent)
-- [ ] `server/api/checkWork.ts` (new) — gentle round-aware vision module, honest throw without key.
-- [ ] `server/routes.ts` — `POST /api/patterns/:id/check-work` (validate, build round context, optional reference image, call `checkWork`).
-- [ ] `client/src/components/FollowMode.tsx` — `(sectionIndex, stepIndex)` on flattened steps; "📷 Check my work" button + hidden capture input + result sheet (✓ / 👀 / 🤔).
-- [ ] `scripts/fullstack-smoke.mjs` — assert check-work fails cleanly without a key.
-- [ ] Docs — flip this file's status to "built"; bump the smoke count.
+## 10. Build checklist
+- [x] `server/api/checkWork.ts` — gentle round-aware vision module, honest throw without key.
+- [x] `server/routes.ts` — `POST /api/patterns/:id/check-work` (validate, build round context, optional reference image, call `checkWork`).
+- [x] `client/src/components/WorkCheckButton.tsx` — "📷 Check my work" button + hidden capture input + result sheet (✓ / 👀 / 🤔); dropped into the Follow Mode header (`FlatStep` already carries `(sectionIndex, stepIndex)`).
+- [x] `scripts/fullstack-smoke.mjs` — asserts check-work fails cleanly without a key.
+- [x] Docs — status flipped to built; smoke count bumped (35 → 36).

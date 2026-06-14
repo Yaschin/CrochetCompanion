@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronLeft, ChevronRight, Mic, Minus, X } from 'lucide-react';
 import CoachChat from './CoachChat';
+import WorkCheckButton from './WorkCheckButton';
 import { termsInText, videoUrl, GlossaryEntry } from '../lib/glossary';
 import { Pattern, PatternStep } from '../lib/types';
 
@@ -234,6 +235,11 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
           >
             💬 Ashi
           </button>
+          <WorkCheckButton
+            patternId={pattern.id}
+            sectionIndex={current.sectionIndex}
+            stepIndex={current.stepIndex}
+          />
         <button
           onClick={onClose}
           aria-label="Close follow mode"
