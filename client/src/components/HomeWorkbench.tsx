@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search, Bell, Loader2, ChevronRight,
-  Heart, Wand2, FolderOpen, Trophy, ChevronRight as ChevRight, BookOpen,
+  Heart, Wand2, FolderOpen, Trophy, ChevronRight as ChevRight, BookOpen, FileUp,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Pattern, ViewType } from "../lib/types";
@@ -41,6 +41,7 @@ function formatTimeSpent(startedAt?: string | null): string {
 
 interface HomeWorkbenchProps {
   onNavigate: (view: ViewType) => void;
+  onNavigateToPdf?: () => void;
   currentPattern?: Pattern | null;
   onPatternSelected?: (p: Pattern) => void;
   onResumeCounting?: (p: Pattern) => void;
@@ -481,7 +482,7 @@ function ContinueProjectCard({
   );
 }
 
-function CreateWithYalaCard({ onNavigate }: { onNavigate: (v: ViewType) => void }) {
+function CreateWithYalaCard({ onNavigate, onNavigateToPdf }: { onNavigate: (v: ViewType) => void; onNavigateToPdf?: () => void }) {
   return (
     <div className="craft-card craft-card-plum flex flex-col gap-2.5 p-4 h-full">
       <div>
@@ -491,7 +492,7 @@ function CreateWithYalaCard({ onNavigate }: { onNavigate: (v: ViewType) => void 
             Create a Pattern
           </span>
         </div>
-        <p className="text-[11px]" style={{ color: "#9A7868" }}>AI-generated or bring your own</p>
+        <p className="text-[11px]" style={{ color: "#9A7868" }}>AI-generated, PDF import, or write your own</p>
       </div>
 
       <div className="flex flex-1 gap-2.5 items-center">
@@ -504,7 +505,7 @@ function CreateWithYalaCard({ onNavigate }: { onNavigate: (v: ViewType) => void 
         </div>
         <div className="flex-1 flex flex-col gap-1.5">
           <p className="text-[12px] leading-snug" style={{ color: "#6A4A5A" }}>
-            Describe an idea and Yala brings it to life — or paste in a pattern you already have.
+            Describe an idea and Yala brings it to life — or import a PDF pattern directly.
           </p>
         </div>
       </div>
@@ -513,11 +514,18 @@ function CreateWithYalaCard({ onNavigate }: { onNavigate: (v: ViewType) => void 
         <Wand2 className="h-3.5 w-3.5" /> Create with AI →
       </button>
       <button
-        onClick={() => onNavigate("input")}
-        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11.5px] font-semibold transition-all hover:opacity-80"
-        style={{ background: "rgba(132,147,79,0.12)", color: "#5A6E30", border: "1px solid rgba(132,147,79,0.25)" }}
+        onClick={() => onNavigateToPdf ? onNavigateToPdf() : onNavigate("input")}
+        className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-80"
+        style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "1.5px solid rgba(194,78,107,0.28)" }}
       >
-        <BookOpen className="h-3.5 w-3.5" /> Add my own pattern
+        <FileUp className="h-3.5 w-3.5" /> Import PDF →
+      </button>
+      <button
+        onClick={() => onNavigate("input")}
+        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-70"
+        style={{ background: "transparent", color: "#9A7868" }}
+      >
+        <BookOpen className="h-3 w-3" /> Write my own
       </button>
     </div>
   );
@@ -882,7 +890,7 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export default function HomeWorkbench({ onNavigate, onPatternSelected, onResumeCounting }: HomeWorkbenchProps) {
+export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSelected, onResumeCounting }: HomeWorkbenchProps) {
   const qc = useQueryClient();
   const { text, emoji } = greeting();
 
@@ -1016,7 +1024,7 @@ export default function HomeWorkbench({ onNavigate, onPatternSelected, onResumeC
           </div>
 
           <div style={{ minHeight: 190 }}>
-            <CreateWithYalaCard onNavigate={onNavigate} />
+            <CreateWithYalaCard onNavigate={onNavigate} onNavigateToPdf={onNavigateToPdf} />
           </div>
           <div style={{ minHeight: 190 }}>
             <FavoritesCard count={favoritesCount} onNavigate={onNavigate} />

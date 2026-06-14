@@ -9,6 +9,7 @@ import GenerationLoadingScreen from '../pages/GenerationLoadingScreen';
 
 interface PatternInputProps {
   onPatternCreated: (pattern: Pattern, skipLoading?: boolean) => void;
+  initialMode?: "ai" | "own" | "pdf";
 }
 
 const CATEGORIES = [
@@ -35,11 +36,11 @@ const AI_STEPS  = ["Item", "Details", "Yarn & Colours", "Inspiration", "Review"]
 const OWN_STEPS = ["Pattern", "Details", "Paste & Save"];
 const PDF_STEPS = ["Upload", "Review"];
 
-const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
+const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated, initialMode }) => {
   const { toast } = useToast();
 
   // ── Shared mode toggle ───────────────────────────────────────────────────────
-  const [mode, setMode] = useState<"ai" | "own" | "pdf">("ai");
+  const [mode, setMode] = useState<"ai" | "own" | "pdf">(initialMode ?? "ai");
 
   // ── AI wizard state ──────────────────────────────────────────────────────────
   const [formData, setFormData] = useState<PatternInputFormData>({
