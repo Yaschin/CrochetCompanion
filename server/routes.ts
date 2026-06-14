@@ -19,6 +19,7 @@ import { ensureSchema } from "./ensureSchema";
 import { runQuickDiagnostics, runDeepDiagnostics } from "./diagnostics";
 import { scanLabel } from "./api/scanLabel";
 import { askCoach } from "./api/coach";
+import { checkWork } from "./api/checkWork";
 import { makealongService } from "./makealongService";
 import { getMeta, setMeta } from "./ensureSchema";
 import { patternSchema, stashItemSchema, insertCommunityPatternSchema } from "../shared/schema";
@@ -1050,6 +1051,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Coach failed:", error);
       res.status(500).json({ message: (error as Error).message || "Ashi couldn't answer" });
+    }
+  });
+
+  // Photo "fix-my-mistake" coach: a photo of work-in-progress, judged gently
+  // against the round the maker is on. Honest failure without a key.
+  app.post("/api/patterns/:id/check-work", async (req: Request, res: Response) => {
+    try {
+      const { sectionIndex, stepIndex, imageBase64 } = req.body ?? {};
+      if (typeof imageBase64 !== "string" || !imageBase64.startsWith("data:image/")) {
+        return res.status(400).json({ success: false, message: "A work-in-progress photo is required." });
+      }
+      const sIdx = Number(sectionIndex);
+      const stIdx = Number(stepIndex);
+      if (!Number.isInteger(sIdx) || !Number.isInteger(stIdx)) {
+        return res.status(400).json({ success: false, message: "Invalid round reference." });
+      }
+      const pattern = await patternService.getPattern(req.params.id);
+      if (!pattern) return res.status(404).json({ success: false, message: "Pattern not found" });
+
+      const section = pattern.sections[sIdx];
+      const step = section?.steps?.[stIdx];
+      if (!section || !step) {
+        return res.status(400).json({ success: false, message: "Round not found in this pattern." });
+      }
+
+      // A few preceding rounds in the same section give the model context.
+      const precedingRounds = section.steps.slice(Math.max(0, stIdx - 3), stIdx).map((s) => s.text);
+      const countMatch = [...String(step.text).matchAll(/\((\d+)\)/g)];
+      const targetCount = countMatch.length ? parseInt(countMatch[countMatch.length - 1][1], 10) : undefined;
+
+      // Feed the section's reference art if it exists (object-storage URLs must
+      // be converted to data URLs — OpenAI can't fetch /api/media/...).
+      let referenceImageUrl: string | undefined;
+      const ref = section.partImageUrl;
+      if (typeof ref === "string" && ref) {
+        referenceImageUrl = ref.startsWith("/api/media/")
+          ? await getObjectDataUrl(ref.replace("/api/media/", ""))
+          : ref;
+      }
+
+      const result = await checkWork({
+        wipImageUrl: imageBase64,
+        referenceImageUrl,
+        patternTitle: pattern.title,
+        sectionName: section.name,
+        currentRound: step.text,
+        targetCount,
+        precedingRounds,
+      });
+
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error("Work check failed:", error);
+      const message = String(error).includes("key")
+        ? "Ashi needs a valid OpenAI API key to check your work."
+        : "Couldn't check your work right now.";
+      res.status(500).json({ success: false, message });
     }
   });
 

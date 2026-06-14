@@ -196,6 +196,10 @@ let communityId;
   check("label scan fails CLEANLY without key", scan.status === 500 && /key/i.test(scan.json?.message ?? ""));
   const coach = await api("POST", `/api/patterns/${vumshPattern.id}/coach`, { question: "help" });
   check("coach fails CLEANLY without key", coach.status === 500 && /key/i.test(coach.json?.message ?? ""));
+  const work = await api("POST", `/api/patterns/${vumshPattern.id}/check-work`, {
+    sectionIndex: 0, stepIndex: 0, imageBase64: "data:image/png;base64,iVBORw0KGgo=",
+  });
+  check("work check fails CLEANLY without key", work.status === 500 && /key/i.test(work.json?.message ?? ""));
   const diag = await api("GET", "/api/diagnostics");
   check("diagnostics reports failures instead of crashing", diag.status === 200 && diag.json?.ok === false && Array.isArray(diag.json?.checks));
 }

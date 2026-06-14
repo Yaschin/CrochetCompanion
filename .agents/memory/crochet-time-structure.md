@@ -54,7 +54,7 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - e2e presets BOTH localStorage flags (profile + tutorial-seen) in `enterApp()`.
 
 ## Phase 8 systems (2026-06-11)
-- Follow Mode (`components/FollowMode.tsx`) now hosts: section-map chips, in-round tally (target parsed from trailing "(N)"), voice control, milestone moments, glossary chips (`lib/glossary.ts`), and Ashi coach (`components/CoachChat.tsx` → `POST /api/patterns/:id/coach`, `server/api/coach.ts`).
+- Follow Mode (`components/FollowMode.tsx`) now hosts: section-map chips, in-round tally (target parsed from trailing "(N)"), voice control, milestone moments, glossary chips (`lib/glossary.ts`), Ashi coach (`components/CoachChat.tsx` → `POST /api/patterns/:id/coach`, `server/api/coach.ts`), and the photo "check my work" coach (`components/WorkCheckButton.tsx` → `POST /api/patterns/:id/check-work`, `server/api/checkWork.ts`; gentle/non-prescriptive, `on_track|check|unsure`, no score; design in `docs/CROCHET_TIME_PHOTO_COACH_DESIGN.md`).
 - Ball-band scanner: `POST /api/stash/scan-label` (`server/api/scanLabel.ts`) ← 📷 button in MaterialsInventory dialog.
 - Make-alongs: `server/makealongService.ts`, tables `makealongs`/`makealong_members` (ensureSchema), board UI in CommunityScreen, start button in CommunityDetailScreen.
 - Per-profile app_meta keys: `upnext:{id}`, `gauge:{id}` (`/api/up-next`, `/api/gauge`); story cards `lib/storyCard.ts`; cover photo `POST /api/patterns/:id/cover-photo`.
@@ -62,7 +62,7 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 
 ## Testing infrastructure
 - `server/db.ts` dual driver: Neon WebSocket (prod) vs node-postgres (localhost) — enables real-server testing anywhere.
-- `npm run smoke` (`scripts/fullstack-smoke.mjs`): 35 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
+- `npm run smoke` (`scripts/fullstack-smoke.mjs`): 36 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
 - ensureSchema degrades gracefully on a virgin DB (logs db:push hint) — fresh-DB boot crash fixed 2026-06-11; communityService creatorId persistence fixed same day.
 
 ## Navigation chrome
