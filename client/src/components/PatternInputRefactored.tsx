@@ -9,6 +9,7 @@ import GenerationLoadingScreen from '../pages/GenerationLoadingScreen';
 
 interface PatternInputProps {
   onPatternCreated: (pattern: Pattern, skipLoading?: boolean) => void;
+  initialMode?: "ai" | "own" | "pdf";
 }
 
 const CATEGORIES = [
@@ -35,11 +36,11 @@ const AI_STEPS  = ["Item", "Details", "Yarn & Colours", "Inspiration", "Review"]
 const OWN_STEPS = ["Pattern", "Details", "Paste & Save"];
 const PDF_STEPS = ["Upload", "Review"];
 
-const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated }) => {
+const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated, initialMode }) => {
   const { toast } = useToast();
 
   // ── Shared mode toggle ───────────────────────────────────────────────────────
-  const [mode, setMode] = useState<"ai" | "own" | "pdf">("ai");
+  const [mode, setMode] = useState<"ai" | "own" | "pdf">(initialMode ?? "ai");
 
   // ── AI wizard state ──────────────────────────────────────────────────────────
   const [formData, setFormData] = useState<PatternInputFormData>({
@@ -62,7 +63,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
 
   // ── PDF import state ─────────────────────────────────────────────────────────
   const [pdfStep, setPdfStep]         = useState(0);
-  const [pdfFile, setPdfFile]         = useState<File | null>(null);
+  const [pdfFiles, setPdfFiles]       = useState<File[]>([]);
   const [pdfParsing, setPdfParsing]   = useState(false);
   const [pdfResult, setPdfResult]     = useState<any>(null);
   const [pdfEditTitle, setPdfEditTitle] = useState("");
@@ -102,7 +103,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
     setOwnRawText("");
     setWizardColors([]);
     setFile(null);
-    setPdfFile(null);
+    setPdfFiles([]);
     setPdfResult(null);
     setPdfEditTitle("");
   };
@@ -153,8 +154,8 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
   });
 
   const parsePdfMutation = useMutation({
-    mutationFn: async (fileBase64: string) => {
-      const res = await apiRequest('POST', '/api/parse-pdf', { fileBase64 });
+    mutationFn: async (filesBase64: string[]) => {
+      const res = await apiRequest('POST', '/api/parse-pdf', { filesBase64 });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.message || 'Failed to process PDF');
@@ -199,23 +200,37 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
 
   // ── PDF handlers ─────────────────────────────────────────────────────────────
   const handlePdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-    const f = e.target.files[0];
-    if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
-      toast({ title: "PDF files only", description: "Please select a .pdf file.", variant: "destructive" }); return;
+    if (!e.target.files?.length) return;
+    const incoming = Array.from(e.target.files);
+    const errors: string[] = [];
+    const valid: File[] = [];
+    for (const f of incoming) {
+      if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+        errors.push(`${f.name} is not a PDF`); continue;
+      }
+      if (f.size > 10 * 1024 * 1024) {
+        errors.push(`${f.name} is over 10 MB`); continue;
+      }
+      valid.push(f);
     }
-    if (f.size > 10 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Max 10 MB.", variant: "destructive" }); return;
-    }
-    setPdfFile(f);
+    if (errors.length) toast({ title: "Some files skipped", description: errors.join(' · '), variant: "destructive" });
+    setPdfFiles(prev => {
+      const combined = [...prev, ...valid];
+      if (combined.length > 5) {
+        toast({ title: "Max 5 PDFs", description: "Only the first 5 files will be used.", variant: "destructive" });
+        return combined.slice(0, 5);
+      }
+      return combined;
+    });
+    e.target.value = "";
   };
 
   const handlePdfUpload = async () => {
-    if (!pdfFile) return;
+    if (!pdfFiles.length) return;
     setPdfParsing(true);
     try {
-      const base64 = await fileToBase64(pdfFile);
-      const result = await parsePdfMutation.mutateAsync(base64);
+      const allBase64 = await Promise.all(pdfFiles.map(fileToBase64));
+      const result = await parsePdfMutation.mutateAsync(allBase64);
       setPdfResult(result);
       setPdfEditTitle(result.title || "Imported Pattern");
       setPdfEditType(result.projectType || "Other");
@@ -1041,37 +1056,50 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
                     onClick={() => document.getElementById("pdf-file-input")?.click()}
                     className="border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
                     style={{
-                      borderColor: pdfFile ? "#3D8FA3" : "rgba(61,143,163,0.40)",
-                      background: pdfFile ? "rgba(61,143,163,0.06)" : "rgba(255,252,245,0.7)",
-                      minHeight: 200,
+                      borderColor: pdfFiles.length ? "#3D8FA3" : "rgba(61,143,163,0.40)",
+                      background: pdfFiles.length ? "rgba(61,143,163,0.06)" : "rgba(255,252,245,0.7)",
+                      minHeight: pdfFiles.length ? "auto" : 180,
+                      padding: pdfFiles.length ? "14px 16px" : "24px 16px",
                     }}>
                     <input
                       id="pdf-file-input"
                       type="file"
                       accept="application/pdf,.pdf"
+                      multiple
                       className="hidden"
                       onChange={handlePdfFileChange}
                     />
-                    {pdfFile ? (
-                      <div className="text-center px-4">
-                        <span style={{ fontSize: 44 }}>📄</span>
-                        <p className="font-semibold text-[14px] mt-2" style={{ color: "#3D8FA3" }}>{pdfFile.name}</p>
-                        <p className="text-[11px] mt-0.5" style={{ color: "#9A7868" }}>
-                          {(pdfFile.size / 1024 / 1024).toFixed(1)} MB
-                        </p>
-                        <button
-                          onClick={e => { e.stopPropagation(); setPdfFile(null); }}
-                          className="text-[11px] mt-1.5 underline"
-                          style={{ color: "#9A7868" }}>
-                          Choose a different file
-                        </button>
+                    {pdfFiles.length > 0 ? (
+                      <div className="w-full flex flex-col gap-2">
+                        {pdfFiles.map((f, i) => (
+                          <div key={i} className="flex items-center gap-2.5 px-3 py-2 rounded-xl"
+                            style={{ background: "rgba(61,143,163,0.10)" }}>
+                            <span style={{ fontSize: 20, flexShrink: 0 }}>📄</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-[12px] truncate" style={{ color: "#2A6B7D" }}>{f.name}</p>
+                              <p className="text-[10px]" style={{ color: "#9A7868" }}>{(f.size / 1024 / 1024).toFixed(1)} MB</p>
+                            </div>
+                            <button
+                              onClick={e => { e.stopPropagation(); setPdfFiles(prev => prev.filter((_, j) => j !== i)); }}
+                              className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-lg hover:opacity-75"
+                              style={{ color: "#9A7868", background: "rgba(0,0,0,0.06)" }}>
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        {pdfFiles.length < 5 && (
+                          <div className="flex items-center justify-center gap-1.5 pt-1"
+                            style={{ color: "#3D8FA3", fontSize: 12, fontWeight: 600 }}>
+                            <FileUp className="h-3.5 w-3.5" /> Add another PDF
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <>
                         <FileUp className="h-10 w-10" style={{ color: "rgba(61,143,163,0.55)" }} />
                         <div className="text-center">
-                          <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Tap to choose a PDF</p>
-                          <p className="text-[12px] mt-0.5" style={{ color: "#9A7868" }}>Max 10 MB · Text-based PDFs only</p>
+                          <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Tap to choose PDFs</p>
+                          <p className="text-[12px] mt-0.5" style={{ color: "#9A7868" }}>Up to 5 files · 10 MB each · Text-based only</p>
                         </div>
                       </>
                     )}
@@ -1084,14 +1112,15 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
 
                   <button
                     onClick={handlePdfUpload}
-                    disabled={!pdfFile}
+                    disabled={!pdfFiles.length}
                     className="w-full py-4 rounded-2xl font-heading font-bold text-[16px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
                     style={{
-                      background: !pdfFile ? "rgba(61,143,163,0.35)" : "linear-gradient(135deg, #3D8FA3, #2A6B7D)",
+                      background: !pdfFiles.length ? "rgba(61,143,163,0.35)" : "linear-gradient(135deg, #3D8FA3, #2A6B7D)",
                       color: "white",
-                      boxShadow: !pdfFile ? "none" : "0 6px 24px rgba(61,143,163,0.38)",
+                      boxShadow: !pdfFiles.length ? "none" : "0 6px 24px rgba(61,143,163,0.38)",
                     }}>
-                    <FileUp className="h-5 w-5" /> Read & Extract Pattern
+                    <FileUp className="h-5 w-5" />
+                    {pdfFiles.length > 1 ? `Read & Extract (${pdfFiles.length} PDFs)` : "Read & Extract Pattern"}
                   </button>
                 </>
               )}
@@ -1111,7 +1140,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated 
                 style={{ background: "rgba(61,143,163,0.09)", border: "1px solid rgba(61,143,163,0.28)" }}>
                 <span style={{ fontSize: 18, flexShrink: 0 }}>📄</span>
                 <p className="text-[12px] leading-snug" style={{ color: "#2A6B7D" }}>
-                  <strong>From:</strong> {pdfFile?.name} · Diagrams weren't imported, only written instructions.
+                  <strong>From:</strong> {pdfFiles.map(f => f.name).join(', ')} · Diagrams weren't imported, only written instructions.
                 </p>
               </div>
 

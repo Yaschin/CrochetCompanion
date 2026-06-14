@@ -119,6 +119,7 @@ function App() {
   const communityId = parsed.communityId ?? null;
 
   const [currentPattern, setCurrentPattern] = useState<Pattern | null>(null);
+  const [inputInitialMode, setInputInitialMode] = useState<"ai" | "own" | "pdf">("ai");
 
   // Reconcile the streak/activity log with the server once per app load.
   useEffect(() => { syncActivity(); }, []);
@@ -136,8 +137,10 @@ function App() {
     return () => { cancelled = true; };
   }, [patternId, currentPattern]);
 
-  const navigateToView = (view: ViewType) =>
+  const navigateToView = (view: ViewType) => {
+    if (view !== "input") setInputInitialMode("ai");
     setLocation(pathFor(view, { patternId: currentPattern?.id, communityId }));
+  };
 
   const handleCommunitySelected = (id: string) => setLocation(pathFor("community-detail", { communityId: id }));
 
@@ -241,6 +244,7 @@ function App() {
               {activeView === "home" && (
                 <HomeWorkbench
                   onNavigate={navigateToView}
+                  onNavigateToPdf={() => { setInputInitialMode("pdf"); navigateToView("input"); }}
                   currentPattern={currentPattern}
                   onPatternSelected={handlePatternLoaded}
                   onResumeCounting={handleResumeCounting}
@@ -249,7 +253,10 @@ function App() {
 
               {activeView === "input" && (
                 <div className="flex flex-col h-full overflow-y-auto px-6 py-6 pb-20 md:pb-6">
-                  <PatternInputRefactored onPatternCreated={handlePatternCreated} />
+                  <PatternInputRefactored
+                    onPatternCreated={handlePatternCreated}
+                    initialMode={inputInitialMode}
+                  />
                 </div>
               )}
 
