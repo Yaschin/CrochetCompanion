@@ -236,7 +236,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
               <div className="text-4xl">📝</div>
               <p className="font-heading font-semibold text-[16px]" style={{ color: "#3D2318" }}>Add Your Pattern</p>
               <p className="text-[13px] text-center" style={{ color: "#9A7868" }}>
-                Paste your written pattern or upload a PDF
+                Paste your written pattern
               </p>
               <textarea
                 value={patternText}
