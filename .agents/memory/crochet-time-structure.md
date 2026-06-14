@@ -48,7 +48,7 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - settings → SettingsScreen (`/settings`) — backup/export/import
 
 ## Tutorial & pattern import (added on main by Replit session, 2026-06-09)
-- `client/src/components/TutorialSystem.tsx` — overlay tour (Ashi), rendered inside the shell in App.tsx; auto-opens once per DEVICE (localStorage `crochet-time-tutorial-v1`); restartable from Settings → "App tour" (`restartTutorial()`).
+- `client/src/components/TutorialSystem.tsx` — overlay tour (Ashi), rendered inside the shell in App.tsx; auto-opens once per PROFILE (localStorage `crochet-time-tutorial-v1:{profileId}`, with a one-time legacy→Larissa migration); restartable from Settings → "App tour" (`restartTutorial()`).
 - `POST /api/parse-pattern` (`server/api/parsePattern.ts`) — AI-structures pasted pattern text; client then saves via the profile-stamped `POST /api/patterns`.
 - `server/seedLibraryImages.ts` — boot-time, non-destructive backfill of missing pattern images (runs after seeds in the ensureSchema chain).
 - e2e presets BOTH localStorage flags (profile + tutorial-seen) in `enterApp()`.
@@ -62,7 +62,7 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 
 ## Testing infrastructure
 - `server/db.ts` dual driver: Neon WebSocket (prod) vs node-postgres (localhost) — enables real-server testing anywhere.
-- `npm run smoke` (`scripts/fullstack-smoke.mjs`): 34 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
+- `npm run smoke` (`scripts/fullstack-smoke.mjs`): 35 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
 - ensureSchema degrades gracefully on a virgin DB (logs db:push hint) — fresh-DB boot crash fixed 2026-06-11; communityService creatorId persistence fixed same day.
 
 ## Navigation chrome

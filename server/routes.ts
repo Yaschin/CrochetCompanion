@@ -1188,12 +1188,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stash = Array.isArray(body.stash) ? body.stash : [];
       let importedPatterns = 0;
       let importedStash = 0;
+      let skippedPatterns = 0;
+      let skippedStash = 0;
 
+      // Validate each entry against the same schema POST /api/patterns uses, so
+      // a corrupt row in a backup can't crash the whole restore or land malformed
+      // data in the library. Invalid entries are skipped and reported, not
+      // silently dropped. (zod strips the server-owned id/createdAt from real
+      // backups, and tolerates their absence in hand-built imports.)
+      const importPatternSchema = patternSchema.omit({ id: true, createdAt: true });
       for (const p of patterns) {
-        if (p && typeof p.title === "string" && Array.isArray(p.sections)) {
-          const { id: _id, createdAt: _createdAt, ...rest } = p;
-          await patternService.createPattern(rest, profile);
+        const parsed = importPatternSchema.safeParse(p);
+        if (parsed.success) {
+          await patternService.createPattern(parsed.data, profile);
           importedPatterns++;
+        } else {
+          skippedPatterns++;
         }
       }
 
@@ -1202,6 +1212,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (result.success) {
           await stashService.createItem(result.data, profile);
           importedStash++;
+        } else {
+          skippedStash++;
         }
       }
 
@@ -1209,7 +1221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await stashService.updateNotes(body.stashNotes, profile);
       }
 
-      res.json({ success: true, importedPatterns, importedStash });
+      res.json({ success: true, importedPatterns, importedStash, skippedPatterns, skippedStash });
     } catch (error) {
       console.error("Import failed:", error);
       res.status(500).json({ message: "Import failed", error: (error as Error).message });
