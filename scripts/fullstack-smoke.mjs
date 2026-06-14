@@ -177,6 +177,14 @@ let communityId;
   check("export contains only Mummy's patterns", !json.patterns.some((p) => p.id === vumshPattern.id));
   const imp = await api("POST", "/api/import?profile=akka", { patterns: [samplePattern("Imported Smoke")], stash: [] });
   check("import lands in the active profile", imp.json?.importedPatterns === 1);
+  // A corrupt row in a backup is skipped + reported, not crashed-on or stored.
+  const imp2 = await api("POST", "/api/import?profile=akka", {
+    patterns: [samplePattern("Valid Restore"), { title: "Corrupt", sections: "not-an-array" }],
+    stash: [],
+  });
+  check("import skips invalid patterns and reports counts",
+    imp2.json?.importedPatterns === 1 && imp2.json?.skippedPatterns === 1,
+    `imported=${imp2.json?.importedPatterns} skipped=${imp2.json?.skippedPatterns}`);
 }
 
 // ── AI endpoints degrade gracefully without a key ──────────────────────────

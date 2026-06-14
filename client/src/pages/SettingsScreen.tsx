@@ -120,9 +120,12 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
       await queryClient.invalidateQueries({ queryKey: ["/api/patterns"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/stash"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/stash-notes"] });
+      const skipped = (result.skippedPatterns ?? 0) + (result.skippedStash ?? 0);
       toast({
         title: "Backup restored",
-        description: `Imported ${result.importedPatterns ?? 0} pattern(s) and ${result.importedStash ?? 0} material(s).`,
+        description:
+          `Imported ${result.importedPatterns ?? 0} pattern(s) and ${result.importedStash ?? 0} material(s).` +
+          (skipped > 0 ? ` Skipped ${skipped} item(s) that couldn't be read.` : ""),
       });
     } catch (err) {
       toast({

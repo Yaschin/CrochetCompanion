@@ -224,6 +224,25 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
         </div>
       )}
 
+      {/* Nudge: make-alongs are invisible until someone starts one — explain how */}
+      {!isLoading && !isError && makealongs.length === 0 && patterns.length > 0 && (
+        <div className="px-4 pt-4">
+          <div className="flex items-center gap-3 p-3.5 rounded-2xl"
+            style={{ background: "rgba(124,95,168,0.06)", border: "1px dashed rgba(124,95,168,0.30)" }}>
+            <span className="text-[22px] shrink-0" aria-hidden>🏁</span>
+            <div className="min-w-0">
+              <p className="font-heading font-bold text-[12.5px]" style={{ color: "#3D2318" }}>
+                Start a family make-along
+              </p>
+              <p className="text-[11px] leading-snug" style={{ color: "#7A5A48" }}>
+                Open any pattern below and tap “Start a family make-along” — everyone makes the
+                same one and races together on a shared board.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Grid */}
       <div className="px-4 pt-4">
         {isLoading ? (
