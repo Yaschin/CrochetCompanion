@@ -102,39 +102,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     _require("pdf-parse/lib/pdf-parse");
 
   app.post("/api/parse-pdf", async (req: Request, res: Response) => {
-    const { fileBase64 } = req.body;
-    if (!fileBase64 || typeof fileBase64 !== "string") {
-      return res.status(400).json({ message: "fileBase64 is required" });
+    // Accept either a single fileBase64 (legacy) or an array filesBase64
+    const rawSingle: string | undefined = req.body.fileBase64;
+    const rawMulti: string[] | undefined = req.body.filesBase64;
+    const files: string[] = rawMulti?.length ? rawMulti : rawSingle ? [rawSingle] : [];
+
+    if (files.length === 0) {
+      return res.status(400).json({ message: "filesBase64 array (or fileBase64) is required" });
     }
-    const buffer = Buffer.from(fileBase64, "base64");
-    if (buffer.length > 10 * 1024 * 1024) {
-      return res.status(400).json({ message: "PDF too large — maximum size is 10 MB." });
+    if (files.length > 5) {
+      return res.status(400).json({ message: "Maximum 5 PDFs at once." });
     }
 
-    // Step 1: extract text — catch PDF-level errors with a user-friendly message
-    let text = "";
-    try {
-      const data = await pdfParseFn(buffer);
-      text = (data.text || "").trim();
-    } catch (pdfErr: any) {
-      const msg = (pdfErr?.message || "") + " " + (pdfErr?.details || "");
-      const isStructure = /invalid|corrupt|bad xref|password|damaged|format/i.test(msg);
+    // Step 1: extract + concatenate text from every PDF
+    const textParts: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const buffer = Buffer.from(files[i], "base64");
+      if (buffer.length > 10 * 1024 * 1024) {
+        return res.status(400).json({ message: `PDF ${i + 1} is too large — maximum size per file is 10 MB.` });
+      }
+      try {
+        const data = await pdfParseFn(buffer);
+        const text = (data.text || "").trim();
+        if (text.length >= 50) textParts.push(text);
+      } catch (pdfErr: any) {
+        const msg = (pdfErr?.message || "") + " " + (pdfErr?.details || "");
+        const isStructure = /invalid|corrupt|bad xref|password|damaged|format/i.test(msg);
+        return res.status(422).json({
+          message: isStructure
+            ? `PDF ${i + 1} doesn't look valid — it may be corrupt or password-protected.`
+            : `Couldn't read PDF ${i + 1}. Try re-saving it and uploading again.`,
+        });
+      }
+    }
+
+    if (textParts.length === 0) {
       return res.status(422).json({
-        message: isStructure
-          ? "This file doesn't look like a valid PDF — it may be corrupt or password-protected. Try re-exporting it from the original source."
-          : "Couldn't read this PDF. Try re-saving it and uploading again, or use 'Add my own' to paste the text.",
+        message: "No readable text found in any of the PDFs — they may be image-based (scanned). Try copying the text manually and using 'Add my own' instead.",
       });
     }
 
-    if (text.length < 50) {
-      return res.status(422).json({
-        message: "No readable text found in this PDF — it may be image-based (scanned). Try copying the text manually and using 'Add my own' instead.",
-      });
-    }
+    // Join all pages with a clear separator so AI sees them as one pattern
+    const combinedText = textParts.join("\n\n--- (next file) ---\n\n");
 
     // Step 2: AI structuring
     try {
-      const result = await parsePdfText(text);
+      const result = await parsePdfText(combinedText);
       res.json(result);
     } catch (aiErr) {
       console.error("AI structuring error in parse-pdf:", aiErr);
