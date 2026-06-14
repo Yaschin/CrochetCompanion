@@ -82,6 +82,13 @@ export async function objectExists(key: string): Promise<boolean> {
   return exists;
 }
 
+export async function deleteObject(key: string): Promise<void> {
+  const { bucketName, prefix } = getPublicBucketAndPrefix();
+  const objectName = prefix ? `${prefix}/media/${key}` : `media/${key}`;
+  const bucket = objectStorageClient.bucket(bucketName);
+  await bucket.file(objectName).delete({ ignoreNotFound: true });
+}
+
 // Read a stored object and return it as a base64 data URL. Used to feed
 // object-storage images (which are not publicly fetchable) into the vision model.
 export async function getObjectDataUrl(key: string): Promise<string> {

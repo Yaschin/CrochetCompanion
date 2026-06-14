@@ -10,6 +10,10 @@ export const patternService = {
     return storage.getPattern(id);
   },
 
+  async getPatternsByIds(ids: string[]): Promise<Pattern[]> {
+    return storage.getPatternsByIds(ids);
+  },
+
   async getAllPatterns(ownerId?: string): Promise<Pattern[]> {
     return storage.getAllPatterns(ownerId);
   },

@@ -27,5 +27,17 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // Split vendor out of the app chunk so it caches across deploys, and
+        // keep recharts + its d3 deps (chart-only, already lazy-loaded) in their
+        // own chunk rather than the shared vendor bundle.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (/[\\/]node_modules[\\/](recharts|d3-|internmap|victory-vendor)/.test(id)) return "charts";
+          return "vendor";
+        },
+      },
+    },
   },
 });

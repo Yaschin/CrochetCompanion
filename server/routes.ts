@@ -89,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(generatedPattern);
     } catch (error) {
       console.error("Error in generate-pattern endpoint:", error);
-      res.status(500).json({ message: "Failed to generate pattern", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to generate pattern" });
     }
   });
 
@@ -152,7 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error) {
       console.error("Error in parse-pattern endpoint:", error);
-      res.status(500).json({ message: "Failed to parse pattern", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to parse pattern" });
     }
   });
 
@@ -169,7 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ url: imageUrl });
     } catch (error) {
       console.error("Error in generate-image endpoint:", error);
-      res.status(500).json({ message: "Failed to generate image", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to generate image" });
     }
   });
 
@@ -264,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ url });
     } catch (error) {
       console.error("Error generating character image:", error);
-      res.status(500).json({ message: "Failed to generate character image", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to generate character image" });
     }
   });
 
@@ -303,7 +303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error creating pattern:", error);
-      res.status(500).json({ message: "Failed to create pattern", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to create pattern" });
     }
   });
 
@@ -313,7 +313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(patterns);
     } catch (error) {
       console.error("Error getting patterns:", error);
-      res.status(500).json({ message: "Failed to get patterns", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to get patterns" });
     }
   });
 
@@ -328,7 +328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(pattern);
     } catch (error) {
       console.error("Error getting pattern:", error);
-      res.status(500).json({ message: "Failed to get pattern", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to get pattern" });
     }
   });
 
@@ -371,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedPattern);
     } catch (error) {
       console.error("Error updating pattern:", error);
-      res.status(500).json({ message: "Failed to update pattern", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to update pattern" });
     }
   });
 
@@ -395,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updated);
     } catch (error) {
       console.error("Error setting cover photo:", error);
-      res.status(500).json({ message: "Failed to set cover photo", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to set cover photo" });
     }
   });
 
@@ -410,7 +410,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).end();
     } catch (error) {
       console.error("Error deleting pattern:", error);
-      res.status(500).json({ message: "Failed to delete pattern", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to delete pattern" });
     }
   });
 
@@ -456,10 +456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate product image" });
     } catch (error) {
       console.error("Error generating product image:", error);
-      res.status(500).json({ 
-        message: "Failed to generate product image", 
-        error: (error as Error).message 
-      });
+      res.status(500).json({ message: "Failed to generate product image" });
     }
   });
 
@@ -519,10 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate image" });
     } catch (error) {
       console.error("Error generating section image:", error);
-      res.status(500).json({ 
-        message: "Failed to generate section image", 
-        error: (error as Error).message 
-      });
+      res.status(500).json({ message: "Failed to generate section image" });
     }
   });
 
@@ -533,7 +527,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(items);
     } catch (error) {
       console.error("Error getting stash items:", error);
-      res.status(500).json({ message: "Failed to get stash items", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to get stash items" });
     }
   });
 
@@ -548,7 +542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(item);
     } catch (error) {
       console.error("Error getting stash item:", error);
-      res.status(500).json({ message: "Failed to get stash item", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to get stash item" });
     }
   });
 
@@ -564,7 +558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(item);
     } catch (error) {
       console.error("Error creating stash item:", error);
-      res.status(500).json({ message: "Failed to create stash item", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to create stash item" });
     }
   });
 
@@ -585,7 +579,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedItem);
     } catch (error) {
       console.error("Error updating stash item:", error);
-      res.status(500).json({ message: "Failed to update stash item", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to update stash item" });
     }
   });
 
@@ -600,7 +594,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).end();
     } catch (error) {
       console.error("Error deleting stash item:", error);
-      res.status(500).json({ message: "Failed to delete stash item", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to delete stash item" });
     }
   });
 
@@ -611,7 +605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ content: notes }); // Using content key for consistency
     } catch (error) {
       console.error("Error getting stash notes:", error);
-      res.status(500).json({ message: "Failed to get stash notes", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to get stash notes" });
     }
   });
 
@@ -628,7 +622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ content: updatedNotes }); // Using content key for consistency
     } catch (error) {
       console.error("Error updating stash notes:", error);
-      res.status(500).json({ message: "Failed to update stash notes", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to update stash notes" });
     }
   });
 
@@ -700,7 +694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error uploading step photo:", error);
-      res.status(500).json({ message: "Failed to upload step photo", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to upload step photo" });
     }
   });
   
@@ -1123,8 +1117,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/up-next", async (req: Request, res: Response) => {
     try {
-      const { patternId } = req.body;
-      await setMeta(`upnext:${profileOf(req)}`, typeof patternId === "string" ? patternId : "");
+      const parsed = z.object({ patternId: z.string().max(64).nullish() }).safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "patternId must be a string" });
+      }
+      const patternId = parsed.data.patternId ?? "";
+      await setMeta(`upnext:${profileOf(req)}`, patternId);
       res.json({ success: true, patternId: patternId || null });
     } catch (error) {
       res.status(500).json({ message: "Failed to set up-next" });
@@ -1143,8 +1141,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/gauge", async (req: Request, res: Response) => {
     try {
-      const stitches = Number(req.body?.stitches) || null;
-      const rows = Number(req.body?.rows) || null;
+      const num = z.union([z.number().positive().max(200), z.null()]);
+      const parsed = z.object({ stitches: num.optional(), rows: num.optional() }).safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Gauge values must be a positive number up to 200, or null." });
+      }
+      const stitches = parsed.data.stitches ?? null;
+      const rows = parsed.data.rows ?? null;
       await setMeta(`gauge:${profileOf(req)}`, JSON.stringify({ stitches, rows }));
       res.json({ stitches, rows });
     } catch (error) {
@@ -1192,7 +1195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(await runQuickDiagnostics());
     } catch (error) {
       console.error("Diagnostics failed:", error);
-      res.status(500).json({ message: "Diagnostics failed", error: (error as Error).message });
+      res.status(500).json({ message: "Diagnostics failed" });
     }
   });
 
@@ -1203,7 +1206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(await runDeepDiagnostics());
     } catch (error) {
       console.error("Deep diagnostics failed:", error);
-      res.status(500).json({ message: "Deep diagnostics failed", error: (error as Error).message });
+      res.status(500).json({ message: "Deep diagnostics failed" });
     }
   });
 
@@ -1231,7 +1234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.send(JSON.stringify(payload, null, 2));
     } catch (error) {
       console.error("Export failed:", error);
-      res.status(500).json({ message: "Export failed", error: (error as Error).message });
+      res.status(500).json({ message: "Export failed" });
     }
   });
 
@@ -1282,7 +1285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, importedPatterns, importedStash, skippedPatterns, skippedStash });
     } catch (error) {
       console.error("Import failed:", error);
-      res.status(500).json({ message: "Import failed", error: (error as Error).message });
+      res.status(500).json({ message: "Import failed" });
     }
   });
 

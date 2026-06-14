@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ViewType } from "../lib/types";
 import { getActiveProfile, withProfile } from "../lib/profile";
 import { restartTutorial } from "../components/TutorialSystem";
+import { gaugeFromSwatch } from "../lib/gauge";
 
 interface SettingsScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -91,6 +92,26 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
   // Personal gauge (tension) — used by AI resize to fit YOUR hands.
   const [gauge, setGauge] = useState<{ stitches: string; rows: string }>({ stitches: "", rows: "" });
   const [savingGauge, setSavingGauge] = useState(false);
+  // Swatch calculator: measure any swatch, normalise to the per-10cm gauge.
+  const [swatchOpen, setSwatchOpen] = useState(false);
+  const [swatch, setSwatch] = useState({ stitches: "", width: "", rows: "", height: "" });
+  const applySwatch = () => {
+    const r = gaugeFromSwatch({
+      stitches: Number(swatch.stitches),
+      width: Number(swatch.width),
+      rows: Number(swatch.rows),
+      height: Number(swatch.height),
+    });
+    if (r.stitchesPer10 == null && r.rowsPer10 == null) {
+      toast({ title: "Check your swatch numbers", description: "Enter the stitches/rows you counted and the size you measured.", variant: "destructive" });
+      return;
+    }
+    setGauge((g) => ({
+      stitches: r.stitchesPer10 != null ? String(r.stitchesPer10) : g.stitches,
+      rows: r.rowsPer10 != null ? String(r.rowsPer10) : g.rows,
+    }));
+    toast({ title: "Gauge filled in ✓", description: "Tap Save to keep it." });
+  };
   useEffect(() => {
     fetch(withProfile("/api/gauge"), { credentials: "same-origin" })
       .then((r) => (r.ok ? r.json() : null))
@@ -251,6 +272,48 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
               {savingGauge ? "…" : "Save"}
             </button>
           </div>
+
+          {/* Swatch calculator — not a 10cm square? Measure any swatch. */}
+          <button
+            onClick={() => setSwatchOpen((o) => !o)}
+            className="mt-3 text-[11.5px] font-semibold hover:opacity-80"
+            style={{ color: "#84934F" }}
+          >
+            📐 {swatchOpen ? "Hide swatch calculator" : "Not a 10cm square? Calculate from any swatch"}
+          </button>
+          {swatchOpen && (
+            <div className="mt-3 p-3 rounded-xl" style={{ background: "rgba(132,147,79,0.06)", border: "1px dashed rgba(132,147,79,0.3)" }}>
+              <p className="text-[11px] mb-2.5" style={{ color: "#7A5A48" }}>
+                Count the stitches across and rows down your swatch, then measure it.
+              </p>
+              <div className="grid grid-cols-2 gap-2.5">
+                {([
+                  ["stitches", "Stitches across"],
+                  ["width", "Width (cm)"],
+                  ["rows", "Rows down"],
+                  ["height", "Height (cm)"],
+                ] as const).map(([key, label]) => (
+                  <label key={key} className="text-[10.5px] font-semibold" style={{ color: "#7A5A48" }}>
+                    {label}
+                    <input
+                      type="number" min={0} step="any" inputMode="decimal"
+                      value={swatch[key]}
+                      onChange={(e) => setSwatch((s) => ({ ...s, [key]: e.target.value }))}
+                      className="mt-1 w-full rounded-lg px-2.5 py-1.5 text-[12.5px] outline-none"
+                      style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.25)", color: "#3D2318" }}
+                    />
+                  </label>
+                ))}
+              </div>
+              <button
+                onClick={applySwatch}
+                className="mt-3 w-full py-2 rounded-lg text-[12px] font-bold hover:opacity-90"
+                style={{ background: "rgba(132,147,79,0.15)", color: "#6A7A3A", border: "1.5px solid rgba(132,147,79,0.35)" }}
+              >
+                Calculate &amp; fill gauge above
+              </button>
+            </div>
+          )}
         </div>
 
         {/* App health */}

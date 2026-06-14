@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
-import { uploadBufferWithKey, objectExists } from "./objectStorage";
+import { uploadBufferWithKey, objectExists, deleteObject } from "./objectStorage";
 
 const OPENAI_API_KEY = (process.env.OPENAI_API_KEY || "").trim();
 const API_KEY_VALID_FORMAT = /^sk-[A-Za-z0-9_\-+/]{32,}$/.test(OPENAI_API_KEY);
@@ -66,7 +66,10 @@ export async function runQuickDiagnostics(): Promise<DiagnosticsReport> {
     await timed("Object storage", async () => {
       const key = "diagnostics-probe";
       await uploadBufferWithKey(key, Buffer.from("ok"), "text/plain");
-      if (!(await objectExists(key))) throw new Error("Probe object not readable after write.");
+      const readable = await objectExists(key);
+      // Don't leave a publicly-readable probe object lying around.
+      await deleteObject(key).catch(() => {});
+      if (!readable) throw new Error("Probe object not readable after write.");
       return "Write + read probe succeeded.";
     })
   );
