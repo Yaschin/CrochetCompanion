@@ -59,6 +59,7 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - Make-alongs: `server/makealongService.ts`, tables `makealongs`/`makealong_members` (ensureSchema), board UI in CommunityScreen, start button in CommunityDetailScreen.
 - Per-profile app_meta keys: `upnext:{id}`, `gauge:{id}` (`/api/up-next`, `/api/gauge`); story cards `lib/storyCard.ts`; cover photo `POST /api/patterns/:id/cover-photo`.
 - Doing=starting: PUT /api/patterns/:id auto-promotes status pattern→active when a step completes or counterState>0 (server-side).
+- Stash depletion (W18): finishing a project opens `components/StashDepletionSheet.tsx` (after the confetti, via PatternViewer's finish onSuccess) — tick the matched stash yarns (`matchedYarnsForPattern` in `lib/stashMatch.ts`) you used up; each decrements by 1 (removed at 0) via existing `/api/stash` PUT/DELETE. Manual-confirm, yarn-only, no new endpoint.
 
 ## Testing infrastructure
 - `server/db.ts` dual driver: Neon WebSocket (prod) vs node-postgres (localhost) — enables real-server testing anywhere.

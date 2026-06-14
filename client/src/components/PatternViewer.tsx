@@ -10,6 +10,7 @@ import StitchCounter from './StitchCounter';
 import FollowMode from './FollowMode';
 import CelebrationOverlay from './CelebrationOverlay';
 import StashCoverage from './StashCoverage';
+import StashDepletionSheet from './StashDepletionSheet';
 import { recordActivity } from '../lib/activityLog';
 import { cn } from '../lib/utils';
 import { RefreshCw, Download, FileText, Plus, Image, Hash, Heart, CheckCircle2, Pencil, Play, Share2, Scissors, Shuffle } from 'lucide-react';
@@ -57,6 +58,9 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     try { return localStorage.getItem(`crochet-time:notes:${pattern.id}`) || ""; } catch { return ""; }
   });
   const [showCelebration, setShowCelebration] = useState(false);
+  // After the finish confetti, offer to deduct used-up yarn from the stash.
+  const [showStashDeplete, setShowStashDeplete] = useState(false);
+  const pendingDepleteRef = useRef(false);
   const [regenAllConfirmOpen, setRegenAllConfirmOpen] = useState(false);
   const [regenAllNote, setRegenAllNote] = useState("");
   const [shareConfirmOpen, setShareConfirmOpen] = useState(false);
@@ -115,6 +119,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       // Celebrate the moment a project is finished (transition into "finished").
       if (data?.status === "finished" && pattern.status !== "finished") {
         recordActivity();
+        pendingDepleteRef.current = true;
         setShowCelebration(true);
       }
     },
@@ -801,8 +806,20 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
     <div className="mb-8 flex flex-col gap-4">
       <CelebrationOverlay
         show={showCelebration}
-        onDone={() => setShowCelebration(false)}
+        onDone={() => {
+          setShowCelebration(false);
+          // Sequence the stash prompt after the confetti so they don't overlap.
+          if (pendingDepleteRef.current) {
+            pendingDepleteRef.current = false;
+            setShowStashDeplete(true);
+          }
+        }}
         subtitle={`"${pattern.title}" is finished ♡`}
+      />
+      <StashDepletionSheet
+        pattern={pattern}
+        open={showStashDeplete}
+        onClose={() => setShowStashDeplete(false)}
       />
       <StitchCounter
         open={counterOpen}
