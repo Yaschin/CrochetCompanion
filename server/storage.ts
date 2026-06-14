@@ -1,11 +1,12 @@
 import { Pattern, patterns as patternsTable } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "./db";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 
 // Storage interface with CRUD methods
 export interface IStorage {
   getPattern(id: string): Promise<Pattern | undefined>;
+  getPatternsByIds(ids: string[]): Promise<Pattern[]>;
   getAllPatterns(ownerId?: string): Promise<Pattern[]>;
   createPattern(pattern: Omit<Pattern, "id" | "createdAt">, ownerId?: string): Promise<Pattern>;
   updatePattern(id: string, pattern: Partial<Pattern>): Promise<Pattern | undefined>;
@@ -85,6 +86,19 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error getting pattern:", error);
       return undefined;
+    }
+  }
+
+  // Batch-fetch patterns by id in a single query (avoids N+1 loops, e.g. the
+  // make-along board reading every member's pattern).
+  async getPatternsByIds(ids: string[]): Promise<Pattern[]> {
+    if (ids.length === 0) return [];
+    try {
+      const result = await db.select().from(patternsTable).where(inArray(patternsTable.id, ids));
+      return result.map(rowToPattern);
+    } catch (error) {
+      console.error("Error getting patterns by ids:", error);
+      return [];
     }
   }
 

@@ -113,8 +113,16 @@ export const makealongService = {
           ORDER BY m."createdAt" DESC`
     );
 
+    const raw = (rows.rows ?? []) as Array<Record<string, unknown>>;
+
+    // Fetch every member's pattern in ONE query (no per-member N+1).
+    const patternIds = [...new Set(raw.filter((r) => r.patternId).map((r) => String(r.patternId)))];
+    const patternMap = new Map(
+      (await patternService.getPatternsByIds(patternIds)).map((p) => [p.id, p])
+    );
+
     const byId = new Map<string, MakeAlong>();
-    for (const r of (rows.rows ?? []) as Array<Record<string, unknown>>) {
+    for (const r of raw) {
       const id = String(r.id);
       if (!byId.has(id)) {
         byId.set(id, {
@@ -126,7 +134,7 @@ export const makealongService = {
         });
       }
       if (r.profileId && r.patternId) {
-        const pattern = await patternService.getPattern(String(r.patternId));
+        const pattern = patternMap.get(String(r.patternId));
         const profile = profileById(String(r.profileId));
         const prog = pattern ? progressOf(pattern) : { pct: 0, finished: false };
         byId.get(id)!.members.push({

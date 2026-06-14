@@ -41,8 +41,10 @@ app.use((req, res, next) => {
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    // Log the full error server-side, but don't leak internal details to the
+    // client on a 5xx — those messages are unexpected exceptions, not guidance.
     console.error(err);
+    const message = status >= 500 ? "Something went wrong on our end." : (err.message || "Request error");
     res.status(status).json({ message });
   });
 
