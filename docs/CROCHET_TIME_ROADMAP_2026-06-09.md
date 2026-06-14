@@ -22,7 +22,7 @@ Every phase is built, verified and **merged to `main`**:
 | Replit sessions | Tutorial system, pattern/PDF import, per-profile starter content, library image backfill |
 
 **Test layers, all green in CI on every PR:** typecheck · 14 unit tests · 42 browser e2e
-(mocked API, 3 viewports) · **31-assertion full-stack smoke against real Postgres** ·
+(mocked API, 3 viewports) · **34-assertion full-stack smoke against real Postgres** ·
 on-demand visual walkthroughs (`npm run walkthrough`, `npm run walkthrough:deep`).
 
 **The only outstanding item — live verification on the deployed app (Yash, ~15 min):**
@@ -159,6 +159,7 @@ Multi-user **auth** / real social community; AI provider swaps; offline write-sy
 - [x] Phase 4 — F1 trophy-shelf gallery · F2 continue-where-left-off · F3 branded Print/PDF · F4 row-by-row follow mode *(2026-06-09; also fixed a latent Pattern-tab index bug where filtering "materials" sections before mapping could corrupt step edits. **Merged in PR #23.**)*
 - [ ] Phase 5 — deferred polish (not scheduled)
 - [x] Phase 6 — Family profiles *(2026-06-09: profiles table + ownerId scoping (patterns/stash/notes), `?profile=` resolved centrally (apiRequest + default queryFn + SW-cache-safe), picker at `/who` after splash, per-profile streaks/bell/export-import v2, community shares stamped with the real family creator. Pre-profile data backfills to Larissa; old clients default to Larissa. **In PR #24** together with the main-merge: tutorial + pattern-import + library-images kept, adapt-copies owner-stamped, main's reverted startup block restored.)*
+- [x] Post-delivery hardening — Batch 1 "Make it trustworthy" *(2026-06-14, after a full audit re-verifying the build against code + a live server on real Postgres. Five fixes: **(1) data-loss bug** — the `ensureSchema` pattern dedup ran on EVERY boot and silently deleted any two same-title patterns within a profile (reproduced live: create 2 → restart → 1 survived); now one-time + `patterns_deduped_v1` marker-guarded (re-verified: 2 → restart → 2). **(2)** real error/retry states via shared `QueryError` on Projects/Favorites/YarnRecs/Community/CommunityDetail (a failed fetch no longer masquerades as an empty state). **(3)** the AI fallback template is flagged `aiUnavailable` server-side and the Create flow shows a clear "AI offline — sample saved" toast. **(4)** the fake fixed-timer generation interstitial is replaced by a progress-bound loader driven by the REAL request (`GenerationLoadingScreen` made controllable), then straight to the viewer. **(5)** mobile bottom nav swaps Community → My Stash (Community stays on Home cards + desktop sidebar). Smoke grew 31→34 with dedup + fallback-flag regression guards; tsc/build green.)*
 
 **Post-deploy checklist for Yash (live Replit app):**
 1. Deploy this branch; watch boot logs for `ensureSchema` + seed messages.

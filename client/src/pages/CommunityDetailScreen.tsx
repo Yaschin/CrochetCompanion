@@ -4,6 +4,7 @@ import { Pattern, ViewType } from "../lib/types";
 import type { CommunityPattern } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { QueryError } from "@/components/QueryError";
 
 interface CommunityDetailScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -32,7 +33,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
 
   const { toast } = useToast();
 
-  const { data: pattern, isLoading } = useQuery<CommunityPattern>({
+  const { data: pattern, isLoading, isError, refetch, isFetching } = useQuery<CommunityPattern>({
     queryKey: ["/api/community", communityId],
     enabled: !!communityId,
   });
@@ -124,7 +125,13 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
         </button>
       </div>
 
-      {isLoading || !pattern ? (
+      {isError ? (
+        <QueryError
+          onRetry={() => refetch()}
+          isRetrying={isFetching}
+          title="Couldn't load this pattern"
+        />
+      ) : isLoading || !pattern ? (
         <div className="px-4 pt-4 flex flex-col gap-4">
           <div className="h-36 rounded-2xl animate-pulse" style={{ background: "rgba(140,100,55,0.08)" }} />
           <div className="h-24 rounded-2xl animate-pulse" style={{ background: "rgba(140,100,55,0.08)" }} />

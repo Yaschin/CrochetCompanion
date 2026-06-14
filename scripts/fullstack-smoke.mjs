@@ -183,12 +183,27 @@ let communityId;
 {
   const gen = await api("POST", "/api/generate-pattern", { prompt: "a tiny bee", projectType: "Toy", skillLevel: "Beginner" });
   check("generation falls back to a labelled template", gen.status === 200 && /template/i.test(gen.json?.title ?? ""));
+  check("fallback pattern is flagged for the UI (aiUnavailable)", gen.json?.aiUnavailable === true);
   const scan = await api("POST", "/api/stash/scan-label", { imageBase64: "data:image/png;base64,iVBORw0KGgo=" });
   check("label scan fails CLEANLY without key", scan.status === 500 && /key/i.test(scan.json?.message ?? ""));
   const coach = await api("POST", `/api/patterns/${vumshPattern.id}/coach`, { question: "help" });
   check("coach fails CLEANLY without key", coach.status === 500 && /key/i.test(coach.json?.message ?? ""));
   const diag = await api("GET", "/api/diagnostics");
   check("diagnostics reports failures instead of crashing", diag.status === 200 && diag.json?.ok === false && Array.isArray(diag.json?.checks));
+}
+
+// ── Same-title patterns coexist (boot dedup must NOT delete user data) ──────
+// Regression guard for the ensureSchema dedup: it is now one-time and
+// marker-guarded, so a person can keep two makes with the same title.
+{
+  const a = await api("POST", "/api/patterns?profile=akka", samplePattern("Twin Scarf"));
+  const b = await api("POST", "/api/patterns?profile=akka", samplePattern("Twin Scarf"));
+  check("two same-title patterns both persist", a.status === 201 && b.status === 201 && a.json?.id !== b.json?.id);
+  const list = await api("GET", "/api/patterns?profile=akka");
+  const twins = (list.json ?? []).filter((p) => p.title === "Twin Scarf");
+  check("same-title patterns are not deduped away", twins.length === 2, `found=${twins.length}`);
+  await api("DELETE", `/api/patterns/${a.json?.id}`);
+  await api("DELETE", `/api/patterns/${b.json?.id}`);
 }
 
 // ── Delete ─────────────────────────────────────────────────────────────────

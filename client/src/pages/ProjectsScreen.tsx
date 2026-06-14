@@ -10,6 +10,7 @@ interface ProjectsScreenProps {
 }
 
 import { patternProgress } from "@/lib/progress";
+import { QueryError } from "@/components/QueryError";
 
 function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect: () => void; index: number }) {
   const { pct, done, total } = patternProgress(pattern);
@@ -91,7 +92,7 @@ function TrophyCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect: 
 }
 
 export default function ProjectsScreen({ onNavigate, onPatternSelected }: ProjectsScreenProps) {
-  const { data: patterns = [], isLoading } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
+  const { data: patterns = [], isLoading, isError, refetch, isFetching } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
 
   const inProgress = patterns.filter(p => p.status === 'active');
   const completed = patterns
@@ -135,6 +136,8 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
                 style={{ background: "rgba(140,100,55,0.06)" }} />
             ))}
           </div>
+        ) : isError ? (
+          <QueryError onRetry={() => refetch()} isRetrying={isFetching} />
         ) : inProgress.length === 0 && completed.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center gap-5 pb-10">
             <motion.div

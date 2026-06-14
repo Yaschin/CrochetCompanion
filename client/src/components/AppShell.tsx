@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Home, Wand2, BookOpen, FolderOpen, Users } from "lucide-react";
+import { Home, Wand2, BookOpen, FolderOpen, Package } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { ViewType } from "../lib/types";
 
@@ -10,14 +10,16 @@ interface AppShellProps {
   children: ReactNode;
 }
 
-// Five tabs: one per *concept*. Favorites is a Library filter (heart toggle)
-// and a Home card, not a destination of its own.
+// Five mobile tabs: the everyday making tools. My Stash earns a slot because
+// "what yarn do I have / what can I make?" is a daily, in-hand task on a phone.
+// Community is occasional — it stays on Home (cards) and the desktop sidebar.
+// Favorites is a Library filter + Home card, not a destination of its own.
 const TABS = [
-  { view: "home"      as ViewType, label: "Home",      Icon: Home },
-  { view: "input"     as ViewType, label: "Create",    Icon: Wand2 },
-  { view: "library"   as ViewType, label: "Library",   Icon: BookOpen },
-  { view: "projects"  as ViewType, label: "Projects",  Icon: FolderOpen },
-  { view: "community" as ViewType, label: "Community", Icon: Users },
+  { view: "home"     as ViewType, label: "Home",     Icon: Home },
+  { view: "input"    as ViewType, label: "Create",   Icon: Wand2 },
+  { view: "library"  as ViewType, label: "Library",  Icon: BookOpen },
+  { view: "projects" as ViewType, label: "Projects", Icon: FolderOpen },
+  { view: "stash"    as ViewType, label: "My Stash", Icon: Package },
 ];
 
 export default function AppShell({ activeView, onNavigate, rightPanel, children }: AppShellProps) {

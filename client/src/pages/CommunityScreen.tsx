@@ -8,6 +8,7 @@ import { getActiveProfile } from "../lib/profile";
 import type { CommunityPattern } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { PatternThumb } from "@/components/PatternThumb";
+import { QueryError } from "@/components/QueryError";
 
 interface CommunityScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -77,7 +78,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
   const [skillFilter, setSkillFilter] = useState("All Skill Levels");
   const [sort, setSort] = useState("Popular");
 
-  const { data: patterns = [], isLoading } = useQuery<CommunityPattern[]>({ queryKey: ["/api/community"] });
+  const { data: patterns = [], isLoading, isError, refetch, isFetching } = useQuery<CommunityPattern[]>({ queryKey: ["/api/community"] });
 
   const likeMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -231,6 +232,8 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
               <div key={i} className="rounded-2xl aspect-square animate-pulse" style={{ background: "rgba(140,100,55,0.08)" }} />
             ))}
           </div>
+        ) : isError ? (
+          <QueryError onRetry={() => refetch()} isRetrying={isFetching} compact />
         ) : (
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {filtered.map(p => (
@@ -269,7 +272,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
           </div>
         )}
 
-        {!isLoading && filtered.length === 0 && (
+        {!isLoading && !isError && filtered.length === 0 && (
           <div className="text-center py-16">
             <p className="font-heading font-semibold text-[15px]" style={{ color: "#9A7868" }}>
               No patterns found

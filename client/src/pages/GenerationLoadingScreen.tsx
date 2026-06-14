@@ -3,7 +3,13 @@ import { useEffect, useState } from "react";
 import { ViewType } from "../lib/types";
 
 interface GenerationLoadingScreenProps {
-  onComplete: (view: ViewType) => void;
+  /** Legacy/uncontrolled: when omitted, the screen self-drives a timer and
+   *  calls onComplete("viewer") at 100%. */
+  onComplete?: (view: ViewType) => void;
+  /** Controlled mode: when provided, the ring reflects the REAL generation
+   *  request and the parent owns navigation — no internal timer, no
+   *  auto-complete. This is what makes the progress honest. */
+  progress?: number;
 }
 
 const STAGES = [
@@ -22,30 +28,31 @@ const YALA_TIPS = [
   "Blocking your finished piece can really bring the shape to life! 🌟",
 ];
 
-export default function GenerationLoadingScreen({ onComplete }: GenerationLoadingScreenProps) {
-  const [progress, setProgress] = useState(0);
-  const [stageIdx, setStageIdx] = useState(0);
+export default function GenerationLoadingScreen({ onComplete, progress: controlledProgress }: GenerationLoadingScreenProps) {
+  const controlled = controlledProgress !== undefined;
+  const [internalProgress, setInternalProgress] = useState(0);
   const [tipIdx] = useState(() => Math.floor(Math.random() * YALA_TIPS.length));
 
   useEffect(() => {
+    if (controlled) return; // controlled mode: progress is driven by the prop
     const interval = setInterval(() => {
-      setProgress((p) => {
+      setInternalProgress((p) => {
         const next = p + 2;
         if (next >= 100) {
           clearInterval(interval);
-          setTimeout(() => onComplete("viewer"), 600);
+          setTimeout(() => onComplete?.("viewer"), 600);
           return 100;
         }
-        const newStage = Math.floor((next / 100) * STAGES.length);
-        setStageIdx(Math.min(newStage, STAGES.length - 1));
         return next;
       });
     }, 60);
     return () => clearInterval(interval);
-  }, [onComplete]);
+  }, [onComplete, controlled]);
 
+  const progress = controlled ? Math.max(0, Math.min(100, controlledProgress)) : internalProgress;
   const circumference = 2 * Math.PI * 70;
   const stroke = circumference - (progress / 100) * circumference;
+  const stageIdx = Math.min(Math.floor((progress / 100) * STAGES.length), STAGES.length - 1);
   const currentStage = STAGES[stageIdx];
 
   return (

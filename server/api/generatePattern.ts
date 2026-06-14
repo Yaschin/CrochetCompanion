@@ -45,9 +45,13 @@ export async function generatePattern(inputData: PatternInputData) {
     referenceImage,
   } = inputData;
 
-  // If API key is not available or invalid, return a fallback template pattern
+  // If API key is not available or invalid, return a fallback template pattern.
+  // Flag it (`aiUnavailable`) so the client can tell the user this is a generic
+  // sample, not a real AI-generated pattern — otherwise the template is
+  // indistinguishable from a genuine make. The flag is transient: the save path
+  // only persists schema fields, so it never reaches the DB.
   if (!API_KEY_AVAILABLE || !API_KEY_VALID_FORMAT) {
-    return getFallbackPatternTemplate(prompt, projectType, skillLevel);
+    return { ...getFallbackPatternTemplate(prompt, projectType, skillLevel), aiUnavailable: true };
   }
 
   // Determine if we're regenerating only specific parts of an existing pattern
