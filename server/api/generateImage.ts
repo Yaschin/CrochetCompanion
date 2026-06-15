@@ -34,7 +34,7 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
   // If API key is not available or invalid, return appropriate placeholder based on image type
   if (!API_KEY_AVAILABLE || !API_KEY_VALID_FORMAT) {
     console.log(`OpenAI API key not available or invalid. Returning placeholder for ${type} image.`);
-    return getPlaceholderImage(type, prompt, partName);
+    return getPlaceholderImage(type, partName);
   }
   
   let enhancedPrompt = prompt;
@@ -174,7 +174,7 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
           isContentPolicyError ? "Content policy" : 
           "Unknown"
         }`);
-        return getPlaceholderImage(type, prompt, partName);
+        return getPlaceholderImage(type, partName);
       }
       
       // Otherwise, we'll continue to the next iteration and retry
@@ -182,24 +182,18 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
   }
   
   // For type safety, even though this code is unreachable
-  return getPlaceholderImage(type, prompt, partName);
+  return getPlaceholderImage(type, partName);
 }
 
 /**
  * Get appropriate placeholder image based on image type with improved messaging
  * @param type - The type of image being generated
- * @param prompt - The original prompt for context
  * @param partName - Optional part name for part-specific placeholders
  * @returns URL to an appropriate placeholder image
  */
-function getPlaceholderImage(type: string, prompt: string, partName?: string): string {
+function getPlaceholderImage(type: string, partName?: string): string {
   const baseUrl = "https://placehold.co";
   
-  // Create a truncated prompt for display (if relevant)
-  const shortPrompt = prompt && prompt.length > 20 
-    ? prompt.substring(0, 20).replace(/\s+/g, '+') + '...' 
-    : (prompt || '').replace(/\s+/g, '+');
-    
   // Format part name for URL if provided
   const partText = partName ? partName.replace(/\s+/g, '+') : 'Part';
   

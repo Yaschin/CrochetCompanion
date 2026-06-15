@@ -54,47 +54,6 @@ function BasketIcon({ style, className }: { style?: React.CSSProperties; classNa
   );
 }
 
-function BeeMascot() {
-  return (
-    <svg viewBox="0 0 80 92" fill="none" className="w-[80px] h-[92px] drop-shadow-md">
-      {/* Wings */}
-      <ellipse cx="17" cy="44" rx="16" ry="10" fill="rgba(190,225,255,0.75)" transform="rotate(-25,17,44)" />
-      <ellipse cx="63" cy="44" rx="16" ry="10" fill="rgba(190,225,255,0.75)" transform="rotate(25,63,44)" />
-      <ellipse cx="17" cy="44" rx="16" ry="10" fill="none" stroke="rgba(120,170,210,0.45)" strokeWidth="0.9" transform="rotate(-25,17,44)" />
-      <ellipse cx="63" cy="44" rx="16" ry="10" fill="none" stroke="rgba(120,170,210,0.45)" strokeWidth="0.9" transform="rotate(25,63,44)" />
-      {/* Body */}
-      <ellipse cx="40" cy="61" rx="22" ry="25" fill="#F0C840" />
-      <rect x="18" y="52" width="44" height="7.5" rx="3.75" fill="rgba(35,16,2,0.68)" />
-      <rect x="18" y="66" width="44" height="7.5" rx="3.75" fill="rgba(35,16,2,0.68)" />
-      {/* Body highlight */}
-      <ellipse cx="33" cy="52" rx="7" ry="4" fill="rgba(255,255,255,0.18)" />
-      {/* Head */}
-      <circle cx="40" cy="31" r="16" fill="#F0C840" />
-      {/* Eyes */}
-      <circle cx="34" cy="29" r="3.5" fill="#2D1905" />
-      <circle cx="46" cy="29" r="3.5" fill="#2D1905" />
-      <circle cx="35.2" cy="28" r="1.3" fill="white" />
-      <circle cx="47.2" cy="28" r="1.3" fill="white" />
-      {/* Smile */}
-      <path d="M 33 37 Q 40 43 47 37" stroke="#2D1905" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-      {/* Rosy cheeks */}
-      <circle cx="30" cy="34" r="3.5" fill="#F09090" fillOpacity="0.35" />
-      <circle cx="50" cy="34" r="3.5" fill="#F09090" fillOpacity="0.35" />
-      {/* Antennae */}
-      <line x1="34" y1="16" x2="27" y2="5"  stroke="#2D1905" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="27" cy="4.5" r="2.8" fill="#C24E6B" />
-      <line x1="46" y1="16" x2="53" y2="5"  stroke="#2D1905" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="53" cy="4.5" r="2.8" fill="#C24E6B" />
-      {/* Crochet dots on body */}
-      <circle cx="32" cy="58" r="1.4" fill="rgba(255,255,255,0.5)" />
-      <circle cx="40" cy="56" r="1.4" fill="rgba(255,255,255,0.5)" />
-      <circle cx="48" cy="58" r="1.4" fill="rgba(255,255,255,0.5)" />
-      <circle cx="36" cy="71" r="1.4" fill="rgba(255,255,255,0.5)" />
-      <circle cx="44" cy="71" r="1.4" fill="rgba(255,255,255,0.5)" />
-    </svg>
-  );
-}
-
 function CrochetFlowerSmall({ color }: { color: string }) {
   return (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">

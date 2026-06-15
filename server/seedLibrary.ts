@@ -2,7 +2,6 @@ import { patternService } from "./patternService";
 import { stashService } from "./stashService";
 import { db } from "./db";
 import { patterns, stashItems } from "../shared/schema";
-import { sql } from "drizzle-orm";
 import { getMeta, setMeta } from "./ensureSchema";
 import { seedAdditionalPatterns } from "./seedAdditionalPatterns";
 

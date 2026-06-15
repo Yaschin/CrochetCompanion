@@ -3,7 +3,6 @@ import { createServer, type Server } from "http";
 import { createRequire } from "module";
 import { existsSync } from "fs";
 import { resolve } from "path";
-import { storage } from "./storage";
 import { generatePattern } from "./api/generatePattern";
 import { parsePattern, parsePdfText } from "./api/parsePattern";
 import { generateImage } from "./api/generateImage";

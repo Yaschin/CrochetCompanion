@@ -4,7 +4,7 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Pattern } from '../lib/types';
 import { cn } from '../lib/utils';
-import { FolderOpen, Trash, Calendar, Plus, Search, Heart } from 'lucide-react';
+import { FolderOpen, Trash, Plus, Search, Heart } from 'lucide-react';
 import { PatternThumb } from '@/components/PatternThumb';
 import { patternProgress } from '../lib/progress';
 
@@ -78,10 +78,6 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
 
   // Unique project types for the filter dropdown
   const projectTypes = useMemo(() => {

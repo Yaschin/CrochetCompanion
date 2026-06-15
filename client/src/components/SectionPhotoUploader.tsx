@@ -13,19 +13,6 @@ interface SectionPhotoUploaderProps {
   onRequestPatternRegeneration?: () => void;
 }
 
-// Define response types for API calls
-interface PhotoUploadResponse {
-  success: boolean;
-  photoUrl: string;
-  pattern?: any;
-}
-
-interface ImageGenerationResponse {
-  success: boolean;
-  imageUrl: string;
-  pattern?: any;
-}
-
 const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
   patternId,
   sectionIndex,

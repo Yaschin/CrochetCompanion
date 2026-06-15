@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Search, Bell, Loader2, ChevronRight,
+  Search, Bell, ChevronRight,
   Heart, Wand2, FolderOpen, Trophy, ChevronRight as ChevRight, BookOpen, FileUp,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
@@ -11,7 +11,7 @@ import { PatternThumb } from "@/components/PatternThumb";
 import { getStreak } from "../lib/activityLog";
 import { loadCounter } from "../hooks/useStitchCounter";
 import { getActiveProfile } from "../lib/profile";
-import { patternProgress as sharedProgress, craftSections } from "../lib/progress";
+import { patternProgress as sharedProgress } from "../lib/progress";
 
 // ─── Notification helpers ──────────────────────────────────────────────────────
 // Evaluated per call (not at module load) so in-session profile switches
@@ -46,14 +46,6 @@ interface HomeWorkbenchProps {
   onPatternSelected?: (p: Pattern) => void;
   onResumeCounting?: (p: Pattern) => void;
 }
-
-const CHAR = {
-  aloo:  { color: "#C24E6B", light: "#FBF1F4", mid: "#F0CACF", label: "Aloo" },
-  yala:  { color: "#7C5FA8", light: "#F5F0FB", mid: "#D9CAEE", label: "Yala" },
-  ashi:  { color: "#3D8FA3", light: "#EEF7FA", mid: "#C0DDE5", label: "Ashi" },
-  bee:   { color: "#D4921A", light: "#FDF6E3", mid: "#F0D499", label: "Bee" },
-  sheep: { color: "#84934F", light: "#F5F7EF", mid: "#D4DCAA", label: "Sheep" },
-};
 
 function greeting() {
   const h = new Date().getHours();

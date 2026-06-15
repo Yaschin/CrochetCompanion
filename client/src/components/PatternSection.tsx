@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import SectionImagePlaceholder from './SectionImagePlaceholder';
 import StepPhotoUploader from './StepPhotoUploader';
 import SectionPhotoUploader from './SectionPhotoUploader';
 import { apiRequest } from '@/lib/queryClient';

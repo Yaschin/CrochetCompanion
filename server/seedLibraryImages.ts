@@ -1,7 +1,7 @@
 import { db } from "./db";
 import { patterns as patternsTable } from "../shared/schema";
 import { generateImage } from "./api/generateImage";
-import { eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 const BATCH = 3;
 const DELAY = 3000;
