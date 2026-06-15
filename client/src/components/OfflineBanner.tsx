@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useEffect, useState } from "react";
 import { WifiOff } from "lucide-react";
 
@@ -24,7 +25,7 @@ export default function OfflineBanner() {
   return (
     <div
       className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center gap-2 py-1.5 text-[11.5px] font-bold"
-      style={{ background: "#3D2318", color: "#F2E4CE" }}
+      style={{ background: palette.ink, color: "#F2E4CE" }}
     >
       <WifiOff className="h-3.5 w-3.5" />
       Offline — your saved patterns &amp; counter still work ♡

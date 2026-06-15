@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Download, Upload, Shield, Heart, HelpCircle, Activity, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -164,12 +165,12 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
-        <button onClick={() => onNavigate("home")} className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70" style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868" }}>
+        <button onClick={() => onNavigate("home")} className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70" style={{ background: "rgba(140,100,55,0.08)", color: palette.clay }}>
           <ChevronLeft className="h-4 w-4" />
         </button>
         <div>
-          <h1 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Settings</h1>
-          <p className="text-[12px]" style={{ color: "#9A7868" }}>Backup & data</p>
+          <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Settings</h1>
+          <p className="text-[12px]" style={{ color: palette.clay }}>Backup & data</p>
         </div>
       </div>
 
@@ -177,8 +178,8 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
         {/* Backup */}
         <div className="craft-card p-5">
           <div className="flex items-center gap-2 mb-2">
-            <Shield className="h-4 w-4" style={{ color: "#84934F" }} />
-            <p className="font-heading font-semibold text-[15px]" style={{ color: "#3D2318" }}>Backup your crochet life</p>
+            <Shield className="h-4 w-4" style={{ color: palette.sage }} />
+            <p className="font-heading font-semibold text-[15px]" style={{ color: palette.ink }}>Backup your crochet life</p>
           </div>
           <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "#7A5A48" }}>
             Download everything — every pattern, project, and material — as a single file you can keep safe.
@@ -206,7 +207,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
             onClick={() => fileRef.current?.click()}
             disabled={importing}
             className="w-full mt-3 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-heading font-bold text-[14px] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
-            style={{ background: "rgba(132,147,79,0.10)", color: "#84934F", border: "1.5px solid rgba(132,147,79,0.25)" }}
+            style={{ background: "rgba(132,147,79,0.10)", color: palette.sage, border: "1.5px solid rgba(132,147,79,0.25)" }}
           >
             <Upload className="h-4 w-4" />
             {importing ? "Restoring…" : "Restore from backup"}
@@ -215,10 +216,10 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
 
         {/* Take the tour */}
         <div className="craft-card p-5">
-          <p className="font-heading font-semibold text-[13px] mb-1" style={{ color: "#3D2318" }}>
+          <p className="font-heading font-semibold text-[13px] mb-1" style={{ color: palette.ink }}>
             App tour
           </p>
-          <p className="text-[12px] mb-3" style={{ color: "#9A7868" }}>
+          <p className="text-[12px] mb-3" style={{ color: palette.clay }}>
             Let Ashi walk you through every screen again from the beginning.
           </p>
           <button
@@ -237,10 +238,10 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
 
         {/* My gauge */}
         <div className="craft-card p-5">
-          <p className="font-heading font-semibold text-[13px] mb-1" style={{ color: "#3D2318" }}>
+          <p className="font-heading font-semibold text-[13px] mb-1" style={{ color: palette.ink }}>
             My gauge 📏
           </p>
-          <p className="text-[12px] mb-3" style={{ color: "#9A7868" }}>
+          <p className="text-[12px] mb-3" style={{ color: palette.clay }}>
             Crochet a 10×10&nbsp;cm square in SC, count the stitches and rows, and save them here —
             pattern resizing will use <em>your</em> tension instead of a generic one.
           </p>
@@ -251,7 +252,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
                 type="number" min={1} inputMode="numeric" value={gauge.stitches}
                 onChange={(e) => setGauge((g) => ({ ...g, stitches: e.target.value }))}
                 className="mt-1 w-full rounded-xl px-3 py-2 text-[13px] outline-none"
-                style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.25)", color: "#3D2318" }}
+                style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.25)", color: palette.ink }}
               />
             </label>
             <label className="flex-1 text-[11.5px] font-semibold" style={{ color: "#7A5A48" }}>
@@ -260,14 +261,14 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
                 type="number" min={1} inputMode="numeric" value={gauge.rows}
                 onChange={(e) => setGauge((g) => ({ ...g, rows: e.target.value }))}
                 className="mt-1 w-full rounded-xl px-3 py-2 text-[13px] outline-none"
-                style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.25)", color: "#3D2318" }}
+                style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.25)", color: palette.ink }}
               />
             </label>
             <button
               onClick={saveGauge}
               disabled={savingGauge}
               className="px-4 py-2.5 rounded-xl text-[12.5px] font-bold disabled:opacity-60"
-              style={{ background: "#84934F", color: "white" }}
+              style={{ background: palette.sage, color: "white" }}
             >
               {savingGauge ? "…" : "Save"}
             </button>
@@ -277,7 +278,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
           <button
             onClick={() => setSwatchOpen((o) => !o)}
             className="mt-3 text-[11.5px] font-semibold hover:opacity-80"
-            style={{ color: "#84934F" }}
+            style={{ color: palette.sage }}
           >
             📐 {swatchOpen ? "Hide swatch calculator" : "Not a 10cm square? Calculate from any swatch"}
           </button>
@@ -300,7 +301,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
                       value={swatch[key]}
                       onChange={(e) => setSwatch((s) => ({ ...s, [key]: e.target.value }))}
                       className="mt-1 w-full rounded-lg px-2.5 py-1.5 text-[12.5px] outline-none"
-                      style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.25)", color: "#3D2318" }}
+                      style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.25)", color: palette.ink }}
                     />
                   </label>
                 ))}
@@ -319,8 +320,8 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
         {/* App health */}
         <div className="craft-card p-5">
           <div className="flex items-center gap-2 mb-2">
-            <Activity className="h-4 w-4" style={{ color: "#C24E6B" }} />
-            <p className="font-heading font-semibold text-[15px]" style={{ color: "#3D2318" }}>App health</p>
+            <Activity className="h-4 w-4" style={{ color: palette.rose }} />
+            <p className="font-heading font-semibold text-[15px]" style={{ color: palette.ink }}>App health</p>
           </div>
           <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "#7A5A48" }}>
             Check that the database, photo storage and AI are all connected. The deep test runs a real
@@ -331,7 +332,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
               onClick={() => runChecks("quick")}
               disabled={checking !== false}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13px] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
-              style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "1.5px solid rgba(194,78,107,0.25)" }}
+              style={{ background: "rgba(194,78,107,0.10)", color: palette.rose, border: "1.5px solid rgba(194,78,107,0.25)" }}
             >
               <Activity className="h-4 w-4" />
               {checking === "quick" ? "Checking…" : "Run checks"}
@@ -355,13 +356,13 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
                   style={{ background: c.ok ? "rgba(132,147,79,0.08)" : "rgba(194,78,107,0.08)" }}
                 >
                   {c.ok ? (
-                    <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "#84934F" }} />
+                    <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" style={{ color: palette.sage }} />
                   ) : (
-                    <XCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "#C24E6B" }} />
+                    <XCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: palette.rose }} />
                   )}
                   <div className="min-w-0">
-                    <p className="text-[12.5px] font-bold" style={{ color: "#3D2318" }}>
-                      {c.name} <span className="font-normal" style={{ color: "#9A7868" }}>· {c.ms} ms</span>
+                    <p className="text-[12.5px] font-bold" style={{ color: palette.ink }}>
+                      {c.name} <span className="font-normal" style={{ color: palette.clay }}>· {c.ms} ms</span>
                     </p>
                     <p className="text-[12px] leading-snug break-words" style={{ color: c.ok ? "#7A5A48" : "#A83050" }}>
                       {c.detail}
@@ -382,9 +383,9 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
           />
           <div>
-            <p className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>Crochet Time</p>
-            <p className="text-[12px] flex items-center gap-1" style={{ color: "#C24E6B" }}>
-              Made with <Heart className="h-3 w-3" style={{ fill: "#C24E6B" }} /> for {getActiveProfile().name}
+            <p className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>Crochet Time</p>
+            <p className="text-[12px] flex items-center gap-1" style={{ color: palette.rose }}>
+              Made with <Heart className="h-3 w-3" style={{ fill: palette.rose }} /> for {getActiveProfile().name}
             </p>
           </div>
         </div>

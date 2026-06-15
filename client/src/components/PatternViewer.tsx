@@ -1,8 +1,9 @@
+import { palette } from "@/lib/theme";
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '../lib/queryClient';
-import { Pattern, PatternSection as PatternSectionType, PatternStep, ViewType } from '../lib/types';
+import { Pattern, PatternStep, ViewType } from '../lib/types';
 import PatternSection from './PatternSection';
 import EnhancedMaterialsList from './EnhancedMaterialsList';
 import PatternProgressBar from './PatternProgressBar';
@@ -854,27 +855,27 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                   if (e.key === 'Escape') { setEditingTitle(false); setTitleDraft(pattern.title); }
                 }}
                 className="font-heading text-xl font-bold leading-tight flex-1 min-w-0 rounded-lg px-2 py-1 outline-none"
-                style={{ color: "#3D2318", background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(194,78,107,0.4)" }}
+                style={{ color: palette.ink, background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(194,78,107,0.4)" }}
               />
               <button
                 onClick={() => titleDraft.trim() && renameMutation.mutate(titleDraft.trim())}
                 disabled={renameMutation.isPending || !titleDraft.trim()}
                 aria-label="Save name"
                 className="px-3 py-1.5 rounded-lg text-[12px] font-bold disabled:opacity-50"
-                style={{ background: "#C24E6B", color: "white" }}
+                style={{ background: palette.rose, color: "white" }}
               >
                 {renameMutation.isPending ? "…" : "Save"}
               </button>
             </div>
           ) : (
-            <h2 className="font-heading text-xl font-bold leading-tight group" style={{ color: "#3D2318" }}>
+            <h2 className="font-heading text-xl font-bold leading-tight group" style={{ color: palette.ink }}>
               {pattern.title}
               <button
                 onClick={() => { setTitleDraft(pattern.title); setEditingTitle(true); }}
                 aria-label="Rename pattern"
                 title="Rename pattern"
                 className="ml-2 inline-flex align-middle opacity-50 hover:opacity-100 transition-opacity"
-                style={{ color: "#9A7868" }}
+                style={{ color: palette.clay }}
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
@@ -933,7 +934,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             className="flex-1 py-2 rounded-lg text-[12.5px] font-semibold capitalize transition-all"
             style={{
               background: activeTab === tab ? "white" : "transparent",
-              color: activeTab === tab ? "#C24E6B" : "#9A7868",
+              color: activeTab === tab ? palette.rose : palette.clay,
               boxShadow: activeTab === tab ? "0 1px 6px rgba(0,0,0,0.1)" : "none",
             }}
           >
@@ -982,7 +983,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                     <div key={label} className="flex items-center gap-2">
                       <span className="text-[10px] font-semibold uppercase tracking-wider w-14 flex-shrink-0"
                         style={{ color: "#B0908A" }}>{label}</span>
-                      <span className="text-[12px] font-medium truncate" style={{ color: "#3D2318" }}>{value}</span>
+                      <span className="text-[12px] font-medium truncate" style={{ color: palette.ink }}>{value}</span>
                     </div>
                   ))}
                 </div>
@@ -1022,7 +1023,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                         onClick={() => coverInputRef.current?.click()}
                         disabled={coverPhotoMutation.isPending}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-                        style={{ background: "rgba(132,147,79,0.12)", color: "#84934F", border: "1px solid rgba(132,147,79,0.3)" }}
+                        style={{ background: "rgba(132,147,79,0.12)", color: palette.sage, border: "1px solid rgba(132,147,79,0.3)" }}
                       >
                         📷 {coverPhotoMutation.isPending ? "Saving…" : "Finished photo"}
                       </button>
@@ -1031,21 +1032,21 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                   <button
                     onClick={() => printPattern(pattern)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
-                    style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B", border: "1px solid rgba(194,78,107,0.2)" }}
+                    style={{ background: "rgba(194,78,107,0.1)", color: palette.rose, border: "1px solid rgba(194,78,107,0.2)" }}
                   >
                     <FileText className="h-3 w-3" /> Print / PDF
                   </button>
                   <button
                     onClick={handleExportPattern}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
-                    style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B", border: "1px solid rgba(194,78,107,0.2)" }}
+                    style={{ background: "rgba(194,78,107,0.1)", color: palette.rose, border: "1px solid rgba(194,78,107,0.2)" }}
                   >
                     <Download className="h-3 w-3" /> Download
                   </button>
                   <button
                     onClick={handleRegenerateImage}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
-                    style={{ background: "rgba(132,147,79,0.1)", color: "#84934F", border: "1px solid rgba(132,147,79,0.2)" }}
+                    style={{ background: "rgba(132,147,79,0.1)", color: palette.sage, border: "1px solid rgba(132,147,79,0.2)" }}
                   >
                     <RefreshCw className="h-3 w-3" /> New Image
                   </button>
@@ -1089,7 +1090,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
               <button
                 onClick={() => updatePatternMutation.mutate({ ...pattern, status: 'active', finishedAt: null })}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ background: "rgba(140,100,55,0.08)", color: "#7A5C3E", border: "1px solid rgba(140,100,55,0.22)" }}
+                style={{ background: "rgba(140,100,55,0.08)", color: palette.bark, border: "1px solid rgba(140,100,55,0.22)" }}
               >
                 <Play className="h-3.5 w-3.5" /> Reopen project
               </button>
@@ -1100,7 +1101,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
           <div className="grid grid-cols-2 gap-3">
             {[
               { emoji: "🧮", label: "Row Counter",  action: () => setCounterOpen(true),         color: "#7C5FA8" },
-              { emoji: "📊", label: "Progress",      action: () => onNavigate?.("progress"),    color: "#84934F" },
+              { emoji: "📊", label: "Progress",      action: () => onNavigate?.("progress"),    color: palette.sage },
               { emoji: "📷", label: "Photos",         action: () => onNavigate?.("photo-upload"),color: "#3D8FA3" },
               { emoji: "🧶", label: "From My Stash", action: () => onNavigate?.("yarn-recs"),   color: "#D4921A" },
             ].map(({ emoji, label, action, color }) => (
@@ -1124,15 +1125,15 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             >
               <div className="flex items-center gap-2">
                 <span className="text-[18px]">✂️</span>
-                <span className="font-heading font-semibold text-[13px]" style={{ color: "#3D2318" }}>Adapt this Pattern</span>
+                <span className="font-heading font-semibold text-[13px]" style={{ color: palette.ink }}>Adapt this Pattern</span>
               </div>
-              <span className="text-[11px] font-semibold" style={{ color: "#C24E6B" }}>
+              <span className="text-[11px] font-semibold" style={{ color: palette.rose }}>
                 {adaptOpen ? "Close ▲" : "Open ▼"}
               </span>
             </button>
             {adaptOpen && (
               <div className="flex flex-col gap-3 mt-3">
-                <p className="text-[11.5px]" style={{ color: "#9A7868" }}>
+                <p className="text-[11.5px]" style={{ color: palette.clay }}>
                   Creates a brand-new pattern — your original is kept safe.
                 </p>
                 <div className="flex gap-2">
@@ -1140,8 +1141,8 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                     <button key={m} onClick={() => setAdaptMode(m)}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold transition-all"
                       style={{
-                        background: adaptMode === m ? "#C24E6B" : "rgba(140,100,55,0.08)",
-                        color: adaptMode === m ? "white" : "#9A7868",
+                        background: adaptMode === m ? palette.rose : "rgba(140,100,55,0.08)",
+                        color: adaptMode === m ? "white" : palette.clay,
                         border: adaptMode === m ? "none" : "1px solid rgba(140,100,55,0.18)",
                       }}>
                       {m === "resize" ? <><Scissors className="h-3.5 w-3.5" /> Resize</> : <><Shuffle className="h-3.5 w-3.5" /> Swap Yarn</>}
@@ -1154,7 +1155,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                   value={adaptInstruction}
                   onChange={(e) => setAdaptInstruction(e.target.value)}
                   className="w-full p-3 rounded-xl text-[12.5px] outline-none resize-none"
-                  style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.2)", color: "#3D2318" }}
+                  style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.2)", color: palette.ink }}
                 />
                 <button
                   onClick={() => adaptMutation.mutate({ mode: adaptMode, instruction: adaptInstruction })}
@@ -1250,7 +1251,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                     value={regenNote}
                     onChange={(e) => setRegenNote(e.target.value)}
                     className="w-full p-2.5 rounded-xl text-[12px] outline-none resize-none mb-2"
-                    style={{ background: "rgba(255,255,255,0.85)", border: "1px solid rgba(124,95,168,0.25)", color: "#3D2318" }}
+                    style={{ background: "rgba(255,255,255,0.85)", border: "1px solid rgba(124,95,168,0.25)", color: palette.ink }}
                   />
                   <div className="flex gap-2">
                     <button
@@ -1263,7 +1264,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                     <button
                       onClick={() => setRegenSection(null)}
                       className="px-3 py-2 rounded-xl text-[12px]"
-                      style={{ color: "#9A7868" }}
+                      style={{ color: palette.clay }}
                     >
                       Cancel
                     </button>
@@ -1284,16 +1285,16 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
                 alignmentResults[sectionIndex] ? (
                   <div className="p-3 rounded-2xl" style={{ background: "rgba(61,131,163,0.06)", border: "1px solid rgba(61,131,163,0.2)" }}>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[11px] font-semibold" style={{ color: "#3D2318" }}>📷 Photo alignment</span>
+                      <span className="text-[11px] font-semibold" style={{ color: palette.ink }}>📷 Photo alignment</span>
                       <span className="text-[13px] font-bold" style={{
-                        color: alignmentResults[sectionIndex].score >= 70 ? "#84934F"
+                        color: alignmentResults[sectionIndex].score >= 70 ? palette.sage
                           : alignmentResults[sectionIndex].score >= 40 ? "#D4921A"
-                          : "#C24E6B",
+                          : palette.rose,
                       }}>
                         {alignmentResults[sectionIndex].score}/100
                       </span>
                     </div>
-                    <p className="text-[11.5px] leading-relaxed mb-1.5" style={{ color: "#7A5C3E" }}>
+                    <p className="text-[11.5px] leading-relaxed mb-1.5" style={{ color: palette.bark }}>
                       {alignmentResults[sectionIndex].feedback}
                     </p>
                     <button
@@ -1360,12 +1361,12 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="w-full p-3.5 rounded-xl text-[13px] leading-relaxed outline-none resize-none"
-            style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.2)", color: "#3D2318" }}
+            style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.2)", color: palette.ink }}
           />
           <div className="flex justify-end mt-3">
             <button
               className="px-5 py-2 rounded-xl font-semibold text-[12.5px] transition-all hover:opacity-90 disabled:opacity-60"
-              style={{ background: "#C24E6B", color: "white" }}
+              style={{ background: palette.rose, color: "white" }}
               disabled={saveNotesMutation.isPending}
               onClick={() => saveNotesMutation.mutate(notes)}
             >
@@ -1391,7 +1392,7 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
               value={regenAllNote}
               onChange={(e) => setRegenAllNote(e.target.value)}
               className="w-full p-2.5 rounded-xl text-[13px] outline-none resize-none"
-              style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(140,100,55,0.25)", color: "#3D2318" }}
+              style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(140,100,55,0.25)", color: palette.ink }}
             />
           </div>
           <DialogFooter>

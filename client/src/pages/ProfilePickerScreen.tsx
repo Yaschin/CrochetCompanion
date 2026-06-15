@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { motion } from "framer-motion";
 import { Settings } from "lucide-react";
 import { PROFILES } from "@shared/profiles";
@@ -19,10 +20,10 @@ export default function ProfilePickerScreen({ onProfileChosen, onOpenSettings }:
     <div className="flex h-full w-full flex-col items-center justify-center gap-8 px-6"
       style={{ background: "linear-gradient(165deg, #FFFCF5 0%, #FBF1F4 100%)" }}>
       <div className="text-center">
-        <h1 className="font-heading font-bold" style={{ fontSize: 30, color: "#3D2318", letterSpacing: "-0.02em" }}>
+        <h1 className="font-heading font-bold" style={{ fontSize: 30, color: palette.ink, letterSpacing: "-0.02em" }}>
           Who's crocheting today?
         </h1>
-        <p className="mt-1 text-[13.5px]" style={{ color: "#9A7868" }}>
+        <p className="mt-1 text-[13.5px]" style={{ color: palette.clay }}>
           Everyone gets their own library, projects and stash ♡
         </p>
       </div>
@@ -64,7 +65,7 @@ export default function ProfilePickerScreen({ onProfileChosen, onOpenSettings }:
                 }}
               />
             </div>
-            <span className="font-heading text-[15px] font-bold" style={{ color: "#3D2318" }}>
+            <span className="font-heading text-[15px] font-bold" style={{ color: palette.ink }}>
               {p.name}
             </span>
             {p.id === activeId && (
@@ -85,7 +86,7 @@ export default function ProfilePickerScreen({ onProfileChosen, onOpenSettings }:
         <button
           onClick={onOpenSettings}
           className="flex items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-semibold transition-all hover:opacity-75"
-          style={{ background: "rgba(255,252,245,0.9)", color: "#9A7868", border: "1px solid rgba(140,100,55,0.2)" }}
+          style={{ background: "rgba(255,252,245,0.9)", color: palette.clay, border: "1px solid rgba(140,100,55,0.2)" }}
         >
           <Settings className="h-3.5 w-3.5" /> Settings
         </button>

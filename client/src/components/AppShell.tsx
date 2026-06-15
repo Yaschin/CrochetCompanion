@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { ReactNode } from "react";
 import { Home, Wand2, BookOpen, FolderOpen, Package } from "lucide-react";
 import Sidebar from "./Sidebar";
@@ -72,7 +73,7 @@ export default function AppShell({ activeView, onNavigate, rightPanel, children 
               style={{
                 minWidth: 52,
                 minHeight: 48,
-                color: active ? "#C24E6B" : "#8A6A58",
+                color: active ? palette.rose : "#8A6A58",
                 padding: "6px 8px",
               }}
             >

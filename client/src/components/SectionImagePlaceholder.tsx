@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ImageIcon, Loader2, SparklesIcon, RefreshCw, X, Pencil, Key, AlertCircle } from "lucide-react";
+import { ImageIcon, Loader2, SparklesIcon, RefreshCw, Pencil, Key, AlertCircle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";

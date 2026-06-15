@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useState, useEffect, useCallback } from "react";
 import { getActiveProfile } from "../lib/profile";
 import { motion, AnimatePresence } from "framer-motion";
@@ -220,7 +221,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
                   <button
                     onClick={dismiss}
                     className="w-full py-2 text-[12.5px] font-semibold transition-all hover:opacity-75"
-                    style={{ color: "#9A7868" }}
+                    style={{ color: palette.clay }}
                   >
                     No thanks, I'll explore myself
                   </button>
@@ -277,7 +278,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
                     >
                       {step + 1} / {STEPS.length}
                     </span>
-                    <p className="font-heading font-bold text-[12.5px] md:text-[13.5px]" style={{ color: "#3D2318" }}>
+                    <p className="font-heading font-bold text-[12.5px] md:text-[13.5px]" style={{ color: palette.ink }}>
                       {currentStep.emoji} {currentStep.title}
                     </p>
                   </div>
@@ -300,7 +301,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
                 <button
                   onClick={finish}
                   className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors hover:bg-black/10"
-                  style={{ color: "#9A7868" }}
+                  style={{ color: palette.clay }}
                   title="End tour"
                   aria-label="End tour"
                 >
@@ -321,7 +322,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
                         width: i === step ? 16 : 6,
                         background: i === step
                           ? "#3D8FA3"
-                          : i < step ? "#84934F" : "rgba(140,100,55,0.22)",
+                          : i < step ? palette.sage : "rgba(140,100,55,0.22)",
                       }}
                       style={{ height: 6 }}
                       transition={{ duration: 0.25 }}

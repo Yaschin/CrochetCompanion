@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -87,12 +88,12 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
             <ChevronLeft className="h-4 w-4" />
           </button>
           <div>
-            <h1 className="font-heading font-bold text-[18px]" style={{ color: "#3D2318" }}>
+            <h1 className="font-heading font-bold text-[18px]" style={{ color: palette.ink }}>
               Share Your Pattern
             </h1>
           </div>
         </div>
-        <span className="text-[12px] font-semibold" style={{ color: "#9A7868" }}>
+        <span className="text-[12px] font-semibold" style={{ color: palette.clay }}>
           Step {step + 1} of {STEPS.length}
         </span>
       </div>
@@ -106,17 +107,17 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold transition-all"
                   style={{
-                    background: i === step ? "#C24E6B" : i < step ? "#84934F" : "rgba(140,100,55,0.12)",
-                    color: i <= step ? "white" : "#9A7868",
+                    background: i === step ? palette.rose : i < step ? palette.sage : "rgba(140,100,55,0.12)",
+                    color: i <= step ? "white" : palette.clay,
                   }}>
                   {i < step ? "✓" : i + 1}
                 </div>
-                <span className="text-[9px] font-semibold" style={{ color: i === step ? "#C24E6B" : "#9A7868" }}>
+                <span className="text-[9px] font-semibold" style={{ color: i === step ? palette.rose : palette.clay }}>
                   {s}
                 </span>
               </div>
               {i < STEPS.length - 1 && (
-                <div className="flex-1 h-0.5 mb-4" style={{ background: i < step ? "#84934F" : "rgba(140,100,55,0.15)" }} />
+                <div className="flex-1 h-0.5 mb-4" style={{ background: i < step ? palette.sage : "rgba(140,100,55,0.15)" }} />
               )}
             </div>
           ))}
@@ -134,7 +135,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                     value={form.name}
                     onChange={e => set("name", e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl text-[13px] outline-none"
-                    style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: "#3D2318" }}
+                    style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: palette.ink }}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -144,7 +145,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                       value={form.category}
                       onChange={e => set("category", e.target.value)}
                       className="w-full px-3 py-2.5 rounded-xl text-[12px] outline-none appearance-none"
-                      style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: "#3D2318" }}>
+                      style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: palette.ink }}>
                       {["Toy", "Wearable", "Home Decor", "Accessory", "Other"].map(c => <option key={c}>{c}</option>)}
                     </select>
                   </div>
@@ -154,7 +155,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                       value={form.skillLevel}
                       onChange={e => set("skillLevel", e.target.value)}
                       className="w-full px-3 py-2.5 rounded-xl text-[12px] outline-none appearance-none"
-                      style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: "#3D2318" }}>
+                      style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: palette.ink }}>
                       {["Easy", "Intermediate", "Advanced"].map(c => <option key={c}>{c}</option>)}
                     </select>
                   </div>
@@ -165,7 +166,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                     value={form.yarnWeight}
                     onChange={e => set("yarnWeight", e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl text-[12px] outline-none appearance-none"
-                    style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: "#3D2318" }}>
+                    style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: palette.ink }}>
                     {["Lace", "Fingering", "DK (Light Worsted)", "Worsted", "Chunky"].map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
@@ -177,7 +178,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                     maxLength={100}
                     rows={3}
                     className="w-full px-3 py-2.5 rounded-xl text-[13px] outline-none resize-none"
-                    style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: "#3D2318" }}
+                    style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: palette.ink }}
                   />
                   <p className="text-[10px] text-right mt-0.5" style={{ color: "#B0908A" }}>
                     {form.description.length}/100
@@ -193,7 +194,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                   className="w-full object-contain"
                   style={{ filter: "drop-shadow(0 4px 12px rgba(80,40,10,0.18))" }}
                 />
-                <p className="text-[10px] text-center font-semibold" style={{ color: "#9A7868" }}>
+                <p className="text-[10px] text-center font-semibold" style={{ color: palette.clay }}>
                   Share your creativity with the community!
                 </p>
               </div>
@@ -217,15 +218,15 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                   style={{ borderColor: "rgba(140,100,55,0.3)", background: "rgba(255,252,245,0.6)" }}>
                   <div className="text-3xl">📷</div>
                   <p className="font-heading font-semibold text-[14px]" style={{ color: "#6B4B38" }}>Add a Photo</p>
-                  <p className="text-[12px]" style={{ color: "#9A7868" }}>Tap to upload your finished project</p>
+                  <p className="text-[12px]" style={{ color: palette.clay }}>Tap to upload your finished project</p>
                   <span className="mt-2 px-5 py-2 rounded-full font-semibold text-[12px]"
-                    style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B", border: "1px solid rgba(194,78,107,0.3)" }}>
+                    style={{ background: "rgba(194,78,107,0.1)", color: palette.rose, border: "1px solid rgba(194,78,107,0.3)" }}>
                     Choose Photo
                   </span>
                   <input type="file" accept="image/*" className="hidden" onChange={onPhotoChange} />
                 </label>
               )}
-              <p className="text-[11.5px] text-center" style={{ color: "#9A7868" }}>
+              <p className="text-[11.5px] text-center" style={{ color: palette.clay }}>
                 A finished project photo helps others picture the result (optional).
               </p>
             </div>
@@ -234,8 +235,8 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
           {step === 2 && (
             <div className="flex flex-col gap-3 py-4 items-center">
               <div className="text-4xl">📝</div>
-              <p className="font-heading font-semibold text-[16px]" style={{ color: "#3D2318" }}>Add Your Pattern</p>
-              <p className="text-[13px] text-center" style={{ color: "#9A7868" }}>
+              <p className="font-heading font-semibold text-[16px]" style={{ color: palette.ink }}>Add Your Pattern</p>
+              <p className="text-[13px] text-center" style={{ color: palette.clay }}>
                 Paste your written pattern
               </p>
               <textarea
@@ -244,9 +245,9 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                 placeholder={"Round 1: 6 sc in magic ring (6)\nRound 2: inc in each st (12)\n..."}
                 rows={8}
                 className="w-full px-4 py-3 rounded-2xl text-[12px] outline-none resize-none mt-2"
-                style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: "#3D2318", fontFamily: "monospace" }}
+                style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: palette.ink, fontFamily: "monospace" }}
               />
-              <p className="text-[11px] text-center" style={{ color: "#9A7868" }}>
+              <p className="text-[11px] text-center" style={{ color: palette.clay }}>
                 Each line becomes a step. You can refine it later from your library.
               </p>
             </div>
@@ -255,7 +256,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
           {step === 3 && (
             <div className="flex flex-col gap-4">
               <div className="rounded-2xl p-4" style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.15)" }}>
-                <p className="font-heading font-bold text-[14px] mb-3" style={{ color: "#3D2318" }}>Review Your Submission</p>
+                <p className="font-heading font-bold text-[14px] mb-3" style={{ color: palette.ink }}>Review Your Submission</p>
                 {[
                   ["Pattern Name", form.name],
                   ["Category", form.category],
@@ -263,12 +264,12 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                   ["Yarn Weight", form.yarnWeight],
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between py-2" style={{ borderBottom: "1px solid rgba(140,100,55,0.1)" }}>
-                    <span className="text-[12px] font-semibold" style={{ color: "#9A7868" }}>{k}</span>
-                    <span className="text-[12px] font-bold" style={{ color: "#3D2318" }}>{v}</span>
+                    <span className="text-[12px] font-semibold" style={{ color: palette.clay }}>{k}</span>
+                    <span className="text-[12px] font-bold" style={{ color: palette.ink }}>{v}</span>
                   </div>
                 ))}
               </div>
-              <p className="text-[12px] text-center" style={{ color: "#9A7868" }}>
+              <p className="text-[12px] text-center" style={{ color: palette.clay }}>
                 By submitting, you agree to share this pattern with the Crochet Time community.
               </p>
             </div>
@@ -290,7 +291,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
           }}
           disabled={submitMutation.isPending}
           className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-[15px] transition-all hover:opacity-90 mt-2 disabled:opacity-50"
-          style={{ background: "#C24E6B", color: "white", boxShadow: "0 4px 20px rgba(194,78,107,0.4)" }}>
+          style={{ background: palette.rose, color: "white", boxShadow: "0 4px 20px rgba(194,78,107,0.4)" }}>
           {step < STEPS.length - 1 ? (
             <>Next: {STEPS[step + 1]} <ChevronRight className="h-4 w-4" /></>
           ) : (

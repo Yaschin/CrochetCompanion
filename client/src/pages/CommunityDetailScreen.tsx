@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { ChevronLeft, Heart, Bookmark, Layers, ListChecks, Scissors } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Pattern, ViewType } from "../lib/types";
@@ -89,7 +90,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
   if (!communityId) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
-        <p className="font-heading font-semibold text-[15px]" style={{ color: "#9A7868" }}>No pattern selected</p>
+        <p className="font-heading font-semibold text-[15px]" style={{ color: palette.clay }}>No pattern selected</p>
         <button onClick={() => onNavigate("community")} className="btn-craft btn-rose px-5 py-2.5">Back to Community →</button>
       </div>
     );
@@ -115,12 +116,12 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
           style={{ background: "rgba(140,100,55,0.08)", color: "#6B4B38" }}>
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="font-heading font-bold text-[16px] flex-1 truncate" style={{ color: "#3D2318" }}>
+        <span className="font-heading font-bold text-[16px] flex-1 truncate" style={{ color: palette.ink }}>
           Pattern Detail
         </span>
         <button onClick={() => likeMutation.mutate()}
           className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-          style={{ background: "rgba(194,78,107,0.12)", color: "#C24E6B" }}>
+          style={{ background: "rgba(194,78,107,0.12)", color: palette.rose }}>
           <Heart className="h-4 w-4" />
         </button>
       </div>
@@ -146,16 +147,16 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
                 <img src={pattern.endProductImage} alt={pattern.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <span className="font-heading font-bold text-4xl" style={{ color: "#C24E6B", opacity: 0.3 }}>{pattern.title[0]}</span>
+                  <span className="font-heading font-bold text-4xl" style={{ color: palette.rose, opacity: 0.3 }}>{pattern.title[0]}</span>
                 </div>
               )}
             </div>
             <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
               <div>
-                <h1 className="font-heading font-bold text-[17px] leading-snug" style={{ color: "#3D2318" }}>
+                <h1 className="font-heading font-bold text-[17px] leading-snug" style={{ color: palette.ink }}>
                   {pattern.title}
                 </h1>
-                <p className="text-[12px] mt-0.5" style={{ color: "#9A7868" }}>by {pattern.creator}</p>
+                <p className="text-[12px] mt-0.5" style={{ color: palette.clay }}>by {pattern.creator}</p>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {[pattern.skillLevel, pattern.projectType].map(tag => (
                     <span key={tag} className="px-2.5 py-1 rounded-full text-[11px] font-semibold"
@@ -169,16 +170,16 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
           {/* Stats row */}
           <div className="grid grid-cols-4 gap-2">
             {[
-              { icon: <Heart className="h-4 w-4" />, label: "Likes", value: String(pattern.likes ?? 0), color: "#C24E6B" },
+              { icon: <Heart className="h-4 w-4" />, label: "Likes", value: String(pattern.likes ?? 0), color: palette.rose },
               { icon: <Layers className="h-4 w-4" />, label: "Parts", value: String(pattern.sections.length), color: "#7C5FA8" },
               { icon: <ListChecks className="h-4 w-4" />, label: "Steps", value: String(totalSteps), color: "#D4921A" },
-              { icon: <Scissors className="h-4 w-4" />, label: "Yarn", value: pattern.yarnType || "—", color: "#84934F" },
+              { icon: <Scissors className="h-4 w-4" />, label: "Yarn", value: pattern.yarnType || "—", color: palette.sage },
             ].map((s, i) => (
               <div key={i} className="flex flex-col items-center gap-1 py-3 rounded-2xl"
                 style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.12)" }}>
                 <div style={{ color: s.color }}>{s.icon}</div>
-                <p className="font-heading font-bold text-[13px] truncate max-w-full px-1" style={{ color: "#3D2318" }}>{s.value}</p>
-                <p className="text-[10px]" style={{ color: "#9A7868" }}>{s.label}</p>
+                <p className="font-heading font-bold text-[13px] truncate max-w-full px-1" style={{ color: palette.ink }}>{s.value}</p>
+                <p className="text-[10px]" style={{ color: palette.clay }}>{s.label}</p>
               </div>
             ))}
           </div>
@@ -186,20 +187,20 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
           {/* Description */}
           {pattern.description && (
             <div className="rounded-2xl p-4" style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.12)" }}>
-              <p className="font-heading font-semibold text-[13px] mb-2" style={{ color: "#3D2318" }}>Description</p>
+              <p className="font-heading font-semibold text-[13px] mb-2" style={{ color: palette.ink }}>Description</p>
               <p className="text-[13px] leading-relaxed" style={{ color: "#6B4B38" }}>{pattern.description}</p>
             </div>
           )}
 
           {/* What's Included */}
           <div className="rounded-2xl p-4" style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.12)" }}>
-            <p className="font-heading font-semibold text-[13px] mb-3" style={{ color: "#3D2318" }}>What's Included</p>
+            <p className="font-heading font-semibold text-[13px] mb-3" style={{ color: palette.ink }}>What's Included</p>
             <div className="flex flex-col gap-2">
               {included.map(item => (
                 <div key={item} className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
                     style={{ background: "rgba(132,147,79,0.15)" }}>
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#84934F" }} />
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: palette.sage }} />
                   </div>
                   <span className="text-[13px]" style={{ color: "#6B4B38" }}>{item}</span>
                 </div>
@@ -229,7 +230,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
               onClick={() => importMutation.mutate({ open: true })}
               disabled={importMutation.isPending}
               className="py-3.5 rounded-2xl font-bold text-[14px] transition-all hover:opacity-85"
-              style={{ background: "#C24E6B", color: "white", boxShadow: "0 4px 16px rgba(194,78,107,0.35)" }}>
+              style={{ background: palette.rose, color: "white", boxShadow: "0 4px 16px rgba(194,78,107,0.35)" }}>
               {importMutation.isPending ? "Adding…" : "Make This Pattern"}
             </button>
           </div>

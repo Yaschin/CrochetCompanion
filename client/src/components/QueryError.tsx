@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { CloudOff, RefreshCw } from "lucide-react";
 
 interface QueryErrorProps {
@@ -33,13 +34,13 @@ export function QueryError({
         className="w-16 h-16 rounded-2xl flex items-center justify-center"
         style={{ background: "rgba(194,78,107,0.10)" }}
       >
-        <CloudOff className="h-8 w-8" style={{ color: "#C24E6B" }} />
+        <CloudOff className="h-8 w-8" style={{ color: palette.rose }} />
       </div>
       <div>
-        <p className="font-heading font-bold text-[18px]" style={{ color: "#3D2318" }}>
+        <p className="font-heading font-bold text-[18px]" style={{ color: palette.ink }}>
           {title}
         </p>
-        <p className="text-[13px] mt-1 max-w-[260px] mx-auto" style={{ color: "#9A7868" }}>
+        <p className="text-[13px] mt-1 max-w-[260px] mx-auto" style={{ color: palette.clay }}>
           {message}
         </p>
       </div>

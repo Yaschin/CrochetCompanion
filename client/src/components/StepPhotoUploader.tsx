@@ -5,6 +5,7 @@ import { Camera, Upload, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { getOrdinalSuffix } from '@/lib/dateUtils';
+import { fileToBase64 } from '@/lib/utils';
 
 interface StepPhotoUploaderProps {
   patternId: string;
@@ -42,15 +43,6 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
     }
   }, []);
 
-  // Convert file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  };
 
   // Handle upload
   const handleUpload = async () => {

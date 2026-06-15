@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { profileById } from "@shared/profiles";
 import { useState } from "react";
 import { Search, Heart, ChevronDown, Sparkles } from "lucide-react";
@@ -107,12 +108,12 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
       {/* Header */}
       <div className="flex-shrink-0 px-5 pt-5 pb-3" style={{ borderBottom: "1px solid rgba(140,100,55,0.12)" }}>
         <div className="flex items-center justify-between mb-3">
-          <h1 className="font-heading font-bold text-[20px]" style={{ color: "#3D2318" }}>
+          <h1 className="font-heading font-bold text-[20px]" style={{ color: palette.ink }}>
             Community
           </h1>
           <button onClick={() => onNavigate("community-submit")}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold"
-            style={{ background: "#C24E6B", color: "white" }}>
+            style={{ background: palette.rose, color: "white" }}>
             <Sparkles className="h-3.5 w-3.5" />
             Share Pattern
           </button>
@@ -126,7 +127,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
             onChange={e => setSearch(e.target.value)}
             placeholder="Search community patterns..."
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-[13px] outline-none"
-            style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.2)", color: "#3D2318" }}
+            style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.2)", color: palette.ink }}
           />
         </div>
 
@@ -143,12 +144,12 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
                 className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer outline-none"
                 style={{
                   background: f.value.startsWith("All") ? "rgba(255,252,245,0.9)" : "rgba(194,78,107,0.1)",
-                  color: f.value.startsWith("All") ? "#6B4B38" : "#C24E6B",
+                  color: f.value.startsWith("All") ? "#6B4B38" : palette.rose,
                   border: `1px solid ${f.value.startsWith("All") ? "rgba(140,100,55,0.25)" : "rgba(194,78,107,0.3)"}`,
                 }}>
                 {f.options.map(o => <option key={o}>{o}</option>)}
               </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none" style={{ color: "#9A7868" }} />
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none" style={{ color: palette.clay }} />
             </div>
           ))}
           <div className="relative flex-shrink-0">
@@ -159,7 +160,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
               style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.25)", color: "#6B4B38" }}>
               {SORT_OPTIONS.map(o => <option key={o} value={o}>Sort: {o}</option>)}
             </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none" style={{ color: "#9A7868" }} />
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none" style={{ color: palette.clay }} />
           </div>
         </div>
       </div>
@@ -167,7 +168,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
       {/* Family make-alongs — the shared race board */}
       {makealongs.length > 0 && (
         <div className="px-4 pt-4">
-          <h2 className="font-heading font-bold text-[14px] mb-2" style={{ color: "#3D2318" }}>
+          <h2 className="font-heading font-bold text-[14px] mb-2" style={{ color: palette.ink }}>
             🏁 Family make-alongs
           </h2>
           <div className="flex flex-col gap-3">
@@ -176,14 +177,14 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
               return (
                 <div key={ma.id} className="craft-card p-4">
                   <div className="flex items-center justify-between gap-2 mb-2.5">
-                    <p className="font-heading font-bold text-[13.5px] truncate" style={{ color: "#3D2318" }}>
+                    <p className="font-heading font-bold text-[13.5px] truncate" style={{ color: palette.ink }}>
                       {ma.title}
                     </p>
                     {mine ? (
                       <button
                         onClick={() => openMyCopy(mine.patternId)}
                         className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold hover:opacity-85"
-                        style={{ background: "#84934F", color: "white" }}>
+                        style={{ background: palette.sage, color: "white" }}>
                         Open my copy →
                       </button>
                     ) : (
@@ -208,13 +209,13 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
                           <div className="h-full rounded-full transition-all"
                             style={{ width: `${m.finished ? 100 : m.pct}%`, background: m.color }} />
                         </div>
-                        <span className="text-[10.5px] font-bold w-9 text-right" style={{ color: m.finished ? "#84934F" : "#9A7868" }}>
+                        <span className="text-[10.5px] font-bold w-9 text-right" style={{ color: m.finished ? palette.sage : palette.clay }}>
                           {m.finished ? "✓ 🏆" : `${m.pct}%`}
                         </span>
                       </div>
                     ))}
                     {ma.members.length === 0 && (
-                      <p className="text-[11px]" style={{ color: "#9A7868" }}>Nobody has joined yet — be first!</p>
+                      <p className="text-[11px]" style={{ color: palette.clay }}>Nobody has joined yet — be first!</p>
                     )}
                   </div>
                 </div>
@@ -231,7 +232,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
             style={{ background: "rgba(124,95,168,0.06)", border: "1px dashed rgba(124,95,168,0.30)" }}>
             <span className="text-[22px] shrink-0" aria-hidden>🏁</span>
             <div className="min-w-0">
-              <p className="font-heading font-bold text-[12.5px]" style={{ color: "#3D2318" }}>
+              <p className="font-heading font-bold text-[12.5px]" style={{ color: palette.ink }}>
                 Start a family make-along
               </p>
               <p className="text-[11px] leading-snug" style={{ color: "#7A5A48" }}>
@@ -272,18 +273,18 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
                 </div>
                 {/* Info */}
                 <div className="px-2 pt-1.5 pb-2">
-                  <p className="font-heading font-bold text-[11px] leading-tight truncate" style={{ color: "#3D2318" }}>
+                  <p className="font-heading font-bold text-[11px] leading-tight truncate" style={{ color: palette.ink }}>
                     {p.title}
                   </p>
                   <p className="text-[10px] mt-0.5 truncate font-semibold"
-                    style={{ color: p.creatorId ? profileById(p.creatorId).color : "#9A7868" }}>
+                    style={{ color: p.creatorId ? profileById(p.creatorId).color : palette.clay }}>
                     by {p.creator}{p.creatorId ? " ♡" : ""}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
                     <button onClick={e => { e.stopPropagation(); likeMutation.mutate(p.id); }}>
-                      <Heart className="h-3 w-3 fill-current" style={{ color: "#C24E6B" }} />
+                      <Heart className="h-3 w-3 fill-current" style={{ color: palette.rose }} />
                     </button>
-                    <span className="text-[10px] font-semibold" style={{ color: "#C24E6B" }}>{p.likes ?? 0}</span>
+                    <span className="text-[10px] font-semibold" style={{ color: palette.rose }}>{p.likes ?? 0}</span>
                   </div>
                 </div>
               </div>
@@ -293,7 +294,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
 
         {!isLoading && !isError && filtered.length === 0 && (
           <div className="text-center py-16">
-            <p className="font-heading font-semibold text-[15px]" style={{ color: "#9A7868" }}>
+            <p className="font-heading font-semibold text-[15px]" style={{ color: palette.clay }}>
               No patterns found
             </p>
             <p className="text-[13px] mt-1" style={{ color: "#B0908A" }}>Try a different search or share your own!</p>

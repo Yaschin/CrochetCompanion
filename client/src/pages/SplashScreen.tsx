@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ViewType } from "../lib/types";
@@ -156,7 +157,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
                   style={{ width: 72, height: 72, objectFit: "contain", filter: "drop-shadow(0 5px 14px rgba(50,20,5,0.25))" }}
                   onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }} />
               </div>
-              <span className="text-[10px] font-bold" style={{ color: "#C24E6B" }}>Aloo</span>
+              <span className="text-[10px] font-bold" style={{ color: palette.rose }}>Aloo</span>
             </motion.div>
 
             {/* Ashi — centre hero */}
@@ -271,7 +272,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
             </motion.div>
 
             <motion.p className="text-[12px] font-semibold tracking-widest uppercase mb-5"
-              style={{ color: "#9A7868", letterSpacing: "0.18em" }}
+              style={{ color: palette.clay, letterSpacing: "0.18em" }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: 0.15, duration: 0.4 }}>
               Your creative companion
@@ -305,7 +306,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
               transition={{ delay: 0.45, duration: 0.4 }}>
               {[
                 { id: "bee",   color: "#D4921A", delay: 0 },
-                { id: "sheep", color: "#84934F", delay: 0.4 },
+                { id: "sheep", color: palette.sage, delay: 0.4 },
               ].map((c, i) => (
                 <motion.div key={c.id}
                   animate={{ y: [0, -5, 0] }}

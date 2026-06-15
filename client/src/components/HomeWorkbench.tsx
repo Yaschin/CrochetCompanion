@@ -1,8 +1,9 @@
+import { palette } from "@/lib/theme";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Search, Bell, Loader2, ChevronRight,
+  Search, Bell, ChevronRight,
   Heart, Wand2, FolderOpen, Trophy, ChevronRight as ChevRight, BookOpen, FileUp,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
@@ -11,7 +12,7 @@ import { PatternThumb } from "@/components/PatternThumb";
 import { getStreak } from "../lib/activityLog";
 import { loadCounter } from "../hooks/useStitchCounter";
 import { getActiveProfile } from "../lib/profile";
-import { patternProgress as sharedProgress, craftSections } from "../lib/progress";
+import { patternProgress as sharedProgress } from "../lib/progress";
 
 // ─── Notification helpers ──────────────────────────────────────────────────────
 // Evaluated per call (not at module load) so in-session profile switches
@@ -46,14 +47,6 @@ interface HomeWorkbenchProps {
   onPatternSelected?: (p: Pattern) => void;
   onResumeCounting?: (p: Pattern) => void;
 }
-
-const CHAR = {
-  aloo:  { color: "#C24E6B", light: "#FBF1F4", mid: "#F0CACF", label: "Aloo" },
-  yala:  { color: "#7C5FA8", light: "#F5F0FB", mid: "#D9CAEE", label: "Yala" },
-  ashi:  { color: "#3D8FA3", light: "#EEF7FA", mid: "#C0DDE5", label: "Ashi" },
-  bee:   { color: "#D4921A", light: "#FDF6E3", mid: "#F0D499", label: "Bee" },
-  sheep: { color: "#84934F", light: "#F5F7EF", mid: "#D4DCAA", label: "Sheep" },
-};
 
 function greeting() {
   const h = new Date().getHours();
@@ -422,11 +415,11 @@ function ContinueProjectCard({
       <div>
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-base">🐾</span>
-          <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+          <span className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
             Continue Your Project
           </span>
         </div>
-        <p className="text-[11px]" style={{ color: "#9A7868" }}>Pick up where you left off</p>
+        <p className="text-[11px]" style={{ color: palette.clay }}>Pick up where you left off</p>
       </div>
 
       {pattern ? (
@@ -437,17 +430,17 @@ function ContinueProjectCard({
             <PatternThumb image={pattern.endProductImage} title={pattern.title} projectType={pattern.projectType} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-heading font-semibold text-[13px] truncate" style={{ color: "#3D2318" }}>
+            <p className="font-heading font-semibold text-[13px] truncate" style={{ color: palette.ink }}>
               {pattern.title}
             </p>
-            <p className="text-[11px] mb-1.5" style={{ color: "#9A7868" }}>
+            <p className="text-[11px] mb-1.5" style={{ color: palette.clay }}>
               {totalRows > 0 ? `Row ${doneRows} of ${totalRows}` : pattern.skillLevel}
             </p>
             <div className="progress-track">
               <div className="progress-fill-rose h-full rounded-full"
                 style={{ width: `${pct}%`, transition: "width 0.7s ease" }} />
             </div>
-            <p className="text-[10px] mt-0.5" style={{ color: "#9A7868" }}>{pct}%</p>
+            <p className="text-[10px] mt-0.5" style={{ color: palette.clay }}>{pct}%</p>
           </div>
         </div>
       ) : (
@@ -473,7 +466,7 @@ function ContinueProjectCard({
         <button
           onClick={() => onResumeCounting(pattern)}
           className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-80"
-          style={{ background: "rgba(132,147,79,0.10)", color: "#84934F", border: "1.5px solid rgba(132,147,79,0.25)" }}
+          style={{ background: "rgba(132,147,79,0.10)", color: palette.sage, border: "1.5px solid rgba(132,147,79,0.25)" }}
         >
           🧶 {counterRows > 0 ? `Resume counting · Row ${counterRows}` : "Start counting rows"}
         </button>
@@ -488,11 +481,11 @@ function CreateWithYalaCard({ onNavigate, onNavigateToPdf }: { onNavigate: (v: V
       <div>
         <div className="flex items-center gap-2 mb-0.5">
           <Wand2 className="h-4 w-4 flex-shrink-0" style={{ color: "#7C5FA8" }} />
-          <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+          <span className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
             Create a Pattern
           </span>
         </div>
-        <p className="text-[11px]" style={{ color: "#9A7868" }}>AI-generated, PDF import, or write your own</p>
+        <p className="text-[11px]" style={{ color: palette.clay }}>AI-generated, PDF import, or write your own</p>
       </div>
 
       <div className="flex flex-1 gap-2.5 items-center">
@@ -516,14 +509,14 @@ function CreateWithYalaCard({ onNavigate, onNavigateToPdf }: { onNavigate: (v: V
       <button
         onClick={() => onNavigateToPdf ? onNavigateToPdf() : onNavigate("input")}
         className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-80"
-        style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "1.5px solid rgba(194,78,107,0.28)" }}
+        style={{ background: "rgba(194,78,107,0.10)", color: palette.rose, border: "1.5px solid rgba(194,78,107,0.28)" }}
       >
         <FileUp className="h-3.5 w-3.5" /> Import PDF →
       </button>
       <button
         onClick={() => onNavigate("input")}
         className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-70"
-        style={{ background: "transparent", color: "#9A7868" }}
+        style={{ background: "transparent", color: palette.clay }}
       >
         <BookOpen className="h-3 w-3" /> Write my own
       </button>
@@ -538,12 +531,12 @@ function FavoritesCard({
     <div className="craft-card craft-card-sage flex flex-col gap-2.5 p-4 h-full">
       <div>
         <div className="flex items-center gap-2 mb-0.5">
-          <Heart className="h-4 w-4 flex-shrink-0" style={{ color: "#84934F" }} fill="#84934F" />
-          <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+          <Heart className="h-4 w-4 flex-shrink-0" style={{ color: palette.sage }} fill="#84934F" />
+          <span className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
             {getActiveProfile().name}'s Favorites
           </span>
         </div>
-        <p className="text-[11px]" style={{ color: "#9A7868" }}>Your saved patterns</p>
+        <p className="text-[11px]" style={{ color: palette.clay }}>Your saved patterns</p>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center gap-1.5">
@@ -555,10 +548,10 @@ function FavoritesCard({
           />
         ) : (
           <>
-            <span className="font-heading font-bold" style={{ fontSize: 38, color: "#84934F", lineHeight: 1 }}>
+            <span className="font-heading font-bold" style={{ fontSize: 38, color: palette.sage, lineHeight: 1 }}>
               {count}
             </span>
-            <span className="text-[11px] font-semibold" style={{ color: "#9A7868" }}>
+            <span className="text-[11px] font-semibold" style={{ color: palette.clay }}>
               {count === 1 ? "pattern saved" : "patterns saved"}
             </span>
           </>
@@ -580,12 +573,12 @@ function RecentPatternsSection({
   return (
     <div>
       <div className="flex items-center justify-between mb-2.5">
-        <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+        <span className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
           Recent Patterns
         </span>
         <button onClick={() => onNavigate("library")}
           className="text-[11px] font-semibold flex items-center gap-0.5 hover:opacity-70 transition-opacity"
-          style={{ color: "#C24E6B" }}>
+          style={{ color: palette.rose }}>
           View all <ChevronRight className="h-3 w-3" />
         </button>
       </div>
@@ -604,7 +597,7 @@ function RecentPatternsSection({
             <p className="text-[10.5px] font-semibold leading-tight text-left line-clamp-2" style={{ color: "#5C3A28" }}>
               {p.title}
             </p>
-            <p className="text-[9.5px]" style={{ color: "#9A7868" }}>{p.projectType} · {p.skillLevel}</p>
+            <p className="text-[9.5px]" style={{ color: palette.clay }}>{p.projectType} · {p.skillLevel}</p>
           </button>
         ))}
       </div>
@@ -621,12 +614,12 @@ function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) =
   return (
     <div>
       <div className="flex items-center justify-between mb-2.5">
-        <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+        <span className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
           Community Spotlight
         </span>
         <button onClick={() => onNavigate("community")}
           className="text-[11px] font-semibold flex items-center gap-0.5 hover:opacity-70 transition-opacity"
-          style={{ color: "#C24E6B" }}>
+          style={{ color: palette.rose }}>
           View library <ChevronRight className="h-3 w-3" />
         </button>
       </div>
@@ -640,16 +633,16 @@ function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) =
           <PatternThumb image={top?.endProductImage} title={top?.title ?? "Community"} projectType={top ? undefined : undefined} />
         </div>
         <div className="flex-1 min-w-0 flex flex-col gap-1">
-          <p className="font-heading font-semibold text-[12px] leading-tight" style={{ color: "#3D2318" }}>
+          <p className="font-heading font-semibold text-[12px] leading-tight" style={{ color: palette.ink }}>
             {top ? top.title : "Explore the community gallery"}
           </p>
-          <p className="text-[10.5px]" style={{ color: "#9A7868" }}>
+          <p className="text-[10.5px]" style={{ color: palette.clay }}>
             {top ? `by ${top.creator}` : "Share your patterns with others"}
           </p>
           {top && (
             <div className="flex items-center gap-1 mt-0.5">
-              <Heart className="h-3 w-3 flex-shrink-0" style={{ color: "#C24E6B" }} fill="#C24E6B" />
-              <span className="text-[10.5px] font-semibold" style={{ color: "#C24E6B" }}>{top.likes}</span>
+              <Heart className="h-3 w-3 flex-shrink-0" style={{ color: palette.rose }} fill="#C24E6B" />
+              <span className="text-[10.5px] font-semibold" style={{ color: palette.rose }}>{top.likes}</span>
             </div>
           )}
         </div>
@@ -666,7 +659,7 @@ function UpcomingMilestoneSection({ projectsCount, onNavigate }: { projectsCount
   return (
     <div>
       <div className="mb-2.5">
-        <span className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+        <span className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
           Upcoming Milestone
         </span>
       </div>
@@ -680,7 +673,7 @@ function UpcomingMilestoneSection({ projectsCount, onNavigate }: { projectsCount
         />
 
         <div className="flex-1 min-w-0">
-          <p className="font-heading font-semibold text-[12px]" style={{ color: "#3D2318" }}>You're close!</p>
+          <p className="font-heading font-semibold text-[12px]" style={{ color: palette.ink }}>You're close!</p>
           <p className="text-[10.5px] leading-snug mt-0.5" style={{ color: "#7A6040" }}>
             Complete {need} more {need === 1 ? "project" : "projects"} to unlock a special reward.
           </p>
@@ -790,10 +783,10 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
       {/* Active Project */}
       <div className="craft-card p-3.5 relative z-10">
         <div className="flex items-center justify-between mb-3">
-          <span className="font-heading font-semibold text-[13px]" style={{ color: "#3D2318" }}>
+          <span className="font-heading font-semibold text-[13px]" style={{ color: palette.ink }}>
             Active Project
           </span>
-          <FolderOpen className="h-4 w-4" style={{ color: "#9A7868" }} />
+          <FolderOpen className="h-4 w-4" style={{ color: palette.clay }} />
         </div>
         {active ? (
           <div>
@@ -803,14 +796,14 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
                 <PatternThumb image={active.endProductImage} title={active.title} projectType={active.projectType} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-heading font-semibold text-[13px] truncate" style={{ color: "#3D2318" }}>
+                <p className="font-heading font-semibold text-[13px] truncate" style={{ color: palette.ink }}>
                   {active.title}
                 </p>
                 <span className="badge-green inline-block mt-0.5">In Progress</span>
               </div>
             </div>
             <div className="mb-2">
-              <div className="flex justify-between text-[10.5px] mb-1" style={{ color: "#9A7868" }}>
+              <div className="flex justify-between text-[10.5px] mb-1" style={{ color: palette.clay }}>
                 <span>Row {doneRows} of {steps.length || "—"}</span>
                 <span>{pct}%</span>
               </div>
@@ -821,7 +814,7 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
             </div>
             {/* Time spent row */}
             <div className="flex justify-between items-center text-[10.5px] mb-2"
-              style={{ color: "#9A7868", borderTop: "1px dashed rgba(140,100,55,0.18)", paddingTop: 6 }}>
+              style={{ color: palette.clay, borderTop: "1px dashed rgba(140,100,55,0.18)", paddingTop: 6 }}>
               <span>Time since start</span>
               <span className="font-semibold" style={{ color: "#5C3A28" }}>{timeSpent}</span>
             </div>
@@ -831,7 +824,7 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
             </button>
           </div>
         ) : (
-          <p className="text-[12px] text-center py-3" style={{ color: "#9A7868" }}>
+          <p className="text-[12px] text-center py-3" style={{ color: palette.clay }}>
             No active project yet
           </p>
         )}
@@ -841,11 +834,11 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
       {overview.length > 0 && (
         <div className="craft-card p-3.5">
           <div className="flex items-center justify-between mb-2.5">
-            <span className="font-heading font-semibold text-[13px]" style={{ color: "#3D2318" }}>
+            <span className="font-heading font-semibold text-[13px]" style={{ color: palette.ink }}>
               Projects Overview
             </span>
             <button onClick={() => onNavigate("library")}
-              className="text-[10.5px] font-semibold hover:opacity-70" style={{ color: "#C24E6B" }}>
+              className="text-[10.5px] font-semibold hover:opacity-70" style={{ color: palette.rose }}>
               View all
             </button>
           </div>
@@ -859,14 +852,14 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
                     <PatternThumb image={p.endProductImage} title={p.title} projectType={p.projectType} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11.5px] font-semibold truncate" style={{ color: "#3D2318" }}>{p.title}</p>
-                    <p className="text-[10px]" style={{ color: "#9A7868" }}>In Progress</p>
+                    <p className="text-[11.5px] font-semibold truncate" style={{ color: palette.ink }}>{p.title}</p>
+                    <p className="text-[10px]" style={{ color: palette.clay }}>In Progress</p>
                     <div className="progress-track mt-1">
                       <div className="progress-fill-rose h-full rounded-full"
                         style={{ width: `${pp}%`, transition: "width 0.7s ease" }} />
                     </div>
                   </div>
-                  <span className="text-[10px] font-semibold flex-shrink-0" style={{ color: "#9A7868" }}>
+                  <span className="text-[10px] font-semibold flex-shrink-0" style={{ color: palette.clay }}>
                     {pp}%
                   </span>
                 </div>
@@ -878,11 +871,11 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
 
       {/* Motivational quote */}
       <div className="craft-card p-3.5 text-center">
-        <Heart className="h-4 w-4 mx-auto mb-2" style={{ color: "#C24E6B" }} fill="#C24E6B" />
+        <Heart className="h-4 w-4 mx-auto mb-2" style={{ color: palette.rose }} fill="#C24E6B" />
         <p className="font-heading text-[12px] leading-relaxed italic" style={{ color: "#5C3A28" }}>
           "Every stitch brings you closer to something beautiful."
         </p>
-        <p className="mt-1.5 font-script text-[15px]" style={{ color: "#C24E6B" }}>♡</p>
+        <p className="mt-1.5 font-script text-[15px]" style={{ color: palette.rose }}>♡</p>
       </div>
     </div>
   );
@@ -949,12 +942,12 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
       <div className="flex-shrink-0 flex items-center justify-between px-6 py-4"
         style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
         <div>
-          <h1 className="font-heading font-bold" style={{ fontSize: 28, color: "#3D2318", letterSpacing: "-0.02em" }}>
+          <h1 className="font-heading font-bold" style={{ fontSize: 28, color: palette.ink, letterSpacing: "-0.02em" }}>
             {text},{" "}
             <span className="font-script" style={{ fontSize: 30, color: "#A83050" }}>{getActiveProfile().name}!</span>{" "}
             {emoji}
           </h1>
-          <p className="text-[13px] mt-0.5" style={{ color: "#9A7868" }}>
+          <p className="text-[13px] mt-0.5" style={{ color: palette.clay }}>
             Let's create something beautiful today.
           </p>
           {/* Motivational chip — visible only on mobile (sidebar hidden) */}
@@ -968,7 +961,7 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
           ) : (
             <div
               className="md:hidden inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-[11px] font-semibold"
-              style={{ background: "rgba(194,78,107,0.09)", color: "#C24E6B", border: "1px dashed rgba(194,78,107,0.3)" }}
+              style={{ background: "rgba(194,78,107,0.09)", color: palette.rose, border: "1px dashed rgba(194,78,107,0.3)" }}
             >
               ✨ Start a streak — crochet something today!
             </div>
@@ -980,17 +973,17 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
             aria-label="Search patterns"
             className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
             style={{ background: "rgba(255,252,245,0.8)", border: "1px solid rgba(140,100,55,0.2)" }}>
-            <Search className="h-4 w-4" style={{ color: "#9A7868" }} />
+            <Search className="h-4 w-4" style={{ color: palette.clay }} />
           </button>
           <button
             onClick={handleBellClick}
             aria-label="Community notifications"
             className="relative w-9 h-9 rounded-full flex items-center justify-center hover:opacity-75 transition-opacity"
             style={{ background: "rgba(255,252,245,0.8)", border: "1px solid rgba(140,100,55,0.2)" }}>
-            <Bell className="h-4 w-4" style={{ color: "#9A7868" }} />
+            <Bell className="h-4 w-4" style={{ color: palette.clay }} />
             {unreadCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
-                style={{ background: "#C24E6B" }}>{unreadCount > 9 ? "9+" : unreadCount}</span>
+                style={{ background: palette.rose }}>{unreadCount > 9 ? "9+" : unreadCount}</span>
             )}
           </button>
           {/* Avatar + chevron → switch profile */}
@@ -1001,7 +994,7 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
                 color: "white", fontWeight: 700, boxShadow: `0 2px 8px ${getActiveProfile().color}4D` }}>
               {getActiveProfile().name[0]}
             </div>
-            <ChevronRight className="h-3.5 w-3.5 rotate-90 group-hover:opacity-70 transition-opacity" style={{ color: "#9A7868" }} />
+            <ChevronRight className="h-3.5 w-3.5 rotate-90 group-hover:opacity-70 transition-opacity" style={{ color: palette.clay }} />
           </button>
         </div>
       </div>
@@ -1043,7 +1036,7 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
           <button
             onClick={() => onNavigate("yarn-recs")}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[12px] font-bold transition-all hover:opacity-85"
-            style={{ background: "rgba(132,147,79,0.10)", color: "#84934F", border: "1.5px dashed rgba(132,147,79,0.35)" }}
+            style={{ background: "rgba(132,147,79,0.10)", color: palette.sage, border: "1.5px dashed rgba(132,147,79,0.35)" }}
           >
             ✨ Make From My Stash
           </button>
@@ -1061,7 +1054,7 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10.5px] font-bold uppercase tracking-wide" style={{ color: "#7C5FA8" }}>⏭ Up next</p>
-              <p className="font-heading font-bold text-[13.5px] truncate" style={{ color: "#3D2318" }}>{upNextPattern.title}</p>
+              <p className="font-heading font-bold text-[13.5px] truncate" style={{ color: palette.ink }}>{upNextPattern.title}</p>
             </div>
             <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "#7C5FA8" }} />
           </button>
@@ -1071,9 +1064,9 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
         {activePattern && (
           <div className="block md:hidden mt-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-heading font-bold text-[15px]" style={{ color: "#3D2318" }}>Active Project</h3>
+              <h3 className="font-heading font-bold text-[15px]" style={{ color: palette.ink }}>Active Project</h3>
               <button onClick={() => onNavigate("library")}
-                className="text-[11px] font-semibold" style={{ color: "#9A7868" }}>
+                className="text-[11px] font-semibold" style={{ color: palette.clay }}>
                 All projects →
               </button>
             </div>
@@ -1085,10 +1078,10 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
                 <PatternThumb image={activePattern.endProductImage} title={activePattern.title} projectType={activePattern.projectType} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-heading font-bold text-[14px] truncate" style={{ color: "#3D2318" }}>
+                <p className="font-heading font-bold text-[14px] truncate" style={{ color: palette.ink }}>
                   {activePattern.title}
                 </p>
-                <p className="text-[11px] mt-0.5" style={{ color: "#9A7868" }}>
+                <p className="text-[11px] mt-0.5" style={{ color: palette.clay }}>
                   {activePattern.projectType} · {activePattern.skillLevel}
                 </p>
                 <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(140,100,55,0.15)" }}>
@@ -1102,7 +1095,7 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
                     }} />
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "#9A7868" }} />
+              <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: palette.clay }} />
             </div>
           </div>
         )}
