@@ -1,29 +1,22 @@
 import { palette } from "@/lib/theme";
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '../hooks/use-toast';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '../lib/queryClient';
 import { Pattern, PatternStep, ViewType } from '../lib/types';
-import PatternSection from './PatternSection';
-import EnhancedMaterialsList from './EnhancedMaterialsList';
-import PatternProgressBar from './PatternProgressBar';
 import StitchCounter from './StitchCounter';
 import FollowMode from './FollowMode';
 import CelebrationOverlay from './CelebrationOverlay';
-import StashCoverage from './StashCoverage';
 import StashDepletionSheet from './StashDepletionSheet';
 import { recordActivity } from '../lib/activityLog';
-import { cn } from '../lib/utils';
-import { RefreshCw, Download, FileText, Plus, Image, Hash, Heart, CheckCircle2, Pencil, Play, Share2, Scissors, Shuffle } from 'lucide-react';
-import { printPattern } from '../lib/printPattern';
 import { shareStoryCard } from '../lib/storyCard';
 import { getActiveProfile } from '../lib/profile';
-import { useQuery } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
-import { Button } from './ui/button';
 import { ToastAction } from './ui/toast';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import PatternViewerHeader from './pattern-viewer/PatternViewerHeader';
+import OverviewTab from './pattern-viewer/OverviewTab';
+import PatternTab from './pattern-viewer/PatternTab';
+import NotesTab from './pattern-viewer/NotesTab';
+import PatternViewerDialogs from './pattern-viewer/PatternViewerDialogs';
 
 interface PatternViewerProps {
   pattern: Pattern;
@@ -841,89 +834,18 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
       />
 
       {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          {editingTitle ? (
-            <div className="flex items-center gap-2">
-              <input
-                value={titleDraft}
-                onChange={(e) => setTitleDraft(e.target.value)}
-                aria-label="Pattern name"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && titleDraft.trim()) renameMutation.mutate(titleDraft.trim());
-                  if (e.key === 'Escape') { setEditingTitle(false); setTitleDraft(pattern.title); }
-                }}
-                className="font-heading text-xl font-bold leading-tight flex-1 min-w-0 rounded-lg px-2 py-1 outline-none"
-                style={{ color: palette.ink, background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(194,78,107,0.4)" }}
-              />
-              <button
-                onClick={() => titleDraft.trim() && renameMutation.mutate(titleDraft.trim())}
-                disabled={renameMutation.isPending || !titleDraft.trim()}
-                aria-label="Save name"
-                className="px-3 py-1.5 rounded-lg text-[12px] font-bold disabled:opacity-50"
-                style={{ background: palette.rose, color: "white" }}
-              >
-                {renameMutation.isPending ? "…" : "Save"}
-              </button>
-            </div>
-          ) : (
-            <h2 className="font-heading text-xl font-bold leading-tight group" style={{ color: palette.ink }}>
-              {pattern.title}
-              <button
-                onClick={() => { setTitleDraft(pattern.title); setEditingTitle(true); }}
-                aria-label="Rename pattern"
-                title="Rename pattern"
-                className="ml-2 inline-flex align-middle opacity-50 hover:opacity-100 transition-opacity"
-                style={{ color: palette.clay }}
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-            </h2>
-          )}
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {pattern.status === 'active' && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-100 text-yellow-700">In progress</span>
-            )}
-            {pattern.status === 'finished' && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700">Finished ✓</span>
-            )}
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary">
-              {pattern.projectType}
-            </span>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700">
-              {pattern.skillLevel}
-            </span>
-            {pattern.yarnType && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-100 text-yellow-700">
-                🧶 {pattern.yarnType}
-              </span>
-            )}
-            {pattern.size && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700">
-                📐 {pattern.size}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-[10px] font-medium hidden sm:block" style={{ color: "#B0908A" }}>
-            Created {formattedDate}
-          </span>
-          <button
-            type="button"
-            onClick={() => updatePatternMutation.mutate({ ...pattern, favorite: !pattern.favorite })}
-            aria-label={pattern.favorite ? 'Remove from favorites' : 'Add to favorites'}
-            className="flex h-9 w-9 items-center justify-center rounded-full transition-all hover:scale-110"
-            style={{
-              background: pattern.favorite ? "rgba(194,78,107,0.12)" : "rgba(140,100,55,0.08)",
-              border: `1.5px solid ${pattern.favorite ? "rgba(194,78,107,0.3)" : "rgba(140,100,55,0.18)"}`,
-            }}
-          >
-            <Heart className={cn('h-4.5 w-4.5', pattern.favorite ? 'fill-primary text-primary' : '')} style={{ width: 18, height: 18 }} />
-          </button>
-        </div>
-      </div>
+      <PatternViewerHeader
+        pattern={pattern}
+        formattedDate={formattedDate}
+        editingTitle={editingTitle}
+        titleDraft={titleDraft}
+        onTitleDraftChange={setTitleDraft}
+        onStartEditTitle={() => { setTitleDraft(pattern.title); setEditingTitle(true); }}
+        onCancelEditTitle={() => { setEditingTitle(false); setTitleDraft(pattern.title); }}
+        onSaveTitle={() => renameMutation.mutate(titleDraft.trim())}
+        renaming={renameMutation.isPending}
+        onToggleFavorite={() => updatePatternMutation.mutate({ ...pattern, favorite: !pattern.favorite })}
+      />
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "rgba(140,100,55,0.08)" }}>
@@ -945,541 +867,90 @@ const PatternViewer: React.FC<PatternViewerProps> = ({ pattern, onPatternUpdated
 
       {/* ── Overview tab ── */}
       {activeTab === "overview" && (
-        <div className="flex flex-col gap-4">
-
-          {/* Image + specs card */}
-          <div className="surface-card p-4">
-            <div className="flex gap-4">
-              {pattern.endProductImage ? (
-                <div className="relative flex-shrink-0 group">
-                  <img
-                    src={pattern.endProductImage}
-                    alt={pattern.title}
-                    className="w-32 h-32 rounded-xl object-cover"
-                  />
-                  <button
-                    onClick={handleRegenerateImage}
-                    className="absolute bottom-1.5 right-1.5 p-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Regenerate image"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5 text-primary" />
-                  </button>
-                </div>
-              ) : (
-                <div className="w-32 h-32 rounded-xl flex items-center justify-center flex-shrink-0 text-4xl"
-                  style={{ background: "rgba(140,100,55,0.08)" }}>
-                  🧶
-                </div>
-              )}
-              <div className="flex-1 flex flex-col justify-between min-w-0">
-                <div className="space-y-1.5">
-                  {[
-                    { label: "Type",  value: pattern.projectType },
-                    { label: "Level", value: pattern.skillLevel },
-                    { label: "Yarn",  value: pattern.yarnType },
-                    { label: "Size",  value: pattern.size },
-                    { label: "Created", value: formattedDate },
-                  ].filter(r => r.value).map(({ label, value }) => (
-                    <div key={label} className="flex items-center gap-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider w-14 flex-shrink-0"
-                        style={{ color: "#B0908A" }}>{label}</span>
-                      <span className="text-[12px] font-medium truncate" style={{ color: palette.ink }}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-2 mt-3 flex-wrap">
-                  {pattern.status === 'pattern' && (
-                    <button
-                      onClick={() => upNextMutation.mutate(!isUpNext)}
-                      disabled={upNextMutation.isPending}
-                      aria-pressed={isUpNext}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-                      style={isUpNext
-                        ? { background: "#7C5FA8", color: "white" }
-                        : { background: "rgba(124,95,168,0.10)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.25)" }}
-                    >
-                      ⏭ {isUpNext ? "Up next ✓" : "Make this next"}
-                    </button>
-                  )}
-                  {pattern.status === 'finished' && (
-                    <>
-                      <button
-                        onClick={handleStoryCard}
-                        disabled={sharingStory}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-                        style={{ background: "rgba(124,95,168,0.10)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.25)" }}
-                      >
-                        🎞 {sharingStory ? "Making…" : "Story card"}
-                      </button>
-                      <input
-                        ref={coverInputRef}
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        className="hidden"
-                        onChange={(e) => { const f = e.target.files?.[0]; if (f) coverPhotoMutation.mutate(f); e.target.value = ''; }}
-                      />
-                      <button
-                        onClick={() => coverInputRef.current?.click()}
-                        disabled={coverPhotoMutation.isPending}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-                        style={{ background: "rgba(132,147,79,0.12)", color: palette.sage, border: "1px solid rgba(132,147,79,0.3)" }}
-                      >
-                        📷 {coverPhotoMutation.isPending ? "Saving…" : "Finished photo"}
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={() => printPattern(pattern)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
-                    style={{ background: "rgba(194,78,107,0.1)", color: palette.rose, border: "1px solid rgba(194,78,107,0.2)" }}
-                  >
-                    <FileText className="h-3 w-3" /> Print / PDF
-                  </button>
-                  <button
-                    onClick={handleExportPattern}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
-                    style={{ background: "rgba(194,78,107,0.1)", color: palette.rose, border: "1px solid rgba(194,78,107,0.2)" }}
-                  >
-                    <Download className="h-3 w-3" /> Download
-                  </button>
-                  <button
-                    onClick={handleRegenerateImage}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
-                    style={{ background: "rgba(132,147,79,0.1)", color: palette.sage, border: "1px solid rgba(132,147,79,0.2)" }}
-                  >
-                    <RefreshCw className="h-3 w-3" /> New Image
-                  </button>
-                  <button
-                    onClick={() => setShareConfirmOpen(true)}
-                    disabled={shareToCommunityMutation.isPending}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-                    style={{ background: "rgba(124,95,168,0.1)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.2)" }}
-                  >
-                    <Share2 className="h-3 w-3" /> {shareToCommunityMutation.isPending ? "Sharing…" : "Share"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <PatternProgressBar sections={pattern.sections} />
-
-          {/* Project lifecycle */}
-          <div className="flex gap-2">
-            {pattern.status !== 'active' && pattern.status !== 'finished' && (
-              <button
-                onClick={() => updatePatternMutation.mutate({ ...pattern, status: 'active', startedAt: new Date().toISOString() })}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.3)" }}
-              >
-                <Play className="h-3.5 w-3.5" /> Start project
-              </button>
-            )}
-            {pattern.status === 'active' && (
-              <button
-                onClick={() => updatePatternMutation.mutate({ ...pattern, status: 'finished', finishedAt: new Date().toISOString() })}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ background: "rgba(132,147,79,0.14)", color: "#5F6B36", border: "1px solid rgba(132,147,79,0.3)" }}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5" /> Mark finished
-              </button>
-            )}
-            {pattern.status === 'finished' && (
-              <button
-                onClick={() => updatePatternMutation.mutate({ ...pattern, status: 'active', finishedAt: null })}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ background: "rgba(140,100,55,0.08)", color: palette.bark, border: "1px solid rgba(140,100,55,0.22)" }}
-              >
-                <Play className="h-3.5 w-3.5" /> Reopen project
-              </button>
-            )}
-          </div>
-
-          {/* Tools grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { emoji: "🧮", label: "Row Counter",  action: () => setCounterOpen(true),         color: "#7C5FA8" },
-              { emoji: "📊", label: "Progress",      action: () => onNavigate?.("progress"),    color: palette.sage },
-              { emoji: "📷", label: "Photos",         action: () => onNavigate?.("photo-upload"),color: "#3D8FA3" },
-              { emoji: "🧶", label: "From My Stash", action: () => onNavigate?.("yarn-recs"),   color: "#D4921A" },
-            ].map(({ emoji, label, action, color }) => (
-              <button
-                key={label}
-                onClick={action}
-                className="flex items-center gap-3 p-3.5 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{ background: `${color}10`, border: `1.5px solid ${color}28` }}
-              >
-                <span style={{ fontSize: 22 }}>{emoji}</span>
-                <span className="font-heading font-semibold text-[13px]" style={{ color }}>{label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Adapt this pattern */}
-          <div className="surface-card p-4">
-            <button
-              onClick={() => setAdaptOpen(v => !v)}
-              className="w-full flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-[18px]">✂️</span>
-                <span className="font-heading font-semibold text-[13px]" style={{ color: palette.ink }}>Adapt this Pattern</span>
-              </div>
-              <span className="text-[11px] font-semibold" style={{ color: palette.rose }}>
-                {adaptOpen ? "Close ▲" : "Open ▼"}
-              </span>
-            </button>
-            {adaptOpen && (
-              <div className="flex flex-col gap-3 mt-3">
-                <p className="text-[11.5px]" style={{ color: palette.clay }}>
-                  Creates a brand-new pattern — your original is kept safe.
-                </p>
-                <div className="flex gap-2">
-                  {(["resize", "substitute"] as const).map((m) => (
-                    <button key={m} onClick={() => setAdaptMode(m)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold transition-all"
-                      style={{
-                        background: adaptMode === m ? palette.rose : "rgba(140,100,55,0.08)",
-                        color: adaptMode === m ? "white" : palette.clay,
-                        border: adaptMode === m ? "none" : "1px solid rgba(140,100,55,0.18)",
-                      }}>
-                      {m === "resize" ? <><Scissors className="h-3.5 w-3.5" /> Resize</> : <><Shuffle className="h-3.5 w-3.5" /> Swap Yarn</>}
-                    </button>
-                  ))}
-                </div>
-                <textarea
-                  rows={2}
-                  placeholder={adaptMode === "resize" ? "e.g. 30% bigger, baby size, adult large…" : "e.g. DK weight, chunky cotton, fingering…"}
-                  value={adaptInstruction}
-                  onChange={(e) => setAdaptInstruction(e.target.value)}
-                  className="w-full p-3 rounded-xl text-[12.5px] outline-none resize-none"
-                  style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.2)", color: palette.ink }}
-                />
-                <button
-                  onClick={() => adaptMutation.mutate({ mode: adaptMode, instruction: adaptInstruction })}
-                  disabled={!adaptInstruction.trim() || adaptMutation.isPending}
-                  className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90 disabled:opacity-40"
-                  style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.25)" }}
-                >
-                  {adaptMutation.isPending ? "Creating…" : "✨ Create Adapted Version"}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Description (was on the retired Details screen) */}
-          {pattern.description && (
-            <div className="surface-card p-4">
-              <p className="font-heading font-semibold text-[13px] mb-1.5" style={{ color: "#5C3A28" }}>About this pattern</p>
-              <p className="text-[13px] leading-relaxed" style={{ color: "#7A5A48" }}>{pattern.description}</p>
-            </div>
-          )}
-
-          {/* Can I make this? — stash coverage (was on the retired Details screen) */}
-          <StashCoverage pattern={pattern} onOpenStash={() => onNavigate?.("stash")} />
-
-          {/* Materials */}
-          <EnhancedMaterialsList
-            yarnRequirements={pattern.yarnRequirements || []}
-            hookRequirements={pattern.hookRequirements || []}
-            notionsRequirements={pattern.notionsRequirements || []}
-            toolRequirements={pattern.toolRequirements || []}
-            needsStuffing={pattern.needsStuffing || ""}
-            materialsNotes={pattern.materialsNotes || ""}
-            onUpdate={(updatedMaterials) => {
-              updatePatternMutation.mutate({
-                ...pattern,
-                yarnRequirements: updatedMaterials.yarnRequirements,
-                hookRequirements: updatedMaterials.hookRequirements,
-                notionsRequirements: updatedMaterials.notionsRequirements,
-                toolRequirements: updatedMaterials.toolRequirements,
-                needsStuffing: updatedMaterials.needsStuffing,
-                materialsNotes: updatedMaterials.materialsNotes,
-              });
-            }}
-          />
-        </div>
+        <OverviewTab
+          pattern={pattern}
+          formattedDate={formattedDate}
+          onNavigate={onNavigate}
+          onUpdatePattern={updatePatternMutation.mutate}
+          onRegenerateImage={handleRegenerateImage}
+          onExportPattern={handleExportPattern}
+          onStoryCard={handleStoryCard}
+          sharingStory={sharingStory}
+          coverInputRef={coverInputRef}
+          onCoverPhoto={(f) => coverPhotoMutation.mutate(f)}
+          coverPhotoPending={coverPhotoMutation.isPending}
+          isUpNext={isUpNext}
+          onToggleUpNext={() => upNextMutation.mutate(!isUpNext)}
+          upNextPending={upNextMutation.isPending}
+          onOpenShare={() => setShareConfirmOpen(true)}
+          sharePending={shareToCommunityMutation.isPending}
+          onOpenCounter={() => setCounterOpen(true)}
+          adaptOpen={adaptOpen}
+          onToggleAdapt={() => setAdaptOpen(v => !v)}
+          adaptMode={adaptMode}
+          onAdaptModeChange={setAdaptMode}
+          adaptInstruction={adaptInstruction}
+          onAdaptInstructionChange={setAdaptInstruction}
+          onAdapt={() => adaptMutation.mutate({ mode: adaptMode, instruction: adaptInstruction })}
+          adaptPending={adaptMutation.isPending}
+        />
       )}
 
       {/* ── Pattern tab ── */}
       {activeTab === "pattern" && (
-        <div className="flex flex-col gap-4">
-          <button
-            onClick={() => setFollowOpen(true)}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13.5px] transition-all hover:opacity-90 active:scale-[0.99]"
-            style={{ background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.35)" }}
-          >
-            <Play className="h-4 w-4" /> Follow step-by-step
-          </button>
-          {pattern.sections
-            // Keep the original index — updateStep addresses pattern.sections,
-            // so filtering before mapping would corrupt edits whenever a
-            // "Materials" section sits before the crochet sections.
-            .map((section, sectionIndex) => ({ section, sectionIndex }))
-            .filter(({ section }) => section.name.toLowerCase() !== "materials")
-            .map(({ section, sectionIndex }) => (
-            <div key={`section-${sectionIndex}`} className="flex flex-col gap-1.5">
-              <PatternSection
-                section={{...section, patternId: pattern.id}}
-                projectType={pattern.projectType}
-                sectionIndex={sectionIndex}
-                isExpanded={expandedSections.has(section.name)}
-                onToggleExpand={() => toggleSection(section.name)}
-                onUpdateStep={(stepIndex, updatedStep) => updateStep(sectionIndex, stepIndex, updatedStep)}
-                onDeleteStep={(stepIndex) => deleteStep(sectionIndex, stepIndex)}
-                onAddStep={() => addStep(sectionIndex)}
-                onUpdateSection={(updatedSection) => {
-                  const updatedSections = [...pattern.sections];
-                  updatedSections[sectionIndex] = updatedSection;
-                  updatePatternMutation.mutate({ ...pattern, sections: updatedSections });
-                }}
-              />
-              {/* Inline section regen */}
-              {regenSection === sectionIndex ? (
-                <div className="p-3 rounded-2xl" style={{ background: "rgba(124,95,168,0.08)", border: "1px dashed rgba(124,95,168,0.3)" }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <img src="/characters/char-yala-transparent.png" alt="Yala"
-                      style={{ width: 28, height: 28, objectFit: "contain" }}
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                    <span className="text-[11px] font-semibold" style={{ color: "#7C5FA8" }}>Yala's regen tips</span>
-                  </div>
-                  <textarea
-                    rows={2}
-                    placeholder="Any specific instructions for this section? (optional)"
-                    value={regenNote}
-                    onChange={(e) => setRegenNote(e.target.value)}
-                    className="w-full p-2.5 rounded-xl text-[12px] outline-none resize-none mb-2"
-                    style={{ background: "rgba(255,255,255,0.85)", border: "1px solid rgba(124,95,168,0.25)", color: palette.ink }}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => { handleRegeneratePattern(regenNote); setRegenSection(null); }}
-                      className="flex-1 py-2 rounded-xl text-[12px] font-semibold"
-                      style={{ background: "linear-gradient(135deg, #7C5FA8, #5C3F88)", color: "white" }}
-                    >
-                      ⚡ Regenerate
-                    </button>
-                    <button
-                      onClick={() => setRegenSection(null)}
-                      className="px-3 py-2 rounded-xl text-[12px]"
-                      style={{ color: palette.clay }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => { setRegenSection(sectionIndex); setRegenNote(""); }}
-                  className="py-2 rounded-xl text-[11.5px] font-semibold transition-all hover:opacity-80"
-                  style={{ background: "rgba(124,95,168,0.07)", color: "#7C5FA8", border: "1px dashed rgba(124,95,168,0.22)" }}
-                >
-                  ⚡ Regenerate this section
-                </button>
-              )}
-
-              {/* Alignment check — only shown when the section has a photo */}
-              {section.partImageUrl && (
-                alignmentResults[sectionIndex] ? (
-                  <div className="p-3 rounded-2xl" style={{ background: "rgba(61,131,163,0.06)", border: "1px solid rgba(61,131,163,0.2)" }}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[11px] font-semibold" style={{ color: palette.ink }}>📷 Photo alignment</span>
-                      <span className="text-[13px] font-bold" style={{
-                        color: alignmentResults[sectionIndex].score >= 70 ? palette.sage
-                          : alignmentResults[sectionIndex].score >= 40 ? "#D4921A"
-                          : palette.rose,
-                      }}>
-                        {alignmentResults[sectionIndex].score}/100
-                      </span>
-                    </div>
-                    <p className="text-[11.5px] leading-relaxed mb-1.5" style={{ color: palette.bark }}>
-                      {alignmentResults[sectionIndex].feedback}
-                    </p>
-                    <button
-                      onClick={() => checkAlignment(sectionIndex)}
-                      className="text-[11px] font-semibold hover:opacity-70"
-                      style={{ color: "#3D8FA3" }}
-                    >
-                      Re-check →
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => checkAlignment(sectionIndex)}
-                    disabled={!!alignmentLoading[sectionIndex]}
-                    className="w-full py-2 rounded-xl text-[11.5px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-                    style={{ background: "rgba(61,131,163,0.07)", color: "#3D8FA3", border: "1px dashed rgba(61,131,163,0.3)" }}
-                  >
-                    {alignmentLoading[sectionIndex] ? "⏳ Checking alignment…" : "📷 AI Photo Check"}
-                  </button>
-                )
-              )}
-            </div>
-          ))}
-
-          <button
-            className="w-full flex items-center justify-center p-4 border border-dashed border-gray-300 rounded-xl text-secondary-500 hover:text-secondary-700 hover:border-secondary-400 transition-colors"
-            onClick={addSection}
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            <span>Add New Section</span>
-          </button>
-
-          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-2">
-            <button
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-sm hover:bg-secondary-600"
-              onClick={() => setCounterOpen(true)}
-            >
-              <Hash className="h-5 w-5" /> Stitch Counter
-            </button>
-            <button
-              className={`inline-flex justify-center items-center px-4 py-2 rounded-full shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark ${isRegenerating ? 'opacity-75 cursor-not-allowed' : ''}`}
-              onClick={() => setRegenAllConfirmOpen(true)}
-              disabled={isRegenerating}
-            >
-              {isRegenerating ? (
-                <><RefreshCw className="h-5 w-5 mr-2 animate-spin" />Regenerating…</>
-              ) : (
-                <><RefreshCw className="h-5 w-5 mr-2" />Regenerate All</>
-              )}
-            </button>
-          </div>
-        </div>
+        <PatternTab
+          pattern={pattern}
+          expandedSections={expandedSections}
+          onToggleSection={toggleSection}
+          onUpdateStep={updateStep}
+          onDeleteStep={deleteStep}
+          onAddStep={addStep}
+          onUpdatePattern={updatePatternMutation.mutate}
+          onAddSection={addSection}
+          onOpenFollow={() => setFollowOpen(true)}
+          regenSection={regenSection}
+          regenNote={regenNote}
+          onRegenSectionChange={setRegenSection}
+          onRegenNoteChange={setRegenNote}
+          onRegenerateSection={handleRegeneratePattern}
+          alignmentResults={alignmentResults}
+          alignmentLoading={alignmentLoading}
+          onCheckAlignment={checkAlignment}
+          onOpenCounter={() => setCounterOpen(true)}
+          isRegenerating={isRegenerating}
+          onOpenRegenAll={() => setRegenAllConfirmOpen(true)}
+        />
       )}
 
       {/* ── Notes tab ── */}
       {activeTab === "notes" && (
-        <div className="surface-card p-4">
-          <p className="font-heading font-semibold text-[13px] mb-3" style={{ color: "#5C3A28" }}>
-            Pattern Notes
-          </p>
-          <textarea
-            rows={10}
-            placeholder="Add your notes, modifications, tips or reminders for this pattern…"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full p-3.5 rounded-xl text-[13px] leading-relaxed outline-none resize-none"
-            style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.2)", color: palette.ink }}
-          />
-          <div className="flex justify-end mt-3">
-            <button
-              className="px-5 py-2 rounded-xl font-semibold text-[12.5px] transition-all hover:opacity-90 disabled:opacity-60"
-              style={{ background: palette.rose, color: "white" }}
-              disabled={saveNotesMutation.isPending}
-              onClick={() => saveNotesMutation.mutate(notes)}
-            >
-              {saveNotesMutation.isPending ? "Saving…" : "Save Notes"}
-            </button>
-          </div>
-        </div>
+        <NotesTab
+          notes={notes}
+          onNotesChange={setNotes}
+          onSave={() => saveNotesMutation.mutate(notes)}
+          saving={saveNotesMutation.isPending}
+        />
       )}
 
-      {/* ── Regenerate All Confirmation Dialog ── */}
-      <Dialog open={regenAllConfirmOpen} onOpenChange={(o) => { setRegenAllConfirmOpen(o); if (!o) setRegenAllNote(""); }}>
-        <DialogContent className="sm:max-w-[420px]">
-          <DialogHeader>
-            <DialogTitle>Regenerate All Sections?</DialogTitle>
-            <DialogDescription>
-              This will rewrite all unlocked steps with AI. Locked steps are safe. You can add an optional note to guide the regeneration.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-3">
-            <textarea
-              rows={2}
-              placeholder="Optional: any specific instructions? (e.g. make it beginner-friendly)"
-              value={regenAllNote}
-              onChange={(e) => setRegenAllNote(e.target.value)}
-              className="w-full p-2.5 rounded-xl text-[13px] outline-none resize-none"
-              style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(140,100,55,0.25)", color: palette.ink }}
-            />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => { setRegenAllConfirmOpen(false); setRegenAllNote(""); }}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              disabled={isRegenerating}
-              onClick={() => {
-                setRegenAllConfirmOpen(false);
-                handleRegeneratePattern(regenAllNote || undefined);
-                setRegenAllNote("");
-              }}
-            >
-              {isRegenerating ? (
-                <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Regenerating…</>
-              ) : (
-                <><RefreshCw className="h-4 w-4 mr-2" />Yes, Regenerate All</>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Share to Community Confirmation Dialog ── */}
-      <Dialog open={shareConfirmOpen} onOpenChange={setShareConfirmOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Share to the Community Library?</DialogTitle>
-            <DialogDescription>
-              This publishes “{pattern.title}” — its photo, materials and all written
-              instructions — to the public Community Library for others to browse and make.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setShareConfirmOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              disabled={shareToCommunityMutation.isPending}
-              onClick={() => shareToCommunityMutation.mutate()}
-            >
-              {shareToCommunityMutation.isPending ? (
-                <><Share2 className="h-4 w-4 mr-2 animate-pulse" />Sharing…</>
-              ) : (
-                <><Share2 className="h-4 w-4 mr-2" />Yes, Share Pattern</>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Image Regeneration Dialog ── */}
-      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Regenerate Pattern Image</DialogTitle>
-            <DialogDescription>
-              Provide additional details to refine the image.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="imageRefinements" className="col-span-4">Refinements</Label>
-              <Input
-                id="imageRefinements"
-                placeholder="e.g., more texture details, pastel colors"
-                className="col-span-4"
-                value={imageRefinements}
-                onChange={(e) => setImageRefinements(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setImageDialogOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={isRegeneratingImage} onClick={handleImageRefinementSubmit}>
-              {isRegeneratingImage ? (
-                <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Generating...</>
-              ) : (
-                <><Image className="h-4 w-4 mr-2" />Generate Image</>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PatternViewerDialogs
+        pattern={pattern}
+        regenAllOpen={regenAllConfirmOpen}
+        onRegenAllOpenChange={(o) => { setRegenAllConfirmOpen(o); if (!o) setRegenAllNote(""); }}
+        regenAllNote={regenAllNote}
+        onRegenAllNoteChange={setRegenAllNote}
+        onConfirmRegenAll={() => { setRegenAllConfirmOpen(false); handleRegeneratePattern(regenAllNote || undefined); setRegenAllNote(""); }}
+        isRegenerating={isRegenerating}
+        shareOpen={shareConfirmOpen}
+        onShareOpenChange={setShareConfirmOpen}
+        onConfirmShare={() => shareToCommunityMutation.mutate()}
+        sharePending={shareToCommunityMutation.isPending}
+        imageOpen={imageDialogOpen}
+        onImageOpenChange={setImageDialogOpen}
+        imageRefinements={imageRefinements}
+        onImageRefinementsChange={setImageRefinements}
+        onConfirmImage={handleImageRefinementSubmit}
+        isRegeneratingImage={isRegeneratingImage}
+      />
     </div>
   );
 };
