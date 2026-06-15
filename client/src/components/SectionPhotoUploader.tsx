@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Camera, ImageIcon, Upload, X, RefreshCw, CheckCircle, Percent } from 'lucide-react';
 import axios from 'axios';
+import { fileToBase64 } from '@/lib/utils';
 
 interface SectionPhotoUploaderProps {
   patternId: string;
@@ -41,15 +42,6 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
     }
   }, []);
 
-  // Convert file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  };
 
   // State for alignment check
   const [isAlignmentChecking, setIsAlignmentChecking] = useState(false);
