@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -75,12 +76,12 @@ export default function CelebrationOverlay({ show, onDone, title = "You did it! 
               transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
-            <p className="font-heading font-bold text-[22px] text-center" style={{ color: "#C24E6B" }}>{title}</p>
+            <p className="font-heading font-bold text-[22px] text-center" style={{ color: palette.rose }}>{title}</p>
             <p className="text-[13px] text-center" style={{ color: "#7A5A48" }}>{subtitle}</p>
             <button
               onClick={onDone}
               className="mt-1 px-5 py-2 rounded-full text-[13px] font-bold"
-              style={{ background: "rgba(194,78,107,0.12)", color: "#C24E6B" }}
+              style={{ background: "rgba(194,78,107,0.12)", color: palette.rose }}
             >
               Yay! ✨
             </button>

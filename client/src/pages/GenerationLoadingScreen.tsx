@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { ViewType } from "../lib/types";
@@ -64,13 +65,13 @@ export default function GenerationLoadingScreen({ onComplete, progress: controll
       <div className="text-center pt-2">
         <motion.h1
           className="font-heading font-bold text-[22px]"
-          style={{ color: "#3D2318" }}
+          style={{ color: palette.ink }}
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2.5, repeat: Infinity }}
         >
           Yala is creating your pattern…
         </motion.h1>
-        <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>
+        <p className="text-[13px] mt-1" style={{ color: palette.clay }}>
           Stitch by stitch, row by row ✨
         </p>
       </div>
@@ -108,10 +109,10 @@ export default function GenerationLoadingScreen({ onComplete, progress: controll
             </defs>
           </svg>
           <div className="absolute flex flex-col items-center">
-            <span className="font-heading font-bold text-[26px] leading-none" style={{ color: "#C24E6B" }}>
+            <span className="font-heading font-bold text-[26px] leading-none" style={{ color: palette.rose }}>
               {progress}%
             </span>
-            <span className="text-[10px] font-semibold mt-0.5" style={{ color: "#9A7868" }}>complete</span>
+            <span className="text-[10px] font-semibold mt-0.5" style={{ color: palette.clay }}>complete</span>
           </div>
         </div>
 
@@ -131,7 +132,7 @@ export default function GenerationLoadingScreen({ onComplete, progress: controll
               <span className="text-[13px] font-semibold" style={{ color: "#5C3A28" }}>
                 {currentStage.label}
               </span>
-              <span className="text-[11px]" style={{ color: "#9A7868" }}>
+              <span className="text-[11px]" style={{ color: palette.clay }}>
                 {currentStage.round}
               </span>
             </motion.div>
@@ -175,7 +176,7 @@ export default function GenerationLoadingScreen({ onComplete, progress: controll
             filter: "drop-shadow(0 3px 8px rgba(80,40,10,0.2))" }}
         />
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-bold mb-0.5" style={{ color: "#C24E6B" }}>
+          <p className="text-[11px] font-bold mb-0.5" style={{ color: palette.rose }}>
             💡 Tip from Yala
           </p>
           <p className="text-[12px] leading-snug" style={{ color: "#5C3A28" }}>

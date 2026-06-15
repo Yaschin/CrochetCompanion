@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Plus, Package } from "lucide-react";
@@ -28,8 +29,8 @@ function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect:
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-heading font-bold text-[14px] truncate" style={{ color: "#3D2318" }}>{pattern.title}</p>
-        <p className="text-[11px] mt-0.5 mb-2" style={{ color: "#9A7868" }}>
+        <p className="font-heading font-bold text-[14px] truncate" style={{ color: palette.ink }}>{pattern.title}</p>
+        <p className="text-[11px] mt-0.5 mb-2" style={{ color: palette.clay }}>
           {pattern.projectType} · {pattern.skillLevel}
         </p>
         {pattern.status !== 'finished' ? (
@@ -40,13 +41,13 @@ function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect:
                 background: pct > 0 ? "linear-gradient(90deg, #C24E6B, #A83050)" : "transparent",
               }} />
             </div>
-            <p className="text-[10px] mt-0.5" style={{ color: "#9A7868" }}>
+            <p className="text-[10px] mt-0.5" style={{ color: palette.clay }}>
               {total > 0 ? `${done}/${total} steps · ${pct}%` : "Not started yet"}
             </p>
           </>
         ) : (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold"
-            style={{ background: "rgba(132,147,79,0.12)", color: "#84934F" }}>
+            style={{ background: "rgba(132,147,79,0.12)", color: palette.sage }}>
             ✓ Completed
           </span>
         )}
@@ -77,10 +78,10 @@ function TrophyCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect: 
         <PatternThumb image={pattern.endProductImage} title={pattern.title} projectType={pattern.projectType} />
       </div>
       <div className="p-2.5">
-        <p className="font-heading font-bold text-[12.5px] truncate" style={{ color: "#3D2318" }}>
+        <p className="font-heading font-bold text-[12.5px] truncate" style={{ color: palette.ink }}>
           {pattern.title}
         </p>
-        <p className="text-[10.5px] mt-0.5" style={{ color: "#84934F" }}>
+        <p className="text-[10.5px] mt-0.5" style={{ color: palette.sage }}>
           {finished
             ? `✓ ${finished.toLocaleDateString(undefined, { day: "numeric", month: "short" })}`
             : "✓ Completed"}
@@ -105,10 +106,10 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
       <div className="flex-shrink-0 px-6 pt-6 pb-4" style={{ borderBottom: "1px solid rgba(140,100,55,0.12)" }}>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-heading font-bold text-[26px]" style={{ color: "#3D2318", letterSpacing: "-0.02em" }}>
+            <h1 className="font-heading font-bold text-[26px]" style={{ color: palette.ink, letterSpacing: "-0.02em" }}>
               My Projects
             </h1>
-            <p className="text-[13px] mt-0.5" style={{ color: "#9A7868" }}>
+            <p className="text-[13px] mt-0.5" style={{ color: palette.clay }}>
               {isLoading ? "Loading…" : patterns.length === 0
                 ? "Start your first crochet project"
                 : `${inProgress.length} in progress · ${completed.length} completed`}
@@ -149,8 +150,8 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
             </motion.div>
             <div>
-              <p className="font-heading font-bold text-[18px]" style={{ color: "#3D2318" }}>No projects yet!</p>
-              <p className="text-[13px] mt-1 max-w-[240px] mx-auto" style={{ color: "#9A7868" }}>
+              <p className="font-heading font-bold text-[18px]" style={{ color: palette.ink }}>No projects yet!</p>
+              <p className="text-[13px] mt-1 max-w-[240px] mx-auto" style={{ color: palette.clay }}>
                 Create your first pattern and start crafting something beautiful.
               </p>
             </div>
@@ -172,11 +173,11 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
             {inProgress.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <h2 className="font-heading font-bold text-[14px]" style={{ color: "#3D2318" }}>
+                  <h2 className="font-heading font-bold text-[14px]" style={{ color: palette.ink }}>
                     🧶 In Progress
                   </h2>
                   <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold"
-                    style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B" }}>
+                    style={{ background: "rgba(194,78,107,0.10)", color: palette.rose }}>
                     {inProgress.length}
                   </span>
                 </div>
@@ -192,15 +193,15 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
             {completed.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="font-heading font-bold text-[14px]" style={{ color: "#3D2318" }}>
+                  <h2 className="font-heading font-bold text-[14px]" style={{ color: palette.ink }}>
                     ✨ Trophy Shelf
                   </h2>
                   <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold"
-                    style={{ background: "rgba(132,147,79,0.10)", color: "#84934F" }}>
+                    style={{ background: "rgba(132,147,79,0.10)", color: palette.sage }}>
                     {completed.length}
                   </span>
                 </div>
-                <p className="text-[11.5px] mb-3" style={{ color: "#9A7868" }}>
+                <p className="text-[11.5px] mb-3" style={{ color: palette.clay }}>
                   Every finished make, side by side — be proud!
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -219,11 +220,11 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                   style={{ background: "rgba(140,100,55,0.1)" }}>
-                  <Package className="h-5 w-5" style={{ color: "#9A7868" }} />
+                  <Package className="h-5 w-5" style={{ color: palette.clay }} />
                 </div>
                 <div className="text-left">
                   <p className="font-heading font-semibold text-[13px]" style={{ color: "#5C3A28" }}>My Stash</p>
-                  <p className="text-[11px]" style={{ color: "#9A7868" }}>Yarn, hooks & materials</p>
+                  <p className="text-[11px]" style={{ color: palette.clay }}>Yarn, hooks & materials</p>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4" style={{ color: "#C0A090" }} />

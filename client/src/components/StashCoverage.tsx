@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useQuery } from "@tanstack/react-query";
 import { Check, X, ShoppingBag, Sparkles } from "lucide-react";
 import { Pattern, StashItem } from "../lib/types";
@@ -55,8 +56,8 @@ export default function StashCoverage({ pattern, compact, onOpenStash }: StashCo
     <div className="craft-card p-4" style={isLoading ? { opacity: 0.6 } : undefined}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4" style={{ color: coverage.canMake ? "#84934F" : "#D4921A" }} />
-          <p className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+          <Sparkles className="h-4 w-4" style={{ color: coverage.canMake ? palette.sage : "#D4921A" }} />
+          <p className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
             {coverage.canMake ? "You can make this now! ♡" : "Almost there"}
           </p>
         </div>
@@ -74,7 +75,7 @@ export default function StashCoverage({ pattern, compact, onOpenStash }: StashCo
       <div className="flex flex-col gap-3">
         {coverage.categories.map((cat) => (
           <div key={cat.category}>
-            <p className="text-[11px] font-bold uppercase tracking-wide mb-1.5" style={{ color: "#9A7868" }}>
+            <p className="text-[11px] font-bold uppercase tracking-wide mb-1.5" style={{ color: palette.clay }}>
               {cat.title}
             </p>
             <div className="flex flex-col gap-1">
@@ -84,15 +85,15 @@ export default function StashCoverage({ pattern, compact, onOpenStash }: StashCo
                     className="flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center"
                     style={{
                       background: item.have ? "rgba(132,147,79,0.18)" : "rgba(194,78,107,0.12)",
-                      color: item.have ? "#6A7A3A" : "#C24E6B",
+                      color: item.have ? "#6A7A3A" : palette.rose,
                     }}
                   >
                     {item.have ? <Check className="h-2.5 w-2.5" /> : <X className="h-2.5 w-2.5" />}
                   </span>
-                  <span style={{ color: item.have ? "#5C3A28" : "#9A7868" }}>
+                  <span style={{ color: item.have ? "#5C3A28" : palette.clay }}>
                     {item.label}
                     {item.have && item.matchedWith ? (
-                      <span className="text-[10.5px]" style={{ color: "#84934F" }}> — {item.matchedWith}</span>
+                      <span className="text-[10.5px]" style={{ color: palette.sage }}> — {item.matchedWith}</span>
                     ) : null}
                   </span>
                 </div>
@@ -117,7 +118,7 @@ export default function StashCoverage({ pattern, compact, onOpenStash }: StashCo
           <button
             onClick={() => copyShoppingList(coverage.missing)}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold transition-all hover:opacity-90"
-            style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "1px dashed rgba(194,78,107,0.35)" }}
+            style={{ background: "rgba(194,78,107,0.10)", color: palette.rose, border: "1px dashed rgba(194,78,107,0.35)" }}
           >
             📋 Copy shopping list
           </button>

@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { Package } from "lucide-react";
 import { getActiveProfile } from "../lib/profile";
 import { FC, useState } from "react";
@@ -230,10 +231,10 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
           <p className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: "#9A7A68" }}>
             Made with love for
           </p>
-          <p className="font-script text-xl leading-tight" style={{ color: "#C24E6B", fontWeight: 700 }}>
+          <p className="font-script text-xl leading-tight" style={{ color: palette.rose, fontWeight: 700 }}>
             {getActiveProfile().name}
           </p>
-          <p className="text-xs" style={{ color: "#C24E6B" }}>♡</p>
+          <p className="text-xs" style={{ color: palette.rose }}>♡</p>
         </div>
       </div>
 

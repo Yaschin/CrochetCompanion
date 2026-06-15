@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronLeft, ChevronRight, Mic, Minus, X } from 'lucide-react';
 import CoachChat from './CoachChat';
@@ -200,16 +201,16 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col" role="dialog" aria-modal="true" aria-label="Follow mode"
-      style={{ background: "#FFFCF5" }}>
+      style={{ background: palette.cream }}>
       {/* Header */}
       <div className="flex items-center justify-between gap-3 px-4 py-3" style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
         <div className="min-w-0">
-          <p className="text-[11px] uppercase tracking-wide" style={{ color: "#9A7868" }}>
+          <p className="text-[11px] uppercase tracking-wide" style={{ color: palette.clay }}>
             {current.sectionName}
           </p>
-          <p className="truncate font-heading text-[16px] font-semibold" style={{ color: "#3D2318" }}>
+          <p className="truncate font-heading text-[16px] font-semibold" style={{ color: palette.ink }}>
             Step {withinSection} of {sectionTotal}
-            <span className="ml-2 font-sans text-[11.5px] font-semibold" style={{ color: "#9A7868" }}>
+            <span className="ml-2 font-sans text-[11.5px] font-semibold" style={{ color: palette.clay }}>
               · {pos + 1}/{steps.length} overall
             </span>
           </p>
@@ -222,8 +223,8 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
             title="Hands-free: say done, back, or stitch"
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:opacity-70"
             style={voice
-              ? { background: "rgba(194,78,107,0.15)", color: "#C24E6B", border: "1.5px solid rgba(194,78,107,0.4)" }
-              : { background: "rgba(140,100,55,0.08)", color: "#9A7868" }}
+              ? { background: "rgba(194,78,107,0.15)", color: palette.rose, border: "1.5px solid rgba(194,78,107,0.4)" }
+              : { background: "rgba(140,100,55,0.08)", color: palette.clay }}
           >
             <Mic className="h-5 w-5" />
           </button>
@@ -244,7 +245,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
           onClick={onClose}
           aria-label="Close follow mode"
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:opacity-70"
-          style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868" }}
+          style={{ background: "rgba(140,100,55,0.08)", color: palette.clay }}
         >
           <X className="h-6 w-6" />
         </button>
@@ -256,7 +257,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
         <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(140,100,55,0.15)" }}>
           <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "linear-gradient(90deg, #84934F, #6A7A3A)" }} />
         </div>
-        <p className="text-[11px] mt-1" style={{ color: "#9A7868" }}>{doneCount} of {steps.length} steps done · {pct}%</p>
+        <p className="text-[11px] mt-1" style={{ color: palette.clay }}>{doneCount} of {steps.length} steps done · {pct}%</p>
         <div className="mt-2 flex gap-1.5 overflow-x-auto no-scrollbar pb-1" role="tablist" aria-label="Pattern sections">
           {sectionMap.map((m) => {
             const isCurrent = current && m.sectionIndex === current.sectionIndex;
@@ -275,10 +276,10 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
                 }}
                 className="flex-shrink-0 px-2.5 py-1 rounded-full text-[10.5px] font-bold transition-all hover:opacity-85"
                 style={isCurrent
-                  ? { background: "#84934F", color: "white", boxShadow: "0 2px 8px rgba(132,147,79,0.35)" }
+                  ? { background: palette.sage, color: "white", boxShadow: "0 2px 8px rgba(132,147,79,0.35)" }
                   : sectionDone
-                    ? { background: "rgba(132,147,79,0.12)", color: "#84934F", border: "1px solid rgba(132,147,79,0.3)" }
-                    : { background: "rgba(140,100,55,0.07)", color: "#9A7868", border: "1px dashed rgba(140,100,55,0.3)" }}
+                    ? { background: "rgba(132,147,79,0.12)", color: palette.sage, border: "1px solid rgba(132,147,79,0.3)" }
+                    : { background: "rgba(140,100,55,0.07)", color: palette.clay, border: "1px dashed rgba(140,100,55,0.3)" }}
               >
                 {sectionDone ? "✓ " : ""}{m.name} {m.done}/{m.total}
               </button>
@@ -291,13 +292,13 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
       <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col items-center justify-center text-center gap-4">
         {current.step.completed && (
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11.5px] font-semibold"
-            style={{ background: "rgba(132,147,79,0.12)", color: "#84934F" }}>
+            style={{ background: "rgba(132,147,79,0.12)", color: palette.sage }}>
             <Check className="h-3.5 w-3.5" /> Done
             <button onClick={unmark} className="underline ml-1 hover:opacity-70">undo</button>
           </span>
         )}
         <p className="font-heading font-semibold leading-snug max-w-[560px]"
-          style={{ fontSize: "clamp(19px, 5.5vw, 26px)", color: "#3D2318" }}>
+          style={{ fontSize: "clamp(19px, 5.5vw, 26px)", color: palette.ink }}>
           {current.step.text}
         </p>
         {current.step.notes && (
@@ -323,7 +324,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
         )}
 
         {voice && (
-          <p className="text-[11.5px]" aria-live="polite" style={{ color: "#C24E6B" }}>
+          <p className="text-[11.5px]" aria-live="polite" style={{ color: palette.rose }}>
             {lastHeard ? `🎙️ Heard: “${lastHeard}”` : "🎙️ Listening — say “done”, “back” or “stitch”"}
           </p>
         )}
@@ -336,7 +337,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
               onClick={() => { setTally((t) => Math.max(0, t - 1)); }}
               aria-label="Remove a stitch from the tally"
               className="flex h-12 w-12 items-center justify-center rounded-full transition-all hover:opacity-80"
-              style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868", border: "1.5px solid rgba(140,100,55,0.2)" }}
+              style={{ background: "rgba(140,100,55,0.08)", color: palette.clay, border: "1.5px solid rgba(140,100,55,0.2)" }}
             >
               <Minus className="h-5 w-5" />
             </button>
@@ -351,8 +352,8 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
               aria-label={`Count a stitch. ${tally} of ${stitchTarget} done`}
               className="px-7 py-3.5 rounded-2xl font-heading font-bold transition-all active:scale-[0.97]"
               style={tally >= stitchTarget
-                ? { background: "rgba(132,147,79,0.15)", color: "#84934F", border: "2px solid rgba(132,147,79,0.4)", fontSize: 18 }
-                : { background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "2px dashed rgba(194,78,107,0.35)", fontSize: 18 }}
+                ? { background: "rgba(132,147,79,0.15)", color: palette.sage, border: "2px solid rgba(132,147,79,0.4)", fontSize: 18 }
+                : { background: "rgba(194,78,107,0.10)", color: palette.rose, border: "2px dashed rgba(194,78,107,0.35)", fontSize: 18 }}
             >
               {tally >= stitchTarget ? `${stitchTarget} / ${stitchTarget} 🎉` : `Stitch ${tally} / ${stitchTarget} — tap`}
             </button>
@@ -360,7 +361,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
         )}
         {allDone && pattern.status !== "finished" && onMarkFinished && (
           <div className="flex flex-col items-center gap-2">
-            <p className="text-[14px] font-semibold" style={{ color: "#84934F" }}>
+            <p className="text-[14px] font-semibold" style={{ color: palette.sage }}>
               🎉 Every step is done!
             </p>
             <button
@@ -382,7 +383,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
           disabled={pos === 0}
           aria-label="Previous step"
           className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl transition-all hover:opacity-80 disabled:opacity-35"
-          style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868", border: "1.5px solid rgba(140,100,55,0.2)" }}
+          style={{ background: "rgba(140,100,55,0.08)", color: palette.clay, border: "1.5px solid rgba(140,100,55,0.2)" }}
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
@@ -390,7 +391,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
           onClick={markDoneAndAdvance}
           className="flex-1 h-14 rounded-2xl font-heading font-bold text-[16px] transition-all hover:opacity-90 active:scale-[0.99]"
           style={current.step.completed
-            ? { background: "rgba(132,147,79,0.12)", color: "#84934F", border: "1.5px solid rgba(132,147,79,0.3)" }
+            ? { background: "rgba(132,147,79,0.12)", color: palette.sage, border: "1.5px solid rgba(132,147,79,0.3)" }
             : { background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.4)" }}
         >
           {current.step.completed ? (pos < steps.length - 1 ? "Next step →" : "All caught up ✓") : "✓ Done — next"}
@@ -400,7 +401,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
           disabled={pos >= steps.length - 1}
           aria-label="Skip to next step"
           className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl transition-all hover:opacity-80 disabled:opacity-35"
-          style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868", border: "1.5px solid rgba(140,100,55,0.2)" }}
+          style={{ background: "rgba(140,100,55,0.08)", color: palette.clay, border: "1.5px solid rgba(140,100,55,0.2)" }}
         >
           <ChevronRight className="h-6 w-6" />
         </button>
@@ -418,11 +419,11 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
       {/* Glossary explainer */}
       {glossaryOpen && (
         <div className="absolute inset-x-0 bottom-0 z-[65] rounded-t-3xl px-5 pt-4 pb-[max(1.2rem,env(safe-area-inset-bottom))]"
-          style={{ background: "#FFFCF5", borderTop: "1.5px solid rgba(124,95,168,0.3)", boxShadow: "0 -8px 30px rgba(80,45,10,0.15)" }}
+          style={{ background: palette.cream, borderTop: "1.5px solid rgba(124,95,168,0.3)", boxShadow: "0 -8px 30px rgba(80,45,10,0.15)" }}
           role="dialog" aria-label={`${glossaryOpen.name} explained`}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="font-heading font-bold text-[16px]" style={{ color: "#3D2318" }}>
+              <p className="font-heading font-bold text-[16px]" style={{ color: palette.ink }}>
                 {glossaryOpen.abbr} — {glossaryOpen.name}
               </p>
               <p className="text-[13px] leading-relaxed mt-1" style={{ color: "#7A5A48" }}>
@@ -430,13 +431,13 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
               </p>
               <a href={videoUrl(glossaryOpen)} target="_blank" rel="noreferrer"
                 className="inline-flex items-center gap-1.5 mt-3 px-3.5 py-2 rounded-xl text-[12px] font-bold"
-                style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B", border: "1px solid rgba(194,78,107,0.25)" }}>
+                style={{ background: "rgba(194,78,107,0.10)", color: palette.rose, border: "1px solid rgba(194,78,107,0.25)" }}>
                 ▶ Watch a how-to video
               </a>
             </div>
             <button onClick={() => setGlossaryOpen(null)} aria-label="Close glossary"
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:opacity-70"
-              style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868" }}>
+              style={{ background: "rgba(140,100,55,0.08)", color: palette.clay }}>
               <X className="h-5 w-5" />
             </button>
           </div>

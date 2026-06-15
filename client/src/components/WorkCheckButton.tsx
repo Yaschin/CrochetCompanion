@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Camera, X } from "lucide-react";
@@ -84,7 +85,7 @@ export default function WorkCheckButton({ patternId, sectionIndex, stepIndex }: 
         aria-label="Check my work with a photo"
         title="Photograph your work — Ashi checks it against this round"
         className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:opacity-80"
-        style={{ background: "rgba(132,147,79,0.12)", color: "#84934F", border: "1.5px solid rgba(132,147,79,0.3)" }}
+        style={{ background: "rgba(132,147,79,0.12)", color: palette.sage, border: "1.5px solid rgba(132,147,79,0.3)" }}
       >
         <Camera className="h-5 w-5" />
       </button>
@@ -92,7 +93,7 @@ export default function WorkCheckButton({ patternId, sectionIndex, stepIndex }: 
       {open && (
         <div
           className="fixed inset-x-0 bottom-0 z-[70] rounded-t-3xl px-5 pt-4 pb-[max(1.2rem,env(safe-area-inset-bottom))] shadow-2xl"
-          style={{ background: "#FFFCF5", borderTop: "1.5px solid rgba(140,100,55,0.2)" }}
+          style={{ background: palette.cream, borderTop: "1.5px solid rgba(140,100,55,0.2)" }}
           role="dialog"
           aria-label="Check my work"
         >
@@ -104,7 +105,7 @@ export default function WorkCheckButton({ patternId, sectionIndex, stepIndex }: 
                 style={{ width: 36, height: 36, objectFit: "contain" }}
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
               />
-              <p className="font-heading font-bold text-[14.5px]" style={{ color: "#3D2318" }}>
+              <p className="font-heading font-bold text-[14.5px]" style={{ color: palette.ink }}>
                 Ashi checks your work
               </p>
             </div>
@@ -112,7 +113,7 @@ export default function WorkCheckButton({ patternId, sectionIndex, stepIndex }: 
               onClick={() => setOpen(false)}
               aria-label="Close"
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:opacity-70"
-              style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868" }}
+              style={{ background: "rgba(140,100,55,0.08)", color: palette.clay }}
             >
               <X className="h-5 w-5" />
             </button>

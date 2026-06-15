@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
@@ -13,9 +14,9 @@ interface PatternInputProps {
 }
 
 const CATEGORIES = [
-  { id: "Amigurumi",  label: "Toys & Amigurumi", emoji: "🧸", color: "#C24E6B" },
+  { id: "Amigurumi",  label: "Toys & Amigurumi", emoji: "🧸", color: palette.rose },
   { id: "Wearable",   label: "Wearables",         emoji: "👒", color: "#7C5FA8" },
-  { id: "Home Decor", label: "Home Decor",         emoji: "🏠", color: "#84934F" },
+  { id: "Home Decor", label: "Home Decor",         emoji: "🏠", color: palette.sage },
   { id: "Accessory",  label: "Accessories",        emoji: "👜", color: "#D4921A" },
   { id: "Other",      label: "Other",              emoji: "✨", color: "#3D8FA3" },
 ];
@@ -492,7 +493,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           }}>
           <span style={{ fontSize: 32 }}>{cat.emoji}</span>
           <div className="text-left flex-1">
-            <p className="font-heading font-bold text-[15px]" style={{ color: "#3D2318" }}>{cat.label}</p>
+            <p className="font-heading font-bold text-[15px]" style={{ color: palette.ink }}>{cat.label}</p>
           </div>
           {formData.projectType === cat.id && (
             <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: cat.color }}>
@@ -514,11 +515,11 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
             className="flex-1 flex flex-col items-center gap-1 p-3 rounded-2xl transition-all"
             style={{
               background: formData.skillLevel === lvl.id ? "rgba(194,78,107,0.10)" : "rgba(255,252,245,0.9)",
-              border: `1.5px solid ${formData.skillLevel === lvl.id ? "#C24E6B" : "rgba(140,100,55,0.18)"}`,
+              border: `1.5px solid ${formData.skillLevel === lvl.id ? palette.rose : "rgba(140,100,55,0.18)"}`,
             }}>
             <span style={{ fontSize: 22 }}>{lvl.emoji}</span>
-            <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? "#C24E6B" : "#5C3A28" }}>{lvl.id}</span>
-            <span className="text-[9.5px] text-center" style={{ color: "#9A7868" }}>{lvl.desc}</span>
+            <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? palette.rose : "#5C3A28" }}>{lvl.id}</span>
+            <span className="text-[9.5px] text-center" style={{ color: palette.clay }}>{lvl.desc}</span>
           </button>
         ))}
       </div>
@@ -527,7 +528,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
 
   const YarnPicker = () => (
     <div>
-      <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Yarn Type <span className="font-normal text-[11px]" style={{ color: "#9A7868" }}>(optional)</span></label>
+      <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Yarn Type <span className="font-normal text-[11px]" style={{ color: palette.clay }}>(optional)</span></label>
       <div className="flex flex-wrap gap-2">
         {YARN_TYPES.map((yt) => (
           <button key={yt}
@@ -547,7 +548,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
 
   const SizePicker = () => (
     <div>
-      <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Approximate Size <span className="font-normal text-[11px]" style={{ color: "#9A7868" }}>(optional)</span></label>
+      <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Approximate Size <span className="font-normal text-[11px]" style={{ color: palette.clay }}>(optional)</span></label>
       <div className="flex flex-wrap gap-2">
         {SIZE_OPTIONS.map((sz) => (
           <button key={sz}
@@ -555,8 +556,8 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
             className="px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-all"
             style={{
               background: formData.size === sz ? "rgba(132,147,79,0.14)" : "rgba(255,252,245,0.9)",
-              border: `1.5px solid ${formData.size === sz ? "#84934F" : "rgba(140,100,55,0.18)"}`,
-              color: formData.size === sz ? "#84934F" : "#5C3A28",
+              border: `1.5px solid ${formData.size === sz ? palette.sage : "rgba(140,100,55,0.18)"}`,
+              color: formData.size === sz ? palette.sage : "#5C3A28",
             }}>
             {sz}
           </button>
@@ -577,7 +578,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
   const currentStep = mode === "ai" ? wizardStep : mode === "own" ? ownStep : pdfStep;
   const tips        = mode === "ai" ? AI_TIPS    : mode === "own" ? OWN_TIPS : PDF_TIPS;
 
-  const modeAccent = mode === "ai" ? "#C24E6B" : mode === "own" ? "#84934F" : "#3D8FA3";
+  const modeAccent = mode === "ai" ? palette.rose : mode === "own" ? palette.sage : "#3D8FA3";
   const modeAccentRgb = mode === "ai" ? "194,78,107" : mode === "own" ? "132,147,79" : "61,143,163";
   const charImg = mode === "ai"
     ? "/characters/char-yala-transparent.png"
@@ -600,7 +601,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all"
           style={{
             background: mode === "ai" ? "linear-gradient(135deg, #C24E6B, #A83050)" : "transparent",
-            color: mode === "ai" ? "white" : "#9A7868",
+            color: mode === "ai" ? "white" : palette.clay,
             boxShadow: mode === "ai" ? "0 3px 12px rgba(194,78,107,0.35)" : "none",
           }}>
           <Sparkles className="h-3.5 w-3.5" /> Create with AI
@@ -610,7 +611,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all"
           style={{
             background: mode === "own" ? "linear-gradient(135deg, #84934F, #5A6E30)" : "transparent",
-            color: mode === "own" ? "white" : "#9A7868",
+            color: mode === "own" ? "white" : palette.clay,
             boxShadow: mode === "own" ? "0 3px 12px rgba(132,147,79,0.35)" : "none",
           }}>
           <BookOpen className="h-3.5 w-3.5" /> Add my own
@@ -620,7 +621,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all"
           style={{
             background: mode === "pdf" ? "linear-gradient(135deg, #3D8FA3, #2A6B7D)" : "transparent",
-            color: mode === "pdf" ? "white" : "#9A7868",
+            color: mode === "pdf" ? "white" : palette.clay,
             boxShadow: mode === "pdf" ? "0 3px 12px rgba(61,143,163,0.35)" : "none",
           }}>
           <FileUp className="h-3.5 w-3.5" /> Import PDF
@@ -634,20 +635,20 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
             <div className="flex flex-col items-center gap-1 flex-shrink-0">
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all"
                 style={{
-                  background: i < currentStep ? "#84934F" : i === currentStep ? modeAccent : "rgba(140,100,55,0.12)",
-                  color: i <= currentStep ? "white" : "#9A7868",
+                  background: i < currentStep ? palette.sage : i === currentStep ? modeAccent : "rgba(140,100,55,0.12)",
+                  color: i <= currentStep ? "white" : palette.clay,
                   boxShadow: i === currentStep ? `0 3px 10px rgba(${modeAccentRgb},0.35)` : "none",
                 }}>
                 {i < currentStep ? "✓" : i + 1}
               </div>
               <span className="text-[9px] font-semibold whitespace-nowrap"
-                style={{ color: i === currentStep ? modeAccent : i < currentStep ? "#84934F" : "#B0908A" }}>
+                style={{ color: i === currentStep ? modeAccent : i < currentStep ? palette.sage : "#B0908A" }}>
                 {label}
               </span>
             </div>
             {i < steps.length - 1 && (
               <div className="flex-1 h-[2px] rounded-full mt-[-12px] sm:mt-[-20px]"
-                style={{ background: i < currentStep ? "#84934F" : "rgba(140,100,55,0.15)" }} />
+                style={{ background: i < currentStep ? palette.sage : "rgba(140,100,55,0.15)" }} />
             )}
           </div>
         ))}
@@ -673,8 +674,8 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           {wizardStep === 0 && (
             <div>
               <div className="text-center mb-5">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>What are you making?</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Pick a category to get started</p>
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>What are you making?</h2>
+                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Pick a category to get started</p>
               </div>
               {CategoryPicker()}
             </div>
@@ -684,8 +685,8 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           {wizardStep === 1 && (
             <div className="flex flex-col gap-4">
               <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Tell us about it</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Describe your vision and skill level</p>
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Tell us about it</h2>
+                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Describe your vision and skill level</p>
               </div>
               <div>
                 <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Describe your idea ✨</label>
@@ -694,7 +695,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                   value={formData.prompt}
                   onChange={e => setFormData(p => ({ ...p, prompt: e.target.value }))}
                   className="w-full p-4 rounded-2xl text-[13px] leading-relaxed outline-none resize-none transition-all"
-                  style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.22)", color: "#3D2318" }} />
+                  style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.22)", color: palette.ink }} />
               </div>
               {SkillPicker()}
               <div>
@@ -705,8 +706,8 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                       className="px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-all"
                       style={{
                         background: formData.size === sz ? "rgba(132,147,79,0.14)" : "rgba(255,252,245,0.9)",
-                        border: `1.5px solid ${formData.size === sz ? "#84934F" : "rgba(140,100,55,0.18)"}`,
-                        color: formData.size === sz ? "#84934F" : "#5C3A28",
+                        border: `1.5px solid ${formData.size === sz ? palette.sage : "rgba(140,100,55,0.18)"}`,
+                        color: formData.size === sz ? palette.sage : "#5C3A28",
                       }}>{sz}</button>
                   ))}
                 </div>
@@ -718,14 +719,14 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           {wizardStep === 2 && (
             <div className="flex flex-col gap-4">
               <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Yarn & Colours</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Choose your materials (optional)</p>
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Yarn & Colours</h2>
+                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Choose your materials (optional)</p>
               </div>
               {YarnPicker()}
               <div>
                 <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
                   Colour Palette
-                  {wizardColors.length > 0 && <span className="ml-2 text-[11px] font-normal" style={{ color: "#9A7868" }}>({wizardColors.length} selected)</span>}
+                  {wizardColors.length > 0 && <span className="ml-2 text-[11px] font-normal" style={{ color: palette.clay }}>({wizardColors.length} selected)</span>}
                 </label>
                 <div className="flex flex-wrap gap-2.5">
                   {COLOR_PALETTE.map(c => (
@@ -747,33 +748,33 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           {wizardStep === 3 && (
             <div className="flex flex-col gap-4">
               <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Inspiration Photo</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Upload a reference image (optional)</p>
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Inspiration Photo</h2>
+                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Upload a reference image (optional)</p>
               </div>
               <div
                 onClick={() => document.getElementById("wizard-file-input")?.click()}
                 className="border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
-                style={{ borderColor: file ? "#84934F" : "rgba(140,100,55,0.35)", background: file ? "rgba(132,147,79,0.06)" : "rgba(255,252,245,0.7)", minHeight: 200 }}>
+                style={{ borderColor: file ? palette.sage : "rgba(140,100,55,0.35)", background: file ? "rgba(132,147,79,0.06)" : "rgba(255,252,245,0.7)", minHeight: 200 }}>
                 <input id="wizard-file-input" type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                 {file ? (
                   <div className="text-center px-4">
                     <span style={{ fontSize: 40 }}>🖼️</span>
-                    <p className="font-semibold text-[14px] mt-2" style={{ color: "#84934F" }}>{file.name}</p>
-                    <button onClick={e => { e.stopPropagation(); setFile(null); }} className="text-[11px] mt-1 underline" style={{ color: "#9A7868" }}>Remove</button>
+                    <p className="font-semibold text-[14px] mt-2" style={{ color: palette.sage }}>{file.name}</p>
+                    <button onClick={e => { e.stopPropagation(); setFile(null); }} className="text-[11px] mt-1 underline" style={{ color: palette.clay }}>Remove</button>
                   </div>
                 ) : (
                   <>
                     <span style={{ fontSize: 44 }}>📸</span>
                     <div className="text-center">
                       <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Drop a photo here</p>
-                      <p className="text-[12px] mt-0.5" style={{ color: "#9A7868" }}>or tap to browse</p>
+                      <p className="text-[12px] mt-0.5" style={{ color: palette.clay }}>or tap to browse</p>
                     </div>
                   </>
                 )}
               </div>
               <button onClick={() => setWizardStep(4)}
                 className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all"
-                style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868", border: "1px dashed rgba(140,100,55,0.25)" }}>
+                style={{ background: "rgba(140,100,55,0.08)", color: palette.clay, border: "1px dashed rgba(140,100,55,0.25)" }}>
                 Skip this step →
               </button>
             </div>
@@ -783,15 +784,15 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           {wizardStep === 4 && (
             <div className="flex flex-col gap-4">
               <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Ready to create!</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Yala will craft your pattern ✨</p>
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Ready to create!</h2>
+                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Yala will craft your pattern ✨</p>
               </div>
               <div className="craft-card p-4 flex flex-col gap-2.5">
                 <div className="flex items-center gap-3 pb-2.5" style={{ borderBottom: "1px dashed rgba(140,100,55,0.2)" }}>
                   <span style={{ fontSize: 28 }}>{activeCategory?.emoji ?? "🧶"}</span>
                   <div>
-                    <p className="font-heading font-bold text-[15px]" style={{ color: "#3D2318" }}>{formData.projectType || "—"}</p>
-                    <p className="text-[11px]" style={{ color: "#9A7868" }}>{formData.skillLevel}</p>
+                    <p className="font-heading font-bold text-[15px]" style={{ color: palette.ink }}>{formData.projectType || "—"}</p>
+                    <p className="text-[11px]" style={{ color: palette.clay }}>{formData.skillLevel}</p>
                   </div>
                 </div>
                 {formData.prompt && (
@@ -808,10 +809,10 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                       {wizardColors.slice(0, 5).map(c => (
                         <div key={c} className="w-4 h-4 rounded-full border-2 border-white" style={{ background: c, boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }} />
                       ))}
-                      {wizardColors.length > 5 && <span className="text-[10px]" style={{ color: "#9A7868" }}>+{wizardColors.length - 5}</span>}
+                      {wizardColors.length > 5 && <span className="text-[10px]" style={{ color: palette.clay }}>+{wizardColors.length - 5}</span>}
                     </div>
                   )}
-                  {file && <span className="text-[11px]" style={{ color: "#84934F" }}>📸 Reference image</span>}
+                  {file && <span className="text-[11px]" style={{ color: palette.sage }}>📸 Reference image</span>}
                 </div>
               </div>
               <div className="flex items-center gap-3 px-3 py-3 rounded-2xl" style={{ background: "rgba(124,95,168,0.08)", border: "1px dashed rgba(124,95,168,0.25)" }}>
@@ -844,7 +845,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                 className="px-6 py-2.5 rounded-xl font-heading font-bold text-[13px] transition-all hover:opacity-90 disabled:opacity-35"
                 style={{
                   background: canAdvance() ? "linear-gradient(135deg, #C24E6B, #A83050)" : "rgba(140,100,55,0.12)",
-                  color: canAdvance() ? "white" : "#9A7868",
+                  color: canAdvance() ? "white" : palette.clay,
                   boxShadow: canAdvance() ? "0 3px 12px rgba(194,78,107,0.35)" : "none",
                 }}>
                 {wizardStep === 3 ? "Review →" : "Next →"}
@@ -863,8 +864,8 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           {ownStep === 0 && (
             <div className="flex flex-col gap-4">
               <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Name your pattern</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>What's it called and what type is it?</p>
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Name your pattern</h2>
+                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>What's it called and what type is it?</p>
               </div>
               <div>
                 <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Pattern name *</label>
@@ -874,7 +875,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                   onChange={e => setOwnTitle(e.target.value)}
                   placeholder="e.g. Mum's Granny Square Blanket"
                   className="w-full p-4 rounded-2xl text-[14px] outline-none transition-all"
-                  style={{ background: "rgba(255,252,245,0.95)", border: `1.5px solid ${ownTitle.trim() ? "#84934F" : "rgba(140,100,55,0.22)"}`, color: "#3D2318" }}
+                  style={{ background: "rgba(255,252,245,0.95)", border: `1.5px solid ${ownTitle.trim() ? palette.sage : "rgba(140,100,55,0.22)"}`, color: palette.ink }}
                 />
               </div>
               <div>
@@ -888,12 +889,12 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           {ownStep === 1 && (
             <div className="flex flex-col gap-4">
               <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>A few details</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Helps with tracking and yarn recs</p>
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>A few details</h2>
+                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Helps with tracking and yarn recs</p>
               </div>
               <div>
                 <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
-                  Skill Level <span style={{ color: "#C24E6B" }}>*</span>
+                  Skill Level <span style={{ color: palette.rose }}>*</span>
                 </label>
                 <div className="flex gap-2">
                   {SKILL_LEVELS.map((lvl) => (
@@ -902,11 +903,11 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                       className="flex-1 flex flex-col items-center gap-1 p-3 rounded-2xl transition-all"
                       style={{
                         background: formData.skillLevel === lvl.id ? "rgba(194,78,107,0.10)" : "rgba(255,252,245,0.9)",
-                        border: `1.5px solid ${formData.skillLevel === lvl.id ? "#C24E6B" : "rgba(140,100,55,0.18)"}`,
+                        border: `1.5px solid ${formData.skillLevel === lvl.id ? palette.rose : "rgba(140,100,55,0.18)"}`,
                       }}>
                       <span style={{ fontSize: 22 }}>{lvl.emoji}</span>
-                      <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? "#C24E6B" : "#5C3A28" }}>{lvl.id}</span>
-                      <span className="text-[9.5px] text-center" style={{ color: "#9A7868" }}>{lvl.desc}</span>
+                      <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? palette.rose : "#5C3A28" }}>{lvl.id}</span>
+                      <span className="text-[9.5px] text-center" style={{ color: palette.clay }}>{lvl.desc}</span>
                     </button>
                   ))}
                 </div>
@@ -920,13 +921,13 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           {ownStep === 2 && (
             <div className="flex flex-col gap-4">
               <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Paste your pattern</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>From a book, website, or your own notes</p>
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Paste your pattern</h2>
+                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>From a book, website, or your own notes</p>
               </div>
 
               <div>
                 <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
-                  Pattern instructions <span className="font-normal" style={{ color: "#9A7868" }}>(optional)</span>
+                  Pattern instructions <span className="font-normal" style={{ color: palette.clay }}>(optional)</span>
                 </label>
                 <textarea
                   rows={10}
@@ -934,15 +935,15 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                   value={ownRawText}
                   onChange={e => setOwnRawText(e.target.value)}
                   className="w-full p-4 rounded-2xl text-[13px] leading-relaxed outline-none resize-none"
-                  style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.22)", color: "#3D2318" }}
+                  style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.22)", color: palette.ink }}
                 />
                 {ownRawText.trim() && (
-                  <p className="text-[11px] mt-1.5 flex items-center gap-1" style={{ color: "#84934F" }}>
+                  <p className="text-[11px] mt-1.5 flex items-center gap-1" style={{ color: palette.sage }}>
                     ✨ AI will organise this into sections and steps for you
                   </p>
                 )}
                 {!ownRawText.trim() && (
-                  <p className="text-[11px] mt-1.5" style={{ color: "#9A7868" }}>
+                  <p className="text-[11px] mt-1.5" style={{ color: palette.clay }}>
                     No text? No problem — we'll create a blank pattern you can fill in as you go.
                   </p>
                 )}
@@ -954,8 +955,8 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                 <div className="flex items-center gap-2.5">
                   <span style={{ fontSize: 24 }}>{CATEGORIES.find(c => c.id === formData.projectType)?.emoji ?? "🧶"}</span>
                   <div>
-                    <p className="font-heading font-bold text-[14px]" style={{ color: "#3D2318" }}>{ownTitle}</p>
-                    <p className="text-[11px]" style={{ color: "#9A7868" }}>{formData.projectType} · {formData.skillLevel}{formData.yarnType ? ` · ${formData.yarnType}` : ""}</p>
+                    <p className="font-heading font-bold text-[14px]" style={{ color: palette.ink }}>{ownTitle}</p>
+                    <p className="text-[11px]" style={{ color: palette.clay }}>{formData.projectType} · {formData.skillLevel}{formData.yarnType ? ` · ${formData.yarnType}` : ""}</p>
                   </div>
                 </div>
               </div>
@@ -986,7 +987,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                 className="px-6 py-2.5 rounded-xl font-heading font-bold text-[13px] transition-all hover:opacity-90 disabled:opacity-35"
                 style={{
                   background: ownCanAdvance() ? "linear-gradient(135deg, #84934F, #5A6E30)" : "rgba(140,100,55,0.12)",
-                  color: ownCanAdvance() ? "white" : "#9A7868",
+                  color: ownCanAdvance() ? "white" : palette.clay,
                   boxShadow: ownCanAdvance() ? "0 3px 12px rgba(132,147,79,0.35)" : "none",
                 }}>
                 Next →
@@ -1019,7 +1020,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                   </div>
 
                   <div className="text-center">
-                    <p className="font-heading font-bold text-[18px] mb-1" style={{ color: "#3D2318" }}>
+                    <p className="font-heading font-bold text-[18px] mb-1" style={{ color: palette.ink }}>
                       Aloo is on it!
                     </p>
                     <p className="text-[14px] transition-all duration-700" style={{ color: "#3D8FA3" }}>
@@ -1047,8 +1048,8 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
               ) : (
                 <>
                   <div className="text-center mb-1">
-                    <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Upload your PDF</h2>
-                    <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>From Etsy, Ravelry, a blog — anywhere</p>
+                    <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Upload your PDF</h2>
+                    <p className="text-[13px] mt-1" style={{ color: palette.clay }}>From Etsy, Ravelry, a blog — anywhere</p>
                   </div>
 
                   {/* Drop zone */}
@@ -1077,12 +1078,12 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                             <span style={{ fontSize: 20, flexShrink: 0 }}>📄</span>
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-[12px] truncate" style={{ color: "#2A6B7D" }}>{f.name}</p>
-                              <p className="text-[10px]" style={{ color: "#9A7868" }}>{(f.size / 1024 / 1024).toFixed(1)} MB</p>
+                              <p className="text-[10px]" style={{ color: palette.clay }}>{(f.size / 1024 / 1024).toFixed(1)} MB</p>
                             </div>
                             <button
                               onClick={e => { e.stopPropagation(); setPdfFiles(prev => prev.filter((_, j) => j !== i)); }}
                               className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-lg hover:opacity-75"
-                              style={{ color: "#9A7868", background: "rgba(0,0,0,0.06)" }}>
+                              style={{ color: palette.clay, background: "rgba(0,0,0,0.06)" }}>
                               ✕
                             </button>
                           </div>
@@ -1099,7 +1100,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                         <FileUp className="h-10 w-10" style={{ color: "rgba(61,143,163,0.55)" }} />
                         <div className="text-center">
                           <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Tap to choose PDFs</p>
-                          <p className="text-[12px] mt-0.5" style={{ color: "#9A7868" }}>Up to 5 files · 10 MB each · Text-based only</p>
+                          <p className="text-[12px] mt-0.5" style={{ color: palette.clay }}>Up to 5 files · 10 MB each · Text-based only</p>
                         </div>
                       </>
                     )}
@@ -1131,8 +1132,8 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           {pdfStep === 1 && pdfResult && (
             <div className="flex flex-col gap-5">
               <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>Review & edit</h2>
-                <p className="text-[13px] mt-1" style={{ color: "#9A7868" }}>Fix anything the AI got wrong before saving</p>
+                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Review & edit</h2>
+                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Fix anything the AI got wrong before saving</p>
               </div>
 
               {/* Import banner */}
@@ -1156,7 +1157,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                   style={{
                     background: "rgba(255,252,245,0.95)",
                     border: `1.5px solid ${pdfEditTitle.trim() ? "#3D8FA3" : "rgba(140,100,55,0.22)"}`,
-                    color: "#3D2318",
+                    color: palette.ink,
                   }}
                 />
               </div>
@@ -1187,7 +1188,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                     <button key={s.id} onClick={() => setPdfEditSkill(s.id)}
                       className="flex-1 py-2 rounded-xl text-[12px] font-semibold transition-all"
                       style={{
-                        background: pdfEditSkill === s.id ? "#3D2318" : "rgba(140,100,55,0.08)",
+                        background: pdfEditSkill === s.id ? palette.ink : "rgba(140,100,55,0.08)",
                         color: pdfEditSkill === s.id ? "white" : "#7A5A4A",
                         border: pdfEditSkill === s.id ? "none" : "1.5px solid rgba(140,100,55,0.15)",
                       }}>
@@ -1234,15 +1235,15 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                       onChange={e => setPdfEditYarnReqs(p => p.map((r, j) => j === i ? { ...r, color: e.target.value } : r))}
                       placeholder="Colour / name"
                       className="flex-1 p-2.5 rounded-xl text-[12px] outline-none"
-                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: "#3D2318" }} />
+                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: palette.ink }} />
                     <input value={y.volume}
                       onChange={e => setPdfEditYarnReqs(p => p.map((r, j) => j === i ? { ...r, volume: e.target.value } : r))}
                       placeholder="Amount (e.g. 50g)"
                       className="w-28 p-2.5 rounded-xl text-[12px] outline-none"
-                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: "#3D2318" }} />
+                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: palette.ink }} />
                     <button onClick={() => setPdfEditYarnReqs(p => p.filter((_, j) => j !== i))}
                       className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[15px] font-bold"
-                      style={{ background: "rgba(194,78,107,0.12)", color: "#C24E6B" }}>×</button>
+                      style={{ background: "rgba(194,78,107,0.12)", color: palette.rose }}>×</button>
                   </div>
                 ))}
               </div>
@@ -1266,15 +1267,15 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                       onChange={e => setPdfEditHooks(p => p.map((r, j) => j === i ? { ...r, size: e.target.value } : r))}
                       placeholder="e.g. 4.0mm"
                       className="w-28 p-2.5 rounded-xl text-[12px] outline-none"
-                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: "#3D2318" }} />
+                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: palette.ink }} />
                     <input value={h.note}
                       onChange={e => setPdfEditHooks(p => p.map((r, j) => j === i ? { ...r, note: e.target.value } : r))}
                       placeholder="Note (optional)"
                       className="flex-1 p-2.5 rounded-xl text-[12px] outline-none"
-                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: "#3D2318" }} />
+                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: palette.ink }} />
                     <button onClick={() => setPdfEditHooks(p => p.filter((_, j) => j !== i))}
                       className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[15px] font-bold"
-                      style={{ background: "rgba(194,78,107,0.12)", color: "#C24E6B" }}>×</button>
+                      style={{ background: "rgba(194,78,107,0.12)", color: palette.rose }}>×</button>
                   </div>
                 ))}
               </div>
@@ -1283,7 +1284,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
               <div>
                 <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
                   Sections & steps
-                  <span className="ml-1.5 font-normal text-[11px]" style={{ color: "#9A7868" }}>tap a section to edit its steps</span>
+                  <span className="ml-1.5 font-normal text-[11px]" style={{ color: palette.clay }}>tap a section to edit its steps</span>
                 </label>
                 {pdfEditSections.map((sec, si) => (
                   <div key={si} className="mb-2 rounded-2xl overflow-hidden"
@@ -1296,20 +1297,20 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                         value={sec.name}
                         onChange={e => setPdfEditSections(p => p.map((s, j) => j === si ? { ...s, name: e.target.value } : s))}
                         className="flex-1 bg-transparent outline-none text-[13px] font-semibold"
-                        style={{ color: "#3D2318" }}
+                        style={{ color: palette.ink }}
                         placeholder="Section name"
                       />
                       <button
                         onClick={() => setPdfExpandedSec(pdfExpandedSec === si ? null : si)}
                         className="flex items-center gap-1 flex-shrink-0"
-                        style={{ color: "#9A7868" }}>
+                        style={{ color: palette.clay }}>
                         <span className="text-[10px]">{sec.steps?.length ?? 0} steps</span>
                         <ChevronRight className="h-3.5 w-3.5 transition-transform"
                           style={{ transform: pdfExpandedSec === si ? "rotate(90deg)" : "rotate(0deg)" }} />
                       </button>
                       <button onClick={() => { setPdfEditSections(p => p.filter((_, j) => j !== si)); if (pdfExpandedSec === si) setPdfExpandedSec(null); }}
                         className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-[13px] font-bold"
-                        style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B" }}>×</button>
+                        style={{ background: "rgba(194,78,107,0.10)", color: palette.rose }}>×</button>
                     </div>
 
                     {/* Steps (expanded) */}
@@ -1326,14 +1327,14 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                                 : s))}
                               rows={2}
                               className="flex-1 p-2 rounded-xl text-[12px] outline-none resize-none leading-snug"
-                              style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.15)", color: "#3D2318" }}
+                              style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.15)", color: palette.ink }}
                             />
                             <button
                               onClick={() => setPdfEditSections(p => p.map((s, j) => j === si
                                 ? { ...s, steps: s.steps.filter((_: any, k: number) => k !== sti) }
                                 : s))}
                               className="w-6 h-6 mt-1.5 rounded-lg flex items-center justify-center flex-shrink-0 text-[13px] font-bold"
-                              style={{ background: "rgba(194,78,107,0.10)", color: "#C24E6B" }}>×</button>
+                              style={{ background: "rgba(194,78,107,0.10)", color: palette.rose }}>×</button>
                           </div>
                         ))}
                         <button
@@ -1351,7 +1352,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
                 <button
                   onClick={() => { setPdfEditSections(p => [...p, { name: "New section", steps: [{ instruction: "", count: "" }] }]); setPdfExpandedSec(pdfEditSections.length); }}
                   className="w-full py-2 rounded-xl text-[12px] font-semibold mt-1"
-                  style={{ background: "rgba(140,100,55,0.06)", color: "#9A7868", border: "1.5px dashed rgba(140,100,55,0.22)" }}>
+                  style={{ background: "rgba(140,100,55,0.06)", color: palette.clay, border: "1.5px dashed rgba(140,100,55,0.22)" }}>
                   + Add section
                 </button>
               </div>
@@ -1373,7 +1374,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
               <button
                 onClick={() => { setPdfStep(0); setPdfResult(null); setPdfFiles([]); }}
                 className="w-full py-2.5 rounded-xl text-[13px] font-semibold"
-                style={{ background: "rgba(140,100,55,0.08)", color: "#9A7868" }}>
+                style={{ background: "rgba(140,100,55,0.08)", color: palette.clay }}>
                 ← Try a different PDF
               </button>
             </div>

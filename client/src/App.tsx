@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -33,7 +34,7 @@ const ProfilePickerScreen = lazy(() => import("./pages/ProfilePickerScreen"));
 function ScreenLoading() {
   return (
     <div className="flex h-full w-full items-center justify-center py-16">
-      <div className="h-10 w-10 animate-spin rounded-full border-b-2" style={{ borderColor: "#C24E6B" }} />
+      <div className="h-10 w-10 animate-spin rounded-full border-b-2" style={{ borderColor: palette.rose }} />
     </div>
   );
 }
@@ -266,7 +267,7 @@ function App() {
                     <button
                       onClick={() => navigateToView("library")}
                       className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors hover:opacity-75"
-                      style={{ color: "#C24E6B", background: "rgba(194,78,107,0.08)", border: "1px solid rgba(194,78,107,0.2)" }}
+                      style={{ color: palette.rose, background: "rgba(194,78,107,0.08)", border: "1px solid rgba(194,78,107,0.2)" }}
                     >
                       <ChevronLeft className="h-3.5 w-3.5" />
                       Patterns
@@ -282,7 +283,7 @@ function App() {
 
               {activeView === "viewer" && !currentPattern && (
                 <div className="px-6 py-6 pb-20 md:pb-6 flex flex-col items-center justify-center h-full gap-4">
-                  <p className="font-heading font-semibold text-[16px]" style={{ color: "#9A7868" }}>
+                  <p className="font-heading font-semibold text-[16px]" style={{ color: palette.clay }}>
                     Loading pattern…
                   </p>
                   <button onClick={() => navigateToView("library")}

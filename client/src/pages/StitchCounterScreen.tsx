@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, RotateCcw, History, Plus, Minus, Volume2, Mic } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -112,14 +113,14 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
         <div className="flex items-center gap-3">
           <button onClick={() => onNavigate(backView)}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: "rgba(132,147,79,0.08)", color: "#84934F" }}>
+            style={{ background: "rgba(132,147,79,0.08)", color: palette.sage }}>
             <ChevronLeft className="h-4 w-4" />
           </button>
           <div>
-            <h1 className="font-heading font-bold text-[22px]" style={{ color: "#3D2318" }}>
+            <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>
               Stitch Counter
             </h1>
-            <p className="text-[12px] truncate max-w-[180px]" style={{ color: "#9A7868" }}>
+            <p className="text-[12px] truncate max-w-[180px]" style={{ color: palette.clay }}>
               {patternTitle ? `Counting for “${patternTitle}”` : "Track your stitches & rows"}
             </p>
           </div>
@@ -131,7 +132,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
             aria-label="Toggle hands-free voice counting"
             aria-pressed={voice}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: voice ? "rgba(194,78,107,0.15)" : "rgba(255,252,245,0.9)", color: voice ? "#C24E6B" : "#9A7868", border: "1px solid rgba(140,100,55,0.2)" }}>
+            style={{ background: voice ? "rgba(194,78,107,0.15)" : "rgba(255,252,245,0.9)", color: voice ? palette.rose : palette.clay, border: "1px solid rgba(140,100,55,0.2)" }}>
             <Mic className="h-4 w-4" />
           </button>
           <button
@@ -139,7 +140,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
             aria-label="Toggle haptic feedback"
             aria-pressed={sound}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: sound ? "rgba(132,147,79,0.12)" : "rgba(180,160,140,0.1)", color: sound ? "#84934F" : "#B0908A" }}>
+            style={{ background: sound ? "rgba(132,147,79,0.12)" : "rgba(180,160,140,0.1)", color: sound ? palette.sage : "#B0908A" }}>
             <Volume2 className="h-4 w-4" />
           </button>
           <button
@@ -147,7 +148,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
             aria-label="Toggle activity history"
             aria-pressed={showHistory}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: showHistory ? "rgba(124,95,168,0.15)" : "rgba(255,252,245,0.9)", color: showHistory ? "#7C5FA8" : "#9A7868",
+            style={{ background: showHistory ? "rgba(124,95,168,0.15)" : "rgba(255,252,245,0.9)", color: showHistory ? "#7C5FA8" : palette.clay,
               border: "1px solid rgba(140,100,55,0.2)" }}>
             <History className="h-4 w-4" />
           </button>
@@ -182,7 +183,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
               whileTap={{ scale: 0.9 }}
               onClick={() => changeRows(-1)}
               className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl transition-all"
-              style={{ background: "rgba(132,147,79,0.12)", color: "#84934F",
+              style={{ background: "rgba(132,147,79,0.12)", color: palette.sage,
                 border: "2px dashed rgba(132,147,79,0.4)" }}>
               <Minus className="h-7 w-7" />
             </motion.button>
@@ -192,7 +193,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
                 <motion.span
                   key={counts.rows}
                   className="font-heading font-bold leading-none block"
-                  style={{ fontSize: 72, color: "#84934F" }}
+                  style={{ fontSize: 72, color: palette.sage }}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: 20, opacity: 0 }}
@@ -201,14 +202,14 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
                   {counts.rows}
                 </motion.span>
               </AnimatePresence>
-              <span className="text-[12px] font-bold" style={{ color: "#9A7868" }}>rows</span>
+              <span className="text-[12px] font-bold" style={{ color: palette.clay }}>rows</span>
             </div>
 
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => changeRows(1)}
               className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl transition-all"
-              style={{ background: "#84934F", color: "white",
+              style={{ background: palette.sage, color: "white",
                 boxShadow: "0 4px 16px rgba(132,147,79,0.45)" }}>
               <Plus className="h-7 w-7" />
             </motion.button>
@@ -222,7 +223,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
               Stitch Counter
             </p>
             <span className="text-[10.5px] font-bold px-2.5 py-1 rounded-full"
-              style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B" }}>
+              style={{ background: "rgba(194,78,107,0.1)", color: palette.rose }}>
               {stitchesInRow} / {MAX_STITCHES_PER_ROW} this row
             </span>
           </div>
@@ -239,7 +240,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
                       className="rounded-full transition-all"
                       style={{
                         width: 11, height: 11,
-                        background: filled ? "#C24E6B" : "rgba(194,78,107,0.15)",
+                        background: filled ? palette.rose : "rgba(194,78,107,0.15)",
                         boxShadow: filled ? "0 1px 4px rgba(194,78,107,0.4)" : "none",
                         transform: filled ? "scale(1.1)" : "scale(1)",
                       }}
@@ -253,7 +254,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
           <div className="flex items-center justify-center gap-6">
             <motion.button whileTap={{ scale: 0.9 }} onClick={() => changeStitches(-1)}
               className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ background: "rgba(194,78,107,0.1)", color: "#C24E6B", border: "1.5px dashed rgba(194,78,107,0.4)" }}>
+              style={{ background: "rgba(194,78,107,0.1)", color: palette.rose, border: "1.5px dashed rgba(194,78,107,0.4)" }}>
               <Minus className="h-5 w-5" />
             </motion.button>
             <div className="text-center">
@@ -261,7 +262,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
                 <motion.span
                   key={counts.stitches}
                   className="font-heading font-bold leading-none block"
-                  style={{ fontSize: 48, color: "#C24E6B" }}
+                  style={{ fontSize: 48, color: palette.rose }}
                   initial={{ scale: 0.7, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 1.2, opacity: 0 }}
@@ -270,11 +271,11 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
                   {counts.stitches}
                 </motion.span>
               </AnimatePresence>
-              <span className="text-[11px] font-bold" style={{ color: "#9A7868" }}>total stitches</span>
+              <span className="text-[11px] font-bold" style={{ color: palette.clay }}>total stitches</span>
             </div>
             <motion.button whileTap={{ scale: 0.9 }} onClick={() => changeStitches(1)}
               className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ background: "#C24E6B", color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.4)" }}>
+              style={{ background: palette.rose, color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.4)" }}>
               <Plus className="h-5 w-5" />
             </motion.button>
           </div>
@@ -284,7 +285,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
         <button
           onClick={reset}
           className="flex items-center justify-center gap-2 py-3 rounded-2xl text-[13px] font-bold transition-all hover:opacity-80"
-          style={{ background: "rgba(180,160,140,0.1)", color: "#9A7868",
+          style={{ background: "rgba(180,160,140,0.1)", color: palette.clay,
             border: "1.5px dashed rgba(140,100,55,0.3)" }}>
           <RotateCcw className="h-4 w-4" />
           Reset All
@@ -300,7 +301,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
               className="overflow-hidden"
             >
               <div className="craft-card p-4">
-                <p className="font-heading font-semibold text-[13px] mb-3" style={{ color: "#3D2318" }}>
+                <p className="font-heading font-semibold text-[13px] mb-3" style={{ color: palette.ink }}>
                   Recent Activity
                 </p>
                 {counts.history.length === 0 ? (
@@ -311,10 +312,10 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
                   <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
                     {counts.history.map((h) => (
                       <div key={h.id} className="flex items-center justify-between text-[11.5px]">
-                        <span className="font-semibold" style={{ color: h.type === "stitch" ? "#C24E6B" : "#84934F" }}>
+                        <span className="font-semibold" style={{ color: h.type === "stitch" ? palette.rose : palette.sage }}>
                           {h.type === "stitch" ? "Stitch" : "Row"} {h.delta > 0 ? "+" : ""}{h.delta}
                         </span>
-                        <span style={{ color: "#9A7868" }}>→ {h.value} · {h.time}</span>
+                        <span style={{ color: palette.clay }}>→ {h.value} · {h.time}</span>
                       </div>
                     ))}
                   </div>

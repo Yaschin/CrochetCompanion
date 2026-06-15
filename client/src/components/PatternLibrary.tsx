@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { FC, useMemo, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -130,7 +131,7 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
 
   return (
     <div className="mb-8">
-      <h2 className="mb-4 font-heading text-[20px] font-bold" style={{ color: "#3D2318" }}>My Patterns</h2>
+      <h2 className="mb-4 font-heading text-[20px] font-bold" style={{ color: palette.ink }}>My Patterns</h2>
 
       {isLoading ? (
         <div className="flex justify-center py-8">
@@ -213,25 +214,25 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
                         className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full"
                         style={{ background: "rgba(255,252,245,0.9)" }}
                       >
-                        <Heart className={cn('h-3.5 w-3.5', pattern.favorite ? 'fill-current' : '')} style={{ color: "#C24E6B" }} />
+                        <Heart className={cn('h-3.5 w-3.5', pattern.favorite ? 'fill-current' : '')} style={{ color: palette.rose }} />
                       </button>
                       {/* Progress bar overlay */}
                       {progressPercent > 0 && (
                         <div className="absolute bottom-0 left-0 right-0" style={{ height: 3, background: "rgba(0,0,0,0.15)" }}>
-                          <div style={{ height: "100%", width: `${progressPercent}%`, background: "#84934F" }} />
+                          <div style={{ height: "100%", width: `${progressPercent}%`, background: palette.sage }} />
                         </div>
                       )}
                     </div>
                     {/* Info */}
                     <div className="px-2 py-2">
-                      <p className="font-heading font-bold text-[12px] leading-tight truncate" style={{ color: "#3D2318" }}>
+                      <p className="font-heading font-bold text-[12px] leading-tight truncate" style={{ color: palette.ink }}>
                         {pattern.title}
                       </p>
-                      <p className="text-[10px] mt-0.5 truncate" style={{ color: "#9A7868" }}>
+                      <p className="text-[10px] mt-0.5 truncate" style={{ color: palette.clay }}>
                         {pattern.projectType} · {pattern.skillLevel}
                       </p>
                       <div className="flex items-center justify-between mt-1.5">
-                        <span className="text-[10px] font-semibold" style={{ color: "#84934F" }}>{progressPercent}%</span>
+                        <span className="text-[10px] font-semibold" style={{ color: palette.sage }}>{progressPercent}%</span>
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); handleDeletePattern(pattern.id, e); }}

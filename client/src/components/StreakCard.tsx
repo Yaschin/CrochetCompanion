@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { useState } from "react";
 import { Flame } from "lucide-react";
 import { getStreak } from "../lib/activityLog";
@@ -21,12 +22,12 @@ export default function StreakCard() {
         </span>
       </div>
       <div className="flex-1">
-        <p className="font-heading font-semibold text-[14px]" style={{ color: "#3D2318" }}>
+        <p className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
           {streak.current > 0
             ? `${streak.current}-day streak${streak.activeToday ? " — today counts! ♡" : " — crochet today to keep it!"}`
             : "Start a streak today ♡"}
         </p>
-        <p className="text-[11.5px] mt-0.5" style={{ color: "#9A7868" }}>
+        <p className="text-[11.5px] mt-0.5" style={{ color: palette.clay }}>
           {streak.totalDays} day{streak.totalDays === 1 ? "" : "s"} crocheted · longest {streak.longest}
         </p>
       </div>
