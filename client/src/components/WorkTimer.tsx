@@ -16,6 +16,13 @@ import {
 
 const VIOLET = "#7C5FA8";
 
+/** "16 Jun, 2:30 PM" — when a past session happened. */
+function formatWhen(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
 /**
  * Start/stop work-session timer for a project. Accumulates actual crocheting
  * time (distinct from the calendar "time since started" on Home) and persists a
@@ -25,6 +32,7 @@ export default function WorkTimer({ patternId }: { patternId: string }) {
   const [sessions, setSessions] = useState<WorkSession[]>(() => getSessions(patternId));
   const [startMs, setStartMs] = useState<number | null>(() => getRunningStart(patternId));
   const [now, setNow] = useState(() => Date.now());
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // Reload when the pattern changes (component is reused across patterns).
   useEffect(() => {
@@ -106,6 +114,28 @@ export default function WorkTimer({ patternId }: { patternId: string }) {
           {running ? <><Square className="h-3.5 w-3.5" /> Stop</> : <><Play className="h-3.5 w-3.5" /> Start</>}
         </button>
       </div>
+
+      {sessions.length > 0 && (
+        <>
+          <button
+            onClick={() => setHistoryOpen((o) => !o)}
+            className="mt-3 text-[11px] font-semibold hover:opacity-80"
+            style={{ color: VIOLET }}
+          >
+            {historyOpen ? "Hide sessions ▴" : "View sessions ▾"}
+          </button>
+          {historyOpen && (
+            <div className="mt-2 flex flex-col gap-1.5 max-h-44 overflow-y-auto pr-1">
+              {sessions.map((s, i) => (
+                <div key={`${s.start}-${i}`} className="flex items-center justify-between text-[11.5px]">
+                  <span style={{ color: palette.clay }}>{formatWhen(s.end)}</span>
+                  <span className="font-semibold" style={{ color: "#5C3A28" }}>{formatDuration(s.ms)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
