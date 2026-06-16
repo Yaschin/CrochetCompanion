@@ -23,9 +23,13 @@ character tip) and composes pieces from `client/src/components/pattern-input/`:
 - `constants.ts` — CATEGORIES/SKILL_LEVELS/YARN_TYPES/COLOR_PALETTE/SIZE_OPTIONS, the *_STEPS, *_TIPS, PDF_LOADING_MSGS arrays
 - `helpers.ts` — fileToDataUrl, fileToBase64, buildPatternToSave
 - `Pickers.tsx` — CategoryPicker/SkillPicker/YarnPicker/SizePicker (take `{ formData, setFormData }`)
-- `AiWizard.tsx` / `OwnWizard.tsx` / `PdfWizard.tsx` — the three mode flows, each rendered as `{mode === X && <…Wizard …/>}`
+- `AiWizard.tsx` / `OwnWizard.tsx` — the AI/own flows (presentational, take props)
+- `PdfWizard.tsx` — **self-contained** (2026-06-16): owns all PDF state + its parse/save
+  mutations + handlers and renders its own chrome; the parent passes only `onPatternCreated`.
+- `WizardChrome.tsx` — shared progress-bar + character-tip; rendered by the parent for
+  the ai/own wizards and by `PdfWizard` for itself.
 
-Pure structural extraction: the wizards are presentational — every state value/setter/
-handler is passed as a prop (PdfWizard has ~28 props, reflecting the PDF-edit state),
-so the rendered DOM is unchanged. A future cleanup could co-locate each mode's state
-into its wizard to shrink those prop lists.
+The parent (`PatternInputRefactored.tsx`, ~320 lines) keeps the mode toggle + AI/own
+state. Mode switching resets each flow via unmount (PdfWizard) or `switchMode`
+(ai/own) — behavior-equivalent. AiWizard/OwnWizard still take props; co-locating their
+state too would let the parent shed its `switchMode`/chrome plumbing entirely.

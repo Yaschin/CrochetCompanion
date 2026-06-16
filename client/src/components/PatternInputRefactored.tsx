@@ -1,5 +1,5 @@
 import { palette } from "@/lib/theme";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
@@ -7,12 +7,12 @@ import { Sparkles, BookOpen, FileUp } from 'lucide-react';
 import { PatternInputFormData, Pattern } from '../lib/types';
 import GenerationLoadingScreen from '../pages/GenerationLoadingScreen';
 import { showAiErrorToast } from '@/lib/aiErrorToast';
-import { CATEGORIES, SKILL_LEVELS, YARN_TYPES, COLOR_PALETTE, SIZE_OPTIONS, AI_STEPS, OWN_STEPS, PDF_STEPS, AI_TIPS, OWN_TIPS, PDF_TIPS, PDF_LOADING_MSGS } from './pattern-input/constants';
-import { fileToDataUrl, fileToBase64, buildPatternToSave } from './pattern-input/helpers';
-import { CategoryPicker, SkillPicker, YarnPicker, SizePicker } from './pattern-input/Pickers';
+import { AI_STEPS, OWN_STEPS, AI_TIPS, OWN_TIPS } from './pattern-input/constants';
+import { fileToDataUrl, buildPatternToSave } from './pattern-input/helpers';
 import AiWizard from './pattern-input/AiWizard';
 import OwnWizard from './pattern-input/OwnWizard';
 import PdfWizard from './pattern-input/PdfWizard';
+import WizardChrome from './pattern-input/WizardChrome';
 
 interface PatternInputProps {
   onPatternCreated: (pattern: Pattern, skipLoading?: boolean) => void;
@@ -44,42 +44,16 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
   const [ownRawText, setOwnRawText]   = useState("");
   const [ownParsing, setOwnParsing]   = useState(false);
 
-  // ── PDF import state ─────────────────────────────────────────────────────────
-  const [pdfStep, setPdfStep]         = useState(0);
-  const [pdfFiles, setPdfFiles]       = useState<File[]>([]);
-  const [pdfParsing, setPdfParsing]   = useState(false);
-  const [pdfResult, setPdfResult]     = useState<any>(null);
-  const [pdfEditTitle, setPdfEditTitle] = useState("");
-  const [pdfSaving, setPdfSaving]         = useState(false);
-  const [pdfEditType, setPdfEditType]     = useState("");
-  const [pdfEditSkill, setPdfEditSkill]   = useState("");
-  const [pdfEditYarnType, setPdfEditYarnType] = useState("");
-  const [pdfEditYarnReqs, setPdfEditYarnReqs] = useState<Array<{color: string; volume: string}>>([]);
-  const [pdfEditHooks, setPdfEditHooks]   = useState<Array<{size: string; note: string}>>([]);
-  const [pdfEditSections, setPdfEditSections] = useState<Array<{name: string; steps: Array<{instruction: string; count?: string}>}>>([]);
-  const [pdfExpandedSec, setPdfExpandedSec]   = useState<number | null>(null);
-  const [pdfLoadingMsgIdx, setPdfLoadingMsgIdx] = useState(0);
-
-  useEffect(() => {
-    if (!pdfParsing) { setPdfLoadingMsgIdx(0); return; }
-    const id = setInterval(() => setPdfLoadingMsgIdx(i => (i + 1) % PDF_LOADING_MSGS.length), 2800);
-    return () => clearInterval(id);
-  }, [pdfParsing]);
-
   // Reset all wizards when switching mode
   const switchMode = (m: "ai" | "own" | "pdf") => {
     setMode(m);
     setWizardStep(0);
     setOwnStep(0);
-    setPdfStep(0);
     setFormData({ prompt: '', projectType: '', skillLevel: '', yarnType: '', size: '' });
     setOwnTitle("");
     setOwnRawText("");
     setWizardColors([]);
     setFile(null);
-    setPdfFiles([]);
-    setPdfResult(null);
-    setPdfEditTitle("");
   };
 
   // ── Mutations ────────────────────────────────────────────────────────────────
@@ -127,17 +101,6 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
     },
   });
 
-  const parsePdfMutation = useMutation({
-    mutationFn: async (filesBase64: string[]) => {
-      const res = await apiRequest('POST', '/api/parse-pdf', { filesBase64 });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'Failed to process PDF');
-      }
-      return res.json();
-    },
-  });
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     const f = e.target.files[0];
@@ -150,105 +113,6 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
     setFile(f);
     setFormData(p => ({ ...p, prompt: p.prompt || `Create a crochet pattern based on the attached reference image.` }));
     toast({ title: "Reference Image Added", description: "Used as a reference during generation." });
-  };
-
-  // ── PDF handlers ─────────────────────────────────────────────────────────────
-  const handlePdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
-    const incoming = Array.from(e.target.files);
-    const errors: string[] = [];
-    const valid: File[] = [];
-    for (const f of incoming) {
-      if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
-        errors.push(`${f.name} is not a PDF`); continue;
-      }
-      if (f.size > 10 * 1024 * 1024) {
-        errors.push(`${f.name} is over 10 MB`); continue;
-      }
-      valid.push(f);
-    }
-    if (errors.length) toast({ title: "Some files skipped", description: errors.join(' · '), variant: "destructive" });
-    setPdfFiles(prev => {
-      const combined = [...prev, ...valid];
-      if (combined.length > 5) {
-        toast({ title: "Max 5 PDFs", description: "Only the first 5 files will be used.", variant: "destructive" });
-        return combined.slice(0, 5);
-      }
-      return combined;
-    });
-    e.target.value = "";
-  };
-
-  const handlePdfUpload = async () => {
-    if (!pdfFiles.length) return;
-    setPdfParsing(true);
-    try {
-      const allBase64 = await Promise.all(pdfFiles.map(fileToBase64));
-      const result = await parsePdfMutation.mutateAsync(allBase64);
-      setPdfResult(result);
-      setPdfEditTitle(result.title || "Imported Pattern");
-      setPdfEditType(result.projectType || "Other");
-      setPdfEditSkill(result.skillLevel || "Beginner");
-      setPdfEditYarnType(result.yarnType || "Not specified");
-      setPdfEditYarnReqs(result.yarnRequirements || []);
-      setPdfEditHooks(result.hookRequirements || []);
-      setPdfEditSections(result.sections || []);
-      setPdfExpandedSec(null);
-      setPdfStep(1);
-    } catch (err: any) {
-      const raw = err.message || "Something went wrong.";
-      const clean = raw.replace(/^API request failed \(\d+\):\s*/i, "");
-      toast({
-        title: "Couldn't read PDF",
-        description: clean || "Try 'Add my own' and paste the text manually.",
-        variant: "destructive",
-        duration: 8000,
-      });
-    } finally {
-      setPdfParsing(false);
-    }
-  };
-
-  const handlePdfSave = async () => {
-    if (!pdfResult) return;
-    setPdfSaving(true);
-    try {
-      const title = pdfEditTitle.trim() || pdfResult.title || "Imported Pattern";
-      const merged = {
-        ...pdfResult,
-        title,
-        projectType: pdfEditType || "Other",
-        skillLevel:  pdfEditSkill || "Beginner",
-        yarnType:    pdfEditYarnType === "Not specified" ? "" : (pdfEditYarnType || ""),
-        yarnRequirements: pdfEditYarnReqs.filter(y => y.color.trim()),
-        hookRequirements: pdfEditHooks.filter(h => h.size.trim()),
-        sections:    pdfEditSections,
-      };
-      const patternToSave = buildPatternToSave(
-        merged,
-        {
-          prompt: title,
-          projectType: merged.projectType,
-          skillLevel:  merged.skillLevel,
-          yarnType:    merged.yarnType,
-          size: "",
-        },
-        undefined,
-      );
-      const savedPattern = await savePatternMutation.mutateAsync(patternToSave);
-      queryClient.invalidateQueries({ queryKey: ['/api/patterns'] });
-      onPatternCreated(savedPattern, true);
-      toast({
-        title: "Pattern imported! 🎉",
-        description: `"${savedPattern.title}" is now in your library. Tap any step to edit it.`,
-        duration: 6000,
-      });
-    } catch (err) {
-      console.error('Error saving PDF pattern:', err);
-      toast({ title: "Couldn't save", description: "Something went wrong. Please try again.", variant: "destructive" });
-    } finally {
-      setPdfSaving(false);
-    }
   };
 
   // ── AI wizard: can advance? ──────────────────────────────────────────────────
@@ -350,7 +214,6 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
     }
   };
 
-  const activeCategory = CATEGORIES.find(c => c.id === formData.projectType);
   // ── Own wizard: can advance? ──────────────────────────────────────────────────
   const ownCanAdvance = () => {
     if (ownStep === 0) return !!ownTitle.trim() && !!formData.projectType;
@@ -359,12 +222,12 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
   };
 
   // ── Render ────────────────────────────────────────────────────────────────────
-  const steps       = mode === "ai" ? AI_STEPS  : mode === "own" ? OWN_STEPS : PDF_STEPS;
-  const currentStep = mode === "ai" ? wizardStep : mode === "own" ? ownStep : pdfStep;
-  const tips        = mode === "ai" ? AI_TIPS    : mode === "own" ? OWN_TIPS : PDF_TIPS;
+  const steps       = mode === "ai" ? AI_STEPS : OWN_STEPS;
+  const currentStep = mode === "ai" ? wizardStep : ownStep;
+  const tips        = mode === "ai" ? AI_TIPS : OWN_TIPS;
 
-  const modeAccent = mode === "ai" ? palette.rose : mode === "own" ? palette.sage : "#3D8FA3";
-  const modeAccentRgb = mode === "ai" ? "194,78,107" : mode === "own" ? "132,147,79" : "61,143,163";
+  const modeAccent  = mode === "ai" ? palette.rose : palette.sage;
+  const modeAccentRgb = mode === "ai" ? "194,78,107" : "132,147,79";
   const charImg = mode === "ai"
     ? "/characters/char-yala-transparent.png"
     : "/characters/char-ashi-transparent.png";
@@ -413,46 +276,18 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
         </button>
       </div>
 
-      {/* ── Progress bar ── */}
-      <div className="flex items-center gap-1.5 mb-4">
-        {steps.map((label, i) => (
-          <div key={label} className="flex items-center gap-1.5 flex-1">
-            <div className="flex flex-col items-center gap-1 flex-shrink-0">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all"
-                style={{
-                  background: i < currentStep ? palette.sage : i === currentStep ? modeAccent : "rgba(140,100,55,0.12)",
-                  color: i <= currentStep ? "white" : palette.clay,
-                  boxShadow: i === currentStep ? `0 3px 10px rgba(${modeAccentRgb},0.35)` : "none",
-                }}>
-                {i < currentStep ? "✓" : i + 1}
-              </div>
-              <span className="text-[9px] font-semibold whitespace-nowrap"
-                style={{ color: i === currentStep ? modeAccent : i < currentStep ? palette.sage : "#B0908A" }}>
-                {label}
-              </span>
-            </div>
-            {i < steps.length - 1 && (
-              <div className="flex-1 h-[2px] rounded-full mt-[-12px] sm:mt-[-20px]"
-                style={{ background: i < currentStep ? palette.sage : "rgba(140,100,55,0.15)" }} />
-            )}
-          </div>
-        ))}
-      </div>
+      {/* Step chrome (progress bar + tip) — PdfWizard renders its own */}
+      {mode !== "pdf" && (
+        <WizardChrome
+          steps={steps}
+          currentStep={currentStep}
+          tips={tips}
+          modeAccent={modeAccent}
+          modeAccentRgb={modeAccentRgb}
+          charImg={charImg}
+        />
+      )}
 
-      {/* ── Character tip ── */}
-      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl mb-5"
-        style={{ background: "rgba(124,95,168,0.07)", border: "1px dashed rgba(124,95,168,0.22)" }}>
-        <img src={charImg} alt="Helper"
-          style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }}
-          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-        <p className="text-[12px] italic leading-snug" style={{ color: "#7C5FA8" }}>
-          "{tips[Math.min(currentStep, tips.length - 1)]}"
-        </p>
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          AI WIZARD
-      ═══════════════════════════════════════════════════════════════════════ */}
       {mode === "ai" && (
         <AiWizard
           formData={formData}
@@ -493,36 +328,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           IMPORT PDF WIZARD
       ═══════════════════════════════════════════════════════════════════════ */}
       {mode === "pdf" && (
-        <PdfWizard
-          pdfStep={pdfStep}
-          setPdfStep={setPdfStep}
-          pdfParsing={pdfParsing}
-          pdfFiles={pdfFiles}
-          setPdfFiles={setPdfFiles}
-          handlePdfFileChange={handlePdfFileChange}
-          handlePdfUpload={handlePdfUpload}
-          pdfResult={pdfResult}
-          setPdfResult={setPdfResult}
-          pdfEditTitle={pdfEditTitle}
-          setPdfEditTitle={setPdfEditTitle}
-          pdfEditType={pdfEditType}
-          setPdfEditType={setPdfEditType}
-          pdfEditSkill={pdfEditSkill}
-          setPdfEditSkill={setPdfEditSkill}
-          pdfEditYarnType={pdfEditYarnType}
-          setPdfEditYarnType={setPdfEditYarnType}
-          pdfEditYarnReqs={pdfEditYarnReqs}
-          setPdfEditYarnReqs={setPdfEditYarnReqs}
-          pdfEditHooks={pdfEditHooks}
-          setPdfEditHooks={setPdfEditHooks}
-          pdfEditSections={pdfEditSections}
-          setPdfEditSections={setPdfEditSections}
-          pdfExpandedSec={pdfExpandedSec}
-          setPdfExpandedSec={setPdfExpandedSec}
-          pdfLoadingMsgIdx={pdfLoadingMsgIdx}
-          handlePdfSave={handlePdfSave}
-          pdfSaving={pdfSaving}
-        />
+        <PdfWizard onPatternCreated={onPatternCreated} />
       )}
 
     </div>

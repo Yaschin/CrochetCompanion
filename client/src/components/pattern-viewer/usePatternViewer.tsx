@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { usePatternRegen } from './usePatternRegen';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -7,7 +8,6 @@ import { recordActivity } from '@/lib/activityLog';
 import { shareStoryCard } from '@/lib/storyCard';
 import { getActiveProfile } from '@/lib/profile';
 import { ToastAction } from '@/components/ui/toast';
-import { showAiErrorToast } from '@/lib/aiErrorToast';
 
 /**
  * All PatternViewer state, mutations and handlers. Kept apart from the JSX so
@@ -15,6 +15,28 @@ import { showAiErrorToast } from '@/lib/aiErrorToast';
  */
 export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: Pattern) => void) {
   const { toast } = useToast();
+
+  const {
+    isRegenerating,
+    isRegeneratingImage,
+    imageDialogOpen,
+    setImageDialogOpen,
+    imageRefinements,
+    setImageRefinements,
+    regenSection,
+    setRegenSection,
+    regenNote,
+    setRegenNote,
+    regenAllConfirmOpen,
+    setRegenAllConfirmOpen,
+    regenAllNote,
+    setRegenAllNote,
+    regenerateStepsMutation,
+    regenerateImageMutation,
+    handleRegeneratePattern,
+    handleRegenerateImage,
+    handleImageRefinementSubmit,
+  } = usePatternRegen(pattern, onPatternUpdated);
   
   // Only store section names in state to reduce memory usage
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
@@ -22,14 +44,8 @@ export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: P
     return new Set([pattern.sections[0]?.name]);
   });
   
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
-  const [imageDialogOpen, setImageDialogOpen] = useState(false);
-  const [imageRefinements, setImageRefinements] = useState('');
   const [counterOpen, setCounterOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "pattern" | "notes">("overview");
-  const [regenSection, setRegenSection] = useState<number | null>(null);
-  const [regenNote, setRegenNote] = useState("");
   // Notes live in the DB (pattern.userNotes); fall back to the legacy
   // device-local note so nothing written before the migration is lost.
   const [notes, setNotes] = useState(() => {
@@ -40,8 +56,6 @@ export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: P
   // After the finish confetti, offer to deduct used-up yarn from the stash.
   const [showStashDeplete, setShowStashDeplete] = useState(false);
   const pendingDepleteRef = useRef(false);
-  const [regenAllConfirmOpen, setRegenAllConfirmOpen] = useState(false);
-  const [regenAllNote, setRegenAllNote] = useState("");
   const [shareConfirmOpen, setShareConfirmOpen] = useState(false);
   const [followOpen, setFollowOpen] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
@@ -278,62 +292,6 @@ export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: P
     }
   };
 
-  // Regenerate steps mutation
-  const regenerateStepsMutation = useMutation({
-    mutationFn: async (data: { patternId: string; unlockedStepsOnly: boolean; userNote?: string }) => {
-      // Use the persisting, lock-aware regenerate endpoint so locked steps are
-      // preserved server-side and the result is saved to the database.
-      const res = await apiRequest('POST', `/api/patterns/${data.patternId}/regenerate`, {
-        userNote: data.userNote || undefined,
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
-      }
-      return res.json();
-    },
-    onSuccess: (data) => {
-      // The regenerate endpoint returns { success, message, pattern }
-      onPatternUpdated(data.pattern);
-      toast({
-        title: "Pattern Regenerated",
-        description: "Your pattern has been updated with new instructions.",
-      });
-    },
-    onError: (error) => {
-      showAiErrorToast(error, { action: "regenerate your pattern", fallbackTitle: "Regeneration Failed" });
-    },
-  });
-
-  // Regenerate product image mutation
-  const regenerateImageMutation = useMutation({
-    mutationFn: async (data: { patternId: string; refinements?: string }) => {
-      const res = await apiRequest('POST', `/api/patterns/${data.patternId}/product-image`, {
-        refinements: data.refinements
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
-      }
-      return res.json();
-    },
-    onSuccess: (data) => {
-      // Update pattern with new image
-      onPatternUpdated(data.pattern);
-      toast({
-        title: "Image Regenerated",
-        description: "Your pattern image has been updated.",
-      });
-      // Close dialog and reset state
-      setImageDialogOpen(false);
-      setImageRefinements('');
-    },
-    onError: (error) => {
-      showAiErrorToast(error, { action: "regenerate the image", fallbackTitle: "Image Regeneration Failed" });
-      setImageDialogOpen(false);
-    },
-  });
-
   // Toggle section expansion - memoized to prevent unnecessary re-renders
   const toggleSection = useCallback((sectionName: string) => {
     setExpandedSections(prev => {
@@ -460,46 +418,6 @@ export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: P
     // Expand the new section for immediate editing
     setExpandedSections(prev => new Set(prev).add(newSectionName));
   }, [pattern, updatePatternMutation]);
-
-  // Handle pattern regeneration
-  const handleRegeneratePattern = async (userNote?: string) => {
-    setIsRegenerating(true);
-    try {
-      await regenerateStepsMutation.mutateAsync({
-        patternId: pattern.id,
-        unlockedStepsOnly: true,
-        userNote,
-      });
-    } catch (error) {
-      // Error toast is surfaced by the mutation's onError; swallow the rejection
-      // here so it doesn't become an unhandled promise rejection.
-      console.error('Error in handleRegeneratePattern:', error);
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
-  // Handle product image regeneration
-  const handleRegenerateImage = async () => {
-    setImageDialogOpen(true);
-  };
-
-  // Handle the image dialog submit
-  const handleImageRefinementSubmit = async () => {
-    setIsRegeneratingImage(true);
-    try {
-      await regenerateImageMutation.mutateAsync({
-        patternId: pattern.id,
-        refinements: imageRefinements
-      });
-    } catch (error) {
-      // Error toast is surfaced by the mutation's onError; swallow the rejection
-      // here so it doesn't become an unhandled promise rejection.
-      console.error('Error in handleImageRefinementSubmit:', error);
-    } finally {
-      setIsRegeneratingImage(false);
-    }
-  };
 
   // Handle pattern export with memory optimization and memoization
   const handleExportPattern = useCallback(() => {
