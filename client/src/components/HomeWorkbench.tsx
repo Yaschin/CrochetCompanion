@@ -1,8 +1,7 @@
 import { palette } from "@/lib/theme";
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Search, Bell, ChevronRight } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
 import { Pattern, ViewType } from "@/lib/types";
 import { PatternThumb } from "@/components/PatternThumb";
 import { getStreak } from "@/lib/activityLog";
@@ -23,15 +22,9 @@ interface HomeWorkbenchProps {
 }
 
 export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSelected, onResumeCounting }: HomeWorkbenchProps) {
-  const qc = useQueryClient();
   const { text, emoji } = greeting();
 
   const { data: patterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
-  const { data: characterImages = {} } = useQuery<Record<string, string | null>>({
-    queryKey: ["/api/characters"],
-    staleTime: 0,
-    refetchOnMount: "always",
-  });
   const { data: communityPatterns = [] } = useQuery<{ id: string }[]>({ queryKey: ["/api/community"] });
 
   const [streak] = useState(() => getStreak());
@@ -42,28 +35,6 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
     markCommunityRead(communityPatterns.length);
     setLastSeenCount(communityPatterns.length);
     onNavigate("community");
-  };
-
-  const [generatingIds, setGeneratingIds] = useState(new Set<string>());
-
-  const generateMutation = useMutation({
-    mutationFn: (characterId: string) =>
-      apiRequest("POST", "/api/characters/generate", { characterId }).then((r) => r.json()),
-    onMutate: (characterId) => {
-      setGeneratingIds((s) => { const n = new Set(s); n.add(characterId); return n; });
-    },
-    onSettled: (_d, _e, characterId) => {
-      setGeneratingIds((s) => { const n = new Set(s); n.delete(characterId); return n; });
-      qc.invalidateQueries({ queryKey: ["/api/characters"] });
-    },
-  });
-
-  const handleGenerateAll = () => {
-    ["aloo", "yala", "ashi", "bee", "sheep"].forEach((id) => {
-      if (!characterImages[id] && !generatingIds.has(id)) {
-        generateMutation.mutate(id);
-      }
-    });
   };
 
   const activePattern = patterns.find((p) => p.status === "active") ?? patterns.find((p) => p.status !== "finished") ?? patterns[0] ?? null;
@@ -142,12 +113,7 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
       <div className="flex-1 overflow-y-auto px-6 pt-5 pb-4">
 
         {/* Hero zone */}
-        <HeroZone
-          characterImages={characterImages}
-          generatingIds={generatingIds}
-          onGenerateAll={handleGenerateAll}
-          onNavigate={onNavigate}
-        />
+        <HeroZone />
 
         {/* Action cards — slight overlap on sm+, flush on mobile so characters don't clash */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10 mt-3 sm:-mt-7">
