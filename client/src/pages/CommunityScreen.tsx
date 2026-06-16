@@ -121,7 +121,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
 
         {/* Search */}
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#B0908A" }} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: palette.muted }} />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -297,7 +297,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
             <p className="font-heading font-semibold text-[15px]" style={{ color: palette.clay }}>
               No patterns found
             </p>
-            <p className="text-[13px] mt-1" style={{ color: "#B0908A" }}>Try a different search or share your own!</p>
+            <p className="text-[13px] mt-1" style={{ color: palette.muted }}>Try a different search or share your own!</p>
           </div>
         )}
       </div>

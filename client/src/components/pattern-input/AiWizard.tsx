@@ -155,7 +155,7 @@ export default function AiWizard({
                 </div>
                 {formData.prompt && (
                   <div>
-                    <p className="text-[10.5px] font-semibold uppercase tracking-wider mb-1" style={{ color: "#B0908A" }}>Description</p>
+                    <p className="text-[10.5px] font-semibold uppercase tracking-wider mb-1" style={{ color: palette.muted }}>Description</p>
                     <p className="text-[12.5px] leading-snug" style={{ color: "#5C3A28" }}>{formData.prompt}</p>
                   </div>
                 )}

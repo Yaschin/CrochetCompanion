@@ -140,7 +140,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
             aria-label="Toggle haptic feedback"
             aria-pressed={sound}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: sound ? "rgba(132,147,79,0.12)" : "rgba(180,160,140,0.1)", color: sound ? palette.sage : "#B0908A" }}>
+            style={{ background: sound ? "rgba(132,147,79,0.12)" : "rgba(180,160,140,0.1)", color: sound ? palette.sage : palette.muted }}>
             <Volume2 className="h-4 w-4" />
           </button>
           <button
@@ -305,7 +305,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
                   Recent Activity
                 </p>
                 {counts.history.length === 0 ? (
-                  <p className="text-[12px] text-center py-3" style={{ color: "#B0908A" }}>
+                  <p className="text-[12px] text-center py-3" style={{ color: palette.muted }}>
                     No activity yet — start counting!
                   </p>
                 ) : (

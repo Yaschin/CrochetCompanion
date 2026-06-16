@@ -237,7 +237,7 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
                           type="button"
                           onClick={(e) => { e.stopPropagation(); handleDeletePattern(pattern.id, e); }}
                           className="w-5 h-5 flex items-center justify-center rounded-full hover:opacity-80"
-                          style={{ color: "#B0908A" }}
+                          style={{ color: palette.muted }}
                         >
                           <Trash className="h-3 w-3" />
                         </button>

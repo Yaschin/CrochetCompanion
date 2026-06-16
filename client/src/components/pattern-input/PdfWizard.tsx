@@ -205,7 +205,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                     ))}
                   </div>
 
-                  <p className="text-[11px] text-center" style={{ color: "#B0908A" }}>
+                  <p className="text-[11px] text-center" style={{ color: palette.muted }}>
                     This usually takes 10–30 seconds
                   </p>
                 </div>
@@ -271,7 +271,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                   </div>
 
                   {/* Personal use note */}
-                  <p className="text-[11px] text-center" style={{ color: "#B0908A" }}>
+                  <p className="text-[11px] text-center" style={{ color: palette.muted }}>
                     📋 Imported patterns are for your personal use only
                   </p>
 
@@ -391,7 +391,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                   </button>
                 </div>
                 {pdfEditYarnReqs.length === 0 && (
-                  <p className="text-[12px] italic" style={{ color: "#B0908A" }}>Nothing detected — tap + Add to add yarn</p>
+                  <p className="text-[12px] italic" style={{ color: palette.muted }}>Nothing detected — tap + Add to add yarn</p>
                 )}
                 {pdfEditYarnReqs.map((y, i) => (
                   <div key={i} className="flex gap-2 mb-2 items-center">
@@ -423,7 +423,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                   </button>
                 </div>
                 {pdfEditHooks.length === 0 && (
-                  <p className="text-[12px] italic" style={{ color: "#B0908A" }}>Nothing detected — tap + Add to add a hook</p>
+                  <p className="text-[12px] italic" style={{ color: palette.muted }}>Nothing detected — tap + Add to add a hook</p>
                 )}
                 {pdfEditHooks.map((h, i) => (
                   <div key={i} className="flex gap-2 mb-2 items-center">
@@ -483,7 +483,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                         style={{ background: "rgba(255,252,245,0.5)", borderTop: "1px solid rgba(140,100,55,0.10)" }}>
                         {(sec.steps || []).map((step: any, sti: number) => (
                           <div key={sti} className="flex gap-2 items-start">
-                            <span className="text-[10px] font-semibold mt-2.5 w-4 text-right flex-shrink-0" style={{ color: "#B0908A" }}>{sti + 1}</span>
+                            <span className="text-[10px] font-semibold mt-2.5 w-4 text-right flex-shrink-0" style={{ color: palette.muted }}>{sti + 1}</span>
                             <textarea
                               value={step.instruction}
                               onChange={e => setPdfEditSections(p => p.map((s, j) => j === si

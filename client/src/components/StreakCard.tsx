@@ -16,8 +16,8 @@ export default function StreakCard() {
         className="flex-shrink-0 w-14 h-14 rounded-2xl flex flex-col items-center justify-center"
         style={{ background: streak.current > 0 ? "rgba(212,146,26,0.14)" : "rgba(180,160,140,0.10)" }}
       >
-        <Flame className="h-5 w-5" style={{ color: streak.current > 0 ? "#D4921A" : "#B0908A" }} />
-        <span className="font-heading font-bold text-[16px] leading-none mt-0.5" style={{ color: streak.current > 0 ? "#A8761A" : "#B0908A" }}>
+        <Flame className="h-5 w-5" style={{ color: streak.current > 0 ? "#D4921A" : palette.muted }} />
+        <span className="font-heading font-bold text-[16px] leading-none mt-0.5" style={{ color: streak.current > 0 ? "#A8761A" : palette.muted }}>
           {streak.current}
         </span>
       </div>
