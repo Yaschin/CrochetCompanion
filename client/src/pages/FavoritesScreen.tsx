@@ -64,7 +64,7 @@ export default function FavoritesScreen({ onNavigate, onPatternSelected }: Favor
             <p className="font-heading font-semibold text-[15px]" style={{ color: palette.clay }}>
               No favorites yet
             </p>
-            <p className="text-[13px] text-center" style={{ color: "#B0908A" }}>
+            <p className="text-[13px] text-center" style={{ color: palette.muted }}>
               Tap the ♥ on any pattern to save it here
             </p>
             <button onClick={() => onNavigate("library")}

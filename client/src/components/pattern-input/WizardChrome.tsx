@@ -27,7 +27,7 @@ export default function WizardChrome({ steps, currentStep, tips, modeAccent, mod
                 {i < currentStep ? "✓" : i + 1}
               </div>
               <span className="text-[9px] font-semibold whitespace-nowrap"
-                style={{ color: i === currentStep ? modeAccent : i < currentStep ? palette.sage : "#B0908A" }}>
+                style={{ color: i === currentStep ? modeAccent : i < currentStep ? palette.sage : palette.muted }}>
                 {label}
               </span>
             </div>

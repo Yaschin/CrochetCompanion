@@ -99,7 +99,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             ].filter(r => r.value).map(({ label, value }) => (
               <div key={label} className="flex items-center gap-2">
                 <span className="text-[10px] font-semibold uppercase tracking-wider w-14 flex-shrink-0"
-                  style={{ color: "#B0908A" }}>{label}</span>
+                  style={{ color: palette.muted }}>{label}</span>
                 <span className="text-[12px] font-medium truncate" style={{ color: palette.ink }}>{value}</span>
               </div>
             ))}

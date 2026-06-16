@@ -11,6 +11,7 @@ export const palette = {
   sage: "#84934F",   // success / secondary accent (Sheep green)
   cream: "#FFFCF5",  // app & card background
   bark: "#7A5C3E",   // tertiary text / warm border
+  muted: "#80665E",  // most-muted label text — AA-tuned (was #B0908A, ~2.9:1 on cream)
 } as const;
 
 export type PaletteColor = keyof typeof palette;

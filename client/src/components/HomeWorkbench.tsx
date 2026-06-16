@@ -206,8 +206,10 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
         )}
 
         {/* Bottom sections — 3 col */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 mb-4">
-          <RecentPatternsSection patterns={recentPatterns} onNavigate={onNavigate} />
+        <div className={`grid grid-cols-1 ${recentPatterns.length ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-4 mt-5 mb-4`}>
+          {recentPatterns.length > 0 && (
+            <RecentPatternsSection patterns={recentPatterns} onNavigate={onNavigate} />
+          )}
           <CommunitySpotlightSection onNavigate={onNavigate} />
           <UpcomingMilestoneSection projectsCount={projectsCount} onNavigate={onNavigate} />
         </div>

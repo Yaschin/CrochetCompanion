@@ -1,3 +1,4 @@
+import { palette } from "@/lib/theme";
 import { Pattern } from "./types";
 import { patternProgress } from "./progress";
 
@@ -95,7 +96,7 @@ export async function makeStoryCard(pattern: Pattern, makerName: string): Promis
   ctx.fillText(bits.join("  ·  "), W / 2, imgY + imgSize + 240);
 
   // Footer
-  ctx.fillStyle = "#B0908A";
+  ctx.fillStyle = palette.muted;
   ctx.font = "26px Georgia, serif";
   ctx.fillText("made with love, one stitch at a time", W / 2, H - 60);
 

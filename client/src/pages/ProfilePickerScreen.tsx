@@ -78,7 +78,7 @@ export default function ProfilePickerScreen({ onProfileChosen, onOpenSettings }:
         ))}
       </div>
 
-      <p className="max-w-[340px] text-center text-[11.5px]" style={{ color: "#B0908A" }}>
+      <p className="max-w-[340px] text-center text-[11.5px]" style={{ color: palette.muted }}>
         No passwords — just pick yourself. You can switch any time from the avatar in the top corner.
       </p>
 

@@ -22,9 +22,6 @@ export function RecentPatternsSection({
       </div>
 
       <div className="flex gap-2.5">
-        {patterns.length === 0 && (
-          <p className="text-[12px]" style={{ color: "#B0908A" }}>No patterns yet.</p>
-        )}
         {patterns.map((p) => (
           <button key={p.id} onClick={() => onNavigate("library")}
             className="flex flex-col items-start gap-1 group flex-shrink-0" style={{ width: 82 }}>

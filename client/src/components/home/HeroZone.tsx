@@ -153,7 +153,7 @@ export function HeroZone() {
   return (
     // Outer wrapper: no overflow-hidden so characters can bleed past bottom rounded corners
     <div
-      className="relative w-full h-[220px] sm:h-[270px] md:h-[310px]"
+      className="relative w-full h-[180px] sm:h-[270px] md:h-[310px]"
     >
       {/* Background scene — clipped inside rounded box */}
       <div

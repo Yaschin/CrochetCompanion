@@ -142,7 +142,7 @@ export default function WorkCheckButton({ patternId, sectionIndex, stepIndex }: 
               </div>
             )}
           </div>
-          <p className="text-[10.5px] mt-2" style={{ color: "#B0908A" }}>
+          <p className="text-[10.5px] mt-2" style={{ color: palette.muted }}>
             A gentle second opinion — trust your own eyes too. 💛
           </p>
         </div>

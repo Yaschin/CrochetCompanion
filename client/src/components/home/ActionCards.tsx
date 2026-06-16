@@ -57,7 +57,7 @@ export function ContinueProjectCard({
             alt="Aloo"
             style={{ width: 62, height: 62, objectFit: "contain", filter: "drop-shadow(0 3px 8px rgba(50,20,5,0.18))", flexShrink: 0 }}
           />
-          <p className="text-[12px] leading-snug" style={{ color: "#B0908A" }}>
+          <p className="text-[12px] leading-snug" style={{ color: palette.muted }}>
             No patterns yet — start your first one!
           </p>
         </div>

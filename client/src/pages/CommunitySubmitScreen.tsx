@@ -180,7 +180,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                     className="w-full px-3 py-2.5 rounded-xl text-[13px] outline-none resize-none"
                     style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.22)", color: palette.ink }}
                   />
-                  <p className="text-[10px] text-right mt-0.5" style={{ color: "#B0908A" }}>
+                  <p className="text-[10px] text-right mt-0.5" style={{ color: palette.muted }}>
                     {form.description.length}/100
                   </p>
                 </div>

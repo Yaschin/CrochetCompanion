@@ -95,7 +95,7 @@ const PatternViewerHeader: React.FC<PatternViewerHeaderProps> = ({
       </div>
     </div>
     <div className="flex items-center gap-2 flex-shrink-0">
-      <span className="text-[10px] font-medium hidden sm:block" style={{ color: "#B0908A" }}>
+      <span className="text-[10px] font-medium hidden sm:block" style={{ color: palette.muted }}>
         Created {formattedDate}
       </span>
       <button

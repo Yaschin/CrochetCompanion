@@ -117,7 +117,7 @@ export default function OwnWizard({
 
               {/* Summary */}
               <div className="craft-card p-4 flex flex-col gap-2">
-                <p className="text-[10.5px] font-semibold uppercase tracking-wider" style={{ color: "#B0908A" }}>Summary</p>
+                <p className="text-[10.5px] font-semibold uppercase tracking-wider" style={{ color: palette.muted }}>Summary</p>
                 <div className="flex items-center gap-2.5">
                   <span style={{ fontSize: 24 }}>{CATEGORIES.find(c => c.id === formData.projectType)?.emoji ?? "🧶"}</span>
                   <div>

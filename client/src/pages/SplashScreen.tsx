@@ -319,7 +319,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
                   </div>
                 </motion.div>
               ))}
-              <span className="text-[11px] ml-1" style={{ color: "#B0908A" }}>& friends</span>
+              <span className="text-[11px] ml-1" style={{ color: palette.muted }}>& friends</span>
             </motion.div>
           </>
         )}
@@ -329,7 +329,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
           <motion.button
             onClick={() => { setStage(2); onNavigate("home"); }}
             className="mt-8 text-[12px] font-semibold underline underline-offset-2"
-            style={{ color: "#B0908A" }}
+            style={{ color: palette.muted }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}>
             Skip intro →

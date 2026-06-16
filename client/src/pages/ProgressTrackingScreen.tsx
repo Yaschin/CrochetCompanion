@@ -140,7 +140,7 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
                   <div key={a.label} className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-2xl"
                     style={{ background: a.unlocked ? `${a.color}14` : "rgba(180,160,140,0.08)", border: `1.5px dashed ${a.unlocked ? a.color + "55" : "rgba(180,160,140,0.25)"}`, opacity: a.unlocked ? 1 : 0.5 }}>
                     <span className="text-2xl" style={{ filter: a.unlocked ? "none" : "grayscale(1)" }}>{a.icon}</span>
-                    <span className="text-[9.5px] font-bold text-center leading-tight" style={{ color: a.unlocked ? a.color : "#B0908A" }}>{a.label}</span>
+                    <span className="text-[9.5px] font-bold text-center leading-tight" style={{ color: a.unlocked ? a.color : palette.muted }}>{a.label}</span>
                   </div>
                 ))}
               </div>
