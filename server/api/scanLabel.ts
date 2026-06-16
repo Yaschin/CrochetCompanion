@@ -54,7 +54,14 @@ Omit fields you cannot read. Never invent values. If the photo isn't craft suppl
   });
 
   const raw = response.choices[0]?.message?.content ?? "{}";
-  const parsed = JSON.parse(raw);
+  let parsed: any;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    // Mirror the sibling vision modules (analyzeAlignment/checkWork): a non-JSON
+    // reply is an honest failure, not an unhandled 500 with a stack trace.
+    throw new Error("Could not read the label — the response wasn't valid. Try a clearer photo.");
+  }
   const type = ["yarn", "hook", "notion", "tool"].includes(parsed.type) ? parsed.type : "yarn";
   return {
     type,

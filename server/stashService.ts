@@ -76,8 +76,8 @@ export const stashService = {
   // Delete a stash item
   async deleteItem(id: string): Promise<boolean> {
     try {
-      const result = await db.delete(stashItems).where(eq(stashItems.id, id));
-      return !!result;
+      const result = await db.delete(stashItems).where(eq(stashItems.id, id)).returning({ id: stashItems.id });
+      return result.length > 0;
     } catch (error) {
       console.error(`Error deleting stash item ${id}:`, error);
       throw error;

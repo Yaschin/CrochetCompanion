@@ -59,7 +59,7 @@ Rules:
 Type: ${projectType} | Skill: ${skillLevel}${yarnType ? ` | Yarn: ${yarnType}` : ""}${size ? ` | Size: ${size}` : ""}
 
 Raw pattern:
-${rawText}`;
+${(rawText ?? "").slice(0, 20000)}`;
 
   try {
     const resp = await openai.chat.completions.create({
@@ -72,7 +72,7 @@ ${rawText}`;
       temperature: 0.2,
     });
 
-    const content = resp.choices[0].message.content;
+    const content = resp.choices[0]?.message?.content;
     if (!content) return buildSkeleton(title, projectType, skillLevel, yarnType);
     return JSON.parse(content);
   } catch (e) {
