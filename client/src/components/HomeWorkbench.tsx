@@ -147,6 +147,15 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
           </button>
         </div>
 
+        {/* Calculators quick access — gauge sizing & yarn estimating */}
+        <button
+          onClick={() => onNavigate("tools")}
+          className="w-full mt-2.5 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[12px] font-bold transition-all hover:opacity-85 relative z-10"
+          style={{ background: "rgba(194,78,107,0.08)", color: palette.rose, border: "1.5px dashed rgba(194,78,107,0.3)" }}
+        >
+          📐 Calculators
+        </button>
+
         {/* Up next — the one pattern pinned to make after the current project */}
         {upNextPattern && (
           <button

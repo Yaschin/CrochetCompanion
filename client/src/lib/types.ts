@@ -114,4 +114,5 @@ export type ViewType =
   | "stitch-counter"
   | "yarn-recs"
   | "pattern-detail"
+  | "tools"
   | "settings";

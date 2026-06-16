@@ -27,6 +27,7 @@ const CommunityScreen = lazy(() => import("./pages/CommunityScreen"));
 const CommunityDetailScreen = lazy(() => import("./pages/CommunityDetailScreen"));
 const CommunitySubmitScreen = lazy(() => import("./pages/CommunitySubmitScreen"));
 const ProjectsScreen = lazy(() => import("./pages/ProjectsScreen"));
+const ToolsScreen = lazy(() => import("./pages/ToolsScreen"));
 const SettingsScreen = lazy(() => import("./pages/SettingsScreen"));
 const ProfilePickerScreen = lazy(() => import("./pages/ProfilePickerScreen"));
 
@@ -66,6 +67,7 @@ function pathFor(view: ViewType, opts: NavOpts = {}): string {
     case "favorites": return "/favorites";
     case "projects": return "/projects";
     case "yarn-recs": return "/yarn";
+    case "tools": return "/tools";
     case "settings": return "/settings";
     case "community": return "/community";
     case "community-submit": return "/community/submit";
@@ -95,6 +97,7 @@ function parseLocation(loc: string): { view: ViewType; patternId?: string; commu
     case "favorites": return { view: "favorites" };
     case "projects": return { view: "projects" };
     case "yarn": return { view: "yarn-recs" };
+    case "tools": return { view: "tools" };
     case "settings": return { view: "settings" };
     case "community":
       if (!b) return { view: "community" };
@@ -357,6 +360,10 @@ function App() {
 
               {activeView === "yarn-recs" && (
                 <YarnRecsScreen onNavigate={navigateToView} onPatternSelected={handlePatternLoaded} />
+              )}
+
+              {activeView === "tools" && (
+                <ToolsScreen onNavigate={navigateToView} />
               )}
 
               {activeView === "settings" && (
