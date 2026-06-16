@@ -84,7 +84,7 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 ## Key file paths
 - App shell + nav: `client/src/components/AppShell.tsx`
 - All routes: `client/src/App.tsx`
-- Home screen: `client/src/components/HomeWorkbench.tsx` (975 lines)
+- Home screen: `client/src/components/HomeWorkbench.tsx` — a 262-line orchestrator (header + scroll layout + data queries) that composes presentational pieces from `client/src/components/home/`: `helpers.ts`, `decorations.tsx` (CrochetFlower/YarnBall/FlowerDot), `HeroZone.tsx` (+ HeroScene), `ActionCards.tsx`, `BottomSections.tsx`, `HomeRightPanel.tsx`. `HomeRightPanel` is re-exported from `HomeWorkbench.tsx` so `App.tsx`'s `import HomeWorkbench, { HomeRightPanel }` is unchanged.
 - Sidebar (desktop): `client/src/components/Sidebar.tsx`
 - Splash: `client/src/pages/SplashScreen.tsx`
 - Pages dir: `client/src/pages/`
