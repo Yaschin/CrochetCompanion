@@ -45,6 +45,7 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - community → CommunityScreen (`/community`)
 - community-detail → CommunityDetailScreen (`/community/:id`)
 - community-submit → CommunitySubmitScreen (`/community/submit`)
+- tools → ToolsScreen (`/tools`) — "Calculators": gauge sizing & yarn estimating (`lib/crochetMath.ts`); reached from Sidebar + a Home quick button (added 2026-06-16, PR #43)
 - settings → SettingsScreen (`/settings`) — backup/export/import
 
 ## Tutorial & pattern import (added on main by Replit session, 2026-06-09)
@@ -61,6 +62,13 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - Doing=starting: PUT /api/patterns/:id auto-promotes status pattern→active when a step completes or counterState>0 (server-side).
 - Stash depletion (W18): finishing a project opens `components/StashDepletionSheet.tsx` (after the confetti, via PatternViewer's finish onSuccess) — tick the matched stash yarns (`matchedYarnsForPattern` in `lib/stashMatch.ts`) you used up; each decrements by 1 (removed at 0) via existing `/api/stash` PUT/DELETE. Manual-confirm, yarn-only, no new endpoint.
 
+## Post-roadmap additions (2026-06-16)
+- **Calculators** (`pages/ToolsScreen.tsx`, `lib/crochetMath.ts`): gauge sizing + yarn estimating; `tools` ViewType / `/tools`.
+- **Work-time tracking** (`components/WorkTimer.tsx`, `lib/timeTracking.ts`): per-project session timer embedded in `StitchCounterScreen`; durable via `patterns.workSessions` jsonb (mirrors `counterState`, write-through on stop, merged on load, carried in export/import). Surfaced per-project on Progress + a lifetime total on the Projects header. Pure helpers `mergeSessions`/`lifetimeMs` are unit-tested.
+- **As-built record** (`patterns.finishedRecord`, `pattern-viewer/FinishedRecordCard.tsx`): made-for, yarn/hook used, final measurements, notes/mods — editable on the Overview tab once a project is active/finished; distinct from the pattern's *planned* requirements.
+- Both new `patterns` columns are added idempotently in `server/ensureSchema.ts`.
+- **Character AI-generation flow fully removed** 2026-06-16 (PR #40/#42): the dead home generate flow + `GET/POST /api/characters` routes + `CHARACTER_DEFS` are gone; the app renders static PNGs only. Regeneration prompts live in git history.
+
 ## Testing infrastructure
 - `server/db.ts` dual driver: Neon WebSocket (prod) vs node-postgres (localhost) — enables real-server testing anywhere.
 - `npm run smoke` (`scripts/fullstack-smoke.mjs`): 36 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
@@ -68,11 +76,14 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 
 ## Navigation chrome
 - Mobile bottom nav (`AppShell.tsx`, `md:hidden`): 5 tabs — Home, Create,
-  Library, Projects, Community. (Favorites demoted to Library filter/Home
-  card/sidebar-secondary in the Phase 7 IA restructure.)
+  Library, Projects, **My Stash**. (Phase 7 set the 5th tab to Community; the
+  Batch-1 hardening swap, 2026-06-14, replaced it with My Stash — Community now
+  lives on Home cards + the desktop sidebar. Favorites demoted to Library
+  filter/Home card/sidebar-secondary in the Phase 7 IA restructure.)
 - Desktop/tablet (`Sidebar.tsx`, `md+`): Home / AI Studio (input) / Library /
-  Favorites / Projects, plus Community Library, My Profile, Settings.
-- Community is reached via the Sidebar or the Favorites CTA (NOT the bottom nav).
+  Favorites / Projects / **Calculators** (`tools`), plus Community Library, My
+  Profile, Settings.
+- Community is reached via the Sidebar or Home cards (NOT the bottom nav).
 
 ## CSS conventions
 - `no-scrollbar` utility defined in `client/src/index.css`.
