@@ -30,9 +30,14 @@ Children are pure/presentational: every callback + value is passed as a typed pr
 so the rendered DOM is unchanged (e2e selects by visible text/role).
 
 ### Container hook (2026-06-16)
-All state/mutations/handlers now live in `pattern-viewer/usePatternViewer.ts(x)`;
+All state/mutations/handlers live in `pattern-viewer/usePatternViewer.ts(x)`;
 `PatternViewer.tsx` is a ~250-line presenter that does
 `const { … } = usePatternViewer(pattern, onPatternUpdated)` and wires the children.
+The **regeneration** concern (regenerate-steps/image mutations + their state +
+handlers) was lifted into `pattern-viewer/usePatternRegen.tsx`, which usePatternViewer
+composes and re-exports. It split cleanly because it only needs `pattern` +
+`onPatternUpdated`. The other mutations (esp. `updatePatternMutation`, used app-wide)
+stay in usePatternViewer — a full N-way hook split would just add setter-plumbing.
 The duplicated OpenAI error-toast logic was lifted to `client/src/lib/aiErrorToast.tsx`
 (`showAiErrorToast(error, { action, fallbackTitle })`), shared with PatternInput; the
 old per-mutation api-key/rate-limit/timeout blocks (and the double/triple-toast paths)
