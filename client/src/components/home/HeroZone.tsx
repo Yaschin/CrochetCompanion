@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { ViewType } from "@/lib/types";
 import { CrochetFlower, YarnBall } from "./decorations";
 
 function HeroScene() {
@@ -146,14 +145,7 @@ function HeroScene() {
   );
 }
 
-export function HeroZone({
-  characterImages, generatingIds, onNavigate,
-}: {
-  characterImages: Record<string, string | null>;
-  generatingIds: Set<string>;
-  onGenerateAll?: () => void;
-  onNavigate: (v: ViewType) => void;
-}) {
+export function HeroZone() {
   const alooSrc = "/characters/char-aloo-transparent.png";
   const ashiSrc = "/characters/char-ashi-transparent.png";
   const yalaSrc = "/characters/char-yala-transparent.png";
