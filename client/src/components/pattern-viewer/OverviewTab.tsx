@@ -4,6 +4,7 @@ import { printPattern } from "@/lib/printPattern";
 import PatternProgressBar from "@/components/PatternProgressBar";
 import StashCoverage from "@/components/StashCoverage";
 import EnhancedMaterialsList from "@/components/EnhancedMaterialsList";
+import FinishedRecordCard from "./FinishedRecordCard";
 import { RefreshCw, Download, FileText, Play, CheckCircle2, Share2, Scissors, Shuffle } from "lucide-react";
 
 interface OverviewTabProps {
@@ -213,6 +214,11 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         </button>
       )}
     </div>
+
+    {/* Project notebook — the as-built record, once a project is underway */}
+    {(pattern.status === 'active' || pattern.status === 'finished') && (
+      <FinishedRecordCard pattern={pattern} onUpdatePattern={onUpdatePattern} />
+    )}
 
     {/* Tools grid */}
     <div className="grid grid-cols-2 gap-3">

@@ -3,6 +3,7 @@ import { ChevronLeft, Trophy, Clock, CalendarDays } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Pattern, ViewType } from "../lib/types";
 import StreakCard from "../components/StreakCard";
+import { totalMs, formatDuration } from "@/lib/timeTracking";
 
 interface ProgressTrackingScreenProps {
   pattern: Pattern | null;
@@ -30,6 +31,9 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
   let timeLabel: string | null = null;
   if (started && finished) timeLabel = `Finished in ${daysBetween(started, finished)} day(s)`;
   else if (started) timeLabel = `Day ${daysBetween(started, new Date()) + 1} in progress`;
+
+  // Actual time crocheted (from the work timer), distinct from calendar elapsed.
+  const crochetMs = totalMs(pattern?.workSessions ?? []);
 
   const achievements = [
     { icon: "🌸", label: "First Stitch", unlocked: done >= 1, color: palette.rose },
@@ -92,6 +96,12 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
                   <div className="flex items-center justify-center sm:justify-start gap-1.5">
                     <Clock className="h-3.5 w-3.5" style={{ color: palette.sage }} />
                     <span className="text-[11px] font-semibold" style={{ color: palette.sage }}>{timeLabel}</span>
+                  </div>
+                )}
+                {crochetMs > 0 && (
+                  <div className="flex items-center justify-center sm:justify-start gap-1.5">
+                    <Clock className="h-3.5 w-3.5" style={{ color: "#7C5FA8" }} />
+                    <span className="text-[11px] font-semibold" style={{ color: "#7C5FA8" }}>{formatDuration(crochetMs)} crocheted</span>
                   </div>
                 )}
                 {pattern.status && (

@@ -12,6 +12,7 @@ interface ProjectsScreenProps {
 
 import { patternProgress } from "@/lib/progress";
 import { QueryError } from "@/components/QueryError";
+import { lifetimeMs, formatDuration } from "@/lib/timeTracking";
 
 function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect: () => void; index: number }) {
   const { pct, done, total } = patternProgress(pattern);
@@ -100,6 +101,8 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
     .filter(p => p.status === 'finished')
     .sort((a, b) => new Date(b.finishedAt ?? 0).getTime() - new Date(a.finishedAt ?? 0).getTime());
 
+  const lifeMs = lifetimeMs(patterns);
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -113,6 +116,9 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
               {isLoading ? "Loading…" : patterns.length === 0
                 ? "Start your first crochet project"
                 : `${inProgress.length} in progress · ${completed.length} completed`}
+              {lifeMs > 0 && !isLoading && (
+                <span style={{ color: "#7C5FA8" }}> · ⏱ {formatDuration(lifeMs)} crocheted</span>
+              )}
             </p>
           </div>
           <button

@@ -33,6 +33,8 @@ function rowToPattern(row: typeof patternsTable.$inferSelect): Pattern {
     materialsNotes: row.materialsNotes || "",
     userNotes: row.userNotes || "",
     counterState: (row.counterState ?? null) as Pattern["counterState"],
+    workSessions: (row.workSessions ?? []) as Pattern["workSessions"],
+    finishedRecord: (row.finishedRecord ?? null) as Pattern["finishedRecord"],
     createdAt,
     sections: (row.sections ?? []) as Pattern["sections"],
     yarnRequirements: (row.yarnRequirements ?? []) as Pattern["yarnRequirements"],
@@ -61,6 +63,8 @@ function patternToColumns(pattern: Partial<Pattern>) {
   if (pattern.materialsNotes !== undefined) columns.materialsNotes = pattern.materialsNotes || "";
   if (pattern.userNotes !== undefined) columns.userNotes = pattern.userNotes || "";
   if (pattern.counterState !== undefined) columns.counterState = pattern.counterState ?? null;
+  if (pattern.workSessions !== undefined) columns.workSessions = pattern.workSessions ?? [];
+  if (pattern.finishedRecord !== undefined) columns.finishedRecord = pattern.finishedRecord ?? null;
   if (pattern.sections !== undefined) columns.sections = pattern.sections;
   if (pattern.yarnRequirements !== undefined) columns.yarnRequirements = pattern.yarnRequirements || [];
   if (pattern.hookRequirements !== undefined) columns.hookRequirements = pattern.hookRequirements || [];

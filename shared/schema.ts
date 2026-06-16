@@ -73,6 +73,8 @@ export const patterns = pgTable("patterns", {
   needsStuffing: text("needsStuffing"),
   favorite: boolean("favorite").notNull().default(false),
   counterState: jsonb("counterState"),
+  workSessions: jsonb("workSessions"), // WorkSession[] — actual time crocheted
+  finishedRecord: jsonb("finishedRecord"), // as-built record (yarn/hook/measurements/notes)
   status: text("status").notNull().default("pattern"),
   startedAt: timestamp("started_at"),
   finishedAt: timestamp("finished_at"),
@@ -146,6 +148,29 @@ export const patternSchema = z.object({
       rows: z.number(),
       target: z.number().default(0),
       history: z.array(z.any()).default([]),
+    })
+    .nullable()
+    .optional(),
+  // Actual crocheting time, accumulated as start/stop sessions (see timeTracking.ts).
+  // Lives on the pattern so it rides the existing counter sync + backup export.
+  workSessions: z
+    .array(
+      z.object({
+        start: z.string(),
+        end: z.string(),
+        ms: z.number(),
+      })
+    )
+    .optional(),
+  // "As-built" record of the finished object: what was actually used / how it
+  // turned out, captured as you make and finish a project.
+  finishedRecord: z
+    .object({
+      madeFor: z.string().optional().default(""),
+      hookUsed: z.string().optional().default(""),
+      yarnUsed: z.string().optional().default(""),
+      measurements: z.string().optional().default(""),
+      notes: z.string().optional().default(""),
     })
     .nullable()
     .optional(),

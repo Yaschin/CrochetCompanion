@@ -3,10 +3,11 @@
  * elapsed since a project was started (formatTimeSpent); this tracks the actual
  * time spent crocheting via a start/stop timer, accumulated into sessions.
  *
- * Sessions are personal and stored in localStorage, profile-scoped (like the
- * activity log / streak) so they work offline and need no schema change. The
- * pure helpers below are unit-tested; the storage wrappers are thin and
- * failure-tolerant.
+ * localStorage is the fast, offline path (profile-scoped, like the activity
+ * log). The durable copy rides on the pattern row's `workSessions` column —
+ * WorkTimer write-throughs to the server and merges the two on load — so
+ * tracked time now survives a reinstall and lands in the backup export. The
+ * pure helpers below are unit-tested; the storage wrappers are failure-tolerant.
  */
 import { getActiveProfile } from "./profile";
 
@@ -55,6 +56,27 @@ export function makeSession(startMs: number, endMs: number): WorkSession | null 
   return { start: new Date(startMs).toISOString(), end: new Date(endMs).toISOString(), ms };
 }
 
+/**
+ * Union two session lists, de-duplicating by `start` (each session is stamped
+ * once at creation, so the same session has the same start in both copies) and
+ * ordering newest-first. Used to reconcile the device-local cache with the
+ * durable copy on the pattern without ever double-counting a session.
+ */
+export function mergeSessions(a: WorkSession[], b: WorkSession[]): WorkSession[] {
+  const byStart = new Map<string, WorkSession>();
+  for (const s of [...(a ?? []), ...(b ?? [])]) {
+    if (s && Number.isFinite(s.ms) && s.ms > 0 && typeof s.start === "string" && s.start.length > 0) {
+      if (!byStart.has(s.start)) byStart.set(s.start, s);
+    }
+  }
+  return [...byStart.values()].sort((x, y) => (x.start < y.start ? 1 : -1)).slice(0, 200);
+}
+
+/** Total time crocheted across every project — for a lifetime stat. */
+export function lifetimeMs(patterns: { workSessions?: WorkSession[] }[]): number {
+  return patterns.reduce((sum, p) => sum + totalMs(p?.workSessions ?? []), 0);
+}
+
 // ── localStorage wrappers (failure-tolerant) ──────────────────────────────────
 export function getSessions(patternId: string): WorkSession[] {
   try {
@@ -67,10 +89,9 @@ export function getSessions(patternId: string): WorkSession[] {
   }
 }
 
-export function addSession(patternId: string, session: WorkSession): WorkSession[] {
-  const next = [session, ...getSessions(patternId)].slice(0, 200);
-  try { localStorage.setItem(sessionsKey(patternId), JSON.stringify(next)); } catch { /* ignore */ }
-  return next;
+/** Overwrite the local session cache with the full (already-merged) list. */
+export function saveSessions(patternId: string, sessions: WorkSession[]): void {
+  try { localStorage.setItem(sessionsKey(patternId), JSON.stringify(sessions.slice(0, 200))); } catch { /* ignore */ }
 }
 
 export function totalTracked(patternId: string): number {

@@ -77,6 +77,14 @@ export async function ensureSchema(): Promise<void> {
   await db.execute(
     sql`ALTER TABLE patterns ADD COLUMN IF NOT EXISTS "counterState" jsonb`
   );
+  // Actual crocheting time + the as-built finished record now persist on the
+  // pattern row (were device-local), so they survive restore and reach backups.
+  await db.execute(
+    sql`ALTER TABLE patterns ADD COLUMN IF NOT EXISTS "workSessions" jsonb`
+  );
+  await db.execute(
+    sql`ALTER TABLE patterns ADD COLUMN IF NOT EXISTS "finishedRecord" jsonb`
+  );
 
   // The legacy project_events table predates shared/schema.ts and has no code
   // references anywhere — confirmed orphaned in the Jun-8 walkthrough.
