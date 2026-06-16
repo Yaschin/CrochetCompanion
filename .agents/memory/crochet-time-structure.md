@@ -7,7 +7,7 @@ description: Key architecture facts, file layout, character image paths, nav vie
 - Static PNGs live at `client/public/characters/char-<id>-transparent.png` (NOT root `/public/`).
 - IDs: aloo, yala, ashi, bee, sheep.
 - Yarn ball: `client/public/yarn-ball.png`.
-- The app renders these **static** PNGs directly. The AI-generation path (POST `/api/characters/generate` → object storage → served via `/api/characters` map) still exists **server-side** but is **no longer used by the client** — HomeWorkbench's dead generate flow + the unused HeroZone props were removed 2026-06-16, and `HeroZone` now takes no props. If the client never grows a new consumer, those two server endpoints can eventually go too.
+- The app renders these **static** PNGs directly. The old AI-generation path (HomeWorkbench's dead generate flow + unused HeroZone props, plus the `GET /api/characters` + `POST /api/characters/generate` routes and `CHARACTER_DEFS` in `server/routes.ts`) was **fully removed** 2026-06-16 — it had no client consumer. To regenerate characters, the prompts live in git history.
 
 ## Routing (wouter)
 `App.tsx` is URL-driven via `wouter` `useLocation`. It stays the orchestrator: it

@@ -140,7 +140,6 @@ export async function mockApi(page: Page) {
         { id: "akka", name: "Akka", color: "#84934F", character: "ashi" },
         { id: "mummy", name: "Mummy", color: "#D4921A", character: "bee" },
       ]);
-    if (path === "/api/characters") return json({});
     if (path === "/api/generate-pattern") return json(PATTERNS[0]);
     if (path === "/api/generate-image") return json({ url: "/api/media/x" });
 
