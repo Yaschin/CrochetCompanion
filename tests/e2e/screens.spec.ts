@@ -91,6 +91,16 @@ test("favorites renders cleanly", async ({ page, consoleErrors }, testInfo) => {
   expect(realConsoleErrors(consoleErrors)).toEqual([]);
 });
 
+// ── Calculators (gauge sizing & yarn estimating; desktop sidebar + Home button) ───
+test("calculators screen renders cleanly", async ({ page, consoleErrors }, testInfo) => {
+  await enterApp(page);
+  await page.goto("/tools");
+  // Scope to <main> so the always-in-DOM (mobile-hidden) Sidebar label isn't matched.
+  await expect(page.locator("main").getByText(/Calculators/i).first()).toBeVisible({ timeout: 10000 });
+  await snap(page, testInfo, "tools");
+  expect(realConsoleErrors(consoleErrors)).toEqual([]);
+});
+
 // ── Community (desktop sidebar + Home cards; off the 5-slot mobile bottom nav) ────
 test("community gallery renders cleanly", async ({ page, consoleErrors }, testInfo) => {
   await enterApp(page);
