@@ -27,6 +27,13 @@ state/mutations/handlers and composes presentational children in
 - `PatternViewerDialogs.tsx` — the 3 modals (regenerate-all, share-to-community, image regen)
 
 Children are pure/presentational: every callback + value is passed as a typed prop,
-so the rendered DOM is unchanged (e2e selects by visible text/role). The parent still
-owns the 9 mutations + the AI-error-handling blocks — a future cleanup could lift those
-into a `usePatternViewer` hook.
+so the rendered DOM is unchanged (e2e selects by visible text/role).
+
+### Container hook (2026-06-16)
+All state/mutations/handlers now live in `pattern-viewer/usePatternViewer.ts(x)`;
+`PatternViewer.tsx` is a ~250-line presenter that does
+`const { … } = usePatternViewer(pattern, onPatternUpdated)` and wires the children.
+The duplicated OpenAI error-toast logic was lifted to `client/src/lib/aiErrorToast.tsx`
+(`showAiErrorToast(error, { action, fallbackTitle })`), shared with PatternInput; the
+old per-mutation api-key/rate-limit/timeout blocks (and the double/triple-toast paths)
+are gone — `onError` now calls the helper once.
