@@ -4,38 +4,20 @@ import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
-import { Sparkles, Key, ExternalLink, AlertCircle, BookOpen, Plus, FileUp, ChevronRight } from 'lucide-react';
+import { Sparkles, Key, ExternalLink, AlertCircle, BookOpen, FileUp } from 'lucide-react';
 import { PatternInputFormData, Pattern } from '../lib/types';
 import GenerationLoadingScreen from '../pages/GenerationLoadingScreen';
+import { CATEGORIES, SKILL_LEVELS, YARN_TYPES, COLOR_PALETTE, SIZE_OPTIONS, AI_STEPS, OWN_STEPS, PDF_STEPS, AI_TIPS, OWN_TIPS, PDF_TIPS, PDF_LOADING_MSGS } from './pattern-input/constants';
+import { fileToDataUrl, fileToBase64, buildPatternToSave } from './pattern-input/helpers';
+import { CategoryPicker, SkillPicker, YarnPicker, SizePicker } from './pattern-input/Pickers';
+import AiWizard from './pattern-input/AiWizard';
+import OwnWizard from './pattern-input/OwnWizard';
+import PdfWizard from './pattern-input/PdfWizard';
 
 interface PatternInputProps {
   onPatternCreated: (pattern: Pattern, skipLoading?: boolean) => void;
   initialMode?: "ai" | "own" | "pdf";
 }
-
-const CATEGORIES = [
-  { id: "Amigurumi",  label: "Toys & Amigurumi", emoji: "🧸", color: palette.rose },
-  { id: "Wearable",   label: "Wearables",         emoji: "👒", color: "#7C5FA8" },
-  { id: "Home Decor", label: "Home Decor",         emoji: "🏠", color: palette.sage },
-  { id: "Accessory",  label: "Accessories",        emoji: "👜", color: "#D4921A" },
-  { id: "Other",      label: "Other",              emoji: "✨", color: "#3D8FA3" },
-];
-const SKILL_LEVELS = [
-  { id: "Beginner",     emoji: "🌱", desc: "First-timers welcome" },
-  { id: "Intermediate", emoji: "🌿", desc: "Some experience needed" },
-  { id: "Advanced",     emoji: "🌳", desc: "Complex techniques" },
-];
-const YARN_TYPES = ["Cotton", "Wool", "Acrylic", "Blend", "Mohair", "Not specified"];
-const COLOR_PALETTE = [
-  "#C24E6B","#7C5FA8","#84934F","#D4921A","#3D8FA3",
-  "#F0C840","#E88050","#C8A0D8","#90C898","#F0A0B8",
-  "#E8D0C0","#B0D0E8","#D8E0B0","#F8E8C0","#5C3A28",
-];
-const SIZE_OPTIONS = ["5 cm", "10 cm", "15 cm", "20 cm", "30 cm", "40 cm+"];
-
-const AI_STEPS  = ["Item", "Details", "Yarn & Colours", "Inspiration", "Review"];
-const OWN_STEPS = ["Pattern", "Details", "Paste & Save"];
-const PDF_STEPS = ["Upload", "Review"];
 
 const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated, initialMode }) => {
   const { toast } = useToast();
@@ -77,15 +59,6 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
   const [pdfEditSections, setPdfEditSections] = useState<Array<{name: string; steps: Array<{instruction: string; count?: string}>}>>([]);
   const [pdfExpandedSec, setPdfExpandedSec]   = useState<number | null>(null);
   const [pdfLoadingMsgIdx, setPdfLoadingMsgIdx] = useState(0);
-
-  const PDF_LOADING_MSGS = [
-    "Reading your PDF…",
-    "Finding the materials list…",
-    "Spotting the stitch counts…",
-    "Organising into sections…",
-    "Checking yarn requirements…",
-    "Almost ready…",
-  ];
 
   useEffect(() => {
     if (!pdfParsing) { setPdfLoadingMsgIdx(0); return; }
@@ -164,26 +137,6 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
       return res.json();
     },
   });
-
-  // ── Helpers ──────────────────────────────────────────────────────────────────
-  const fileToDataUrl = (f: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload  = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(f);
-    });
-
-  const fileToBase64 = (f: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        resolve(result.split(',')[1]);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(f);
-    });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
@@ -397,49 +350,6 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
     }
   };
 
-  // ── Shared helper: normalise parsed data → save payload ─────────────────────
-  function buildPatternToSave(
-    data: any,
-    input: PatternInputFormData,
-    imageUrl?: string,
-  ): Omit<Pattern, 'id' | 'createdAt'> {
-    return {
-      title: data.title || input.prompt,
-      description: data.description || `A ${input.skillLevel} level ${input.projectType} crochet pattern.`,
-      projectType: input.projectType,
-      skillLevel: input.skillLevel,
-      yarnType: input.yarnType || undefined,
-      size: input.size || undefined,
-      endProductImage: imageUrl,
-      materialsNotes: data.materialsNotes || "",
-      yarnRequirements: data.yarnRequirements || [],
-      hookRequirements: data.hookRequirements || [],
-      notionsRequirements: data.notionsRequirements || [],
-      toolRequirements: data.toolRequirements || [],
-      favorite: false,
-      status: "pattern",
-      startedAt: undefined,
-      finishedAt: undefined,
-      needsStuffing: undefined,
-      sections: (data.sections || []).map((section: any) => ({
-        name: section.name,
-        notes: section.notes || "",
-        locked: false,
-        partImageUrl: section.partImageUrl || null,
-        steps: (section.steps || []).map((step: any) => ({
-          id: step.id,
-          text: step.text,
-          locked: false,
-          count: step.count || 0,
-          notes: '',
-          photo: null,
-          aiStepImage: null,
-          completed: false,
-        })),
-      })),
-    };
-  }
-
   // ── AI error handler ─────────────────────────────────────────────────────────
   function handleGenerationError(error: unknown) {
     const s = String(error);
@@ -462,110 +372,6 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
   }
 
   const activeCategory = CATEGORIES.find(c => c.id === formData.projectType);
-  const AI_TIPS = [
-    "Pick a category and I'll tailor the pattern just for you! 🐾",
-    "More detail = a better pattern. Tell me everything! ✨",
-    "Great colour choices make the magic happen 🎨",
-    "A reference photo helps me imagine exactly what you want!",
-    "I've got everything I need — let's create something beautiful! 🌟",
-  ];
-  const OWN_TIPS = [
-    "Name your pattern and pick a type to get started 📝",
-    "Tell me the yarn and skill level — it helps with tracking 🧶",
-    "Paste your pattern text and I'll organise it into sections for you ✨",
-  ];
-  const PDF_TIPS = [
-    "Upload a PDF from Etsy, Ravelry or anywhere — I'll read it and organise it for you 📄",
-    "Check the title and details look right, then save to your library 🎉",
-  ];
-
-  // ── Shared category / skill / yarn / size pickers ────────────────────────────
-  const CategoryPicker = () => (
-    <div className="grid grid-cols-1 gap-3">
-      {CATEGORIES.map((cat) => (
-        <button key={cat.id}
-          onClick={() => setFormData(p => ({ ...p, projectType: cat.id }))}
-          className="flex items-center gap-4 p-4 rounded-2xl transition-all hover:scale-[1.01] active:scale-[0.99]"
-          style={{
-            background: formData.projectType === cat.id ? `${cat.color}14` : "rgba(255,252,245,0.9)",
-            border: `2px solid ${formData.projectType === cat.id ? cat.color : "rgba(140,100,55,0.18)"}`,
-            boxShadow: formData.projectType === cat.id ? `0 4px 20px ${cat.color}25` : "0 1px 4px rgba(60,30,10,0.06)",
-          }}>
-          <span style={{ fontSize: 32 }}>{cat.emoji}</span>
-          <div className="text-left flex-1">
-            <p className="font-heading font-bold text-[15px]" style={{ color: palette.ink }}>{cat.label}</p>
-          </div>
-          {formData.projectType === cat.id && (
-            <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: cat.color }}>
-              <span className="text-white text-[11px] font-bold">✓</span>
-            </div>
-          )}
-        </button>
-      ))}
-    </div>
-  );
-
-  const SkillPicker = () => (
-    <div>
-      <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Skill Level</label>
-      <div className="flex gap-2">
-        {SKILL_LEVELS.map((lvl) => (
-          <button key={lvl.id}
-            onClick={() => setFormData(p => ({ ...p, skillLevel: lvl.id }))}
-            className="flex-1 flex flex-col items-center gap-1 p-3 rounded-2xl transition-all"
-            style={{
-              background: formData.skillLevel === lvl.id ? "rgba(194,78,107,0.10)" : "rgba(255,252,245,0.9)",
-              border: `1.5px solid ${formData.skillLevel === lvl.id ? palette.rose : "rgba(140,100,55,0.18)"}`,
-            }}>
-            <span style={{ fontSize: 22 }}>{lvl.emoji}</span>
-            <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? palette.rose : "#5C3A28" }}>{lvl.id}</span>
-            <span className="text-[9.5px] text-center" style={{ color: palette.clay }}>{lvl.desc}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
-  const YarnPicker = () => (
-    <div>
-      <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Yarn Type <span className="font-normal text-[11px]" style={{ color: palette.clay }}>(optional)</span></label>
-      <div className="flex flex-wrap gap-2">
-        {YARN_TYPES.map((yt) => (
-          <button key={yt}
-            onClick={() => setFormData(p => ({ ...p, yarnType: yt === "Not specified" ? "" : yt }))}
-            className="px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-all"
-            style={{
-              background: (formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? "rgba(212,146,26,0.14)" : "rgba(255,252,245,0.9)",
-              border: `1.5px solid ${(formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? "#D4921A" : "rgba(140,100,55,0.18)"}`,
-              color: (formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? "#D4921A" : "#5C3A28",
-            }}>
-            {yt}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
-  const SizePicker = () => (
-    <div>
-      <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Approximate Size <span className="font-normal text-[11px]" style={{ color: palette.clay }}>(optional)</span></label>
-      <div className="flex flex-wrap gap-2">
-        {SIZE_OPTIONS.map((sz) => (
-          <button key={sz}
-            onClick={() => setFormData(p => ({ ...p, size: sz }))}
-            className="px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-all"
-            style={{
-              background: formData.size === sz ? "rgba(132,147,79,0.14)" : "rgba(255,252,245,0.9)",
-              border: `1.5px solid ${formData.size === sz ? palette.sage : "rgba(140,100,55,0.18)"}`,
-              color: formData.size === sz ? palette.sage : "#5C3A28",
-            }}>
-            {sz}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
   // ── Own wizard: can advance? ──────────────────────────────────────────────────
   const ownCanAdvance = () => {
     if (ownStep === 0) return !!ownTitle.trim() && !!formData.projectType;
@@ -669,717 +475,75 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           AI WIZARD
       ═══════════════════════════════════════════════════════════════════════ */}
       {mode === "ai" && (
-        <>
-          {/* Step 0 — What are you making? */}
-          {wizardStep === 0 && (
-            <div>
-              <div className="text-center mb-5">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>What are you making?</h2>
-                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Pick a category to get started</p>
-              </div>
-              {CategoryPicker()}
-            </div>
-          )}
-
-          {/* Step 1 — Details */}
-          {wizardStep === 1 && (
-            <div className="flex flex-col gap-4">
-              <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Tell us about it</h2>
-                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Describe your vision and skill level</p>
-              </div>
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Describe your idea ✨</label>
-                <textarea rows={4}
-                  placeholder="e.g. A cosy sunflower bag for everyday use, in pastel yellow and green…"
-                  value={formData.prompt}
-                  onChange={e => setFormData(p => ({ ...p, prompt: e.target.value }))}
-                  className="w-full p-4 rounded-2xl text-[13px] leading-relaxed outline-none resize-none transition-all"
-                  style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.22)", color: palette.ink }} />
-              </div>
-              {SkillPicker()}
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Approximate Size</label>
-                <div className="flex flex-wrap gap-2">
-                  {SIZE_OPTIONS.map(sz => (
-                    <button key={sz} onClick={() => setFormData(p => ({ ...p, size: sz }))}
-                      className="px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-all"
-                      style={{
-                        background: formData.size === sz ? "rgba(132,147,79,0.14)" : "rgba(255,252,245,0.9)",
-                        border: `1.5px solid ${formData.size === sz ? palette.sage : "rgba(140,100,55,0.18)"}`,
-                        color: formData.size === sz ? palette.sage : "#5C3A28",
-                      }}>{sz}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2 — Yarn & Colours */}
-          {wizardStep === 2 && (
-            <div className="flex flex-col gap-4">
-              <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Yarn & Colours</h2>
-                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Choose your materials (optional)</p>
-              </div>
-              {YarnPicker()}
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
-                  Colour Palette
-                  {wizardColors.length > 0 && <span className="ml-2 text-[11px] font-normal" style={{ color: palette.clay }}>({wizardColors.length} selected)</span>}
-                </label>
-                <div className="flex flex-wrap gap-2.5">
-                  {COLOR_PALETTE.map(c => (
-                    <button key={c}
-                      onClick={() => setWizardColors(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])}
-                      className="w-9 h-9 rounded-xl transition-all hover:scale-110 active:scale-95"
-                      style={{
-                        background: c,
-                        border: wizardColors.includes(c) ? "3px solid #3D2318" : "2px solid rgba(255,255,255,0.6)",
-                        boxShadow: wizardColors.includes(c) ? "0 0 0 2px rgba(255,255,255,0.8), 0 2px 8px rgba(0,0,0,0.2)" : "0 1px 4px rgba(0,0,0,0.12)",
-                      }} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3 — Inspiration photo */}
-          {wizardStep === 3 && (
-            <div className="flex flex-col gap-4">
-              <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Inspiration Photo</h2>
-                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Upload a reference image (optional)</p>
-              </div>
-              <div
-                onClick={() => document.getElementById("wizard-file-input")?.click()}
-                className="border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
-                style={{ borderColor: file ? palette.sage : "rgba(140,100,55,0.35)", background: file ? "rgba(132,147,79,0.06)" : "rgba(255,252,245,0.7)", minHeight: 200 }}>
-                <input id="wizard-file-input" type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-                {file ? (
-                  <div className="text-center px-4">
-                    <span style={{ fontSize: 40 }}>🖼️</span>
-                    <p className="font-semibold text-[14px] mt-2" style={{ color: palette.sage }}>{file.name}</p>
-                    <button onClick={e => { e.stopPropagation(); setFile(null); }} className="text-[11px] mt-1 underline" style={{ color: palette.clay }}>Remove</button>
-                  </div>
-                ) : (
-                  <>
-                    <span style={{ fontSize: 44 }}>📸</span>
-                    <div className="text-center">
-                      <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Drop a photo here</p>
-                      <p className="text-[12px] mt-0.5" style={{ color: palette.clay }}>or tap to browse</p>
-                    </div>
-                  </>
-                )}
-              </div>
-              <button onClick={() => setWizardStep(4)}
-                className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all"
-                style={{ background: "rgba(140,100,55,0.08)", color: palette.clay, border: "1px dashed rgba(140,100,55,0.25)" }}>
-                Skip this step →
-              </button>
-            </div>
-          )}
-
-          {/* Step 4 — Review & Generate */}
-          {wizardStep === 4 && (
-            <div className="flex flex-col gap-4">
-              <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Ready to create!</h2>
-                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Yala will craft your pattern ✨</p>
-              </div>
-              <div className="craft-card p-4 flex flex-col gap-2.5">
-                <div className="flex items-center gap-3 pb-2.5" style={{ borderBottom: "1px dashed rgba(140,100,55,0.2)" }}>
-                  <span style={{ fontSize: 28 }}>{activeCategory?.emoji ?? "🧶"}</span>
-                  <div>
-                    <p className="font-heading font-bold text-[15px]" style={{ color: palette.ink }}>{formData.projectType || "—"}</p>
-                    <p className="text-[11px]" style={{ color: palette.clay }}>{formData.skillLevel}</p>
-                  </div>
-                </div>
-                {formData.prompt && (
-                  <div>
-                    <p className="text-[10.5px] font-semibold uppercase tracking-wider mb-1" style={{ color: "#B0908A" }}>Description</p>
-                    <p className="text-[12.5px] leading-snug" style={{ color: "#5C3A28" }}>{formData.prompt}</p>
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {formData.size && <span className="badge-green">{formData.size}</span>}
-                  {formData.yarnType && <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold" style={{ background: "rgba(212,146,26,0.12)", color: "#D4921A" }}>{formData.yarnType}</span>}
-                  {wizardColors.length > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      {wizardColors.slice(0, 5).map(c => (
-                        <div key={c} className="w-4 h-4 rounded-full border-2 border-white" style={{ background: c, boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }} />
-                      ))}
-                      {wizardColors.length > 5 && <span className="text-[10px]" style={{ color: palette.clay }}>+{wizardColors.length - 5}</span>}
-                    </div>
-                  )}
-                  {file && <span className="text-[11px]" style={{ color: palette.sage }}>📸 Reference image</span>}
-                </div>
-              </div>
-              <div className="flex items-center gap-3 px-3 py-3 rounded-2xl" style={{ background: "rgba(124,95,168,0.08)", border: "1px dashed rgba(124,95,168,0.25)" }}>
-                <img src="/characters/char-yala-transparent.png" alt="Yala"
-                  style={{ width: 48, height: 48, objectFit: "contain" }}
-                  onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                <p className="text-[12px] italic leading-snug" style={{ color: "#7C5FA8" }}>
-                  "I've got everything I need. Let me weave some magic for you!"
-                </p>
-              </div>
-              <button onClick={handleGeneratePattern} disabled={isGenerating}
-                className="w-full py-4 rounded-2xl font-heading font-bold text-[16px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{
-                  background: isGenerating ? "rgba(194,78,107,0.4)" : "linear-gradient(135deg, #C24E6B, #A83050)",
-                  color: "white",
-                  boxShadow: isGenerating ? "none" : "0 6px 24px rgba(194,78,107,0.4)",
-                }}>
-                {isGenerating ? <><span className="animate-spin">🧶</span> Generating…</> : <><Sparkles className="h-5 w-5" /> Generate with Yala</>}
-              </button>
-            </div>
-          )}
-
-          {/* AI nav */}
-          <div className="flex items-center justify-between mt-6">
-            <button onClick={() => setWizardStep(s => Math.max(0, s - 1))} disabled={wizardStep === 0}
-              className="px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-80 disabled:opacity-30"
-              style={{ background: "rgba(140,100,55,0.09)", color: "#5C3A28" }}>← Back</button>
-            {wizardStep < 4 && (
-              <button onClick={() => canAdvance() && setWizardStep(s => s + 1)} disabled={!canAdvance()}
-                className="px-6 py-2.5 rounded-xl font-heading font-bold text-[13px] transition-all hover:opacity-90 disabled:opacity-35"
-                style={{
-                  background: canAdvance() ? "linear-gradient(135deg, #C24E6B, #A83050)" : "rgba(140,100,55,0.12)",
-                  color: canAdvance() ? "white" : palette.clay,
-                  boxShadow: canAdvance() ? "0 3px 12px rgba(194,78,107,0.35)" : "none",
-                }}>
-                {wizardStep === 3 ? "Review →" : "Next →"}
-              </button>
-            )}
-          </div>
-        </>
+        <AiWizard
+          formData={formData}
+          setFormData={setFormData}
+          wizardStep={wizardStep}
+          setWizardStep={setWizardStep}
+          wizardColors={wizardColors}
+          setWizardColors={setWizardColors}
+          file={file}
+          setFile={setFile}
+          handleFileChange={handleFileChange}
+          isGenerating={isGenerating}
+          handleGeneratePattern={handleGeneratePattern}
+          canAdvance={canAdvance}
+        />
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           "ADD MY OWN" WIZARD
       ═══════════════════════════════════════════════════════════════════════ */}
       {mode === "own" && (
-        <>
-          {/* Step 0 — Name + Type */}
-          {ownStep === 0 && (
-            <div className="flex flex-col gap-4">
-              <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Name your pattern</h2>
-                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>What's it called and what type is it?</p>
-              </div>
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Pattern name *</label>
-                <input
-                  type="text"
-                  value={ownTitle}
-                  onChange={e => setOwnTitle(e.target.value)}
-                  placeholder="e.g. Mum's Granny Square Blanket"
-                  className="w-full p-4 rounded-2xl text-[14px] outline-none transition-all"
-                  style={{ background: "rgba(255,252,245,0.95)", border: `1.5px solid ${ownTitle.trim() ? palette.sage : "rgba(140,100,55,0.22)"}`, color: palette.ink }}
-                />
-              </div>
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Pattern type *</label>
-                {CategoryPicker()}
-              </div>
-            </div>
-          )}
-
-          {/* Step 1 — Details */}
-          {ownStep === 1 && (
-            <div className="flex flex-col gap-4">
-              <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>A few details</h2>
-                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Helps with tracking and yarn recs</p>
-              </div>
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
-                  Skill Level <span style={{ color: palette.rose }}>*</span>
-                </label>
-                <div className="flex gap-2">
-                  {SKILL_LEVELS.map((lvl) => (
-                    <button key={lvl.id}
-                      onClick={() => setFormData(p => ({ ...p, skillLevel: lvl.id }))}
-                      className="flex-1 flex flex-col items-center gap-1 p-3 rounded-2xl transition-all"
-                      style={{
-                        background: formData.skillLevel === lvl.id ? "rgba(194,78,107,0.10)" : "rgba(255,252,245,0.9)",
-                        border: `1.5px solid ${formData.skillLevel === lvl.id ? palette.rose : "rgba(140,100,55,0.18)"}`,
-                      }}>
-                      <span style={{ fontSize: 22 }}>{lvl.emoji}</span>
-                      <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? palette.rose : "#5C3A28" }}>{lvl.id}</span>
-                      <span className="text-[9.5px] text-center" style={{ color: palette.clay }}>{lvl.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {YarnPicker()}
-              {SizePicker()}
-            </div>
-          )}
-
-          {/* Step 2 — Paste + Save */}
-          {ownStep === 2 && (
-            <div className="flex flex-col gap-4">
-              <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Paste your pattern</h2>
-                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>From a book, website, or your own notes</p>
-              </div>
-
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
-                  Pattern instructions <span className="font-normal" style={{ color: palette.clay }}>(optional)</span>
-                </label>
-                <textarea
-                  rows={10}
-                  placeholder={"Paste your pattern text here — rounds, rows, materials, anything.\n\nLeave blank to create an empty pattern you can fill in manually."}
-                  value={ownRawText}
-                  onChange={e => setOwnRawText(e.target.value)}
-                  className="w-full p-4 rounded-2xl text-[13px] leading-relaxed outline-none resize-none"
-                  style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.22)", color: palette.ink }}
-                />
-                {ownRawText.trim() && (
-                  <p className="text-[11px] mt-1.5 flex items-center gap-1" style={{ color: palette.sage }}>
-                    ✨ AI will organise this into sections and steps for you
-                  </p>
-                )}
-                {!ownRawText.trim() && (
-                  <p className="text-[11px] mt-1.5" style={{ color: palette.clay }}>
-                    No text? No problem — we'll create a blank pattern you can fill in as you go.
-                  </p>
-                )}
-              </div>
-
-              {/* Summary */}
-              <div className="craft-card p-4 flex flex-col gap-2">
-                <p className="text-[10.5px] font-semibold uppercase tracking-wider" style={{ color: "#B0908A" }}>Summary</p>
-                <div className="flex items-center gap-2.5">
-                  <span style={{ fontSize: 24 }}>{CATEGORIES.find(c => c.id === formData.projectType)?.emoji ?? "🧶"}</span>
-                  <div>
-                    <p className="font-heading font-bold text-[14px]" style={{ color: palette.ink }}>{ownTitle}</p>
-                    <p className="text-[11px]" style={{ color: palette.clay }}>{formData.projectType} · {formData.skillLevel}{formData.yarnType ? ` · ${formData.yarnType}` : ""}</p>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={handleSaveOwn}
-                disabled={ownParsing}
-                className="w-full py-4 rounded-2xl font-heading font-bold text-[16px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{
-                  background: ownParsing ? "rgba(132,147,79,0.4)" : "linear-gradient(135deg, #84934F, #5A6E30)",
-                  color: "white",
-                  boxShadow: ownParsing ? "none" : "0 6px 24px rgba(132,147,79,0.4)",
-                }}>
-                {ownParsing
-                  ? <><span className="animate-spin">🧶</span> {ownRawText.trim() ? "Organising your pattern…" : "Saving…"}</>
-                  : <><Plus className="h-5 w-5" /> Add to my library</>}
-              </button>
-            </div>
-          )}
-
-          {/* Own nav */}
-          <div className="flex items-center justify-between mt-6">
-            <button onClick={() => setOwnStep(s => Math.max(0, s - 1))} disabled={ownStep === 0}
-              className="px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-80 disabled:opacity-30"
-              style={{ background: "rgba(140,100,55,0.09)", color: "#5C3A28" }}>← Back</button>
-            {ownStep < 2 && (
-              <button onClick={() => ownCanAdvance() && setOwnStep(s => s + 1)} disabled={!ownCanAdvance()}
-                className="px-6 py-2.5 rounded-xl font-heading font-bold text-[13px] transition-all hover:opacity-90 disabled:opacity-35"
-                style={{
-                  background: ownCanAdvance() ? "linear-gradient(135deg, #84934F, #5A6E30)" : "rgba(140,100,55,0.12)",
-                  color: ownCanAdvance() ? "white" : palette.clay,
-                  boxShadow: ownCanAdvance() ? "0 3px 12px rgba(132,147,79,0.35)" : "none",
-                }}>
-                Next →
-              </button>
-            )}
-          </div>
-        </>
+        <OwnWizard
+          formData={formData}
+          setFormData={setFormData}
+          ownStep={ownStep}
+          setOwnStep={setOwnStep}
+          ownTitle={ownTitle}
+          setOwnTitle={setOwnTitle}
+          ownRawText={ownRawText}
+          setOwnRawText={setOwnRawText}
+          ownParsing={ownParsing}
+          handleSaveOwn={handleSaveOwn}
+          ownCanAdvance={ownCanAdvance}
+        />
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           IMPORT PDF WIZARD
       ═══════════════════════════════════════════════════════════════════════ */}
       {mode === "pdf" && (
-        <>
-          {/* Step 0 — Upload */}
-          {pdfStep === 0 && (
-            <div className="flex flex-col gap-4">
-
-              {/* ── Aloo loading card (shown while processing) ── */}
-              {pdfParsing ? (
-                <div className="flex flex-col items-center gap-5 py-8 px-4">
-                  {/* Aloo with bounce animation */}
-                  <div style={{ animation: "alooFloat 2s ease-in-out infinite" }}>
-                    <img
-                      src="/characters/char-aloo-transparent.png"
-                      alt="Aloo is reading your pattern"
-                      style={{ width: 110, height: 110, objectFit: "contain" }}
-                      onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-                    />
-                  </div>
-
-                  <div className="text-center">
-                    <p className="font-heading font-bold text-[18px] mb-1" style={{ color: palette.ink }}>
-                      Aloo is on it!
-                    </p>
-                    <p className="text-[14px] transition-all duration-700" style={{ color: "#3D8FA3" }}>
-                      {PDF_LOADING_MSGS[pdfLoadingMsgIdx]}
-                    </p>
-                  </div>
-
-                  {/* Animated dots */}
-                  <div className="flex gap-2">
-                    {[0, 1, 2].map(i => (
-                      <div key={i} className="w-2.5 h-2.5 rounded-full"
-                        style={{
-                          background: "#3D8FA3",
-                          opacity: 0.3 + (pdfLoadingMsgIdx % 3 === i ? 0.7 : 0),
-                          transform: pdfLoadingMsgIdx % 3 === i ? "scale(1.4)" : "scale(1)",
-                          transition: "all 0.4s ease",
-                        }} />
-                    ))}
-                  </div>
-
-                  <p className="text-[11px] text-center" style={{ color: "#B0908A" }}>
-                    This usually takes 10–30 seconds
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div className="text-center mb-1">
-                    <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Upload your PDF</h2>
-                    <p className="text-[13px] mt-1" style={{ color: palette.clay }}>From Etsy, Ravelry, a blog — anywhere</p>
-                  </div>
-
-                  {/* Drop zone */}
-                  <div
-                    onClick={() => document.getElementById("pdf-file-input")?.click()}
-                    className="border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
-                    style={{
-                      borderColor: pdfFiles.length ? "#3D8FA3" : "rgba(61,143,163,0.40)",
-                      background: pdfFiles.length ? "rgba(61,143,163,0.06)" : "rgba(255,252,245,0.7)",
-                      minHeight: pdfFiles.length ? "auto" : 180,
-                      padding: pdfFiles.length ? "14px 16px" : "24px 16px",
-                    }}>
-                    <input
-                      id="pdf-file-input"
-                      type="file"
-                      accept="application/pdf,.pdf"
-                      multiple
-                      className="hidden"
-                      onChange={handlePdfFileChange}
-                    />
-                    {pdfFiles.length > 0 ? (
-                      <div className="w-full flex flex-col gap-2">
-                        {pdfFiles.map((f, i) => (
-                          <div key={i} className="flex items-center gap-2.5 px-3 py-2 rounded-xl"
-                            style={{ background: "rgba(61,143,163,0.10)" }}>
-                            <span style={{ fontSize: 20, flexShrink: 0 }}>📄</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-[12px] truncate" style={{ color: "#2A6B7D" }}>{f.name}</p>
-                              <p className="text-[10px]" style={{ color: palette.clay }}>{(f.size / 1024 / 1024).toFixed(1)} MB</p>
-                            </div>
-                            <button
-                              onClick={e => { e.stopPropagation(); setPdfFiles(prev => prev.filter((_, j) => j !== i)); }}
-                              className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-lg hover:opacity-75"
-                              style={{ color: palette.clay, background: "rgba(0,0,0,0.06)" }}>
-                              ✕
-                            </button>
-                          </div>
-                        ))}
-                        {pdfFiles.length < 5 && (
-                          <div className="flex items-center justify-center gap-1.5 pt-1"
-                            style={{ color: "#3D8FA3", fontSize: 12, fontWeight: 600 }}>
-                            <FileUp className="h-3.5 w-3.5" /> Add another PDF
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <>
-                        <FileUp className="h-10 w-10" style={{ color: "rgba(61,143,163,0.55)" }} />
-                        <div className="text-center">
-                          <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Tap to choose PDFs</p>
-                          <p className="text-[12px] mt-0.5" style={{ color: palette.clay }}>Up to 5 files · 10 MB each · Text-based only</p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Personal use note */}
-                  <p className="text-[11px] text-center" style={{ color: "#B0908A" }}>
-                    📋 Imported patterns are for your personal use only
-                  </p>
-
-                  <button
-                    onClick={handlePdfUpload}
-                    disabled={!pdfFiles.length}
-                    className="w-full py-4 rounded-2xl font-heading font-bold text-[16px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
-                    style={{
-                      background: !pdfFiles.length ? "rgba(61,143,163,0.35)" : "linear-gradient(135deg, #3D8FA3, #2A6B7D)",
-                      color: "white",
-                      boxShadow: !pdfFiles.length ? "none" : "0 6px 24px rgba(61,143,163,0.38)",
-                    }}>
-                    <FileUp className="h-5 w-5" />
-                    {pdfFiles.length > 1 ? `Read & Extract (${pdfFiles.length} PDFs)` : "Read & Extract Pattern"}
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Step 1 — Review & Edit */}
-          {pdfStep === 1 && pdfResult && (
-            <div className="flex flex-col gap-5">
-              <div className="text-center mb-1">
-                <h2 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Review & edit</h2>
-                <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Fix anything the AI got wrong before saving</p>
-              </div>
-
-              {/* Import banner */}
-              <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-2xl"
-                style={{ background: "rgba(61,143,163,0.09)", border: "1px solid rgba(61,143,163,0.28)" }}>
-                <span style={{ fontSize: 18, flexShrink: 0 }}>📄</span>
-                <p className="text-[12px] leading-snug" style={{ color: "#2A6B7D" }}>
-                  <strong>From:</strong> {pdfFiles.map(f => f.name).join(', ')} · Diagrams weren't imported, only written instructions.
-                </p>
-              </div>
-
-              {/* ── Title ── */}
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Pattern name</label>
-                <input
-                  type="text"
-                  value={pdfEditTitle}
-                  onChange={e => setPdfEditTitle(e.target.value)}
-                  placeholder="Pattern name…"
-                  className="w-full p-3.5 rounded-2xl text-[14px] outline-none"
-                  style={{
-                    background: "rgba(255,252,245,0.95)",
-                    border: `1.5px solid ${pdfEditTitle.trim() ? "#3D8FA3" : "rgba(140,100,55,0.22)"}`,
-                    color: palette.ink,
-                  }}
-                />
-              </div>
-
-              {/* ── Project type ── */}
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Type</label>
-                <div className="flex gap-2 flex-wrap">
-                  {CATEGORIES.map(c => (
-                    <button key={c.id} onClick={() => setPdfEditType(c.id)}
-                      className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all"
-                      style={{
-                        background: pdfEditType === c.id ? c.color : "rgba(140,100,55,0.08)",
-                        color: pdfEditType === c.id ? "white" : "#7A5A4A",
-                        border: pdfEditType === c.id ? "none" : "1.5px solid rgba(140,100,55,0.15)",
-                      }}>
-                      {c.emoji} {c.id}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── Skill level ── */}
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Skill level</label>
-                <div className="flex gap-2">
-                  {SKILL_LEVELS.map(s => (
-                    <button key={s.id} onClick={() => setPdfEditSkill(s.id)}
-                      className="flex-1 py-2 rounded-xl text-[12px] font-semibold transition-all"
-                      style={{
-                        background: pdfEditSkill === s.id ? palette.ink : "rgba(140,100,55,0.08)",
-                        color: pdfEditSkill === s.id ? "white" : "#7A5A4A",
-                        border: pdfEditSkill === s.id ? "none" : "1.5px solid rgba(140,100,55,0.15)",
-                      }}>
-                      {s.emoji} {s.id}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── Yarn type ── */}
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Yarn type</label>
-                <div className="flex gap-1.5 flex-wrap">
-                  {YARN_TYPES.map(yt => (
-                    <button key={yt} onClick={() => setPdfEditYarnType(yt)}
-                      className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all"
-                      style={{
-                        background: pdfEditYarnType === yt ? "#D4921A" : "rgba(140,100,55,0.08)",
-                        color: pdfEditYarnType === yt ? "white" : "#7A5A4A",
-                        border: pdfEditYarnType === yt ? "none" : "1.5px solid rgba(140,100,55,0.15)",
-                      }}>
-                      {yt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── Yarn requirements ── */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="font-heading font-semibold text-[13px]" style={{ color: "#5C3A28" }}>Yarn needed</label>
-                  <button onClick={() => setPdfEditYarnReqs(p => [...p, { color: "", volume: "" }])}
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg"
-                    style={{ background: "rgba(61,143,163,0.12)", color: "#2A6B7D" }}>
-                    + Add
-                  </button>
-                </div>
-                {pdfEditYarnReqs.length === 0 && (
-                  <p className="text-[12px] italic" style={{ color: "#B0908A" }}>Nothing detected — tap + Add to add yarn</p>
-                )}
-                {pdfEditYarnReqs.map((y, i) => (
-                  <div key={i} className="flex gap-2 mb-2 items-center">
-                    <input value={y.color}
-                      onChange={e => setPdfEditYarnReqs(p => p.map((r, j) => j === i ? { ...r, color: e.target.value } : r))}
-                      placeholder="Colour / name"
-                      className="flex-1 p-2.5 rounded-xl text-[12px] outline-none"
-                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: palette.ink }} />
-                    <input value={y.volume}
-                      onChange={e => setPdfEditYarnReqs(p => p.map((r, j) => j === i ? { ...r, volume: e.target.value } : r))}
-                      placeholder="Amount (e.g. 50g)"
-                      className="w-28 p-2.5 rounded-xl text-[12px] outline-none"
-                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: palette.ink }} />
-                    <button onClick={() => setPdfEditYarnReqs(p => p.filter((_, j) => j !== i))}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[15px] font-bold"
-                      style={{ background: "rgba(194,78,107,0.12)", color: palette.rose }}>×</button>
-                  </div>
-                ))}
-              </div>
-
-              {/* ── Hook requirements ── */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="font-heading font-semibold text-[13px]" style={{ color: "#5C3A28" }}>Hook size</label>
-                  <button onClick={() => setPdfEditHooks(p => [...p, { size: "", note: "" }])}
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg"
-                    style={{ background: "rgba(61,143,163,0.12)", color: "#2A6B7D" }}>
-                    + Add
-                  </button>
-                </div>
-                {pdfEditHooks.length === 0 && (
-                  <p className="text-[12px] italic" style={{ color: "#B0908A" }}>Nothing detected — tap + Add to add a hook</p>
-                )}
-                {pdfEditHooks.map((h, i) => (
-                  <div key={i} className="flex gap-2 mb-2 items-center">
-                    <input value={h.size}
-                      onChange={e => setPdfEditHooks(p => p.map((r, j) => j === i ? { ...r, size: e.target.value } : r))}
-                      placeholder="e.g. 4.0mm"
-                      className="w-28 p-2.5 rounded-xl text-[12px] outline-none"
-                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: palette.ink }} />
-                    <input value={h.note}
-                      onChange={e => setPdfEditHooks(p => p.map((r, j) => j === i ? { ...r, note: e.target.value } : r))}
-                      placeholder="Note (optional)"
-                      className="flex-1 p-2.5 rounded-xl text-[12px] outline-none"
-                      style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.18)", color: palette.ink }} />
-                    <button onClick={() => setPdfEditHooks(p => p.filter((_, j) => j !== i))}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[15px] font-bold"
-                      style={{ background: "rgba(194,78,107,0.12)", color: palette.rose }}>×</button>
-                  </div>
-                ))}
-              </div>
-
-              {/* ── Sections & steps ── */}
-              <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
-                  Sections & steps
-                  <span className="ml-1.5 font-normal text-[11px]" style={{ color: palette.clay }}>tap a section to edit its steps</span>
-                </label>
-                {pdfEditSections.map((sec, si) => (
-                  <div key={si} className="mb-2 rounded-2xl overflow-hidden"
-                    style={{ border: "1.5px solid rgba(140,100,55,0.18)" }}>
-                    {/* Section header row */}
-                    <div className="flex items-center gap-2 px-3 py-2.5"
-                      style={{ background: pdfExpandedSec === si ? "rgba(61,143,163,0.08)" : "rgba(255,252,245,0.7)" }}>
-                      <span className="text-[11px] font-bold flex-shrink-0" style={{ color: "#3D8FA3" }}>§{si + 1}</span>
-                      <input
-                        value={sec.name}
-                        onChange={e => setPdfEditSections(p => p.map((s, j) => j === si ? { ...s, name: e.target.value } : s))}
-                        className="flex-1 bg-transparent outline-none text-[13px] font-semibold"
-                        style={{ color: palette.ink }}
-                        placeholder="Section name"
-                      />
-                      <button
-                        onClick={() => setPdfExpandedSec(pdfExpandedSec === si ? null : si)}
-                        className="flex items-center gap-1 flex-shrink-0"
-                        style={{ color: palette.clay }}>
-                        <span className="text-[10px]">{sec.steps?.length ?? 0} steps</span>
-                        <ChevronRight className="h-3.5 w-3.5 transition-transform"
-                          style={{ transform: pdfExpandedSec === si ? "rotate(90deg)" : "rotate(0deg)" }} />
-                      </button>
-                      <button onClick={() => { setPdfEditSections(p => p.filter((_, j) => j !== si)); if (pdfExpandedSec === si) setPdfExpandedSec(null); }}
-                        className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-[13px] font-bold"
-                        style={{ background: "rgba(194,78,107,0.10)", color: palette.rose }}>×</button>
-                    </div>
-
-                    {/* Steps (expanded) */}
-                    {pdfExpandedSec === si && (
-                      <div className="px-3 py-3 flex flex-col gap-2"
-                        style={{ background: "rgba(255,252,245,0.5)", borderTop: "1px solid rgba(140,100,55,0.10)" }}>
-                        {(sec.steps || []).map((step: any, sti: number) => (
-                          <div key={sti} className="flex gap-2 items-start">
-                            <span className="text-[10px] font-semibold mt-2.5 w-4 text-right flex-shrink-0" style={{ color: "#B0908A" }}>{sti + 1}</span>
-                            <textarea
-                              value={step.instruction}
-                              onChange={e => setPdfEditSections(p => p.map((s, j) => j === si
-                                ? { ...s, steps: s.steps.map((st: any, k: number) => k === sti ? { ...st, instruction: e.target.value } : st) }
-                                : s))}
-                              rows={2}
-                              className="flex-1 p-2 rounded-xl text-[12px] outline-none resize-none leading-snug"
-                              style={{ background: "rgba(255,252,245,0.95)", border: "1.5px solid rgba(140,100,55,0.15)", color: palette.ink }}
-                            />
-                            <button
-                              onClick={() => setPdfEditSections(p => p.map((s, j) => j === si
-                                ? { ...s, steps: s.steps.filter((_: any, k: number) => k !== sti) }
-                                : s))}
-                              className="w-6 h-6 mt-1.5 rounded-lg flex items-center justify-center flex-shrink-0 text-[13px] font-bold"
-                              style={{ background: "rgba(194,78,107,0.10)", color: palette.rose }}>×</button>
-                          </div>
-                        ))}
-                        <button
-                          onClick={() => setPdfEditSections(p => p.map((s, j) => j === si
-                            ? { ...s, steps: [...(s.steps || []), { instruction: "", count: "" }] }
-                            : s))}
-                          className="text-[11px] font-semibold py-1.5 rounded-xl w-full"
-                          style={{ background: "rgba(61,143,163,0.10)", color: "#2A6B7D" }}>
-                          + Add step
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                <button
-                  onClick={() => { setPdfEditSections(p => [...p, { name: "New section", steps: [{ instruction: "", count: "" }] }]); setPdfExpandedSec(pdfEditSections.length); }}
-                  className="w-full py-2 rounded-xl text-[12px] font-semibold mt-1"
-                  style={{ background: "rgba(140,100,55,0.06)", color: palette.clay, border: "1.5px dashed rgba(140,100,55,0.22)" }}>
-                  + Add section
-                </button>
-              </div>
-
-              <button
-                onClick={handlePdfSave}
-                disabled={pdfSaving || !pdfEditTitle.trim()}
-                className="w-full py-4 rounded-2xl font-heading font-bold text-[16px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{
-                  background: pdfSaving ? "rgba(61,143,163,0.35)" : "linear-gradient(135deg, #3D8FA3, #2A6B7D)",
-                  color: "white",
-                  boxShadow: pdfSaving ? "none" : "0 6px 24px rgba(61,143,163,0.38)",
-                }}>
-                {pdfSaving
-                  ? <><span className="animate-spin">🧶</span> Saving…</>
-                  : <><Plus className="h-5 w-5" /> Save to my library</>}
-              </button>
-
-              <button
-                onClick={() => { setPdfStep(0); setPdfResult(null); setPdfFiles([]); }}
-                className="w-full py-2.5 rounded-xl text-[13px] font-semibold"
-                style={{ background: "rgba(140,100,55,0.08)", color: palette.clay }}>
-                ← Try a different PDF
-              </button>
-            </div>
-          )}
-        </>
+        <PdfWizard
+          pdfStep={pdfStep}
+          setPdfStep={setPdfStep}
+          pdfParsing={pdfParsing}
+          pdfFiles={pdfFiles}
+          setPdfFiles={setPdfFiles}
+          handlePdfFileChange={handlePdfFileChange}
+          handlePdfUpload={handlePdfUpload}
+          pdfResult={pdfResult}
+          setPdfResult={setPdfResult}
+          pdfEditTitle={pdfEditTitle}
+          setPdfEditTitle={setPdfEditTitle}
+          pdfEditType={pdfEditType}
+          setPdfEditType={setPdfEditType}
+          pdfEditSkill={pdfEditSkill}
+          setPdfEditSkill={setPdfEditSkill}
+          pdfEditYarnType={pdfEditYarnType}
+          setPdfEditYarnType={setPdfEditYarnType}
+          pdfEditYarnReqs={pdfEditYarnReqs}
+          setPdfEditYarnReqs={setPdfEditYarnReqs}
+          pdfEditHooks={pdfEditHooks}
+          setPdfEditHooks={setPdfEditHooks}
+          pdfEditSections={pdfEditSections}
+          setPdfEditSections={setPdfEditSections}
+          pdfExpandedSec={pdfExpandedSec}
+          setPdfExpandedSec={setPdfExpandedSec}
+          pdfLoadingMsgIdx={pdfLoadingMsgIdx}
+          handlePdfSave={handlePdfSave}
+          pdfSaving={pdfSaving}
+        />
       )}
 
     </div>
