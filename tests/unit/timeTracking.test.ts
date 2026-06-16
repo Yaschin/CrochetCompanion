@@ -4,6 +4,8 @@ import {
   formatClock,
   totalMs,
   makeSession,
+  mergeSessions,
+  lifetimeMs,
   type WorkSession,
 } from "../../client/src/lib/timeTracking";
 
@@ -66,5 +68,41 @@ describe("makeSession", () => {
     expect(makeSession(t, t)).toBeNull();
     expect(makeSession(t, t - 1000)).toBeNull();
     expect(makeSession(NaN, t)).toBeNull();
+  });
+});
+
+describe("mergeSessions", () => {
+  const s = (start: string, ms = 1000): WorkSession => ({ start, end: start, ms });
+
+  it("unions two lists newest-first, de-duping the same session by start", () => {
+    const local = [s("2026-01-01T10:00:00.000Z"), s("2026-01-03T10:00:00.000Z")];
+    const remote = [s("2026-01-02T10:00:00.000Z"), s("2026-01-03T10:00:00.000Z")]; // dup of local
+    expect(mergeSessions(remote, local).map((x) => x.start)).toEqual([
+      "2026-01-03T10:00:00.000Z",
+      "2026-01-02T10:00:00.000Z",
+      "2026-01-01T10:00:00.000Z",
+    ]);
+  });
+
+  it("drops malformed/empty-start sessions and tolerates empty inputs", () => {
+    const merged = mergeSessions(
+      [s("2026-01-01T10:00:00.000Z")],
+      [{ start: "", end: "", ms: 5 } as WorkSession, { start: "x", end: "", ms: 0 } as WorkSession],
+    );
+    expect(merged).toHaveLength(1);
+    expect(mergeSessions([], [])).toEqual([]);
+  });
+});
+
+describe("lifetimeMs", () => {
+  it("sums tracked time across projects, tolerating missing sessions", () => {
+    expect(
+      lifetimeMs([
+        { workSessions: [{ start: "", end: "", ms: 1000 }, { start: "", end: "", ms: 2000 }] },
+        { workSessions: [{ start: "", end: "", ms: 500 }] },
+        {}, // no workSessions
+      ])
+    ).toBe(3500);
+    expect(lifetimeMs([])).toBe(0);
   });
 });

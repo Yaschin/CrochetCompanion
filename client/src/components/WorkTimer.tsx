@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Play, Square, Clock } from "lucide-react";
 import { palette } from "@/lib/theme";
 import { recordActivity } from "@/lib/activityLog";
 import {
   WorkSession,
   getSessions,
-  addSession,
+  saveSessions,
+  mergeSessions,
   getRunningStart,
   setRunningStart,
   makeSession,
@@ -15,6 +17,16 @@ import {
 } from "@/lib/timeTracking";
 
 const VIOLET = "#7C5FA8";
+
+/** Write the durable copy of the sessions to the pattern row (fire-and-forget). */
+function putWorkSessions(patternId: string, sessions: WorkSession[]): Promise<unknown> {
+  return fetch(`/api/patterns/${patternId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ workSessions: sessions }),
+  });
+}
 
 /** "16 Jun, 2:30 PM" — when a past session happened. */
 function formatWhen(iso: string): string {
@@ -29,15 +41,44 @@ function formatWhen(iso: string): string {
  * running session so the stopwatch survives navigation and refreshes.
  */
 export default function WorkTimer({ patternId }: { patternId: string }) {
+  const queryClient = useQueryClient();
   const [sessions, setSessions] = useState<WorkSession[]>(() => getSessions(patternId));
   const [startMs, setStartMs] = useState<number | null>(() => getRunningStart(patternId));
   const [now, setNow] = useState(() => Date.now());
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  // Reload when the pattern changes (component is reused across patterns).
+  const refreshTimeViews = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/patterns"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/patterns", patternId] });
+  };
+
+  // On mount / pattern change: show the local cache immediately, then reconcile
+  // with the durable copy on the pattern. Merge (never replace) so nothing is
+  // lost, adopting the server's sessions on a fresh device and pushing up any
+  // the server is missing (tracked before this shipped, or made offline).
   useEffect(() => {
-    setSessions(getSessions(patternId));
+    const local = getSessions(patternId);
+    setSessions(local);
     setStartMs(getRunningStart(patternId));
+    if (!patternId) return;
+    let cancelled = false;
+    fetch(`/api/patterns/${patternId}`, { credentials: "same-origin" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((p) => {
+        if (cancelled || !p) return;
+        const remote: WorkSession[] = Array.isArray(p.workSessions) ? p.workSessions : [];
+        const merged = mergeSessions(remote, local);
+        if (merged.length !== local.length) {
+          setSessions(merged);
+          saveSessions(patternId, merged);
+        }
+        if (merged.length !== remote.length) {
+          putWorkSessions(patternId, merged).then(refreshTimeViews).catch(() => { /* offline */ });
+        }
+      })
+      .catch(() => { /* offline — local cache stands */ });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patternId]);
 
   // Tick once a second while a session is running.
@@ -64,7 +105,11 @@ export default function WorkTimer({ patternId }: { patternId: string }) {
     const session = makeSession(startMs, Date.now());
     setStartMs(null);
     setRunningStart(patternId, null);
-    if (session) setSessions(addSession(patternId, session));
+    if (!session) return;
+    const next = mergeSessions([session], sessions);
+    setSessions(next);
+    saveSessions(patternId, next);            // fast, offline-safe cache
+    putWorkSessions(patternId, next).then(refreshTimeViews).catch(() => { /* offline — cache holds it */ });
   };
 
   return (

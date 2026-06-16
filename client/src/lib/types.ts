@@ -54,6 +54,15 @@ export interface PatternSection {
   steps: PatternStep[];
 }
 
+/** "As-built" record of a finished object — what was actually used / how it turned out. */
+export interface FinishedRecord {
+  madeFor?: string;
+  hookUsed?: string;
+  yarnUsed?: string;
+  measurements?: string;
+  notes?: string;
+}
+
 export interface Pattern {
   id: string;
   title: string;
@@ -63,6 +72,8 @@ export interface Pattern {
   materialsNotes?: string;
   userNotes?: string;
   counterState?: { stitches: number; rows: number; target: number; history?: unknown[] } | null;
+  workSessions?: { start: string; end: string; ms: number }[];
+  finishedRecord?: FinishedRecord | null;
   yarnRequirements?: YarnRequirement[];
   hookRequirements?: HookRequirement[];
   notionsRequirements?: NotionsRequirement[];
