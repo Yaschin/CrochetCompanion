@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ViewType } from "../lib/types";
 import { recordActivity } from "../lib/activityLog";
 import { useStitchCounter, EMPTY_COUNTER, CounterHistoryEntry } from "../hooks/useStitchCounter";
+import WorkTimer from "../components/WorkTimer";
 
 interface StitchCounterScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -172,6 +173,9 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
               : "or turn on 🎙️ voice for hands-free"}
           </span>
         </motion.button>
+
+        {/* Work-session timer — actual crocheting time on this project */}
+        {patternId && <WorkTimer patternId={patternId} />}
 
         {/* Row counter — primary big counter */}
         <div className="craft-card craft-card-sage p-6">
