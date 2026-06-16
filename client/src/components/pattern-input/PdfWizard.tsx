@@ -1,49 +1,171 @@
-import { Dispatch, SetStateAction, ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { palette } from "@/lib/theme";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Pattern } from "@/lib/types";
 import { FileUp, ChevronRight, Plus } from "lucide-react";
-import { CATEGORIES, SKILL_LEVELS, YARN_TYPES, PDF_LOADING_MSGS } from "./constants";
+import { CATEGORIES, SKILL_LEVELS, YARN_TYPES, PDF_STEPS, PDF_TIPS, PDF_LOADING_MSGS } from "./constants";
+import { fileToBase64, buildPatternToSave } from "./helpers";
+import WizardChrome from "./WizardChrome";
 
 interface PdfWizardProps {
-  pdfStep: number;
-  setPdfStep: Dispatch<SetStateAction<number>>;
-  pdfParsing: boolean;
-  pdfFiles: File[];
-  setPdfFiles: Dispatch<SetStateAction<File[]>>;
-  handlePdfFileChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  handlePdfUpload: () => void;
-  pdfResult: any;
-  setPdfResult: Dispatch<SetStateAction<any>>;
-  pdfEditTitle: string;
-  setPdfEditTitle: Dispatch<SetStateAction<string>>;
-  pdfEditType: string;
-  setPdfEditType: Dispatch<SetStateAction<string>>;
-  pdfEditSkill: string;
-  setPdfEditSkill: Dispatch<SetStateAction<string>>;
-  pdfEditYarnType: string;
-  setPdfEditYarnType: Dispatch<SetStateAction<string>>;
-  pdfEditYarnReqs: Array<{ color: string; volume: string }>;
-  setPdfEditYarnReqs: Dispatch<SetStateAction<Array<{ color: string; volume: string }>>>;
-  pdfEditHooks: Array<{ size: string; note: string }>;
-  setPdfEditHooks: Dispatch<SetStateAction<Array<{ size: string; note: string }>>>;
-  pdfEditSections: Array<{ name: string; steps: Array<{ instruction: string; count?: string }> }>;
-  setPdfEditSections: Dispatch<SetStateAction<Array<{ name: string; steps: Array<{ instruction: string; count?: string }> }>>>;
-  pdfExpandedSec: number | null;
-  setPdfExpandedSec: Dispatch<SetStateAction<number | null>>;
-  pdfLoadingMsgIdx: number;
-  handlePdfSave: () => void;
-  pdfSaving: boolean;
+  onPatternCreated: (pattern: Pattern, skipLoading?: boolean) => void;
 }
 
-/** The "Import PDF" 2-step wizard (upload → review & edit → save). */
-export default function PdfWizard({
-  pdfStep, setPdfStep, pdfParsing, pdfFiles, setPdfFiles, handlePdfFileChange, handlePdfUpload,
-  pdfResult, setPdfResult, pdfEditTitle, setPdfEditTitle, pdfEditType, setPdfEditType, pdfEditSkill, setPdfEditSkill,
-  pdfEditYarnType, setPdfEditYarnType, pdfEditYarnReqs, setPdfEditYarnReqs, pdfEditHooks, setPdfEditHooks,
-  pdfEditSections, setPdfEditSections, pdfExpandedSec, setPdfExpandedSec, pdfLoadingMsgIdx,
-  handlePdfSave, pdfSaving,
-}: PdfWizardProps) {
+/** The "Import PDF" 2-step wizard (upload → review & edit → save). Self-contained:
+ *  it owns all PDF state, its parse/save mutations, and renders its own chrome. */
+export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
+  const { toast } = useToast();
+
+  const [pdfStep, setPdfStep]         = useState(0);
+  const [pdfFiles, setPdfFiles]       = useState<File[]>([]);
+  const [pdfParsing, setPdfParsing]   = useState(false);
+  const [pdfResult, setPdfResult]     = useState<any>(null);
+  const [pdfEditTitle, setPdfEditTitle] = useState("");
+  const [pdfSaving, setPdfSaving]         = useState(false);
+  const [pdfEditType, setPdfEditType]     = useState("");
+  const [pdfEditSkill, setPdfEditSkill]   = useState("");
+  const [pdfEditYarnType, setPdfEditYarnType] = useState("");
+  const [pdfEditYarnReqs, setPdfEditYarnReqs] = useState<Array<{color: string; volume: string}>>([]);
+  const [pdfEditHooks, setPdfEditHooks]   = useState<Array<{size: string; note: string}>>([]);
+  const [pdfEditSections, setPdfEditSections] = useState<Array<{name: string; steps: Array<{instruction: string; count?: string}>}>>([]);
+  const [pdfExpandedSec, setPdfExpandedSec]   = useState<number | null>(null);
+  const [pdfLoadingMsgIdx, setPdfLoadingMsgIdx] = useState(0);
+
+  useEffect(() => {
+    if (!pdfParsing) { setPdfLoadingMsgIdx(0); return; }
+    const id = setInterval(() => setPdfLoadingMsgIdx(i => (i + 1) % PDF_LOADING_MSGS.length), 2800);
+    return () => clearInterval(id);
+  }, [pdfParsing]);
+
+  const parsePdfMutation = useMutation({
+    mutationFn: async (filesBase64: string[]) => {
+      const res = await apiRequest('POST', '/api/parse-pdf', { filesBase64 });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to process PDF');
+      }
+      return res.json();
+    },
+  });
+
+  const savePatternMutation = useMutation({
+    mutationFn: async (pattern: Omit<Pattern, 'id' | 'createdAt'>) => {
+      const res = await apiRequest('POST', '/api/patterns', pattern);
+      return res.json();
+    },
+  });
+
+  const handlePdfFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    const incoming = Array.from(e.target.files);
+    const errors: string[] = [];
+    const valid: File[] = [];
+    for (const f of incoming) {
+      if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+        errors.push(`${f.name} is not a PDF`); continue;
+      }
+      if (f.size > 10 * 1024 * 1024) {
+        errors.push(`${f.name} is over 10 MB`); continue;
+      }
+      valid.push(f);
+    }
+    if (errors.length) toast({ title: "Some files skipped", description: errors.join(' · '), variant: "destructive" });
+    setPdfFiles(prev => {
+      const combined = [...prev, ...valid];
+      if (combined.length > 5) {
+        toast({ title: "Max 5 PDFs", description: "Only the first 5 files will be used.", variant: "destructive" });
+        return combined.slice(0, 5);
+      }
+      return combined;
+    });
+    e.target.value = "";
+  };
+
+  const handlePdfUpload = async () => {
+    if (!pdfFiles.length) return;
+    setPdfParsing(true);
+    try {
+      const allBase64 = await Promise.all(pdfFiles.map(fileToBase64));
+      const result = await parsePdfMutation.mutateAsync(allBase64);
+      setPdfResult(result);
+      setPdfEditTitle(result.title || "Imported Pattern");
+      setPdfEditType(result.projectType || "Other");
+      setPdfEditSkill(result.skillLevel || "Beginner");
+      setPdfEditYarnType(result.yarnType || "Not specified");
+      setPdfEditYarnReqs(result.yarnRequirements || []);
+      setPdfEditHooks(result.hookRequirements || []);
+      setPdfEditSections(result.sections || []);
+      setPdfExpandedSec(null);
+      setPdfStep(1);
+    } catch (err: any) {
+      const raw = err.message || "Something went wrong.";
+      const clean = raw.replace(/^API request failed \(\d+\):\s*/i, "");
+      toast({
+        title: "Couldn't read PDF",
+        description: clean || "Try 'Add my own' and paste the text manually.",
+        variant: "destructive",
+        duration: 8000,
+      });
+    } finally {
+      setPdfParsing(false);
+    }
+  };
+
+  const handlePdfSave = async () => {
+    if (!pdfResult) return;
+    setPdfSaving(true);
+    try {
+      const title = pdfEditTitle.trim() || pdfResult.title || "Imported Pattern";
+      const merged = {
+        ...pdfResult,
+        title,
+        projectType: pdfEditType || "Other",
+        skillLevel:  pdfEditSkill || "Beginner",
+        yarnType:    pdfEditYarnType === "Not specified" ? "" : (pdfEditYarnType || ""),
+        yarnRequirements: pdfEditYarnReqs.filter(y => y.color.trim()),
+        hookRequirements: pdfEditHooks.filter(h => h.size.trim()),
+        sections:    pdfEditSections,
+      };
+      const patternToSave = buildPatternToSave(
+        merged,
+        {
+          prompt: title,
+          projectType: merged.projectType,
+          skillLevel:  merged.skillLevel,
+          yarnType:    merged.yarnType,
+          size: "",
+        },
+        undefined,
+      );
+      const savedPattern = await savePatternMutation.mutateAsync(patternToSave);
+      queryClient.invalidateQueries({ queryKey: ['/api/patterns'] });
+      onPatternCreated(savedPattern, true);
+      toast({
+        title: "Pattern imported! 🎉",
+        description: `"${savedPattern.title}" is now in your library. Tap any step to edit it.`,
+        duration: 6000,
+      });
+    } catch (err) {
+      console.error('Error saving PDF pattern:', err);
+      toast({ title: "Couldn't save", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } finally {
+      setPdfSaving(false);
+    }
+  };
+
   return (
     <>
+      <WizardChrome
+        steps={PDF_STEPS}
+        currentStep={pdfStep}
+        tips={PDF_TIPS}
+        modeAccent="#3D8FA3"
+        modeAccentRgb="61,143,163"
+        charImg="/characters/char-ashi-transparent.png"
+      />
+
           {/* Step 0 — Upload */}
           {pdfStep === 0 && (
             <div className="flex flex-col gap-4">
