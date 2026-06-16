@@ -1,12 +1,12 @@
 import { palette } from "@/lib/theme";
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { ToastAction } from '@/components/ui/toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useMutation } from '@tanstack/react-query';
-import { Sparkles, Key, ExternalLink, AlertCircle, BookOpen, FileUp } from 'lucide-react';
+import { Sparkles, BookOpen, FileUp } from 'lucide-react';
 import { PatternInputFormData, Pattern } from '../lib/types';
 import GenerationLoadingScreen from '../pages/GenerationLoadingScreen';
+import { showAiErrorToast } from '@/lib/aiErrorToast';
 import { CATEGORIES, SKILL_LEVELS, YARN_TYPES, COLOR_PALETTE, SIZE_OPTIONS, AI_STEPS, OWN_STEPS, PDF_STEPS, AI_TIPS, OWN_TIPS, PDF_TIPS, PDF_LOADING_MSGS } from './pattern-input/constants';
 import { fileToDataUrl, fileToBase64, buildPatternToSave } from './pattern-input/helpers';
 import { CategoryPicker, SkillPicker, YarnPicker, SizePicker } from './pattern-input/Pickers';
@@ -305,7 +305,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
       }
     } catch (error) {
       clearInterval(trickle);
-      handleGenerationError(error);
+      showAiErrorToast(error, { action: "generate patterns", fallbackTitle: "Generation Failed" });
     } finally {
       clearInterval(trickle);
       setIsGenerating(false);
@@ -349,27 +349,6 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
       setOwnParsing(false);
     }
   };
-
-  // ── AI error handler ─────────────────────────────────────────────────────────
-  function handleGenerationError(error: unknown) {
-    const s = String(error);
-    if (s.includes('OPENAI_API_KEY') || s.includes('API key') || s.includes('401') || s.includes('403')) {
-      toast({ title: "OpenAI API Key Required", description: "Add a valid key to generate patterns.",
-        variant: "apiWarning", action: <ToastAction altText="Get Key" onClick={() => window.open('https://platform.openai.com/account/api-keys','_blank')}><Key className="mr-1 h-4 w-4"/>Get API Key</ToastAction>, duration: 10000 });
-    } else if (s.includes('rate limit') || s.includes('429')) {
-      toast({ title: "Rate Limit Reached", description: "Please wait a few minutes and try again.", variant: "apiWarning", duration: 8000 });
-    } else if (s.includes('timeout') || s.includes('timed out')) {
-      toast({ title: "Generation Timed Out", description: "Try a simpler description.", variant: "apiWarning", duration: 8000 });
-    } else if (s.includes('billing') || s.includes('quota')) {
-      toast({ title: "OpenAI Billing Issue", description: "Check your OpenAI account.", variant: "apiWarning",
-        action: <ToastAction altText="Check Billing" onClick={() => window.open('https://platform.openai.com/account/billing','_blank')}><ExternalLink className="mr-1 h-4 w-4"/>Check Billing</ToastAction>, duration: 10000 });
-    } else if (s.includes('content policy') || s.includes('safety')) {
-      toast({ title: "Content Policy Violation", description: "Your description may violate OpenAI's usage policy.", variant: "apiWarning",
-        action: <ToastAction altText="Learn More" onClick={() => window.open('https://openai.com/policies/usage-policies','_blank')}><AlertCircle className="mr-1 h-4 w-4"/>Learn More</ToastAction>, duration: 10000 });
-    } else {
-      toast({ title: "Generation Failed", description: s.substring(0, 80), variant: "destructive", duration: 6000 });
-    }
-  }
 
   const activeCategory = CATEGORIES.find(c => c.id === formData.projectType);
   // ── Own wizard: can advance? ──────────────────────────────────────────────────
