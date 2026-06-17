@@ -1,4 +1,5 @@
 import { palette } from "@/lib/theme";
+import { isMaterialsSection } from "@shared/sections";
 import { ChevronLeft, Trophy, Clock, CalendarDays } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Pattern, ViewType } from "../lib/types";
@@ -19,7 +20,7 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
   const { data: allPatterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
   const finishedCount = allPatterns.filter((p) => p.status === "finished").length;
 
-  const realSections = (pattern?.sections ?? []).filter((s) => s.name.toLowerCase() !== "materials");
+  const realSections = (pattern?.sections ?? []).filter((s) => !isMaterialsSection(s.name));
   const steps = realSections.flatMap((s) => s.steps);
   const done = steps.filter((s) => s.completed).length;
   const total = steps.length || 1;

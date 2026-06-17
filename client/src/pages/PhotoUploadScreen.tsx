@@ -1,4 +1,5 @@
 import { palette } from "@/lib/theme";
+import { isMaterialsSection } from "@shared/sections";
 import { ChevronLeft, Camera, ImageOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { Pattern, ViewType } from "../lib/types";
@@ -21,7 +22,7 @@ interface AggregatedPhoto {
  */
 export default function PhotoUploadScreen({ pattern, onNavigate }: PhotoUploadScreenProps) {
   const photos: AggregatedPhoto[] = (pattern?.sections ?? [])
-    .filter((s) => s.name.toLowerCase() !== "materials")
+    .filter((s) => !isMaterialsSection(s.name))
     .flatMap((s) =>
       s.steps
         .map((st, i) => (st.photo ? { url: st.photo as string, section: s.name, step: i + 1 } : null))

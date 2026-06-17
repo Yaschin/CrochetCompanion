@@ -1,4 +1,5 @@
 import { palette } from "@/lib/theme";
+import { isMaterialsSection } from "@shared/sections";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -34,7 +35,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
   const [patternText, setPatternText] = useState(
     initialPattern
       ? initialPattern.sections
-          .filter(s => s.name.toLowerCase() !== "materials")
+          .filter(s => !isMaterialsSection(s.name))
           .flatMap(s => [`## ${s.name}`, ...s.steps.map(st => st.text)])
           .join("\n")
       : ""

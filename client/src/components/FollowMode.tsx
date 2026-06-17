@@ -1,4 +1,5 @@
 import { palette } from "@/lib/theme";
+import { isMaterialsSection } from "@shared/sections";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronLeft, ChevronRight, Mic, Minus, X } from 'lucide-react';
 import CoachChat from './CoachChat';
@@ -33,7 +34,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
       pattern.sections.flatMap((section, sectionIndex) =>
         // Materials "sections" aren't crochet steps; skip them but keep the
         // original sectionIndex so updates address the right section.
-        section.name.toLowerCase() === 'materials'
+        isMaterialsSection(section.name)
           ? []
           : section.steps.map((step, stepIndex) => ({
               sectionIndex,

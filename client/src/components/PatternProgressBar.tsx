@@ -1,5 +1,6 @@
 import { FC, useMemo } from 'react';
 import { PatternSection } from '../lib/types';
+import { isMaterialsSection } from '@shared/sections';
 
 interface PatternProgressBarProps {
   sections: PatternSection[];
@@ -12,7 +13,7 @@ const PatternProgressBar: FC<PatternProgressBarProps> = ({ sections }) => {
 
     // Count completed steps across crochet sections (materials checklists
     // are not rounds — keep the denominator consistent with lib/progress).
-    sections.filter(section => section.name.toLowerCase() !== 'materials').forEach(section => {
+    sections.filter(section => !isMaterialsSection(section.name)).forEach(section => {
       section.steps.forEach(step => {
         total++;
         if (step.completed) {
