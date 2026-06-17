@@ -41,7 +41,7 @@ export function RecentPatternsSection({
 }
 
 export function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: ViewType) => void }) {
-  const { data: community = [] } = useQuery<{ id: string; title: string; creator: string; endProductImage?: string; likes: number }[]>({
+  const { data: community = [], isLoading } = useQuery<{ id: string; title: string; creator: string; endProductImage?: string; likes: number }[]>({
     queryKey: ["/api/community"],
   });
   const top = [...community].sort((a, b) => (b.likes ?? 0) - (a.likes ?? 0))[0] ?? null;
@@ -68,17 +68,26 @@ export function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: View
           <PatternThumb image={top?.endProductImage} title={top?.title ?? "Community"} projectType={top ? undefined : undefined} />
         </div>
         <div className="flex-1 min-w-0 flex flex-col gap-1">
-          <p className="font-heading font-semibold text-[12px] leading-tight" style={{ color: palette.ink }}>
-            {top ? top.title : "Explore the community gallery"}
-          </p>
-          <p className="text-[10.5px]" style={{ color: palette.clay }}>
-            {top ? `by ${top.creator}` : "Share your patterns with others"}
-          </p>
-          {top && (
-            <div className="flex items-center gap-1 mt-0.5">
-              <Heart className="h-3 w-3 flex-shrink-0" style={{ color: palette.rose }} fill="#C24E6B" />
-              <span className="text-[10.5px] font-semibold" style={{ color: palette.rose }}>{top.likes}</span>
+          {isLoading && !top ? (
+            <div className="flex flex-col gap-1.5 animate-pulse" aria-hidden="true">
+              <div className="h-3 rounded-full w-3/4" style={{ background: "rgba(140,100,55,0.10)" }} />
+              <div className="h-2.5 rounded-full w-1/2" style={{ background: "rgba(140,100,55,0.10)" }} />
             </div>
+          ) : (
+            <>
+              <p className="font-heading font-semibold text-[12px] leading-tight" style={{ color: palette.ink }}>
+                {top ? top.title : "Explore the community gallery"}
+              </p>
+              <p className="text-[10.5px]" style={{ color: palette.clay }}>
+                {top ? `by ${top.creator}` : "Share your patterns with others"}
+              </p>
+              {top && (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Heart className="h-3 w-3 flex-shrink-0" style={{ color: palette.rose }} fill="#C24E6B" />
+                  <span className="text-[10.5px] font-semibold" style={{ color: palette.rose }}>{top.likes}</span>
+                </div>
+              )}
+            </>
           )}
         </div>
       </button>

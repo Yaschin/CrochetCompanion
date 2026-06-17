@@ -24,7 +24,7 @@ interface HomeWorkbenchProps {
 export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSelected, onResumeCounting }: HomeWorkbenchProps) {
   const { text, emoji } = greeting();
 
-  const { data: patterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
+  const { data: patterns = [], isLoading: patternsLoading } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
   const { data: communityPatterns = [] } = useQuery<{ id: string }[]>({ queryKey: ["/api/community"] });
 
   const [streak] = useState(() => getStreak());
@@ -118,7 +118,7 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
         {/* Action cards — slight overlap on sm+, flush on mobile so characters don't clash */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10 mt-3 sm:-mt-7">
           <div style={{ minHeight: 190 }}>
-            <ContinueProjectCard pattern={activePattern} onNavigate={onNavigate} onResumeCounting={onResumeCounting} />
+            <ContinueProjectCard pattern={activePattern} onNavigate={onNavigate} onResumeCounting={onResumeCounting} isLoading={patternsLoading} />
           </div>
 
           <div style={{ minHeight: 190 }}>
