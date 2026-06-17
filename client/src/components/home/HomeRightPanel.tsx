@@ -6,7 +6,7 @@ import { FolderOpen, Heart } from "lucide-react";
 import { patternProgress, formatTimeSpent } from "./helpers";
 
 export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => void }) {
-  const { data: patterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
+  const { data: patterns = [], isLoading } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
 
   const active = patterns.find((p) => p.status === "active") ?? patterns.find((p) => p.status !== "finished") ?? patterns[0] ?? null;
   const overview = patterns.slice(0, 3);
@@ -75,6 +75,11 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
               className="btn-craft btn-rose w-full justify-center text-[11px] py-1.5">
               Open Workspace →
             </button>
+          </div>
+        ) : isLoading ? (
+          <div className="py-3 flex flex-col gap-2 animate-pulse" aria-hidden="true">
+            <div className="h-12 rounded-xl" style={{ background: "rgba(140,100,55,0.10)" }} />
+            <div className="h-2 rounded-full w-2/3" style={{ background: "rgba(140,100,55,0.10)" }} />
           </div>
         ) : (
           <p className="text-[12px] text-center py-3" style={{ color: palette.clay }}>

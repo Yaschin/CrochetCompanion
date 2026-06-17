@@ -1,6 +1,7 @@
 import { palette } from "@/lib/theme";
 import { Pattern, PatternStep } from "@/lib/types";
 import PatternSection from "@/components/PatternSection";
+import { isMaterialsSection } from "@shared/sections";
 import { Plus, Hash, RefreshCw, Play } from "lucide-react";
 
 interface PatternTabProps {
@@ -62,7 +63,7 @@ const PatternTab: React.FC<PatternTabProps> = ({
       // so filtering before mapping would corrupt edits whenever a
       // "Materials" section sits before the crochet sections.
       .map((section, sectionIndex) => ({ section, sectionIndex }))
-      .filter(({ section }) => section.name.toLowerCase() !== "materials")
+      .filter(({ section }) => !isMaterialsSection(section.name))
       .map(({ section, sectionIndex }) => (
       <div key={`section-${sectionIndex}`} className="flex flex-col gap-1.5">
         <PatternSection

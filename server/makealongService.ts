@@ -3,6 +3,7 @@ import { db } from "./db";
 import { patternService } from "./patternService";
 import { communityService } from "./communityService";
 import { profileById } from "../shared/profiles";
+import { isMaterialsSection } from "@shared/sections";
 import type { Pattern } from "@shared/schema";
 
 export interface MakeAlongMember {
@@ -24,7 +25,7 @@ export interface MakeAlong {
 
 function progressOf(pattern: Pattern): { pct: number; finished: boolean } {
   const steps = (pattern.sections ?? [])
-    .filter((s) => s.name.toLowerCase() !== "materials")
+    .filter((s) => !isMaterialsSection(s.name))
     .flatMap((s) => s.steps);
   const done = steps.filter((s) => s.completed).length;
   const pct = steps.length > 0 ? Math.round((done / steps.length) * 100) : 0;
@@ -65,18 +66,19 @@ export const makealongService = {
     const source = await communityService.getById(communityId);
     if (!source) throw new Error("Community pattern not found");
 
-    const existing = await db.execute(
+    // Atomic upsert: the unique index on "communityId" (ensureSchema) makes
+    // concurrent creates collapse to one row instead of racing. Then resolve
+    // the canonical id (ours if we inserted, the pre-existing one otherwise).
+    const newId = crypto.randomUUID();
+    await db.execute(
+      sql`INSERT INTO makealongs (id, title, "communityId", "createdAt")
+          VALUES (${newId}, ${source.title}, ${communityId}, ${new Date().toISOString()})
+          ON CONFLICT ("communityId") DO NOTHING`
+    );
+    const row = await db.execute(
       sql`SELECT id FROM makealongs WHERE "communityId" = ${communityId}`
     );
-    let id = (existing.rows?.[0] as { id?: string } | undefined)?.id;
-
-    if (!id) {
-      id = crypto.randomUUID();
-      await db.execute(
-        sql`INSERT INTO makealongs (id, title, "communityId", "createdAt")
-            VALUES (${id}, ${source.title}, ${communityId}, ${new Date().toISOString()})`
-      );
-    }
+    const id = (row.rows?.[0] as { id?: string } | undefined)?.id ?? newId;
     await this.join(id, profileId);
     return (await this.getById(id))!;
   },

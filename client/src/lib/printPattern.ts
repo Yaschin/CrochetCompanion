@@ -1,4 +1,5 @@
 import { Pattern } from "./types";
+import { isMaterialsSection } from "@shared/sections";
 
 /** Minimal HTML escaping for values interpolated into the print document. */
 function esc(s: unknown): string {
@@ -19,7 +20,7 @@ export function printPattern(pattern: Pattern): void {
   const win = window.open("", "_blank", "width=820,height=1040");
   if (!win) return;
 
-  const sections = (pattern.sections ?? []).filter((s) => s.name.toLowerCase() !== "materials");
+  const sections = (pattern.sections ?? []).filter((s) => !isMaterialsSection(s.name));
 
   const reqList = (title: string, rows: string[]) =>
     rows.length ? `<h3>${esc(title)}</h3><ul>${rows.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : "";

@@ -7,8 +7,8 @@ import { patternProgress } from "./helpers";
 import { Wand2, FileUp, BookOpen, Heart } from "lucide-react";
 
 export function ContinueProjectCard({
-  pattern, onNavigate, onResumeCounting,
-}: { pattern: Pattern | null; onNavigate: (v: ViewType) => void; onResumeCounting?: (p: Pattern) => void }) {
+  pattern, onNavigate, onResumeCounting, isLoading = false,
+}: { pattern: Pattern | null; onNavigate: (v: ViewType) => void; onResumeCounting?: (p: Pattern) => void; isLoading?: boolean }) {
   const pct = pattern ? patternProgress(pattern) : 0;
   const steps = pattern?.sections?.flatMap(s => s.steps) ?? [];
   const totalRows = steps.length;
@@ -48,6 +48,14 @@ export function ContinueProjectCard({
                 style={{ width: `${pct}%`, transition: "width 0.7s ease" }} />
             </div>
             <p className="text-[10px] mt-0.5" style={{ color: palette.clay }}>{pct}%</p>
+          </div>
+        </div>
+      ) : isLoading ? (
+        <div className="flex-1 flex items-center gap-2.5 px-1 animate-pulse" aria-hidden="true">
+          <div className="w-12 h-12 rounded-xl flex-shrink-0" style={{ background: "rgba(140,100,55,0.10)" }} />
+          <div className="flex-1 flex flex-col gap-1.5">
+            <div className="h-3 rounded-full w-3/4" style={{ background: "rgba(140,100,55,0.10)" }} />
+            <div className="h-2 rounded-full w-1/2" style={{ background: "rgba(140,100,55,0.10)" }} />
           </div>
         </div>
       ) : (

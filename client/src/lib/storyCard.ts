@@ -88,7 +88,7 @@ export async function makeStoryCard(pattern: Pattern, makerName: string): Promis
       : null;
   const bits = [
     days ? `${days} ${days === 1 ? "day" : "days"}` : null,
-    total ? `${total} rounds` : null,
+    total ? `${total} ${total === 1 ? "step" : "steps"}` : null,
     finished ? finished.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : null,
   ].filter(Boolean);
   ctx.fillStyle = "#7A5A48";

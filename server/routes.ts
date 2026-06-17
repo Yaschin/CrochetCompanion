@@ -7,6 +7,7 @@ import { parsePattern, parsePdfText } from "./api/parsePattern";
 import { generateImage } from "./api/generateImage";
 import { analyzeAlignment } from "./api/analyzeAlignment";
 import { transformPattern } from "./api/transformPattern";
+import { isMaterialsSection } from "@shared/sections";
 import { communityService } from "./communityService";
 import { patternService } from "./patternService";
 import { stashService } from "./stashService";
@@ -268,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const stepDone =
             Array.isArray(update.sections) &&
             update.sections.some(
-              (sec) => sec.name.toLowerCase() !== "materials" && sec.steps.some((st) => st.completed)
+              (sec) => !isMaterialsSection(sec.name) && sec.steps.some((st) => st.completed)
             );
           if (counted || stepDone) {
             update.status = "active";

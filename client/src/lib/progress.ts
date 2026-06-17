@@ -1,4 +1,5 @@
 import { Pattern, PatternSection } from "./types";
+import { isMaterialsSection } from "@shared/sections";
 
 /**
  * The single source of truth for "how far along is this make?".
@@ -7,7 +8,7 @@ import { Pattern, PatternSection } from "./types";
  * progress screen and follow mode all on the same denominator.
  */
 export function craftSections(sections: PatternSection[] | undefined): PatternSection[] {
-  return (sections ?? []).filter((s) => s.name.toLowerCase() !== "materials");
+  return (sections ?? []).filter((s) => !isMaterialsSection(s.name));
 }
 
 export interface ProgressInfo {

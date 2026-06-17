@@ -109,6 +109,22 @@ export async function ensureSchema(): Promise<void> {
       PRIMARY KEY ("makealongId", "profileId")
     )`
   );
+  // Enforce one make-along per community pattern so concurrent "start"
+  // taps collapse to a single board instead of racing into duplicates.
+  // Guarded: a pre-existing duplicate would block the unique index, and we
+  // must not abort the rest of ensureSchema — so dedupe first (keep the
+  // lowest id per community), then create the index, both best-effort.
+  try {
+    await db.execute(
+      sql`DELETE FROM makealongs a USING makealongs b
+          WHERE a."communityId" = b."communityId" AND a.id > b.id`
+    );
+    await db.execute(
+      sql`CREATE UNIQUE INDEX IF NOT EXISTS makealongs_community_uniq ON makealongs ("communityId")`
+    );
+  } catch (e) {
+    console.warn("[ensureSchema] could not enforce make-along uniqueness:", e);
+  }
 
   // ── Deduplicate patterns (ONE-TIME, marker-guarded) ────────────────────────
   // This exists to undo re-seeds that ran before the one-time seed flags

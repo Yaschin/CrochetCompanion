@@ -87,8 +87,14 @@ function diffDays(a: string, b: string): number {
   return Math.round((new Date(a + "T00:00:00").getTime() - new Date(b + "T00:00:00").getTime()) / 86_400_000);
 }
 
-export function getStreak(): StreakInfo {
-  const days = [...new Set(loadDays())].sort(); // ascending
+/**
+ * Pure streak computation over YYYY-MM-DD day keys, relative to `today`.
+ * Exported for unit testing; {@link getStreak} feeds it the stored days.
+ * Day keys are local-date strings throughout (the client owns the calendar —
+ * the server only stores the strings it's given), so this is timezone-agnostic.
+ */
+export function computeStreak(daysIn: string[], today: string): StreakInfo {
+  const days = [...new Set(daysIn)].sort(); // ascending
   if (days.length === 0) return { current: 0, longest: 0, totalDays: 0, activeToday: false };
 
   // Longest run of consecutive days.
@@ -101,7 +107,6 @@ export function getStreak(): StreakInfo {
   }
 
   // Current streak: consecutive days ending today (or yesterday — grace day).
-  const today = todayKey();
   const last = days[days.length - 1];
   const gap = diffDays(today, last);
   let current = 0;
@@ -114,4 +119,8 @@ export function getStreak(): StreakInfo {
   }
 
   return { current, longest, totalDays: days.length, activeToday: gap === 0 };
+}
+
+export function getStreak(): StreakInfo {
+  return computeStreak(loadDays(), todayKey());
 }
