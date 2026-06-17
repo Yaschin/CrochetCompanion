@@ -674,7 +674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error uploading section photo:", error);
-      res.status(500).json({ message: "Failed to upload section photo", error: String(error) });
+      res.status(500).json({ message: "Failed to upload section photo" });
     }
   });
   

@@ -21,9 +21,14 @@ Every phase is built, verified and **merged to `main`**:
 | PR #28 | True full-stack e2e: real-server+Postgres smoke in CI (caught & fixed the fresh-DB boot crash and the dead `creatorId`) |
 | Replit sessions | Tutorial system, pattern/PDF import, per-profile starter content, library image backfill |
 
-**Test layers, all green in CI on every PR:** typecheck · 20 unit tests · 42 browser e2e
+**Test layers, all green in CI on every PR:** typecheck · 43 unit tests · 42 browser e2e
 (mocked API, 3 viewports) · **36-assertion full-stack smoke against real Postgres** ·
 on-demand visual walkthroughs (`npm run walkthrough`, `npm run walkthrough:deep`).
+
+> **Note (2026-06-16):** the original phase scope was delivered 2026-06-11, but
+> `main` has continued to evolve. See **"Delivered since 2026-06-11"** below for
+> work this progress log was extended to cover (Calculators, work-time tracking,
+> finished-project record, PDF import, and a large refactor/cleanup program).
 
 **The only outstanding item — live verification on the deployed app (Yash, ~15 min):**
 App health → Run checks + Deep AI test · scan a real ball band · ask Ashi a question ·
@@ -31,8 +36,30 @@ start/join a make-along across two profiles · share a pattern (check family col
 set a finished photo (exercises object storage).
 
 **Consciously deferred:** drizzle migration files (boot-time `ensureSchema` is the working,
-now smoke-tested mechanism); per-person community likes; count-by-N voice commands.
+now smoke-tested mechanism); per-person community likes; count-by-N voice commands;
+WebP/AVIF character conversion (perf-only, P2).
 **Still not pursued by design:** real auth, public social, AR row-counting, offline write-queue.
+
+---
+
+## Delivered since 2026-06-11 (post-roadmap continuation)
+
+The original eight-phase scope shipped 2026-06-11; the items below landed on `main`
+**after** that and after the 2026-06-14 hardening batches (W18 is the last entry in the
+progress log). All are verified: `tsc` clean · 43 unit tests · build green · CI green on
+the latest `main` merge (#45) · features traced into routing/nav. New features remain
+gated on the same **live deploy verification** as the rest of the app.
+
+| Delivered via | Contents |
+|---|---|
+| PR #43 | **Calculators / Tools screen** (`pages/ToolsScreen.tsx`, `lib/crochetMath.ts`) — gauge sizing + yarn estimating; reached from the Sidebar ("Calculators") and a Home quick button. New `tools` ViewType / `/tools` route. |
+| PR #44 | **Work-session timer** (`components/WorkTimer.tsx`, `lib/timeTracking.ts`) — tracks actual crocheting time per project, with a per-session history; embedded in the stitch-counter screen. |
+| PR #45 | **Durable time + as-built record** — work sessions persist via a new `patterns.workSessions` column (mirrors `counterState`, carried in export/import); per-project "X crocheted" on Progress + a lifetime total on the Projects header; **`finishedRecord`** (`pattern-viewer/FinishedRecordCard.tsx`) captures what was actually used vs the planned requirements. New columns added idempotently in `ensureSchema`. |
+| PRs (PDF import) | **Pattern PDF import** from the homepage, including **multiple PDF** upload. |
+| PRs #34–#42 | **Refactor / cleanup program** — `PatternViewer`, `HomeWorkbench`, `PatternInput` split into focused modules under `components/{pattern-viewer,home}/`; `usePatternViewer` / `usePatternRegen` / self-contained `PdfWizard` extracted; shared `aiErrorToast`; palette tokenised; muted-label a11y contrast fix. **Dead character AI-generation flow + unused `/api/characters` endpoints removed** (no client consumer). DOM unchanged — e2e selects by visible text/role, so behaviour is preserved. |
+
+**Unit test count:** grew 20 → **43** over this window (timeTracking, gauge-swatch, and
+stash-matcher helpers added). e2e (42) and smoke (36) counts unchanged.
 
 ---
 

@@ -131,7 +131,9 @@ export async function generateImage({ prompt, type, projectType, yarnType, partN
       if (img?.url) {
         return await uploadFromUrl(img.url);
       }
-      return "";
+      // Neither base64 nor a URL came back — fall back to a placeholder rather
+      // than an empty string (which would render as a broken image client-side).
+      return getPlaceholderImage(type, partName);
     } catch (err) {
       console.error(`Image generation attempt ${attempt + 1}/${maxRetries} failed:`, err);
       
