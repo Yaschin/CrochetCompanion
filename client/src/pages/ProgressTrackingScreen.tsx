@@ -39,10 +39,10 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
 
   const achievements = [
     { icon: "🌸", label: "First Stitch", unlocked: done >= 1, color: palette.rose },
-    { icon: "🧶", label: "10 Steps Done", unlocked: done >= 10, color: "#7C5FA8" },
-    { icon: "⭐", label: "Half Way", unlocked: pct >= 50, color: "#D4921A" },
+    { icon: "🧶", label: "10 Steps Done", unlocked: done >= 10, color: palette.purple },
+    { icon: "⭐", label: "Half Way", unlocked: pct >= 50, color: palette.amber },
     { icon: "🏆", label: "Pattern Done", unlocked: pct >= 100, color: palette.sage },
-    { icon: "🎉", label: "5 Projects", unlocked: finishedCount >= 5, color: "#3D8FA3" },
+    { icon: "🎉", label: "5 Projects", unlocked: finishedCount >= 5, color: palette.teal },
   ];
 
   return (
@@ -79,7 +79,7 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
               >
                 <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)" }}>
                   <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(194,78,107,0.12)" strokeWidth="8" />
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="#C24E6B" strokeWidth="8" strokeLinecap="round"
+                  <circle cx="50" cy="50" r="42" fill="none" stroke={palette.rose} strokeWidth="8" strokeLinecap="round"
                     strokeDasharray={2 * Math.PI * 42} strokeDashoffset={2 * Math.PI * 42 * (1 - pct / 100)} />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -100,14 +100,14 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
                 )}
                 {crochetMs > 0 && (
                   <div className="flex items-center justify-center sm:justify-start gap-1.5">
-                    <Clock className="h-3.5 w-3.5" style={{ color: "#7C5FA8" }} />
-                    <span className="text-[11px] font-semibold" style={{ color: "#7C5FA8" }}>{formatDuration(crochetMs)} crocheted</span>
+                    <Clock className="h-3.5 w-3.5" style={{ color: palette.purple }} />
+                    <span className="text-[11px] font-semibold" style={{ color: palette.purple }}>{formatDuration(crochetMs)} crocheted</span>
                   </div>
                 )}
                 {pattern.status && (
                   <div className="flex items-center justify-center sm:justify-start gap-1.5">
-                    <CalendarDays className="h-3.5 w-3.5" style={{ color: "#7C5FA8" }} />
-                    <span className="text-[11px] font-semibold capitalize" style={{ color: "#7C5FA8" }}>{pattern.status}</span>
+                    <CalendarDays className="h-3.5 w-3.5" style={{ color: palette.purple }} />
+                    <span className="text-[11px] font-semibold capitalize" style={{ color: palette.purple }}>{pattern.status}</span>
                   </div>
                 )}
               </div>
@@ -127,7 +127,7 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
                   return (
                     <div key={i}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[12px] font-semibold" style={{ color: "#5C3A28" }}>{s.name}</span>
+                        <span className="text-[12px] font-semibold" style={{ color: palette.cocoa }}>{s.name}</span>
                         <span className="text-[11px]" style={{ color: palette.clay }}>{sDone}/{s.steps.length}</span>
                       </div>
                       <div className="h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(194,78,107,0.10)" }}>
@@ -142,7 +142,7 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
             {/* Achievements (real, derived) */}
             <div className="craft-card p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Trophy className="h-4 w-4" style={{ color: "#D4921A" }} />
+                <Trophy className="h-4 w-4" style={{ color: palette.amber }} />
                 <p className="font-heading font-semibold text-[13px]" style={{ color: palette.ink }}>Achievements</p>
               </div>
               <div className="flex gap-2 flex-wrap">
@@ -164,7 +164,7 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
             {/* Quick actions */}
             <div className="flex gap-2">
               <button onClick={() => onNavigate("photo-upload")} className="flex-1 py-2.5 rounded-xl text-[12px] font-bold transition-all hover:opacity-90"
-                style={{ background: "rgba(60,143,163,0.12)", color: "#3D8FA3", border: "1px dashed rgba(60,143,163,0.4)" }}>📷 Progress Photos</button>
+                style={{ background: "rgba(60,143,163,0.12)", color: palette.teal, border: "1px dashed rgba(60,143,163,0.4)" }}>📷 Progress Photos</button>
               <button onClick={() => onNavigate("stitch-counter")} className="flex-1 py-2.5 rounded-xl text-[12px] font-bold transition-all hover:opacity-90"
                 style={{ background: "rgba(132,147,79,0.12)", color: palette.sage, border: "1px dashed rgba(132,147,79,0.4)" }}>🧮 Stitch Counter</button>
             </div>

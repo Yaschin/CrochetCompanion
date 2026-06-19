@@ -9,7 +9,7 @@ interface CelebrationOverlayProps {
   subtitle?: string;
 }
 
-const COLORS = ["#C24E6B", "#7C5FA8", "#84934F", "#D4921A", "#3D8FA3", "#E88050"];
+const COLORS = [palette.rose, palette.purple, palette.sage, palette.amber, palette.teal, "#E88050"];
 
 /**
  * A warm confetti + mascot celebration shown when a project is finished.
@@ -77,7 +77,7 @@ export default function CelebrationOverlay({ show, onDone, title = "You did it! 
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
             <p className="font-heading font-bold text-[22px] text-center" style={{ color: palette.rose }}>{title}</p>
-            <p className="text-[13px] text-center" style={{ color: "#7A5A48" }}>{subtitle}</p>
+            <p className="text-[13px] text-center" style={{ color: palette.inkSoft }}>{subtitle}</p>
             <button
               onClick={onDone}
               className="mt-1 px-5 py-2 rounded-full text-[13px] font-bold"

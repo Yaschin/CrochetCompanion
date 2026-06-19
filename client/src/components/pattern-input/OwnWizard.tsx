@@ -34,7 +34,7 @@ export default function OwnWizard({
                 <p className="text-[13px] mt-1" style={{ color: palette.clay }}>What's it called and what type is it?</p>
               </div>
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Pattern name *</label>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Pattern name *</label>
                 <input
                   type="text"
                   value={ownTitle}
@@ -45,7 +45,7 @@ export default function OwnWizard({
                 />
               </div>
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Pattern type *</label>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Pattern type *</label>
                 <CategoryPicker formData={formData} setFormData={setFormData} />
               </div>
             </div>
@@ -59,7 +59,7 @@ export default function OwnWizard({
                 <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Helps with tracking and yarn recs</p>
               </div>
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>
                   Skill Level <span style={{ color: palette.rose }}>*</span>
                 </label>
                 <div className="flex gap-2">
@@ -72,7 +72,7 @@ export default function OwnWizard({
                         border: `1.5px solid ${formData.skillLevel === lvl.id ? palette.rose : "rgba(140,100,55,0.18)"}`,
                       }}>
                       <span style={{ fontSize: 22 }}>{lvl.emoji}</span>
-                      <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? palette.rose : "#5C3A28" }}>{lvl.id}</span>
+                      <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? palette.rose : palette.cocoa }}>{lvl.id}</span>
                       <span className="text-[9.5px] text-center" style={{ color: palette.clay }}>{lvl.desc}</span>
                     </button>
                   ))}
@@ -92,7 +92,7 @@ export default function OwnWizard({
               </div>
 
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>
                   Pattern instructions <span className="font-normal" style={{ color: palette.clay }}>(optional)</span>
                 </label>
                 <textarea
@@ -147,7 +147,7 @@ export default function OwnWizard({
           <div className="flex items-center justify-between mt-6">
             <button onClick={() => setOwnStep(s => Math.max(0, s - 1))} disabled={ownStep === 0}
               className="px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-80 disabled:opacity-30"
-              style={{ background: "rgba(140,100,55,0.09)", color: "#5C3A28" }}>← Back</button>
+              style={{ background: "rgba(140,100,55,0.09)", color: palette.cocoa }}>← Back</button>
             {ownStep < 2 && (
               <button onClick={() => ownCanAdvance() && setOwnStep(s => s + 1)} disabled={!ownCanAdvance()}
                 className="px-6 py-2.5 rounded-xl font-heading font-bold text-[13px] transition-all hover:opacity-90 disabled:opacity-35"

@@ -34,7 +34,7 @@ export const CategoryPicker = ({ formData, setFormData }: PickerProps) => (
 
 export const SkillPicker = ({ formData, setFormData }: PickerProps) => (
   <div>
-    <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Skill Level</label>
+    <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Skill Level</label>
     <div className="flex gap-2">
       {SKILL_LEVELS.map((lvl) => (
         <button key={lvl.id}
@@ -45,7 +45,7 @@ export const SkillPicker = ({ formData, setFormData }: PickerProps) => (
             border: `1.5px solid ${formData.skillLevel === lvl.id ? palette.rose : "rgba(140,100,55,0.18)"}`,
           }}>
           <span style={{ fontSize: 22 }}>{lvl.emoji}</span>
-          <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? palette.rose : "#5C3A28" }}>{lvl.id}</span>
+          <span className="text-[11px] font-bold" style={{ color: formData.skillLevel === lvl.id ? palette.rose : palette.cocoa }}>{lvl.id}</span>
           <span className="text-[9.5px] text-center" style={{ color: palette.clay }}>{lvl.desc}</span>
         </button>
       ))}
@@ -55,7 +55,7 @@ export const SkillPicker = ({ formData, setFormData }: PickerProps) => (
 
 export const YarnPicker = ({ formData, setFormData }: PickerProps) => (
   <div>
-    <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Yarn Type <span className="font-normal text-[11px]" style={{ color: palette.clay }}>(optional)</span></label>
+    <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Yarn Type <span className="font-normal text-[11px]" style={{ color: palette.clay }}>(optional)</span></label>
     <div className="flex flex-wrap gap-2">
       {YARN_TYPES.map((yt) => (
         <button key={yt}
@@ -63,8 +63,8 @@ export const YarnPicker = ({ formData, setFormData }: PickerProps) => (
           className="px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-all"
           style={{
             background: (formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? "rgba(212,146,26,0.14)" : "rgba(255,252,245,0.9)",
-            border: `1.5px solid ${(formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? "#D4921A" : "rgba(140,100,55,0.18)"}`,
-            color: (formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? "#D4921A" : "#5C3A28",
+            border: `1.5px solid ${(formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? palette.amber : "rgba(140,100,55,0.18)"}`,
+            color: (formData.yarnType === yt || (yt === "Not specified" && !formData.yarnType)) ? palette.amber : palette.cocoa,
           }}>
           {yt}
         </button>
@@ -75,7 +75,7 @@ export const YarnPicker = ({ formData, setFormData }: PickerProps) => (
 
 export const SizePicker = ({ formData, setFormData }: PickerProps) => (
   <div>
-    <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Approximate Size <span className="font-normal text-[11px]" style={{ color: palette.clay }}>(optional)</span></label>
+    <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Approximate Size <span className="font-normal text-[11px]" style={{ color: palette.clay }}>(optional)</span></label>
     <div className="flex flex-wrap gap-2">
       {SIZE_OPTIONS.map((sz) => (
         <button key={sz}
@@ -84,7 +84,7 @@ export const SizePicker = ({ formData, setFormData }: PickerProps) => (
           style={{
             background: formData.size === sz ? "rgba(132,147,79,0.14)" : "rgba(255,252,245,0.9)",
             border: `1.5px solid ${formData.size === sz ? palette.sage : "rgba(140,100,55,0.18)"}`,
-            color: formData.size === sz ? palette.sage : "#5C3A28",
+            color: formData.size === sz ? palette.sage : palette.cocoa,
           }}>
           {sz}
         </button>

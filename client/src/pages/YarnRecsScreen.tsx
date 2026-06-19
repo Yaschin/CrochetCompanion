@@ -42,7 +42,7 @@ function PatternRow({ rp, onClick }: { rp: RankedPattern; onClick?: () => void }
         className="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold"
         style={{
           background: ok ? "rgba(132,147,79,0.14)" : "rgba(212,146,26,0.14)",
-          color: ok ? "#6A7A3A" : "#A8761A",
+          color: ok ? palette.olive : palette.gold,
         }}
       >
         {ok ? <Check className="h-3 w-3" /> : <ShoppingBag className="h-3 w-3" />}
@@ -164,7 +164,7 @@ export default function YarnRecsScreen({ onNavigate, onPatternSelected }: YarnRe
         {almost.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <ShoppingBag className="h-4 w-4" style={{ color: "#A8761A" }} />
+              <ShoppingBag className="h-4 w-4" style={{ color: palette.gold }} />
               <p className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
                 Almost there ({almost.length})
               </p>

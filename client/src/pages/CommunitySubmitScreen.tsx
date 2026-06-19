@@ -85,7 +85,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
         <div className="flex items-center gap-3">
           <BackButton
             onClick={() => step === 0 ? onNavigate(initialPattern ? "pattern-detail" : "community") : setStep(s => s - 1)}
-            bg="rgba(140,100,55,0.08)" color="#6B4B38" />
+            bg="rgba(140,100,55,0.08)" color={palette.brown} />
           <div>
             <h1 className="font-heading font-bold text-[18px]" style={{ color: palette.ink }}>
               Share Your Pattern
@@ -129,7 +129,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
             <div className="flex gap-4">
               <div className="flex-1 flex flex-col gap-3">
                 <div>
-                  <label className="text-[11px] font-bold mb-1.5 block" style={{ color: "#6B4B38" }}>Pattern Name</label>
+                  <label className="text-[11px] font-bold mb-1.5 block" style={{ color: palette.brown }}>Pattern Name</label>
                   <input
                     value={form.name}
                     onChange={e => set("name", e.target.value)}
@@ -139,7 +139,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[11px] font-bold mb-1.5 block" style={{ color: "#6B4B38" }}>Category</label>
+                    <label className="text-[11px] font-bold mb-1.5 block" style={{ color: palette.brown }}>Category</label>
                     <select
                       value={form.category}
                       onChange={e => set("category", e.target.value)}
@@ -149,7 +149,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                     </select>
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold mb-1.5 block" style={{ color: "#6B4B38" }}>Skill Level</label>
+                    <label className="text-[11px] font-bold mb-1.5 block" style={{ color: palette.brown }}>Skill Level</label>
                     <select
                       value={form.skillLevel}
                       onChange={e => set("skillLevel", e.target.value)}
@@ -160,7 +160,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                   </div>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold mb-1.5 block" style={{ color: "#6B4B38" }}>Yarn Weight</label>
+                  <label className="text-[11px] font-bold mb-1.5 block" style={{ color: palette.brown }}>Yarn Weight</label>
                   <select
                     value={form.yarnWeight}
                     onChange={e => set("yarnWeight", e.target.value)}
@@ -170,7 +170,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold mb-1.5 block" style={{ color: "#6B4B38" }}>Description</label>
+                  <label className="text-[11px] font-bold mb-1.5 block" style={{ color: palette.brown }}>Description</label>
                   <textarea
                     value={form.description}
                     onChange={e => set("description", e.target.value)}
@@ -216,7 +216,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
                 <label className="w-full rounded-2xl border-2 border-dashed py-12 flex flex-col items-center gap-3 cursor-pointer"
                   style={{ borderColor: "rgba(140,100,55,0.3)", background: "rgba(255,252,245,0.6)" }}>
                   <div className="text-3xl">📷</div>
-                  <p className="font-heading font-semibold text-[14px]" style={{ color: "#6B4B38" }}>Add a Photo</p>
+                  <p className="font-heading font-semibold text-[14px]" style={{ color: palette.brown }}>Add a Photo</p>
                   <p className="text-[12px]" style={{ color: palette.clay }}>Tap to upload your finished project</p>
                   <span className="mt-2 px-5 py-2 rounded-full font-semibold text-[12px]"
                     style={{ background: "rgba(194,78,107,0.1)", color: palette.rose, border: "1px solid rgba(194,78,107,0.3)" }}>

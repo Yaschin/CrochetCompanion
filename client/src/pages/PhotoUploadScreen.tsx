@@ -34,7 +34,7 @@ export default function PhotoUploadScreen({ pattern, onNavigate }: PhotoUploadSc
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
-        <BackButton onClick={() => onNavigate("progress")} bg="rgba(60,143,163,0.08)" color="#3D8FA3" />
+        <BackButton onClick={() => onNavigate("progress")} bg="rgba(60,143,163,0.08)" color={palette.teal} />
         <div>
           <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Progress Photos</h1>
           <p className="text-[12px]" style={{ color: palette.clay }}>
@@ -52,7 +52,7 @@ export default function PhotoUploadScreen({ pattern, onNavigate }: PhotoUploadSc
           </div>
         ) : photos.length === 0 ? (
           <div className="craft-card p-8 flex flex-col items-center text-center gap-3">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "rgba(60,143,163,0.10)", color: "#3D8FA3" }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "rgba(60,143,163,0.10)", color: palette.teal }}>
               <ImageOff className="h-6 w-6" />
             </div>
             <p className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>No photos yet</p>

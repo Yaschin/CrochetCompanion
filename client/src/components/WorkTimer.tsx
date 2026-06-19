@@ -16,7 +16,7 @@ import {
   formatClock,
 } from "@/lib/timeTracking";
 
-const VIOLET = "#7C5FA8";
+const VIOLET = palette.purple;
 
 /** Write the durable copy of the sessions to the pattern row (fire-and-forget). */
 function putWorkSessions(patternId: string, sessions: WorkSession[]): Promise<unknown> {
@@ -126,7 +126,7 @@ export default function WorkTimer({ patternId }: { patternId: string }) {
             <Clock className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="font-heading font-semibold text-[12.5px]" style={{ color: "#5C3A28" }}>
+            <p className="font-heading font-semibold text-[12.5px]" style={{ color: palette.cocoa }}>
               Time on this project
             </p>
             <p className="font-heading font-bold leading-none mt-0.5" style={{ color: VIOLET, fontSize: 22 }}>
@@ -174,7 +174,7 @@ export default function WorkTimer({ patternId }: { patternId: string }) {
               {sessions.map((s, i) => (
                 <div key={`${s.start}-${i}`} className="flex items-center justify-between text-[11.5px]">
                   <span style={{ color: palette.clay }}>{formatWhen(s.end)}</span>
-                  <span className="font-semibold" style={{ color: "#5C3A28" }}>{formatDuration(s.ms)}</span>
+                  <span className="font-semibold" style={{ color: palette.cocoa }}>{formatDuration(s.ms)}</span>
                 </div>
               ))}
             </div>

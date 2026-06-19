@@ -34,7 +34,7 @@ function NumField({
   min?: number;
 }) {
   return (
-    <label className="flex-1 text-[11.5px] font-semibold" style={{ color: "#7A5A48" }}>
+    <label className="flex-1 text-[11.5px] font-semibold" style={{ color: palette.inkSoft }}>
       {label}
       <div className="relative mt-1">
         <input
@@ -63,7 +63,7 @@ function ResultChip({ value, unit, caption, tone = "sage" }: {
 }) {
   const c = tone === "rose"
     ? { bg: "rgba(194,78,107,0.10)", border: "rgba(194,78,107,0.25)", fg: palette.rose }
-    : { bg: "rgba(132,147,79,0.10)", border: "rgba(132,147,79,0.28)", fg: "#6A7A3A" };
+    : { bg: "rgba(132,147,79,0.10)", border: "rgba(132,147,79,0.28)", fg: palette.olive };
   return (
     <div className="flex-1 rounded-xl px-3 py-2.5 text-center" style={{ background: c.bg, border: `1.5px solid ${c.border}` }}>
       <p className="font-heading font-bold leading-none" style={{ color: c.fg, fontSize: 22 }}>
@@ -182,7 +182,7 @@ export default function ToolsScreen({ onNavigate }: ToolsScreenProps) {
           </button>
 
           {!hasGauge ? (
-            <div className="mt-3 rounded-xl px-3 py-2.5 text-[11.5px] flex items-start gap-2" style={{ background: "rgba(212,146,26,0.10)", color: "#A8761A" }}>
+            <div className="mt-3 rounded-xl px-3 py-2.5 text-[11.5px] flex items-start gap-2" style={{ background: "rgba(212,146,26,0.10)", color: palette.gold }}>
               <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
               Enter your gauge above to use the converter.
             </div>
@@ -246,7 +246,7 @@ export default function ToolsScreen({ onNavigate }: ToolsScreenProps) {
 
           {/* Unit toggle */}
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[11.5px] font-semibold" style={{ color: "#7A5A48" }}>Length unit</span>
+            <span className="text-[11.5px] font-semibold" style={{ color: palette.inkSoft }}>Length unit</span>
             <div className="flex rounded-lg p-0.5" style={{ background: "rgba(140,100,55,0.08)" }}>
               {(["yd", "m"] as const).map((u) => (
                 <button
@@ -267,7 +267,7 @@ export default function ToolsScreen({ onNavigate }: ToolsScreenProps) {
           {stashLoading ? (
             <div className="h-9 rounded-xl mb-3 animate-pulse" style={{ background: "rgba(140,100,55,0.10)" }} aria-hidden="true" />
           ) : yarns.length > 0 && (
-            <label className="block text-[11.5px] font-semibold mb-3" style={{ color: "#7A5A48" }}>
+            <label className="block text-[11.5px] font-semibold mb-3" style={{ color: palette.inkSoft }}>
               Use a yarn from my stash
               <select
                 value={stashId}
@@ -286,7 +286,7 @@ export default function ToolsScreen({ onNavigate }: ToolsScreenProps) {
           )}
 
           {selectedNoYardage && (
-            <p className="text-[11px] -mt-1 mb-3 flex items-start gap-1.5" style={{ color: "#A8761A" }}>
+            <p className="text-[11px] -mt-1 mb-3 flex items-start gap-1.5" style={{ color: palette.gold }}>
               <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
               No yardage saved on this yarn — type its per-ball length below.
             </p>
@@ -313,7 +313,7 @@ export default function ToolsScreen({ onNavigate }: ToolsScreenProps) {
                   border: `1.5px solid ${enough ? "rgba(132,147,79,0.3)" : "rgba(212,146,26,0.3)"}`,
                 }}
               >
-                <p className="font-heading font-bold text-[13px]" style={{ color: enough ? "#6A7A3A" : "#A8761A" }}>
+                <p className="font-heading font-bold text-[13px]" style={{ color: enough ? palette.olive : palette.gold }}>
                   {enough ? "You have enough ✓" : `Buy ${(balls ?? 0) - (owned ?? 0)} more`}
                 </p>
                 <p className="text-[10.5px] mt-0.5" style={{ color: palette.clay }}>

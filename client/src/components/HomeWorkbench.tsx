@@ -54,7 +54,7 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
         <div>
           <h1 className="font-heading font-bold" style={{ fontSize: 28, color: palette.ink, letterSpacing: "-0.02em" }}>
             {text},{" "}
-            <span className="font-script" style={{ fontSize: 30, color: "#A83050" }}>{getActiveProfile().name}!</span>{" "}
+            <span className="font-script" style={{ fontSize: 30, color: palette.roseDeep }}>{getActiveProfile().name}!</span>{" "}
             {emoji}
           </h1>
           <p className="text-[13px] mt-0.5" style={{ color: palette.clay }}>
@@ -134,7 +134,7 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
           <button
             onClick={() => onNavigate("stash")}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[12px] font-bold transition-all hover:opacity-85"
-            style={{ background: "rgba(140,100,55,0.08)", color: "#7A5A48", border: "1.5px dashed rgba(140,100,55,0.3)" }}
+            style={{ background: "rgba(140,100,55,0.08)", color: palette.inkSoft, border: "1.5px dashed rgba(140,100,55,0.3)" }}
           >
             🧺 My Stash
           </button>
@@ -167,10 +167,10 @@ export default function HomeWorkbench({ onNavigate, onNavigateToPdf, onPatternSe
               <PatternThumb image={upNextPattern.endProductImage} title={upNextPattern.title} projectType={upNextPattern.projectType} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10.5px] font-bold uppercase tracking-wide" style={{ color: "#7C5FA8" }}>⏭ Up next</p>
+              <p className="text-[10.5px] font-bold uppercase tracking-wide" style={{ color: palette.purple }}>⏭ Up next</p>
               <p className="font-heading font-bold text-[13.5px] truncate" style={{ color: palette.ink }}>{upNextPattern.title}</p>
             </div>
-            <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "#7C5FA8" }} />
+            <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: palette.purple }} />
           </button>
         )}
 

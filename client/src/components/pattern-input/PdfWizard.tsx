@@ -161,7 +161,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
         steps={PDF_STEPS}
         currentStep={pdfStep}
         tips={PDF_TIPS}
-        modeAccent="#3D8FA3"
+        modeAccent={palette.teal}
         modeAccentRgb="61,143,163"
         charImg="/characters/char-ashi-transparent.png"
       />
@@ -187,7 +187,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                     <p className="font-heading font-bold text-[18px] mb-1" style={{ color: palette.ink }}>
                       Aloo is on it!
                     </p>
-                    <p className="text-[14px] transition-all duration-700" style={{ color: "#3D8FA3" }}>
+                    <p className="text-[14px] transition-all duration-700" style={{ color: palette.teal }}>
                       {PDF_LOADING_MSGS[pdfLoadingMsgIdx]}
                     </p>
                   </div>
@@ -197,7 +197,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                     {[0, 1, 2].map(i => (
                       <div key={i} className="w-2.5 h-2.5 rounded-full"
                         style={{
-                          background: "#3D8FA3",
+                          background: palette.teal,
                           opacity: 0.3 + (pdfLoadingMsgIdx % 3 === i ? 0.7 : 0),
                           transform: pdfLoadingMsgIdx % 3 === i ? "scale(1.4)" : "scale(1)",
                           transition: "all 0.4s ease",
@@ -221,7 +221,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                     onClick={() => document.getElementById("pdf-file-input")?.click()}
                     className="border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
                     style={{
-                      borderColor: pdfFiles.length ? "#3D8FA3" : "rgba(61,143,163,0.40)",
+                      borderColor: pdfFiles.length ? palette.teal : "rgba(61,143,163,0.40)",
                       background: pdfFiles.length ? "rgba(61,143,163,0.06)" : "rgba(255,252,245,0.7)",
                       minHeight: pdfFiles.length ? "auto" : 180,
                       padding: pdfFiles.length ? "14px 16px" : "24px 16px",
@@ -254,7 +254,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                         ))}
                         {pdfFiles.length < 5 && (
                           <div className="flex items-center justify-center gap-1.5 pt-1"
-                            style={{ color: "#3D8FA3", fontSize: 12, fontWeight: 600 }}>
+                            style={{ color: palette.teal, fontSize: 12, fontWeight: 600 }}>
                             <FileUp className="h-3.5 w-3.5" /> Add another PDF
                           </div>
                         )}
@@ -263,7 +263,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                       <>
                         <FileUp className="h-10 w-10" style={{ color: "rgba(61,143,163,0.55)" }} />
                         <div className="text-center">
-                          <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Tap to choose PDFs</p>
+                          <p className="font-heading font-semibold text-[14px]" style={{ color: palette.cocoa }}>Tap to choose PDFs</p>
                           <p className="text-[12px] mt-0.5" style={{ color: palette.clay }}>Up to 5 files · 10 MB each · Text-based only</p>
                         </div>
                       </>
@@ -311,7 +311,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
 
               {/* ── Title ── */}
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Pattern name</label>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Pattern name</label>
                 <input
                   type="text"
                   value={pdfEditTitle}
@@ -320,7 +320,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                   className="w-full p-3.5 rounded-2xl text-[14px] outline-none"
                   style={{
                     background: "rgba(255,252,245,0.95)",
-                    border: `1.5px solid ${pdfEditTitle.trim() ? "#3D8FA3" : "rgba(140,100,55,0.22)"}`,
+                    border: `1.5px solid ${pdfEditTitle.trim() ? palette.teal : "rgba(140,100,55,0.22)"}`,
                     color: palette.ink,
                   }}
                 />
@@ -328,7 +328,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
 
               {/* ── Project type ── */}
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Type</label>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Type</label>
                 <div className="flex gap-2 flex-wrap">
                   {CATEGORIES.map(c => (
                     <button key={c.id} onClick={() => setPdfEditType(c.id)}
@@ -346,7 +346,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
 
               {/* ── Skill level ── */}
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Skill level</label>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Skill level</label>
                 <div className="flex gap-2">
                   {SKILL_LEVELS.map(s => (
                     <button key={s.id} onClick={() => setPdfEditSkill(s.id)}
@@ -364,13 +364,13 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
 
               {/* ── Yarn type ── */}
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Yarn type</label>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Yarn type</label>
                 <div className="flex gap-1.5 flex-wrap">
                   {YARN_TYPES.map(yt => (
                     <button key={yt} onClick={() => setPdfEditYarnType(yt)}
                       className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all"
                       style={{
-                        background: pdfEditYarnType === yt ? "#D4921A" : "rgba(140,100,55,0.08)",
+                        background: pdfEditYarnType === yt ? palette.amber : "rgba(140,100,55,0.08)",
                         color: pdfEditYarnType === yt ? "white" : "#7A5A4A",
                         border: pdfEditYarnType === yt ? "none" : "1.5px solid rgba(140,100,55,0.15)",
                       }}>
@@ -383,7 +383,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
               {/* ── Yarn requirements ── */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-heading font-semibold text-[13px]" style={{ color: "#5C3A28" }}>Yarn needed</label>
+                  <label className="font-heading font-semibold text-[13px]" style={{ color: palette.cocoa }}>Yarn needed</label>
                   <button onClick={() => setPdfEditYarnReqs(p => [...p, { color: "", volume: "" }])}
                     className="text-[11px] font-semibold px-2.5 py-1 rounded-lg"
                     style={{ background: "rgba(61,143,163,0.12)", color: "#2A6B7D" }}>
@@ -415,7 +415,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
               {/* ── Hook requirements ── */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-heading font-semibold text-[13px]" style={{ color: "#5C3A28" }}>Hook size</label>
+                  <label className="font-heading font-semibold text-[13px]" style={{ color: palette.cocoa }}>Hook size</label>
                   <button onClick={() => setPdfEditHooks(p => [...p, { size: "", note: "" }])}
                     className="text-[11px] font-semibold px-2.5 py-1 rounded-lg"
                     style={{ background: "rgba(61,143,163,0.12)", color: "#2A6B7D" }}>
@@ -446,7 +446,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
 
               {/* ── Sections & steps ── */}
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>
                   Sections & steps
                   <span className="ml-1.5 font-normal text-[11px]" style={{ color: palette.clay }}>tap a section to edit its steps</span>
                 </label>
@@ -456,7 +456,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                     {/* Section header row */}
                     <div className="flex items-center gap-2 px-3 py-2.5"
                       style={{ background: pdfExpandedSec === si ? "rgba(61,143,163,0.08)" : "rgba(255,252,245,0.7)" }}>
-                      <span className="text-[11px] font-bold flex-shrink-0" style={{ color: "#3D8FA3" }}>§{si + 1}</span>
+                      <span className="text-[11px] font-bold flex-shrink-0" style={{ color: palette.teal }}>§{si + 1}</span>
                       <input
                         value={sec.name}
                         onChange={e => setPdfEditSections(p => p.map((s, j) => j === si ? { ...s, name: e.target.value } : s))}

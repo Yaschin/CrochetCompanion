@@ -40,9 +40,9 @@ const SORT_OPTIONS = ["Popular", "Most Recent"];
 
 function diffColor(skill: string): string {
   const s = skill.toLowerCase();
-  if (s.startsWith("adv")) return "#C24E6B";
-  if (s.startsWith("int")) return "#D4921A";
-  return "#84934F";
+  if (s.startsWith("adv")) return palette.rose;
+  if (s.startsWith("int")) return palette.amber;
+  return palette.sage;
 }
 
 export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPattern }: CommunityScreenProps) {
@@ -144,7 +144,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
                 className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer outline-none"
                 style={{
                   background: f.value.startsWith("All") ? "rgba(255,252,245,0.9)" : "rgba(194,78,107,0.1)",
-                  color: f.value.startsWith("All") ? "#6B4B38" : palette.rose,
+                  color: f.value.startsWith("All") ? palette.brown : palette.rose,
                   border: `1px solid ${f.value.startsWith("All") ? "rgba(140,100,55,0.25)" : "rgba(194,78,107,0.3)"}`,
                 }}>
                 {f.options.map(o => <option key={o}>{o}</option>)}
@@ -157,7 +157,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
               value={sort}
               onChange={e => setSort(e.target.value)}
               className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer outline-none"
-              style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.25)", color: "#6B4B38" }}>
+              style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.25)", color: palette.brown }}>
               {SORT_OPTIONS.map(o => <option key={o} value={o}>Sort: {o}</option>)}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none" style={{ color: palette.clay }} />
@@ -192,7 +192,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
                         onClick={() => joinMutation.mutate(ma.id)}
                         disabled={joinMutation.isPending}
                         className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold hover:opacity-85 disabled:opacity-60"
-                        style={{ background: "#7C5FA8", color: "white" }}>
+                        style={{ background: palette.purple, color: "white" }}>
                         {joinMutation.isPending ? "Joining…" : "Join in 🏁"}
                       </button>
                     )}
@@ -204,7 +204,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
                           style={{ background: m.color }}>
                           {m.name[0]}
                         </span>
-                        <span className="text-[11px] font-semibold w-14 truncate" style={{ color: "#5C3A28" }}>{m.name}</span>
+                        <span className="text-[11px] font-semibold w-14 truncate" style={{ color: palette.cocoa }}>{m.name}</span>
                         <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(140,100,55,0.12)" }}>
                           <div className="h-full rounded-full transition-all"
                             style={{ width: `${m.finished ? 100 : m.pct}%`, background: m.color }} />
@@ -235,7 +235,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
               <p className="font-heading font-bold text-[12.5px]" style={{ color: palette.ink }}>
                 Start a family make-along
               </p>
-              <p className="text-[11px] leading-snug" style={{ color: "#7A5A48" }}>
+              <p className="text-[11px] leading-snug" style={{ color: palette.inkSoft }}>
                 Open any pattern below and tap “Start a family make-along” — everyone makes the
                 same one and races together on a shared board.
               </p>

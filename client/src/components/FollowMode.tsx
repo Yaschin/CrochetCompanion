@@ -233,7 +233,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
             onClick={() => setCoachOpen(true)}
             aria-label="Ask Ashi for help with this round"
             className="flex h-11 items-center gap-1.5 px-3 shrink-0 justify-center rounded-full text-[12px] font-bold hover:opacity-80"
-            style={{ background: "rgba(61,143,163,0.12)", color: "#3D8FA3", border: "1.5px solid rgba(61,143,163,0.3)" }}
+            style={{ background: "rgba(61,143,163,0.12)", color: palette.teal, border: "1.5px solid rgba(61,143,163,0.3)" }}
           >
             💬 Ashi
           </button>
@@ -303,7 +303,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
           {current.step.text}
         </p>
         {current.step.notes && (
-          <p className="text-[13.5px] italic max-w-[480px]" style={{ color: "#7A5A48" }}>
+          <p className="text-[13.5px] italic max-w-[480px]" style={{ color: palette.inkSoft }}>
             “{current.step.notes}”
           </p>
         )}
@@ -316,7 +316,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
                 key={g.abbr}
                 onClick={() => setGlossaryOpen(g)}
                 className="px-2.5 py-1 rounded-full text-[10.5px] font-bold hover:opacity-80"
-                style={{ background: "rgba(124,95,168,0.10)", color: "#7C5FA8", border: "1px dashed rgba(124,95,168,0.35)" }}
+                style={{ background: "rgba(124,95,168,0.10)", color: palette.purple, border: "1px dashed rgba(124,95,168,0.35)" }}
               >
                 {g.abbr}?
               </button>
@@ -427,7 +427,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
               <p className="font-heading font-bold text-[16px]" style={{ color: palette.ink }}>
                 {glossaryOpen.abbr} — {glossaryOpen.name}
               </p>
-              <p className="text-[13px] leading-relaxed mt-1" style={{ color: "#7A5A48" }}>
+              <p className="text-[13px] leading-relaxed mt-1" style={{ color: palette.inkSoft }}>
                 {glossaryOpen.explain}
               </p>
               <a href={videoUrl(glossaryOpen)} target="_blank" rel="noreferrer"

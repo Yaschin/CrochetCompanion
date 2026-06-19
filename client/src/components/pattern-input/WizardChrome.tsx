@@ -45,7 +45,7 @@ export default function WizardChrome({ steps, currentStep, tips, modeAccent, mod
         <img src={charImg} alt="Helper"
           style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }}
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-        <p className="text-[12px] italic leading-snug" style={{ color: "#7C5FA8" }}>
+        <p className="text-[12px] italic leading-snug" style={{ color: palette.purple }}>
           "{tips[Math.min(currentStep, tips.length - 1)]}"
         </p>
       </div>

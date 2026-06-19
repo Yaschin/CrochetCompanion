@@ -26,9 +26,9 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
             const cy = 28 + Math.sin(rad) * 11;
             return <ellipse key={a} cx={cx} cy={cy} rx="9.5" ry="6.5"
               transform={`rotate(${a},${cx},${cy})`}
-              fill="#C24E6B" fillOpacity="0.72" />;
+              fill={palette.rose} fillOpacity="0.72" />;
           })}
-          <circle cx="28" cy="28" r="7" fill="#C24E6B" fillOpacity="0.88" />
+          <circle cx="28" cy="28" r="7" fill={palette.rose} fillOpacity="0.88" />
           <circle cx="28" cy="28" r="3" fill="white" fillOpacity="0.55" />
         </svg>
       </div>
@@ -69,7 +69,7 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
             <div className="flex justify-between items-center text-[10.5px] mb-2"
               style={{ color: palette.clay, borderTop: "1px dashed rgba(140,100,55,0.18)", paddingTop: 6 }}>
               <span>Time since start</span>
-              <span className="font-semibold" style={{ color: "#5C3A28" }}>{timeSpent}</span>
+              <span className="font-semibold" style={{ color: palette.cocoa }}>{timeSpent}</span>
             </div>
             <button onClick={() => onNavigate("viewer")}
               className="btn-craft btn-rose w-full justify-center text-[11px] py-1.5">
@@ -129,8 +129,8 @@ export function HomeRightPanel({ onNavigate }: { onNavigate: (v: ViewType) => vo
 
       {/* Motivational quote */}
       <div className="craft-card p-3.5 text-center">
-        <Heart className="h-4 w-4 mx-auto mb-2" style={{ color: palette.rose }} fill="#C24E6B" />
-        <p className="font-heading text-[12px] leading-relaxed italic" style={{ color: "#5C3A28" }}>
+        <Heart className="h-4 w-4 mx-auto mb-2" style={{ color: palette.rose }} fill={palette.rose} />
+        <p className="font-heading text-[12px] leading-relaxed italic" style={{ color: palette.cocoa }}>
           "Every stitch brings you closer to something beautiful."
         </p>
         <p className="mt-1.5 font-script text-[15px]" style={{ color: palette.rose }}>♡</p>

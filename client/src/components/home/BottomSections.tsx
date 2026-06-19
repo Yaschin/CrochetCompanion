@@ -29,7 +29,7 @@ export function RecentPatternsSection({
               style={{ containerType: "inline-size" }}>
               <PatternThumb image={p.endProductImage} title={p.title} projectType={p.projectType} />
             </div>
-            <p className="text-[10.5px] font-semibold leading-tight text-left line-clamp-2" style={{ color: "#5C3A28" }}>
+            <p className="text-[10.5px] font-semibold leading-tight text-left line-clamp-2" style={{ color: palette.cocoa }}>
               {p.title}
             </p>
             <p className="text-[9.5px]" style={{ color: palette.clay }}>{p.projectType} · {p.skillLevel}</p>
@@ -83,7 +83,7 @@ export function CommunitySpotlightSection({ onNavigate }: { onNavigate: (v: View
               </p>
               {top && (
                 <div className="flex items-center gap-1 mt-0.5">
-                  <Heart className="h-3 w-3 flex-shrink-0" style={{ color: palette.rose }} fill="#C24E6B" />
+                  <Heart className="h-3 w-3 flex-shrink-0" style={{ color: palette.rose }} fill={palette.rose} />
                   <span className="text-[10.5px] font-semibold" style={{ color: palette.rose }}>{top.likes}</span>
                 </div>
               )}
@@ -124,13 +124,13 @@ export function UpcomingMilestoneSection({ projectsCount, onNavigate }: { projec
           {/* Flower dots */}
           <div className="flex items-center gap-1.5 mt-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <FlowerDot key={i} filled={i < filled} color="#D4921A" />
+              <FlowerDot key={i} filled={i < filled} color={palette.amber} />
             ))}
           </div>
         </div>
 
         {/* Chevron */}
-        <ChevronRight className="flex-shrink-0 h-4 w-4" style={{ color: "#D4921A", opacity: 0.7 }} />
+        <ChevronRight className="flex-shrink-0 h-4 w-4" style={{ color: palette.amber, opacity: 0.7 }} />
       </button>
     </div>
   );

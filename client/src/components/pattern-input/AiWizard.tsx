@@ -47,7 +47,7 @@ export default function AiWizard({
                 <p className="text-[13px] mt-1" style={{ color: palette.clay }}>Describe your vision and skill level</p>
               </div>
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Describe your idea ✨</label>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Describe your idea ✨</label>
                 <textarea rows={4}
                   placeholder="e.g. A cosy sunflower bag for everyday use, in pastel yellow and green…"
                   value={formData.prompt}
@@ -57,7 +57,7 @@ export default function AiWizard({
               </div>
               <SkillPicker formData={formData} setFormData={setFormData} />
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>Approximate Size</label>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>Approximate Size</label>
                 <div className="flex flex-wrap gap-2">
                   {SIZE_OPTIONS.map(sz => (
                     <button key={sz} onClick={() => setFormData(p => ({ ...p, size: sz }))}
@@ -65,7 +65,7 @@ export default function AiWizard({
                       style={{
                         background: formData.size === sz ? "rgba(132,147,79,0.14)" : "rgba(255,252,245,0.9)",
                         border: `1.5px solid ${formData.size === sz ? palette.sage : "rgba(140,100,55,0.18)"}`,
-                        color: formData.size === sz ? palette.sage : "#5C3A28",
+                        color: formData.size === sz ? palette.sage : palette.cocoa,
                       }}>{sz}</button>
                   ))}
                 </div>
@@ -82,7 +82,7 @@ export default function AiWizard({
               </div>
               <YarnPicker formData={formData} setFormData={setFormData} />
               <div>
-                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: "#5C3A28" }}>
+                <label className="block font-heading font-semibold text-[13px] mb-2" style={{ color: palette.cocoa }}>
                   Colour Palette
                   {wizardColors.length > 0 && <span className="ml-2 text-[11px] font-normal" style={{ color: palette.clay }}>({wizardColors.length} selected)</span>}
                 </label>
@@ -124,7 +124,7 @@ export default function AiWizard({
                   <>
                     <span style={{ fontSize: 44 }}>📸</span>
                     <div className="text-center">
-                      <p className="font-heading font-semibold text-[14px]" style={{ color: "#5C3A28" }}>Drop a photo here</p>
+                      <p className="font-heading font-semibold text-[14px]" style={{ color: palette.cocoa }}>Drop a photo here</p>
                       <p className="text-[12px] mt-0.5" style={{ color: palette.clay }}>or tap to browse</p>
                     </div>
                   </>
@@ -156,12 +156,12 @@ export default function AiWizard({
                 {formData.prompt && (
                   <div>
                     <p className="text-[10.5px] font-semibold uppercase tracking-wider mb-1" style={{ color: palette.muted }}>Description</p>
-                    <p className="text-[12.5px] leading-snug" style={{ color: "#5C3A28" }}>{formData.prompt}</p>
+                    <p className="text-[12.5px] leading-snug" style={{ color: palette.cocoa }}>{formData.prompt}</p>
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">
                   {formData.size && <span className="badge-green">{formData.size}</span>}
-                  {formData.yarnType && <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold" style={{ background: "rgba(212,146,26,0.12)", color: "#D4921A" }}>{formData.yarnType}</span>}
+                  {formData.yarnType && <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold" style={{ background: "rgba(212,146,26,0.12)", color: palette.amber }}>{formData.yarnType}</span>}
                   {wizardColors.length > 0 && (
                     <div className="flex items-center gap-1.5">
                       {wizardColors.slice(0, 5).map(c => (
@@ -177,7 +177,7 @@ export default function AiWizard({
                 <img src="/characters/char-yala-transparent.png" alt="Yala"
                   style={{ width: 48, height: 48, objectFit: "contain" }}
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                <p className="text-[12px] italic leading-snug" style={{ color: "#7C5FA8" }}>
+                <p className="text-[12px] italic leading-snug" style={{ color: palette.purple }}>
                   "I've got everything I need. Let me weave some magic for you!"
                 </p>
               </div>
@@ -197,7 +197,7 @@ export default function AiWizard({
           <div className="flex items-center justify-between mt-6">
             <button onClick={() => setWizardStep(s => Math.max(0, s - 1))} disabled={wizardStep === 0}
               className="px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-80 disabled:opacity-30"
-              style={{ background: "rgba(140,100,55,0.09)", color: "#5C3A28" }}>← Back</button>
+              style={{ background: "rgba(140,100,55,0.09)", color: palette.cocoa }}>← Back</button>
             {wizardStep < 4 && (
               <button onClick={() => canAdvance() && setWizardStep(s => s + 1)} disabled={!canAdvance()}
                 className="px-6 py-2.5 rounded-xl font-heading font-bold text-[13px] transition-all hover:opacity-90 disabled:opacity-35"

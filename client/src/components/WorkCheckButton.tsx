@@ -19,9 +19,9 @@ interface Result {
 
 // Gentle, non-judgmental result styling — no numeric score, by design.
 const STYLES: Record<Status, { label: string; emoji: string; bg: string; fg: string; border: string }> = {
-  on_track: { label: "Looks on track", emoji: "✓", bg: "rgba(132,147,79,0.12)", fg: "#6A7A3A", border: "rgba(132,147,79,0.4)" },
-  check:    { label: "Worth a look",   emoji: "👀", bg: "rgba(212,146,26,0.12)", fg: "#A8761A", border: "rgba(212,146,26,0.4)" },
-  unsure:   { label: "Hard to tell",   emoji: "🤔", bg: "rgba(140,100,55,0.10)", fg: "#7A5A48", border: "rgba(140,100,55,0.3)" },
+  on_track: { label: "Looks on track", emoji: "✓", bg: "rgba(132,147,79,0.12)", fg: palette.olive, border: "rgba(132,147,79,0.4)" },
+  check:    { label: "Worth a look",   emoji: "👀", bg: "rgba(212,146,26,0.12)", fg: palette.gold, border: "rgba(212,146,26,0.4)" },
+  unsure:   { label: "Hard to tell",   emoji: "🤔", bg: "rgba(140,100,55,0.10)", fg: palette.inkSoft, border: "rgba(140,100,55,0.3)" },
 };
 
 /**
@@ -125,7 +125,7 @@ export default function WorkCheckButton({ patternId, sectionIndex, stepIndex }: 
               </p>
             )}
             {error && (
-              <p className="text-[13px] py-3 px-3 rounded-2xl" style={{ background: "rgba(194,78,107,0.08)", color: "#A83050" }}>
+              <p className="text-[13px] py-3 px-3 rounded-2xl" style={{ background: "rgba(194,78,107,0.08)", color: palette.roseDeep }}>
                 {error}
               </p>
             )}
@@ -137,7 +137,7 @@ export default function WorkCheckButton({ patternId, sectionIndex, stepIndex }: 
                 >
                   {s.emoji} {s.label}
                 </span>
-                <p className="text-[13.5px] leading-relaxed" style={{ color: "#5C3A28" }}>{result.note}</p>
+                <p className="text-[13.5px] leading-relaxed" style={{ color: palette.cocoa }}>{result.note}</p>
               </div>
             )}
           </div>

@@ -21,7 +21,7 @@ export async function makeStoryCard(pattern: Pattern, makerName: string): Promis
   ctx.fillRect(0, 0, W, 200);
 
   // Brand
-  ctx.fillStyle = "#C24E6B";
+  ctx.fillStyle = palette.rose;
   ctx.font = "bold 40px Georgia, serif";
   ctx.textAlign = "center";
   ctx.fillText("🧶 Crochet Time", W / 2, 90);
@@ -63,7 +63,7 @@ export async function makeStoryCard(pattern: Pattern, makerName: string): Promis
   function loadedFallback() {
     ctx.fillStyle = "#F0CACF";
     ctx.fillRect(imgX, imgY, imgSize, imgSize);
-    ctx.fillStyle = "#C24E6B";
+    ctx.fillStyle = palette.rose;
     ctx.font = "200px serif";
     ctx.fillText("🧶", W / 2, imgY + imgSize / 2 + 70);
   }
@@ -74,7 +74,7 @@ export async function makeStoryCard(pattern: Pattern, makerName: string): Promis
   ctx.font = "bold 56px Georgia, serif";
   const title = pattern.title.length > 28 ? pattern.title.slice(0, 27) + "…" : pattern.title;
   ctx.fillText(title, W / 2, imgY + imgSize + 110);
-  ctx.fillStyle = "#A83050";
+  ctx.fillStyle = palette.roseDeep;
   ctx.font = "italic 40px Georgia, serif";
   ctx.fillText(`made by ${makerName}`, W / 2, imgY + imgSize + 170);
 
@@ -91,7 +91,7 @@ export async function makeStoryCard(pattern: Pattern, makerName: string): Promis
     total ? `${total} ${total === 1 ? "step" : "steps"}` : null,
     finished ? finished.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : null,
   ].filter(Boolean);
-  ctx.fillStyle = "#7A5A48";
+  ctx.fillStyle = palette.inkSoft;
   ctx.font = "34px Georgia, serif";
   ctx.fillText(bits.join("  ·  "), W / 2, imgY + imgSize + 240);
 

@@ -57,7 +57,7 @@ export default function FinishedRecordCard({ pattern, onUpdatePattern }: Finishe
   return (
     <div className="surface-card p-4">
       <div className="flex items-center gap-2 mb-1">
-        <NotebookPen className="h-4 w-4" style={{ color: "#7C5FA8" }} />
+        <NotebookPen className="h-4 w-4" style={{ color: palette.purple }} />
         <span className="font-heading font-semibold text-[13px]" style={{ color: palette.ink }}>Project notebook</span>
       </div>
       <p className="text-[11.5px] mb-3" style={{ color: palette.clay }}>
@@ -87,7 +87,7 @@ export default function FinishedRecordCard({ pattern, onUpdatePattern }: Finishe
         onClick={() => onUpdatePattern({ ...pattern, finishedRecord: draft })}
         disabled={!dirty}
         className="mt-3 flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-90 disabled:opacity-40"
-        style={{ background: "rgba(124,95,168,0.12)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.3)" }}
+        style={{ background: "rgba(124,95,168,0.12)", color: palette.purple, border: "1px solid rgba(124,95,168,0.3)" }}
       >
         <Check className="h-3.5 w-3.5" /> {dirty ? "Save notebook" : "Saved"}
       </button>

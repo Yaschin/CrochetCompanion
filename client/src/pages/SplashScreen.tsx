@@ -80,7 +80,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
         <motion.path
           d={THREAD_PATH}
           fill="none"
-          stroke="#C24E6B"
+          stroke={palette.rose}
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeOpacity="0.28"
@@ -93,7 +93,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
         <motion.path
           d="M -10,100 Q 80,60 200,95 Q 320,130 440,80 Q 560,30 680,90 Q 800,145 920,75 Q 980,50 1050,95"
           fill="none"
-          stroke="#7C5FA8"
+          stroke={palette.purple}
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeOpacity="0.18"
@@ -107,13 +107,13 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
       {/* Floating flowers — appear after stage 1 */}
       {stage >= 1 && (
         <>
-          <FloatingFlower x={6}  y={8}  color="#C24E6B" size={36} delay={0} />
-          <FloatingFlower x={80} y={7}  color="#7C5FA8" size={28} delay={1.2} />
-          <FloatingFlower x={4}  y={70} color="#84934F" size={32} delay={2.1} />
-          <FloatingFlower x={82} y={68} color="#D4921A" size={24} delay={0.7} />
-          <FloatingFlower x={48} y={4}  color="#3D8FA3" size={20} delay={1.8} />
-          <FloatingFlower x={18} y={88} color="#C24E6B" size={16} delay={3.0} />
-          <FloatingFlower x={74} y={85} color="#84934F" size={18} delay={1.5} />
+          <FloatingFlower x={6}  y={8}  color={palette.rose} size={36} delay={0} />
+          <FloatingFlower x={80} y={7}  color={palette.purple} size={28} delay={1.2} />
+          <FloatingFlower x={4}  y={70} color={palette.sage} size={32} delay={2.1} />
+          <FloatingFlower x={82} y={68} color={palette.amber} size={24} delay={0.7} />
+          <FloatingFlower x={48} y={4}  color={palette.teal} size={20} delay={1.8} />
+          <FloatingFlower x={18} y={88} color={palette.rose} size={16} delay={3.0} />
+          <FloatingFlower x={74} y={85} color={palette.sage} size={18} delay={1.5} />
           <FloatingStar x={30} y={20} delay={0.3} />
           <FloatingStar x={65} y={15} delay={1.1} />
           <FloatingStar x={12} y={45} delay={2.0} />
@@ -172,7 +172,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
                   style={{ width: 88, height: 88, objectFit: "contain", filter: "drop-shadow(0 6px 16px rgba(50,20,5,0.28))" }}
                   onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }} />
               </div>
-              <span className="text-[10px] font-bold" style={{ color: "#3D8FA3" }}>Ashi</span>
+              <span className="text-[10px] font-bold" style={{ color: palette.teal }}>Ashi</span>
             </motion.div>
 
             {/* Yala */}
@@ -187,7 +187,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
                   style={{ width: 84, height: 84, objectFit: "contain", filter: "drop-shadow(0 5px 14px rgba(50,20,5,0.25))" }}
                   onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }} />
               </div>
-              <span className="text-[10px] font-bold" style={{ color: "#7C5FA8" }}>Yala</span>
+              <span className="text-[10px] font-bold" style={{ color: palette.purple }}>Yala</span>
             </motion.div>
           </motion.div>
         )}
@@ -207,7 +207,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
                 <defs>
                   <radialGradient id="wb1" cx="36%" cy="32%" r="62%">
                     <stop offset="0%" stopColor="#E87898" />
-                    <stop offset="45%" stopColor="#C24E6B" />
+                    <stop offset="45%" stopColor={palette.rose} />
                     <stop offset="100%" stopColor="#7A1E38" />
                   </radialGradient>
                   <clipPath id="wbc"><circle cx="40" cy="40" r="34" /></clipPath>
@@ -229,10 +229,10 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
 
               {/* Text */}
               <div className="text-center">
-                <p className="font-script leading-none" style={{ fontSize: "3.2rem", color: "#A83050", fontWeight: 700 }}>
+                <p className="font-script leading-none" style={{ fontSize: "3.2rem", color: palette.roseDeep, fontWeight: 700 }}>
                   Crochet
                 </p>
-                <p className="font-script leading-none" style={{ fontSize: "3.2rem", color: "#A83050", fontWeight: 700, marginTop: "-10px" }}>
+                <p className="font-script leading-none" style={{ fontSize: "3.2rem", color: palette.roseDeep, fontWeight: 700, marginTop: "-10px" }}>
                   Time ♥
                 </p>
               </div>
@@ -281,8 +281,8 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
             <motion.div className="mb-6"
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.22, duration: 0.4 }}>
-              <p className="font-heading font-semibold text-[16px]" style={{ color: "#5C3A28" }}>Your crochet studio</p>
-              <p className="font-heading font-semibold text-[16px]" style={{ color: "#5C3A28" }}>Your creative world ✨</p>
+              <p className="font-heading font-semibold text-[16px]" style={{ color: palette.cocoa }}>Your crochet studio</p>
+              <p className="font-heading font-semibold text-[16px]" style={{ color: palette.cocoa }}>Your creative world ✨</p>
             </motion.div>
 
             <motion.button
@@ -305,7 +305,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: 0.45, duration: 0.4 }}>
               {[
-                { id: "bee",   color: "#D4921A", delay: 0 },
+                { id: "bee",   color: palette.amber, delay: 0 },
                 { id: "sheep", color: palette.sage, delay: 0.4 },
               ].map((c, i) => (
                 <motion.div key={c.id}

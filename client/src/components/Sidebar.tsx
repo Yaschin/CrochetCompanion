@@ -84,9 +84,9 @@ function LargeDecorativeFlower() {
           const cy = 35 + Math.sin(rad) * 14;
           return <ellipse key={a} cx={cx} cy={cy} rx="12" ry="8"
             transform={`rotate(${a},${cx},${cy})`}
-            fill="#C24E6B" fillOpacity="0.5" />;
+            fill={palette.rose} fillOpacity="0.5" />;
         })}
-        <circle cx="35" cy="35" r="9" fill="#C24E6B" fillOpacity="0.65" />
+        <circle cx="35" cy="35" r="9" fill={palette.rose} fillOpacity="0.65" />
         <circle cx="35" cy="35" r="4" fill="white" fillOpacity="0.45" />
         {/* Stitch dots on petals */}
         {[0, 72, 144, 216, 288].map((a) => {
@@ -108,9 +108,9 @@ function ActivePillDecor() {
         const rad = (a * Math.PI) / 180;
         const cx = 9 + Math.cos(rad) * 4.5;
         const cy = 9 + Math.sin(rad) * 4.5;
-        return <circle key={a} cx={cx} cy={cy} r="1.6" fill="#C24E6B" fillOpacity="0.7" />;
+        return <circle key={a} cx={cx} cy={cy} r="1.6" fill={palette.rose} fillOpacity="0.7" />;
       })}
-      <circle cx="9" cy="9" r="2" fill="#C24E6B" fillOpacity="0.85" />
+      <circle cx="9" cy="9" r="2" fill={palette.rose} fillOpacity="0.85" />
     </svg>
   );
 }
@@ -141,13 +141,13 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
         >
           <span
             className="font-script leading-tight group-hover:opacity-80 transition-opacity"
-            style={{ fontSize: "1.75rem", color: "#A83050", fontWeight: 700 }}
+            style={{ fontSize: "1.75rem", color: palette.roseDeep, fontWeight: 700 }}
           >
             Crochet
           </span>
           <span
             className="font-script leading-tight group-hover:opacity-80 transition-opacity"
-            style={{ fontSize: "1.75rem", color: "#A83050", fontWeight: 700, marginTop: "-3px" }}
+            style={{ fontSize: "1.75rem", color: palette.roseDeep, fontWeight: 700, marginTop: "-3px" }}
           >
             Time ♥
           </span>
@@ -187,7 +187,7 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
                 className="flex-shrink-0 transition-colors"
                 style={{ width: 18, height: 18, color: active ? "#B04060" : "#8A6A58" }}
               />
-              <span className="flex-1" style={{ color: active ? "#B04060" : "#5C3A28" }}>{item.label}</span>
+              <span className="flex-1" style={{ color: active ? "#B04060" : palette.cocoa }}>{item.label}</span>
               {/* Small decorative motif inside active pill */}
               {active && item.id === "home" && <ActivePillDecor />}
             </button>
@@ -209,7 +209,7 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
                 paddingLeft: 8,
                 paddingRight: 8,
                 borderRadius: 8,
-                color: active ? "#B04060" : "#7A5A48",
+                color: active ? "#B04060" : palette.inkSoft,
               }}
             >
               <Icon style={{ width: 17, height: 17, color: active ? "#B04060" : "#9A7A68", flexShrink: 0 }} />
@@ -223,9 +223,9 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
       <div className="px-4 pb-0 relative z-10">
         {/* Decorative flowers */}
         <div className="flex gap-1.5 mb-2">
-          <CrochetFlowerSmall color="#C24E6B" />
-          <CrochetFlowerSmall color="#84934F" />
-          <CrochetFlowerSmall color="#7C5FA8" />
+          <CrochetFlowerSmall color={palette.rose} />
+          <CrochetFlowerSmall color={palette.sage} />
+          <CrochetFlowerSmall color={palette.purple} />
         </div>
 
         {/* Made with love label */}

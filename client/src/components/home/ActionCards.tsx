@@ -95,7 +95,7 @@ export function CreateWithYalaCard({ onNavigate, onNavigateToPdf }: { onNavigate
     <div className="craft-card craft-card-plum flex flex-col gap-2.5 p-4 h-full">
       <div>
         <div className="flex items-center gap-2 mb-0.5">
-          <Wand2 className="h-4 w-4 flex-shrink-0" style={{ color: "#7C5FA8" }} />
+          <Wand2 className="h-4 w-4 flex-shrink-0" style={{ color: palette.purple }} />
           <span className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
             Create a Pattern
           </span>
@@ -146,7 +146,7 @@ export function FavoritesCard({
     <div className="craft-card craft-card-sage flex flex-col gap-2.5 p-4 h-full">
       <div>
         <div className="flex items-center gap-2 mb-0.5">
-          <Heart className="h-4 w-4 flex-shrink-0" style={{ color: palette.sage }} fill="#84934F" />
+          <Heart className="h-4 w-4 flex-shrink-0" style={{ color: palette.sage }} fill={palette.sage} />
           <span className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
             {getActiveProfile().name}'s Favorites
           </span>
