@@ -48,7 +48,7 @@ function diffColor(skill: string): string {
 export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPattern }: CommunityScreenProps) {
   const { toast } = useToast();
   const myId = getActiveProfile().id;
-  const { data: makealongsRaw } = useQuery<MakeAlong[]>({ queryKey: ["/api/makealongs"] });
+  const { data: makealongsRaw, isLoading: makealongsLoading } = useQuery<MakeAlong[]>({ queryKey: ["/api/makealongs"] });
   const makealongs = Array.isArray(makealongsRaw) ? makealongsRaw : [];
 
   const joinMutation = useMutation({
@@ -226,7 +226,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
       )}
 
       {/* Nudge: make-alongs are invisible until someone starts one — explain how */}
-      {!isLoading && !isError && makealongs.length === 0 && patterns.length > 0 && (
+      {!isLoading && !isError && !makealongsLoading && makealongs.length === 0 && patterns.length > 0 && (
         <div className="px-4 pt-4">
           <div className="flex items-center gap-3 p-3.5 rounded-2xl"
             style={{ background: "rgba(124,95,168,0.06)", border: "1px dashed rgba(124,95,168,0.30)" }}>
@@ -259,7 +259,11 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
             {filtered.map(p => (
               <div
                 key={p.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Open ${p.title}`}
                 onClick={() => onPatternSelect?.(p.id)}
+                onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPatternSelect?.(p.id); } }}
                 className="rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
                 style={{ background: "rgba(255,252,245,0.95)", boxShadow: "0 2px 12px rgba(80,40,10,0.10)", border: "1px solid rgba(140,100,55,0.12)" }}>
                 {/* Image */}
@@ -281,7 +285,7 @@ export default function CommunityScreen({ onNavigate, onPatternSelect, onOpenPat
                     by {p.creator}{p.creatorId ? " ♡" : ""}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
-                    <button onClick={e => { e.stopPropagation(); likeMutation.mutate(p.id); }}>
+                    <button aria-label={`Like ${p.title}`} onClick={e => { e.stopPropagation(); likeMutation.mutate(p.id); }}>
                       <Heart className="h-3 w-3 fill-current" style={{ color: palette.rose }} />
                     </button>
                     <span className="text-[10px] font-semibold" style={{ color: palette.rose }}>{p.likes ?? 0}</span>

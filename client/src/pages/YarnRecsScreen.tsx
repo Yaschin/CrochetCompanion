@@ -1,6 +1,7 @@
 import { palette } from "@/lib/theme";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Check, ShoppingBag, Sparkles, Plus } from "lucide-react";
+import { Check, ShoppingBag, Sparkles, Plus } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { motion } from "framer-motion";
 import { Pattern, StashItem, ViewType } from "../lib/types";
 import { rankByStash, RankedPattern } from "../lib/stashMatch";
@@ -71,13 +72,7 @@ export default function YarnRecsScreen({ onNavigate, onPatternSelected }: YarnRe
       {/* Header */}
       <div className="flex-shrink-0 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
         <div className="flex items-center gap-3 mb-1">
-          <button
-            onClick={() => onNavigate("home")}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: "rgba(132,147,79,0.08)", color: palette.sage }}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
+          <BackButton onClick={() => onNavigate("home")} bg="rgba(132,147,79,0.08)" color={palette.sage} />
           <div>
             <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>
               Make From My Stash

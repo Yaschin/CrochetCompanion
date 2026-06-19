@@ -172,7 +172,7 @@ export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: P
   });
 
   // "Up next" — one pinned pattern per profile.
-  const { data: upNext } = useQuery<{ patternId: string | null }>({ queryKey: ["/api/up-next"] });
+  const { data: upNext, isLoading: upNextLoading } = useQuery<{ patternId: string | null }>({ queryKey: ["/api/up-next"] });
   const isUpNext = upNext?.patternId === pattern.id;
   const upNextMutation = useMutation({
     mutationFn: async (pin: boolean) => {
@@ -513,6 +513,7 @@ export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: P
     coverInputRef,
     formattedDate,
     isUpNext,
+    upNextLoading,
     updatePatternMutation,
     saveNotesMutation,
     coverPhotoMutation,

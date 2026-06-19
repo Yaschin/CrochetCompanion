@@ -1,6 +1,7 @@
 import { palette } from "@/lib/theme";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, Download, Upload, Shield, Heart, HelpCircle, Activity, CheckCircle2, XCircle, Sparkles } from "lucide-react";
+import { Download, Upload, Shield, Heart, HelpCircle, Activity, CheckCircle2, XCircle, Sparkles } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -165,9 +166,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
-        <button onClick={() => onNavigate("home")} className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70" style={{ background: "rgba(140,100,55,0.08)", color: palette.clay }}>
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+        <BackButton onClick={() => onNavigate("home")} bg="rgba(140,100,55,0.08)" color={palette.clay} />
         <div>
           <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Settings</h1>
           <p className="text-[12px]" style={{ color: palette.clay }}>Backup & data</p>

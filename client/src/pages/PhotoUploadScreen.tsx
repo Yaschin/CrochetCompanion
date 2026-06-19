@@ -1,6 +1,7 @@
 import { palette } from "@/lib/theme";
 import { isMaterialsSection } from "@shared/sections";
-import { ChevronLeft, Camera, ImageOff } from "lucide-react";
+import { Camera, ImageOff } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { motion } from "framer-motion";
 import { Pattern, ViewType } from "../lib/types";
 
@@ -33,9 +34,7 @@ export default function PhotoUploadScreen({ pattern, onNavigate }: PhotoUploadSc
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
-        <button onClick={() => onNavigate("progress")} className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70" style={{ background: "rgba(60,143,163,0.08)", color: "#3D8FA3" }}>
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+        <BackButton onClick={() => onNavigate("progress")} bg="rgba(60,143,163,0.08)" color="#3D8FA3" />
         <div>
           <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Progress Photos</h1>
           <p className="text-[12px]" style={{ color: palette.clay }}>

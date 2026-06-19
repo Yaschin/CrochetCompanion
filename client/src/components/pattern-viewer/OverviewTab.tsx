@@ -20,6 +20,7 @@ interface OverviewTabProps {
   onCoverPhoto: (file: File) => void;
   coverPhotoPending: boolean;
   isUpNext: boolean;
+  upNextLoading?: boolean;
   onToggleUpNext: () => void;
   upNextPending: boolean;
   onOpenShare: () => void;
@@ -49,6 +50,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   onCoverPhoto,
   coverPhotoPending,
   isUpNext,
+  upNextLoading,
   onToggleUpNext,
   upNextPending,
   onOpenShare,
@@ -106,7 +108,11 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             ))}
           </div>
           <div className="flex gap-2 mt-3 flex-wrap">
-            {pattern.status === 'pattern' && (
+            {pattern.status === 'pattern' && upNextLoading && (
+              <div className="px-3 py-1.5 rounded-xl animate-pulse" aria-hidden="true"
+                style={{ width: 116, height: 30, background: "rgba(124,95,168,0.10)" }} />
+            )}
+            {pattern.status === 'pattern' && !upNextLoading && (
               <button
                 onClick={onToggleUpNext}
                 disabled={upNextPending}

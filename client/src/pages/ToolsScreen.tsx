@@ -1,7 +1,8 @@
 import { palette } from "@/lib/theme";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Ruler, Scissors, Info, Settings as SettingsIcon } from "lucide-react";
+import { Ruler, Scissors, Info, Settings as SettingsIcon } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { withProfile } from "../lib/profile";
 import { StashItem, ViewType } from "../lib/types";
 import {
@@ -114,7 +115,7 @@ export default function ToolsScreen({ onNavigate }: ToolsScreenProps) {
   }, [sizeMode, inWidth, inHeight, inSts, inRows, stG, rowG]);
 
   // ── Yarn estimator ──────────────────────────────────────────────────────────
-  const { data: stash = [] } = useQuery<StashItem[]>({ queryKey: ["/api/stash"] });
+  const { data: stash = [], isLoading: stashLoading } = useQuery<StashItem[]>({ queryKey: ["/api/stash"] });
   const yarns = useMemo(() => stash.filter((s) => s.type === "yarn"), [stash]);
 
   const [unit, setUnit] = useState<"yd" | "m">("yd");
@@ -143,13 +144,7 @@ export default function ToolsScreen({ onNavigate }: ToolsScreenProps) {
       {/* Header */}
       <div className="flex-shrink-0 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => onNavigate("home")}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: "rgba(132,147,79,0.08)", color: palette.sage }}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
+          <BackButton onClick={() => onNavigate("home")} bg="rgba(132,147,79,0.08)" color={palette.sage} />
           <div>
             <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>
               Calculators
@@ -269,7 +264,9 @@ export default function ToolsScreen({ onNavigate }: ToolsScreenProps) {
           </div>
 
           {/* Stash yarn picker */}
-          {yarns.length > 0 && (
+          {stashLoading ? (
+            <div className="h-9 rounded-xl mb-3 animate-pulse" style={{ background: "rgba(140,100,55,0.10)" }} aria-hidden="true" />
+          ) : yarns.length > 0 && (
             <label className="block text-[11.5px] font-semibold mb-3" style={{ color: "#7A5A48" }}>
               Use a yarn from my stash
               <select

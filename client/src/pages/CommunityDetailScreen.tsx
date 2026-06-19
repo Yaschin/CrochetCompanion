@@ -1,5 +1,6 @@
 import { palette } from "@/lib/theme";
-import { ChevronLeft, Heart, Bookmark, Layers, ListChecks, Scissors } from "lucide-react";
+import { Heart, Bookmark, Layers, ListChecks, Scissors } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Pattern, ViewType } from "../lib/types";
 import type { CommunityPattern } from "@shared/schema";
@@ -111,11 +112,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 px-4 pt-4 pb-3"
         style={{ borderBottom: "1px solid rgba(140,100,55,0.12)" }}>
-        <button onClick={() => onNavigate("community")}
-          className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-          style={{ background: "rgba(140,100,55,0.08)", color: "#6B4B38" }}>
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+        <BackButton onClick={() => onNavigate("community")} bg="rgba(140,100,55,0.08)" color="#6B4B38" />
         <span className="font-heading font-bold text-[16px] flex-1 truncate" style={{ color: palette.ink }}>
           Pattern Detail
         </span>

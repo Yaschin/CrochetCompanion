@@ -1,6 +1,7 @@
 import { palette } from "@/lib/theme";
 import { isMaterialsSection } from "@shared/sections";
-import { ChevronLeft, Trophy, Clock, CalendarDays } from "lucide-react";
+import { Trophy, Clock, CalendarDays } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { useQuery } from "@tanstack/react-query";
 import { Pattern, ViewType } from "../lib/types";
 import StreakCard from "../components/StreakCard";
@@ -17,7 +18,7 @@ function daysBetween(a: Date, b: Date): number {
 
 export default function ProgressTrackingScreen({ pattern, onNavigate }: ProgressTrackingScreenProps) {
   // Real finished-project count (for the "5 Projects" achievement).
-  const { data: allPatterns = [] } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
+  const { data: allPatterns = [], isLoading: patternsLoading } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
   const finishedCount = allPatterns.filter((p) => p.status === "finished").length;
 
   const realSections = (pattern?.sections ?? []).filter((s) => !isMaterialsSection(s.name));
@@ -48,9 +49,7 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
-        <button onClick={() => onNavigate("viewer")} className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70" style={{ background: "rgba(194,78,107,0.08)", color: palette.rose }}>
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+        <BackButton onClick={() => onNavigate("viewer")} bg="rgba(194,78,107,0.08)" color={palette.rose} />
         <div>
           <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Progress Tracking</h1>
           {pattern && <p className="text-[12px]" style={{ color: palette.clay }}>{pattern.title}</p>}
@@ -147,7 +146,12 @@ export default function ProgressTrackingScreen({ pattern, onNavigate }: Progress
                 <p className="font-heading font-semibold text-[13px]" style={{ color: palette.ink }}>Achievements</p>
               </div>
               <div className="flex gap-2 flex-wrap">
-                {achievements.map((a) => (
+                {patternsLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="w-[68px] h-[68px] rounded-2xl animate-pulse" aria-hidden="true"
+                      style={{ background: "rgba(180,160,140,0.12)" }} />
+                  ))
+                ) : achievements.map((a) => (
                   <div key={a.label} className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-2xl"
                     style={{ background: a.unlocked ? `${a.color}14` : "rgba(180,160,140,0.08)", border: `1.5px dashed ${a.unlocked ? a.color + "55" : "rgba(180,160,140,0.25)"}`, opacity: a.unlocked ? 1 : 0.5 }}>
                     <span className="text-2xl" style={{ filter: a.unlocked ? "none" : "grayscale(1)" }}>{a.icon}</span>

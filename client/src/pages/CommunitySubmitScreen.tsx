@@ -1,7 +1,8 @@
 import { palette } from "@/lib/theme";
 import { isMaterialsSection } from "@shared/sections";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { useMutation } from "@tanstack/react-query";
 import { ViewType, Pattern } from "../lib/types";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -83,11 +84,9 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
       <div className="flex-shrink-0 flex items-center justify-between px-4 pt-4 pb-3"
         style={{ borderBottom: "1px solid rgba(140,100,55,0.12)" }}>
         <div className="flex items-center gap-3">
-          <button onClick={() => step === 0 ? onNavigate(initialPattern ? "pattern-detail" : "community") : setStep(s => s - 1)}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: "rgba(140,100,55,0.08)", color: "#6B4B38" }}>
-            <ChevronLeft className="h-4 w-4" />
-          </button>
+          <BackButton
+            onClick={() => step === 0 ? onNavigate(initialPattern ? "pattern-detail" : "community") : setStep(s => s - 1)}
+            bg="rgba(140,100,55,0.08)" color="#6B4B38" />
           <div>
             <h1 className="font-heading font-bold text-[18px]" style={{ color: palette.ink }}>
               Share Your Pattern
