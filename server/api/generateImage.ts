@@ -211,21 +211,3 @@ function getPlaceholderImage(type: string, partName?: string): string {
       return `${baseUrl}/600x400/f0f6ff/3a5c8a?text=Step+Image+Unavailable%0A%0ATo+enable+step+images:%0A1.+Get+OpenAI+API+key+at+platform.openai.com%0A2.+Add+to+environment+variables`;
   }
 }
-
-// Generate an image for a specific part of the pattern
-export async function generatePartImage(prompt: string, partName: string, projectType: string): Promise<string> {
-  return generateImage({
-    prompt,
-    type: "part",
-    projectType,
-    partName
-  });
-}
-
-// Generate a stitch diagram for a crochet step
-export async function generateStitchDiagram(stepText: string): Promise<string> {
-  return generateImage({
-    prompt: stepText,
-    type: "diagram"
-  });
-}
