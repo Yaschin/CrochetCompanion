@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Camera, X } from "lucide-react";
 import { apiRequest } from "../lib/queryClient";
+import { fileToDataUrl } from "../lib/utils";
 
 interface WorkCheckButtonProps {
   patternId: string;
@@ -54,14 +55,12 @@ export default function WorkCheckButton({ patternId, sectionIndex, stepIndex }: 
     setError(null);
     setOpen(true);
     check.reset();
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = String(reader.result || "");
-      if (url.startsWith("data:image/")) check.mutate(url);
-      else setError("That file couldn't be read as a photo.");
-    };
-    reader.onerror = () => setError("That file couldn't be read.");
-    reader.readAsDataURL(file);
+    fileToDataUrl(file)
+      .then((url) => {
+        if (url.startsWith("data:image/")) check.mutate(url);
+        else setError("That file couldn't be read as a photo.");
+      })
+      .catch(() => setError("That file couldn't be read."));
   };
 
   const result = check.data;

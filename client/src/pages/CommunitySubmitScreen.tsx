@@ -6,6 +6,7 @@ import { BackButton } from "@/components/BackButton";
 import { useMutation } from "@tanstack/react-query";
 import { ViewType, Pattern } from "../lib/types";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { fileToDataUrl } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 interface CommunitySubmitScreenProps {
@@ -45,9 +46,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
   const onPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => setPhotoDataUrl(reader.result as string);
-    reader.readAsDataURL(f);
+    fileToDataUrl(f).then(setPhotoDataUrl);
   };
 
   const submitMutation = useMutation({

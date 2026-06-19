@@ -3,6 +3,7 @@ import { usePatternRegen } from './usePatternRegen';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
+import { fileToDataUrl } from '@/lib/utils';
 import { Pattern, PatternStep } from '@/lib/types';
 import { recordActivity } from '@/lib/activityLog';
 import { shareStoryCard } from '@/lib/storyCard';
@@ -153,12 +154,7 @@ export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: P
   // Set a real photo of the finished object as the cover image.
   const coverPhotoMutation = useMutation({
     mutationFn: async (file: File) => {
-      const imageBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      const imageBase64 = await fileToDataUrl(file);
       const res = await apiRequest('POST', `/api/patterns/${pattern.id}/cover-photo`, { imageBase64 });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return res.json();

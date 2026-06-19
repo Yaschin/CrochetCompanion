@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Camera, ImageIcon, Upload, X, RefreshCw, CheckCircle, Percent } from 'lucide-react';
 import axios from 'axios';
-import { fileToBase64 } from '@/lib/utils';
+import { fileToDataUrl } from '@/lib/utils';
 
 interface SectionPhotoUploaderProps {
   patternId: string;
@@ -34,11 +34,7 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
       setSelectedFile(file);
       
       // Create a preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      fileToDataUrl(file).then(setPreviewUrl);
     }
   }, []);
 
@@ -62,12 +58,11 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
     try {
       setIsUploading(true);
       
-      // Convert file to base64
-      const base64Data = await fileToBase64(selectedFile);
-      
+      const photoDataUrl = await fileToDataUrl(selectedFile);
+
       // Send to server
       const response = await axios.post(`/api/patterns/${patternId}/sections/${sectionIndex}/photo`, {
-        photo: base64Data
+        photo: photoDataUrl
       });
       
       if (response.data.success && response.data.photoUrl) {
