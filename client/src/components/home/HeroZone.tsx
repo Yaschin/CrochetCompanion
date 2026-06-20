@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { CrochetFlower, YarnBall } from "./decorations";
+import { palette } from "@/lib/theme";
 
 function HeroScene() {
   return (
@@ -58,9 +59,9 @@ function HeroScene() {
           {/* Handle */}
           <path d="M 8 16 Q 28 4 48 16" fill="none" stroke="#8B6035" strokeWidth="3" strokeLinecap="round" />
           {/* Yarn balls peeking out */}
-          <circle cx="16" cy="14" r="8" fill="#C24E6B" fillOpacity="0.9" />
-          <circle cx="28" cy="11" r="9" fill="#84934F" fillOpacity="0.9" />
-          <circle cx="40" cy="13" r="8" fill="#D4921A" fillOpacity="0.9" />
+          <circle cx="16" cy="14" r="8" fill={palette.rose} fillOpacity="0.9" />
+          <circle cx="28" cy="11" r="9" fill={palette.sage} fillOpacity="0.9" />
+          <circle cx="40" cy="13" r="8" fill={palette.amber} fillOpacity="0.9" />
           <ellipse cx="16" cy="14" rx="5.5" ry="2.5" fill="none" stroke="white" strokeWidth="0.8" strokeOpacity="0.5" />
           <ellipse cx="28" cy="11" rx="6.5" ry="2.8" fill="none" stroke="white" strokeWidth="0.8" strokeOpacity="0.5" />
           <ellipse cx="40" cy="13" rx="5.8" ry="2.5" fill="none" stroke="white" strokeWidth="0.8" strokeOpacity="0.5" />
@@ -74,20 +75,20 @@ function HeroScene() {
           {/* Handle */}
           <path d="M 29 13 Q 38 14 38 20 Q 38 26 29 27" fill="none" stroke="#7A9A70" strokeWidth="3" strokeLinecap="round" />
           {/* Crochet heart on mug */}
-          <path d="M 12 16 Q 12 13 15 13 Q 16 13 16 14.5 Q 16 13 17 13 Q 20 13 20 16 Q 20 19 16 22 Q 12 19 12 16Z" fill="#C24E6B" fillOpacity="0.7" />
+          <path d="M 12 16 Q 12 13 15 13 Q 16 13 16 14.5 Q 16 13 17 13 Q 20 13 20 16 Q 20 19 16 22 Q 12 19 12 16Z" fill={palette.rose} fillOpacity="0.7" />
         </g>
 
         {/* Crochet hook standing up */}
         <g transform="translate(158, 0)">
           <rect x="3" y="1" width="4" height="28" rx="2" fill="#A07040" fillOpacity="0.8" />
           <path d="M 3 4 Q 0 4 0 7 Q 0 10 4 10" fill="none" stroke="#8A6030" strokeWidth="1.5" strokeLinecap="round" />
-          <rect x="2" y="22" width="6" height="8" rx="1.5" fill="#C24E6B" fillOpacity="0.7" />
+          <rect x="2" y="22" width="6" height="8" rx="1.5" fill={palette.rose} fillOpacity="0.7" />
         </g>
 
         {/* Right side — yarn balls scattered on table */}
-        <YarnBall x={780} y={22} color="#7C5FA8" r={18} />
-        <YarnBall x={815} y={14} color="#3D8FA3" r={13} />
-        <YarnBall x={798} y={8}  color="#C24E6B" r={10} />
+        <YarnBall x={780} y={22} color={palette.purple} r={18} />
+        <YarnBall x={815} y={14} color={palette.teal} r={13} />
+        <YarnBall x={798} y={8}  color={palette.rose} r={10} />
 
         {/* Lavender sprigs — right of scene */}
         <g transform="translate(845, 0)">
@@ -105,14 +106,14 @@ function HeroScene() {
         <ellipse cx="420" cy="292" rx="165" ry="14" fill="none" stroke="#5A7A38" strokeWidth="1" strokeOpacity="0.3" strokeDasharray="4,3" />
 
         {/* Scattered yarn snippet on table */}
-        <path d="M 200 288 Q 220 282 240 290 Q 255 296 270 284" fill="none" stroke="#C24E6B" strokeWidth="2.5" strokeOpacity="0.5" strokeLinecap="round" />
-        <path d="M 560 286 Q 580 278 600 286 Q 615 292 630 280" fill="none" stroke="#7C5FA8" strokeWidth="2.5" strokeOpacity="0.5" strokeLinecap="round" />
+        <path d="M 200 288 Q 220 282 240 290 Q 255 296 270 284" fill="none" stroke={palette.rose} strokeWidth="2.5" strokeOpacity="0.5" strokeLinecap="round" />
+        <path d="M 560 286 Q 580 278 600 286 Q 615 292 630 280" fill="none" stroke={palette.purple} strokeWidth="2.5" strokeOpacity="0.5" strokeLinecap="round" />
 
         {/* Floor lamp silhouette — far right */}
         <g transform="translate(870, 20)">
           <line x1="12" y1="0" x2="12" y2="280" stroke="#5A3818" strokeWidth="3" strokeOpacity="0.6" />
           {/* Lamp shade */}
-          <path d="M 0 0 L 24 0 L 20 28 L 4 28 Z" fill="#D4921A" fillOpacity="0.5" />
+          <path d="M 0 0 L 24 0 L 20 28 L 4 28 Z" fill={palette.amber} fillOpacity="0.5" />
           <ellipse cx="12" cy="0" rx="12" ry="4" fill="#E8A830" fillOpacity="0.6" />
           {/* Base */}
           <ellipse cx="12" cy="278" rx="16" ry="5" fill="#5A3818" fillOpacity="0.5" />
@@ -131,10 +132,10 @@ function HeroScene() {
         </defs>
 
         {/* Decorative crochet flowers on table */}
-        <CrochetFlower x={168} y={268} color="#C24E6B" size={28} rotate={20} />
-        <CrochetFlower x={190} y={282} color="#84934F" size={18} rotate={-30} />
-        <CrochetFlower x={640} y={265} color="#7C5FA8" size={24} rotate={15} />
-        <CrochetFlower x={665} y={280} color="#D4921A" size={16} rotate={40} />
+        <CrochetFlower x={168} y={268} color={palette.rose} size={28} rotate={20} />
+        <CrochetFlower x={190} y={282} color={palette.sage} size={18} rotate={-30} />
+        <CrochetFlower x={640} y={265} color={palette.purple} size={24} rotate={15} />
+        <CrochetFlower x={665} y={280} color={palette.amber} size={16} rotate={40} />
       </svg>
 
       {/* Top shadow — shelf depth */}
@@ -185,7 +186,7 @@ export function HeroZone() {
             <p className="font-heading text-[11px] font-semibold leading-tight" style={{ color: "#6A4A30" }}>
               Crochet is my
             </p>
-            <p className="font-script text-[15px] leading-tight" style={{ color: "#A83050", fontWeight: 700 }}>
+            <p className="font-script text-[15px] leading-tight" style={{ color: palette.roseDeep, fontWeight: 700 }}>
               happy place ♡
             </p>
           </div>

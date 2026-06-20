@@ -1,6 +1,7 @@
 import { palette } from "@/lib/theme";
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, RotateCcw, History, Plus, Minus, Volume2, Mic } from "lucide-react";
+import { RotateCcw, History, Plus, Minus, Volume2, Mic } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { ViewType } from "../lib/types";
 import { recordActivity } from "../lib/activityLog";
@@ -112,11 +113,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
       <div className="flex-shrink-0 flex items-center justify-between px-6 pt-5 pb-4"
         style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
         <div className="flex items-center gap-3">
-          <button onClick={() => onNavigate(backView)}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: "rgba(132,147,79,0.08)", color: palette.sage }}>
-            <ChevronLeft className="h-4 w-4" />
-          </button>
+          <BackButton onClick={() => onNavigate(backView)} bg="rgba(132,147,79,0.08)" color={palette.sage} />
           <div>
             <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>
               Stitch Counter
@@ -149,7 +146,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
             aria-label="Toggle activity history"
             aria-pressed={showHistory}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: showHistory ? "rgba(124,95,168,0.15)" : "rgba(255,252,245,0.9)", color: showHistory ? "#7C5FA8" : palette.clay,
+            style={{ background: showHistory ? "rgba(124,95,168,0.15)" : "rgba(255,252,245,0.9)", color: showHistory ? palette.purple : palette.clay,
               border: "1px solid rgba(140,100,55,0.2)" }}>
             <History className="h-4 w-4" />
           </button>
@@ -179,7 +176,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
 
         {/* Row counter — primary big counter */}
         <div className="craft-card craft-card-sage p-6">
-          <p className="font-heading font-semibold text-[13px] mb-4 text-center" style={{ color: "#5C3A28" }}>
+          <p className="font-heading font-semibold text-[13px] mb-4 text-center" style={{ color: palette.cocoa }}>
             Row Counter
           </p>
           <div className="flex items-center justify-center gap-8">
@@ -223,7 +220,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
         {/* Stitch counter — secondary */}
         <div className="craft-card craft-card-rose p-5">
           <div className="flex items-center justify-between mb-3">
-            <p className="font-heading font-semibold text-[13px]" style={{ color: "#5C3A28" }}>
+            <p className="font-heading font-semibold text-[13px]" style={{ color: palette.cocoa }}>
               Stitch Counter
             </p>
             <span className="text-[10.5px] font-bold px-2.5 py-1 rounded-full"

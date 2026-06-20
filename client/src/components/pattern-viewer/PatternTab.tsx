@@ -88,7 +88,7 @@ const PatternTab: React.FC<PatternTabProps> = ({
               <img src="/characters/char-yala-transparent.png" alt="Yala"
                 style={{ width: 28, height: 28, objectFit: "contain" }}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              <span className="text-[11px] font-semibold" style={{ color: "#7C5FA8" }}>Yala's regen tips</span>
+              <span className="text-[11px] font-semibold" style={{ color: palette.purple }}>Yala's regen tips</span>
             </div>
             <textarea
               rows={2}
@@ -119,7 +119,7 @@ const PatternTab: React.FC<PatternTabProps> = ({
           <button
             onClick={() => { onRegenSectionChange(sectionIndex); onRegenNoteChange(""); }}
             className="py-2 rounded-xl text-[11.5px] font-semibold transition-all hover:opacity-80"
-            style={{ background: "rgba(124,95,168,0.07)", color: "#7C5FA8", border: "1px dashed rgba(124,95,168,0.22)" }}
+            style={{ background: "rgba(124,95,168,0.07)", color: palette.purple, border: "1px dashed rgba(124,95,168,0.22)" }}
           >
             ⚡ Regenerate this section
           </button>
@@ -133,7 +133,7 @@ const PatternTab: React.FC<PatternTabProps> = ({
                 <span className="text-[11px] font-semibold" style={{ color: palette.ink }}>📷 Photo alignment</span>
                 <span className="text-[13px] font-bold" style={{
                   color: alignmentResults[sectionIndex].score >= 70 ? palette.sage
-                    : alignmentResults[sectionIndex].score >= 40 ? "#D4921A"
+                    : alignmentResults[sectionIndex].score >= 40 ? palette.amber
                     : palette.rose,
                 }}>
                   {alignmentResults[sectionIndex].score}/100
@@ -145,7 +145,7 @@ const PatternTab: React.FC<PatternTabProps> = ({
               <button
                 onClick={() => onCheckAlignment(sectionIndex)}
                 className="text-[11px] font-semibold hover:opacity-70"
-                style={{ color: "#3D8FA3" }}
+                style={{ color: palette.teal }}
               >
                 Re-check →
               </button>
@@ -155,7 +155,7 @@ const PatternTab: React.FC<PatternTabProps> = ({
               onClick={() => onCheckAlignment(sectionIndex)}
               disabled={!!alignmentLoading[sectionIndex]}
               className="w-full py-2 rounded-xl text-[11.5px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-              style={{ background: "rgba(61,131,163,0.07)", color: "#3D8FA3", border: "1px dashed rgba(61,131,163,0.3)" }}
+              style={{ background: "rgba(61,131,163,0.07)", color: palette.teal, border: "1px dashed rgba(61,131,163,0.3)" }}
             >
               {alignmentLoading[sectionIndex] ? "⏳ Checking alignment…" : "📷 AI Photo Check"}
             </button>

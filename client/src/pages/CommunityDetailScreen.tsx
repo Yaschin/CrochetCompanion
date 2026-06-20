@@ -1,5 +1,6 @@
 import { palette } from "@/lib/theme";
-import { ChevronLeft, Heart, Bookmark, Layers, ListChecks, Scissors } from "lucide-react";
+import { Heart, Bookmark, Layers, ListChecks, Scissors } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Pattern, ViewType } from "../lib/types";
 import type { CommunityPattern } from "@shared/schema";
@@ -111,11 +112,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 px-4 pt-4 pb-3"
         style={{ borderBottom: "1px solid rgba(140,100,55,0.12)" }}>
-        <button onClick={() => onNavigate("community")}
-          className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-          style={{ background: "rgba(140,100,55,0.08)", color: "#6B4B38" }}>
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+        <BackButton onClick={() => onNavigate("community")} bg="rgba(140,100,55,0.08)" color={palette.brown} />
         <span className="font-heading font-bold text-[16px] flex-1 truncate" style={{ color: palette.ink }}>
           Pattern Detail
         </span>
@@ -160,7 +157,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {[pattern.skillLevel, pattern.projectType].map(tag => (
                     <span key={tag} className="px-2.5 py-1 rounded-full text-[11px] font-semibold"
-                      style={{ background: "rgba(140,100,55,0.1)", color: "#6B4B38" }}>{tag}</span>
+                      style={{ background: "rgba(140,100,55,0.1)", color: palette.brown }}>{tag}</span>
                   ))}
                 </div>
               </div>
@@ -171,8 +168,8 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
           <div className="grid grid-cols-4 gap-2">
             {[
               { icon: <Heart className="h-4 w-4" />, label: "Likes", value: String(pattern.likes ?? 0), color: palette.rose },
-              { icon: <Layers className="h-4 w-4" />, label: "Parts", value: String(pattern.sections.length), color: "#7C5FA8" },
-              { icon: <ListChecks className="h-4 w-4" />, label: "Steps", value: String(totalSteps), color: "#D4921A" },
+              { icon: <Layers className="h-4 w-4" />, label: "Parts", value: String(pattern.sections.length), color: palette.purple },
+              { icon: <ListChecks className="h-4 w-4" />, label: "Steps", value: String(totalSteps), color: palette.amber },
               { icon: <Scissors className="h-4 w-4" />, label: "Yarn", value: pattern.yarnType || "—", color: palette.sage },
             ].map((s, i) => (
               <div key={i} className="flex flex-col items-center gap-1 py-3 rounded-2xl"
@@ -188,7 +185,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
           {pattern.description && (
             <div className="rounded-2xl p-4" style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(140,100,55,0.12)" }}>
               <p className="font-heading font-semibold text-[13px] mb-2" style={{ color: palette.ink }}>Description</p>
-              <p className="text-[13px] leading-relaxed" style={{ color: "#6B4B38" }}>{pattern.description}</p>
+              <p className="text-[13px] leading-relaxed" style={{ color: palette.brown }}>{pattern.description}</p>
             </div>
           )}
 
@@ -202,7 +199,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
                     style={{ background: "rgba(132,147,79,0.15)" }}>
                     <div className="w-1.5 h-1.5 rounded-full" style={{ background: palette.sage }} />
                   </div>
-                  <span className="text-[13px]" style={{ color: "#6B4B38" }}>{item}</span>
+                  <span className="text-[13px]" style={{ color: palette.brown }}>{item}</span>
                 </div>
               ))}
             </div>
@@ -213,7 +210,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
             onClick={() => makealongMutation.mutate()}
             disabled={makealongMutation.isPending}
             className="w-full py-3 rounded-2xl font-bold text-[13.5px] transition-all hover:opacity-85 flex items-center justify-center gap-2 disabled:opacity-60"
-            style={{ background: "rgba(124,95,168,0.12)", color: "#7C5FA8", border: "1.5px dashed rgba(124,95,168,0.45)" }}>
+            style={{ background: "rgba(124,95,168,0.12)", color: palette.purple, border: "1.5px dashed rgba(124,95,168,0.45)" }}>
             🏁 {makealongMutation.isPending ? "Starting…" : "Start a family make-along"}
           </button>
 

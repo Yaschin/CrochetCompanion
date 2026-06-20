@@ -103,8 +103,8 @@ export default function GenerationLoadingScreen({ onComplete, progress: controll
             />
             <defs>
               <linearGradient id="progGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#C24E6B" />
-                <stop offset="100%" stopColor="#D4921A" />
+                <stop offset="0%" stopColor={palette.rose} />
+                <stop offset="100%" stopColor={palette.amber} />
               </linearGradient>
             </defs>
           </svg>
@@ -129,7 +129,7 @@ export default function GenerationLoadingScreen({ onComplete, progress: controll
               transition={{ duration: 0.3 }}
             >
               <span style={{ fontSize: 16 }}>{currentStage.emoji}</span>
-              <span className="text-[13px] font-semibold" style={{ color: "#5C3A28" }}>
+              <span className="text-[13px] font-semibold" style={{ color: palette.cocoa }}>
                 {currentStage.label}
               </span>
               <span className="text-[11px]" style={{ color: palette.clay }}>
@@ -179,7 +179,7 @@ export default function GenerationLoadingScreen({ onComplete, progress: controll
           <p className="text-[11px] font-bold mb-0.5" style={{ color: palette.rose }}>
             💡 Tip from Yala
           </p>
-          <p className="text-[12px] leading-snug" style={{ color: "#5C3A28" }}>
+          <p className="text-[12px] leading-snug" style={{ color: palette.cocoa }}>
             {YALA_TIPS[tipIdx]}
           </p>
         </div>

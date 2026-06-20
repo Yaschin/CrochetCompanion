@@ -126,7 +126,7 @@ export default function CoachChat({ patternId, sectionName, stepText, open, onCl
         />
         <button onClick={send} disabled={!input.trim() || ask.isPending} aria-label="Send"
           className="flex h-10 w-10 items-center justify-center rounded-full disabled:opacity-40"
-          style={{ background: "#3D8FA3", color: "white" }}>
+          style={{ background: palette.teal, color: "white" }}>
           <Send className="h-4.5 w-4.5" style={{ width: 18, height: 18 }} />
         </button>
       </div>

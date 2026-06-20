@@ -2,10 +2,10 @@ import { palette } from "@/lib/theme";
 
 export const CATEGORIES = [
   { id: "Amigurumi",  label: "Toys & Amigurumi", emoji: "🧸", color: palette.rose },
-  { id: "Wearable",   label: "Wearables",         emoji: "👒", color: "#7C5FA8" },
+  { id: "Wearable",   label: "Wearables",         emoji: "👒", color: palette.purple },
   { id: "Home Decor", label: "Home Decor",         emoji: "🏠", color: palette.sage },
-  { id: "Accessory",  label: "Accessories",        emoji: "👜", color: "#D4921A" },
-  { id: "Other",      label: "Other",              emoji: "✨", color: "#3D8FA3" },
+  { id: "Accessory",  label: "Accessories",        emoji: "👜", color: palette.amber },
+  { id: "Other",      label: "Other",              emoji: "✨", color: palette.teal },
 ];
 export const SKILL_LEVELS = [
   { id: "Beginner",     emoji: "🌱", desc: "First-timers welcome" },
@@ -14,9 +14,9 @@ export const SKILL_LEVELS = [
 ];
 export const YARN_TYPES = ["Cotton", "Wool", "Acrylic", "Blend", "Mohair", "Not specified"];
 export const COLOR_PALETTE = [
-  "#C24E6B","#7C5FA8","#84934F","#D4921A","#3D8FA3",
+  palette.rose,palette.purple,palette.sage,palette.amber,palette.teal,
   "#F0C840","#E88050","#C8A0D8","#90C898","#F0A0B8",
-  "#E8D0C0","#B0D0E8","#D8E0B0","#F8E8C0","#5C3A28",
+  "#E8D0C0","#B0D0E8","#D8E0B0","#F8E8C0",palette.cocoa,
 ];
 export const SIZE_OPTIONS = ["5 cm", "10 cm", "15 cm", "20 cm", "30 cm", "40 cm+"];
 

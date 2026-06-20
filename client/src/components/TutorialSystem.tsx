@@ -177,7 +177,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
                 <button
                   onClick={dismiss}
                   className="absolute top-3.5 right-3.5 w-7 h-7 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(255,255,255,0.7)", color: "#5C3A28" }}
+                  style={{ background: "rgba(255,255,255,0.7)", color: palette.cocoa }}
                   aria-label="Skip tutorial"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -202,7 +202,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
 
               {/* Body */}
               <div className="px-6 pt-4 pb-5">
-                <p className="text-[13px] leading-snug text-center mb-5" style={{ color: "#5C3A28" }}>
+                <p className="text-[13px] leading-snug text-center mb-5" style={{ color: palette.cocoa }}>
                   Would you like a quick tour of Crochet Time? I'll walk you through each screen — it only takes a minute!
                 </p>
 
@@ -287,7 +287,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
                     <motion.p
                       key={step}
                       className="text-[11px] md:text-[11.5px] leading-snug"
-                      style={{ color: "#5C3A28" }}
+                      style={{ color: palette.cocoa }}
                       initial={{ opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -4 }}
@@ -321,7 +321,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
                       animate={{
                         width: i === step ? 16 : 6,
                         background: i === step
-                          ? "#3D8FA3"
+                          ? palette.teal
                           : i < step ? palette.sage : "rgba(140,100,55,0.22)",
                       }}
                       style={{ height: 6 }}
@@ -336,7 +336,7 @@ export default function TutorialSystem({ onNavigate, activeView }: TutorialSyste
                     <button
                       onClick={handleBack}
                       className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:opacity-80"
-                      style={{ background: "rgba(140,100,55,0.1)", color: "#5C3A28" }}
+                      style={{ background: "rgba(140,100,55,0.1)", color: palette.cocoa }}
                       aria-label="Previous step"
                     >
                       <ChevronLeft className="h-4 w-4" />

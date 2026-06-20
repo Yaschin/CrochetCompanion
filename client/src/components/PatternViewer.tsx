@@ -69,6 +69,7 @@ export default function PatternViewer({ pattern, onPatternUpdated, onNavigate }:
     coverInputRef,
     formattedDate,
     isUpNext,
+    upNextLoading,
     updatePatternMutation,
     saveNotesMutation,
     coverPhotoMutation,
@@ -175,6 +176,7 @@ export default function PatternViewer({ pattern, onPatternUpdated, onNavigate }:
           onCoverPhoto={(f) => coverPhotoMutation.mutate(f)}
           coverPhotoPending={coverPhotoMutation.isPending}
           isUpNext={isUpNext}
+          upNextLoading={upNextLoading}
           onToggleUpNext={() => upNextMutation.mutate(!isUpNext)}
           upNextPending={upNextMutation.isPending}
           onOpenShare={() => setShareConfirmOpen(true)}

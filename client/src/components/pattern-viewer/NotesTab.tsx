@@ -10,7 +10,7 @@ interface NotesTabProps {
 /** Notes tab — a free-text scratchpad saved with the pattern. */
 const NotesTab: React.FC<NotesTabProps> = ({ notes, onNotesChange, onSave, saving }) => (
   <div className="surface-card p-4">
-    <p className="font-heading font-semibold text-[13px] mb-3" style={{ color: "#5C3A28" }}>
+    <p className="font-heading font-semibold text-[13px] mb-3" style={{ color: palette.cocoa }}>
       Pattern Notes
     </p>
     <textarea

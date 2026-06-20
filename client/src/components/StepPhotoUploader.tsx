@@ -5,7 +5,7 @@ import { Camera, Upload, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { getOrdinalSuffix } from '@/lib/dateUtils';
-import { fileToBase64 } from '@/lib/utils';
+import { fileToDataUrl } from '@/lib/utils';
 
 interface StepPhotoUploaderProps {
   patternId: string;
@@ -35,11 +35,7 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
       setSelectedFile(file);
       
       // Create a preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      fileToDataUrl(file).then(setPreviewUrl);
     }
   }, []);
 
@@ -57,13 +53,12 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
 
     setIsUploading(true);
     try {
-      // Convert file to base64
-      const base64Data = await fileToBase64(selectedFile);
-      
+      const photoDataUrl = await fileToDataUrl(selectedFile);
+
       // Send to server
-      const response = await apiRequest('POST', 
+      const response = await apiRequest('POST',
         `/api/patterns/${patternId}/sections/${sectionIndex}/steps/${stepIndex}/photo`,
-        { photo: base64Data }
+        { photo: photoDataUrl }
       );
       
       if (!response.ok) {

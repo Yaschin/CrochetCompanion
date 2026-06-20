@@ -20,6 +20,7 @@ interface OverviewTabProps {
   onCoverPhoto: (file: File) => void;
   coverPhotoPending: boolean;
   isUpNext: boolean;
+  upNextLoading?: boolean;
   onToggleUpNext: () => void;
   upNextPending: boolean;
   onOpenShare: () => void;
@@ -49,6 +50,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   onCoverPhoto,
   coverPhotoPending,
   isUpNext,
+  upNextLoading,
   onToggleUpNext,
   upNextPending,
   onOpenShare,
@@ -106,15 +108,19 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             ))}
           </div>
           <div className="flex gap-2 mt-3 flex-wrap">
-            {pattern.status === 'pattern' && (
+            {pattern.status === 'pattern' && upNextLoading && (
+              <div className="px-3 py-1.5 rounded-xl animate-pulse" aria-hidden="true"
+                style={{ width: 116, height: 30, background: "rgba(124,95,168,0.10)" }} />
+            )}
+            {pattern.status === 'pattern' && !upNextLoading && (
               <button
                 onClick={onToggleUpNext}
                 disabled={upNextPending}
                 aria-pressed={isUpNext}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
                 style={isUpNext
-                  ? { background: "#7C5FA8", color: "white" }
-                  : { background: "rgba(124,95,168,0.10)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.25)" }}
+                  ? { background: palette.purple, color: "white" }
+                  : { background: "rgba(124,95,168,0.10)", color: palette.purple, border: "1px solid rgba(124,95,168,0.25)" }}
               >
                 ⏭ {isUpNext ? "Up next ✓" : "Make this next"}
               </button>
@@ -125,7 +131,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                   onClick={onStoryCard}
                   disabled={sharingStory}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-                  style={{ background: "rgba(124,95,168,0.10)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.25)" }}
+                  style={{ background: "rgba(124,95,168,0.10)", color: palette.purple, border: "1px solid rgba(124,95,168,0.25)" }}
                 >
                   🎞 {sharingStory ? "Making…" : "Story card"}
                 </button>
@@ -172,7 +178,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
               onClick={onOpenShare}
               disabled={sharePending}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-              style={{ background: "rgba(124,95,168,0.1)", color: "#7C5FA8", border: "1px solid rgba(124,95,168,0.2)" }}
+              style={{ background: "rgba(124,95,168,0.1)", color: palette.purple, border: "1px solid rgba(124,95,168,0.2)" }}
             >
               <Share2 className="h-3 w-3" /> {sharePending ? "Sharing…" : "Share"}
             </button>
@@ -223,10 +229,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
     {/* Tools grid */}
     <div className="grid grid-cols-2 gap-3">
       {[
-        { emoji: "🧮", label: "Row Counter",  action: onOpenCounter,                      color: "#7C5FA8" },
+        { emoji: "🧮", label: "Row Counter",  action: onOpenCounter,                      color: palette.purple },
         { emoji: "📊", label: "Progress",      action: () => onNavigate?.("progress"),    color: palette.sage },
-        { emoji: "📷", label: "Photos",         action: () => onNavigate?.("photo-upload"),color: "#3D8FA3" },
-        { emoji: "🧶", label: "From My Stash", action: () => onNavigate?.("yarn-recs"),   color: "#D4921A" },
+        { emoji: "📷", label: "Photos",         action: () => onNavigate?.("photo-upload"),color: palette.teal },
+        { emoji: "🧶", label: "From My Stash", action: () => onNavigate?.("yarn-recs"),   color: palette.amber },
       ].map(({ emoji, label, action, color }) => (
         <button
           key={label}
@@ -295,8 +301,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
     {/* Description (was on the retired Details screen) */}
     {pattern.description && (
       <div className="surface-card p-4">
-        <p className="font-heading font-semibold text-[13px] mb-1.5" style={{ color: "#5C3A28" }}>About this pattern</p>
-        <p className="text-[13px] leading-relaxed" style={{ color: "#7A5A48" }}>{pattern.description}</p>
+        <p className="font-heading font-semibold text-[13px] mb-1.5" style={{ color: palette.cocoa }}>About this pattern</p>
+        <p className="text-[13px] leading-relaxed" style={{ color: palette.inkSoft }}>{pattern.description}</p>
       </div>
     )}
 

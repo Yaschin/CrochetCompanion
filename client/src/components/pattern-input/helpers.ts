@@ -1,23 +1,8 @@
 import { Pattern, PatternInputFormData } from "@/lib/types";
 
-export const fileToDataUrl = (f: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload  = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(f);
-  });
-
-export const fileToBase64 = (f: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.split(',')[1]);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(f);
-  });
+// The file-reading helpers live in one place now (lib/utils); re-exported here
+// so existing `./helpers` importers keep working.
+export { fileToDataUrl, fileToBase64 } from "@/lib/utils";
 
 // ── Shared helper: normalise parsed data → save payload ─────────────────────
 export function buildPatternToSave(

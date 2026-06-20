@@ -1,6 +1,7 @@
 import { palette } from "@/lib/theme";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Check, ShoppingBag, Sparkles, Plus } from "lucide-react";
+import { Check, ShoppingBag, Sparkles, Plus } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { motion } from "framer-motion";
 import { Pattern, StashItem, ViewType } from "../lib/types";
 import { rankByStash, RankedPattern } from "../lib/stashMatch";
@@ -41,7 +42,7 @@ function PatternRow({ rp, onClick }: { rp: RankedPattern; onClick?: () => void }
         className="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold"
         style={{
           background: ok ? "rgba(132,147,79,0.14)" : "rgba(212,146,26,0.14)",
-          color: ok ? "#6A7A3A" : "#A8761A",
+          color: ok ? palette.olive : palette.gold,
         }}
       >
         {ok ? <Check className="h-3 w-3" /> : <ShoppingBag className="h-3 w-3" />}
@@ -71,13 +72,7 @@ export default function YarnRecsScreen({ onNavigate, onPatternSelected }: YarnRe
       {/* Header */}
       <div className="flex-shrink-0 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
         <div className="flex items-center gap-3 mb-1">
-          <button
-            onClick={() => onNavigate("home")}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70"
-            style={{ background: "rgba(132,147,79,0.08)", color: palette.sage }}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
+          <BackButton onClick={() => onNavigate("home")} bg="rgba(132,147,79,0.08)" color={palette.sage} />
           <div>
             <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>
               Make From My Stash
@@ -169,7 +164,7 @@ export default function YarnRecsScreen({ onNavigate, onPatternSelected }: YarnRe
         {almost.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <ShoppingBag className="h-4 w-4" style={{ color: "#A8761A" }} />
+              <ShoppingBag className="h-4 w-4" style={{ color: palette.gold }} />
               <p className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
                 Almost there ({almost.length})
               </p>

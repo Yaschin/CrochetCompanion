@@ -2,6 +2,7 @@ import { FC, useEffect, useMemo, useState } from 'react';
 import { useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
+import { fileToDataUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { StashItem, StashItemType } from '../lib/types';
 import { cn } from '../lib/utils';
@@ -70,12 +71,7 @@ const MaterialsInventory: FC = () => {
   // stay empty is typing; this removes the typing.
   const scanMutation = useMutation({
     mutationFn: async (file: File) => {
-      const imageBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      const imageBase64 = await fileToDataUrl(file);
       const res = await apiRequest('POST', '/api/stash/scan-label', { imageBase64 });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));

@@ -1,6 +1,7 @@
 import { palette } from "@/lib/theme";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, Download, Upload, Shield, Heart, HelpCircle, Activity, CheckCircle2, XCircle, Sparkles } from "lucide-react";
+import { Download, Upload, Shield, Heart, HelpCircle, Activity, CheckCircle2, XCircle, Sparkles } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -165,9 +166,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(140,100,55,0.15)" }}>
-        <button onClick={() => onNavigate("home")} className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70" style={{ background: "rgba(140,100,55,0.08)", color: palette.clay }}>
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+        <BackButton onClick={() => onNavigate("home")} bg="rgba(140,100,55,0.08)" color={palette.clay} />
         <div>
           <h1 className="font-heading font-bold text-[22px]" style={{ color: palette.ink }}>Settings</h1>
           <p className="text-[12px]" style={{ color: palette.clay }}>Backup & data</p>
@@ -181,7 +180,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
             <Shield className="h-4 w-4" style={{ color: palette.sage }} />
             <p className="font-heading font-semibold text-[15px]" style={{ color: palette.ink }}>Backup your crochet life</p>
           </div>
-          <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "#7A5A48" }}>
+          <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: palette.inkSoft }}>
             Download everything — every pattern, project, and material — as a single file you can keep safe.
             Restoring is additive, so importing never overwrites what's already here.
           </p>
@@ -246,7 +245,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
             pattern resizing will use <em>your</em> tension instead of a generic one.
           </p>
           <div className="flex items-end gap-3">
-            <label className="flex-1 text-[11.5px] font-semibold" style={{ color: "#7A5A48" }}>
+            <label className="flex-1 text-[11.5px] font-semibold" style={{ color: palette.inkSoft }}>
               Stitches / 10cm
               <input
                 type="number" min={1} inputMode="numeric" value={gauge.stitches}
@@ -255,7 +254,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
                 style={{ background: "rgba(255,252,245,0.9)", border: "1.5px solid rgba(140,100,55,0.25)", color: palette.ink }}
               />
             </label>
-            <label className="flex-1 text-[11.5px] font-semibold" style={{ color: "#7A5A48" }}>
+            <label className="flex-1 text-[11.5px] font-semibold" style={{ color: palette.inkSoft }}>
               Rows / 10cm
               <input
                 type="number" min={1} inputMode="numeric" value={gauge.rows}
@@ -284,7 +283,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
           </button>
           {swatchOpen && (
             <div className="mt-3 p-3 rounded-xl" style={{ background: "rgba(132,147,79,0.06)", border: "1px dashed rgba(132,147,79,0.3)" }}>
-              <p className="text-[11px] mb-2.5" style={{ color: "#7A5A48" }}>
+              <p className="text-[11px] mb-2.5" style={{ color: palette.inkSoft }}>
                 Count the stitches across and rows down your swatch, then measure it.
               </p>
               <div className="grid grid-cols-2 gap-2.5">
@@ -294,7 +293,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
                   ["rows", "Rows down"],
                   ["height", "Height (cm)"],
                 ] as const).map(([key, label]) => (
-                  <label key={key} className="text-[10.5px] font-semibold" style={{ color: "#7A5A48" }}>
+                  <label key={key} className="text-[10.5px] font-semibold" style={{ color: palette.inkSoft }}>
                     {label}
                     <input
                       type="number" min={0} step="any" inputMode="decimal"
@@ -309,7 +308,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
               <button
                 onClick={applySwatch}
                 className="mt-3 w-full py-2 rounded-lg text-[12px] font-bold hover:opacity-90"
-                style={{ background: "rgba(132,147,79,0.15)", color: "#6A7A3A", border: "1.5px solid rgba(132,147,79,0.35)" }}
+                style={{ background: "rgba(132,147,79,0.15)", color: palette.olive, border: "1.5px solid rgba(132,147,79,0.35)" }}
               >
                 Calculate &amp; fill gauge above
               </button>
@@ -323,7 +322,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
             <Activity className="h-4 w-4" style={{ color: palette.rose }} />
             <p className="font-heading font-semibold text-[15px]" style={{ color: palette.ink }}>App health</p>
           </div>
-          <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "#7A5A48" }}>
+          <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: palette.inkSoft }}>
             Check that the database, photo storage and AI are all connected. The deep test runs a real
             (tiny) AI generation, so it uses a little API credit.
           </p>
@@ -364,7 +363,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
                     <p className="text-[12.5px] font-bold" style={{ color: palette.ink }}>
                       {c.name} <span className="font-normal" style={{ color: palette.clay }}>· {c.ms} ms</span>
                     </p>
-                    <p className="text-[12px] leading-snug break-words" style={{ color: c.ok ? "#7A5A48" : "#A83050" }}>
+                    <p className="text-[12px] leading-snug break-words" style={{ color: c.ok ? palette.inkSoft : palette.roseDeep }}>
                       {c.detail}
                     </p>
                   </div>

@@ -117,7 +117,7 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
                 ? "Start your first crochet project"
                 : `${inProgress.length} in progress · ${completed.length} completed`}
               {lifeMs > 0 && !isLoading && (
-                <span style={{ color: "#7C5FA8" }}> · ⏱ {formatDuration(lifeMs)} crocheted</span>
+                <span style={{ color: palette.purple }}> · ⏱ {formatDuration(lifeMs)} crocheted</span>
               )}
             </p>
           </div>
@@ -229,7 +229,7 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
                   <Package className="h-5 w-5" style={{ color: palette.clay }} />
                 </div>
                 <div className="text-left">
-                  <p className="font-heading font-semibold text-[13px]" style={{ color: "#5C3A28" }}>My Stash</p>
+                  <p className="font-heading font-semibold text-[13px]" style={{ color: palette.cocoa }}>My Stash</p>
                   <p className="text-[11px]" style={{ color: palette.clay }}>Yarn, hooks & materials</p>
                 </div>
               </div>

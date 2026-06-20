@@ -94,10 +94,6 @@ export function saveSessions(patternId: string, sessions: WorkSession[]): void {
   try { localStorage.setItem(sessionsKey(patternId), JSON.stringify(sessions.slice(0, 200))); } catch { /* ignore */ }
 }
 
-export function totalTracked(patternId: string): number {
-  return totalMs(getSessions(patternId));
-}
-
 /**
  * The epoch-ms a still-running timer began, persisted so the stopwatch survives
  * navigation and refreshes. null when no timer is running for this pattern.

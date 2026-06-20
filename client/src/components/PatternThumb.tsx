@@ -7,7 +7,7 @@ import { useState } from "react";
 
 const TYPE_THEMES: Record<string, { gradient: string; color: string; emoji: string }> = {
   "Toy":        { gradient: "linear-gradient(145deg, #FBF1F4 0%, #EFC1D2 100%)", color: palette.rose, emoji: "🧸" },
-  "Wearable":   { gradient: "linear-gradient(145deg, #F3EEFB 0%, #D8C7F0 100%)", color: "#7C5FA8", emoji: "🧥" },
+  "Wearable":   { gradient: "linear-gradient(145deg, #F3EEFB 0%, #D8C7F0 100%)", color: palette.purple, emoji: "🧥" },
   "Home Decor": { gradient: "linear-gradient(145deg, #EEF5E8 0%, #C5DBA5 100%)", color: "#5A7A35", emoji: "🏡" },
   "Accessory":  { gradient: "linear-gradient(145deg, #FDF5E3 0%, #F4DFA4 100%)", color: "#B97210", emoji: "👜" },
 };
