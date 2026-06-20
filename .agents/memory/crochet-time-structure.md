@@ -69,6 +69,16 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - Both new `patterns` columns are added idempotently in `server/ensureSchema.ts`.
 - **Character AI-generation flow fully removed** 2026-06-16 (PR #40/#42): the dead home generate flow + `GET/POST /api/characters` routes + `CHARACTER_DEFS` are gone; the app renders static PNGs only. Regeneration prompts live in git history.
 
+## Cleanup pass (PR #48, merged 2026-06-20)
+A code/quality cleanup across six commits; all four CI layers green.
+- **Dead code deleted (42 files):** 39 unused shadcn `components/ui/*` plus orphans `SectionImagePlaceholder.tsx`, `hooks/use-debounce.ts`, `hooks/use-mobile.tsx`; and unused exports (`dateUtils` date helpers except `getOrdinalSuffix`; `timeTracking.totalTracked`; `generateImage.generatePartImage`/`generateStitchDiagram`). **The ONLY surviving `ui/` primitives:** `button`, `dialog`, `alert-dialog`, `input`, `label`, `textarea`, `tabs`, `toast`, `toaster`. Need another? Re-add the file **and** its npm dep.
+- **33 unused npm deps removed.** Always-unused: `@hookform/resolvers`, `react-icons`, `zod-validation-error`, `google-auth-library`, `@jridgewell/trace-mapping`. Plus 28 that only backed deleted ui files (`recharts`, `embla-carousel-react`, `vaul`, `cmdk`, `input-otp`, `react-resizable-panels`, `react-day-picker`, and 21 `@radix-ui/*`). **Kept radix deps:** dialog, alert-dialog, label, tabs, toast, slot. Lockfile regenerated; `npm ci`-verified.
+- **Shared `<BackButton>`** (`client/src/components/BackButton.tsx`) replaced the duplicated icon-only header back button on all 8 screens; carries `aria-label="Go back"`, props `onClick`/`bg`/`color`.
+- **File→data-URL helpers consolidated** in `client/src/lib/utils.ts`: `fileToDataUrl` (full `data:…;base64,…`) and `fileToBase64` (payload only) — fixing a footgun where two `fileToBase64`s returned different things. Six inline FileReader copies removed; `pattern-input/helpers.ts` re-exports the canonical pair.
+- **Colour tokens:** ~200 hex literals across ~38 files → named keys on `palette` (`client/src/lib/theme.ts`); added purple, cocoa, amber, teal, roseDeep, inkSoft, olive, gold, brown. Use `palette.<token>` in style props, not raw hex. (Hexes inside gradient/rgba strings were left as-is.)
+- **`usePatternViewer` slimmed** 534→407 lines: section/step expand + CRUD extracted to `pattern-viewer/useSectionEditing.tsx`. `PatternSection` was deliberately **not** split (audit: "only split if touched").
+- **Loading/a11y polish:** skeletons for the last false-empty flashes (Tools stash picker, Community make-along nudge, viewer up-next pin, Progress achievements); CommunityScreen like-button label + keyboard-operable card.
+
 ## Testing infrastructure
 - `server/db.ts` dual driver: Neon WebSocket (prod) vs node-postgres (localhost) — enables real-server testing anywhere.
 - `npm run smoke` (`scripts/fullstack-smoke.mjs`): 36 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
@@ -86,6 +96,7 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - Community is reached via the Sidebar or Home cards (NOT the bottom nav).
 
 ## CSS conventions
+- **Colours come from `palette`** (`client/src/lib/theme.ts`) — use `palette.<token>` in style props, not raw hex literals (PR #48 tokenised the recurring ones).
 - `no-scrollbar` utility defined in `client/src/index.css`.
 - All scrollable screen containers need `pb-20 md:pb-6` for bottom nav clearance.
 - AppShell main area: `overflow-hidden flex flex-col`.
@@ -99,6 +110,10 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - Sidebar (desktop): `client/src/components/Sidebar.tsx`
 - Splash: `client/src/pages/SplashScreen.tsx`
 - Pages dir: `client/src/pages/`
+- Pattern viewer: `client/src/components/PatternViewer.tsx` + `components/pattern-viewer/*` — hooks `usePatternViewer`, `usePatternRegen`, `useSectionEditing` (PR #48).
+- Shared header back button: `client/src/components/BackButton.tsx`.
+- File→image helpers (`fileToDataUrl`/`fileToBase64`) + `cn()`: `client/src/lib/utils.ts`.
+- Colour tokens: `client/src/lib/theme.ts` (`palette`).
 
 **Why:** Needed across multiple sessions since file layout is non-obvious (pages vs components split, public path quirk).
 **How to apply:** Check these before adding new screens or characters.

@@ -1,4 +1,4 @@
-# Photo "Fix-My-Mistake" Coach — Design (build-later)
+# Photo "Fix-My-Mistake" Coach — Design (built 2026-06-14)
 
 **Status:** Designed **and built** 2026-06-14. This documents the shipped feature; the build checklist at the end is complete.
 
