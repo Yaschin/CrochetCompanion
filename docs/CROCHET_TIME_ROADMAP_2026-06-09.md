@@ -3,7 +3,7 @@
 **Status of this document: CURRENT SOURCE OF TRUTH for sequencing and scope.**
 Supersedes the backlog sections (§2, §4, §5) of `CROCHET_TIME_STATUS_REVIEW_2026-06-07.md`; that review remains accurate as the architectural record of Batches A–D and Phases 1–3.
 
-**Branch policy:** all work on `claude/focused-albattani-6l3u6p`, PR'd to `main` as draft.
+**Branch policy:** work on a per-task feature branch, PR'd to `main` as a draft.
 
 ---
 
@@ -21,7 +21,7 @@ Every phase is built, verified and **merged to `main`**:
 | PR #28 | True full-stack e2e: real-server+Postgres smoke in CI (caught & fixed the fresh-DB boot crash and the dead `creatorId`) |
 | Replit sessions | Tutorial system, pattern/PDF import, per-profile starter content, library image backfill |
 
-**Test layers, all green in CI on every PR:** typecheck · 43 unit tests · 42 browser e2e
+**Test layers, all green in CI on every PR:** typecheck · 55 unit tests · browser e2e
 (mocked API, 3 viewports) · **36-assertion full-stack smoke against real Postgres** ·
 on-demand visual walkthroughs (`npm run walkthrough`, `npm run walkthrough:deep`).
 
@@ -46,8 +46,8 @@ WebP/AVIF character conversion (perf-only, P2).
 
 The original eight-phase scope shipped 2026-06-11; the items below landed on `main`
 **after** that and after the 2026-06-14 hardening batches (W18 is the last entry in the
-progress log). All are verified: `tsc` clean · 43 unit tests · build green · CI green on
-the latest `main` merge (#45) · features traced into routing/nav. New features remain
+progress log). All are verified: `tsc` clean · 55 unit tests · build green · CI green on
+the latest `main` merge (#48) · features traced into routing/nav. New features remain
 gated on the same **live deploy verification** as the rest of the app.
 
 | Delivered via | Contents |
@@ -59,8 +59,9 @@ gated on the same **live deploy verification** as the rest of the app.
 | PRs #34–#42 | **Refactor / cleanup program** — `PatternViewer`, `HomeWorkbench`, `PatternInput` split into focused modules under `components/{pattern-viewer,home}/`; `usePatternViewer` / `usePatternRegen` / self-contained `PdfWizard` extracted; shared `aiErrorToast`; palette tokenised; muted-label a11y contrast fix. **Dead character AI-generation flow + unused `/api/characters` endpoints removed** (no client consumer). DOM unchanged — e2e selects by visible text/role, so behaviour is preserved. |
 | PR #48 (2026-06-20) | **Cleanup / quality pass** (6 commits) — removed **42 dead files** (39 unused shadcn `ui/*` + 3 orphan modules) and **33 unused npm deps** (~4.4k LOC; `npm ci`-verified); consolidated the file→data-URL helpers into `lib/utils` (fixed a `fileToBase64` footgun) and removed 6 inline `FileReader` copies; extracted a shared `<BackButton>` (aria-labelled) across 8 screens; tokenised ~200 more hex literals into `palette`; split section/step editing out of `usePatternViewer` into `useSectionEditing`; closed the last loading-state false-empty flashes. Surviving `ui/` primitives: button, dialog, alert-dialog, input, label, textarea, tabs, toast, toaster. All three CI jobs (typecheck/e2e/fullstack-smoke) green; DOM/behaviour unchanged. |
 
-**Unit test count:** grew 20 → **43** over this window (timeTracking, gauge-swatch, and
-stash-matcher helpers added). e2e (42) and smoke (36) counts unchanged.
+**Unit test count:** grew 20 → **55** (yarn-calc, stash-matcher, gauge, time-tracking,
+sections, activity-log and crochet-math helpers). Browser e2e runs across 3 viewports;
+the full-stack smoke has 36 assertions.
 
 ---
 

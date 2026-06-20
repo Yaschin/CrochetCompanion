@@ -73,7 +73,7 @@ Schema changes apply automatically at boot via idempotent heals in
 | [`docs/CROCHET_TIME_PROFILES_PLAN_2026-06-09.md`](docs/CROCHET_TIME_PROFILES_PLAN_2026-06-09.md) | Family profiles design + implementation notes |
 | [`docs/E2E_TESTING.md`](docs/E2E_TESTING.md) | Playwright suite: coverage, mocks, how to run |
 | [`docs/material-calculation-system.md`](docs/material-calculation-system.md) | Yarn estimation + stash matching internals |
-| [`docs/CROCHET_TIME_PHOTO_COACH_DESIGN.md`](docs/CROCHET_TIME_PHOTO_COACH_DESIGN.md) | Design (build-later) for the photo "fix-my-mistake" coach |
+| [`docs/CROCHET_TIME_PHOTO_COACH_DESIGN.md`](docs/CROCHET_TIME_PHOTO_COACH_DESIGN.md) | Design + build record for the photo "fix-my-mistake" coach (shipped 2026-06-14) |
 | [`docs/CROCHET_TIME_STATUS_REVIEW_2026-06-07.md`](docs/CROCHET_TIME_STATUS_REVIEW_2026-06-07.md) | Historical architecture record (Batches A–D) |
 | `docs/archive/` | Superseded early planning docs |
 
