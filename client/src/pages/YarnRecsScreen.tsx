@@ -4,9 +4,10 @@ import { Check, ShoppingBag, Sparkles, Plus } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { motion } from "framer-motion";
 import { Pattern, StashItem, ViewType } from "../lib/types";
-import { rankByStash, RankedPattern } from "../lib/stashMatch";
+import { rankByStash, RankedPattern, buildShoppingList } from "../lib/stashMatch";
 import { PatternThumb } from "@/components/PatternThumb";
 import { QueryError } from "@/components/QueryError";
+import { useToast } from "../hooks/use-toast";
 
 interface YarnRecsScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -53,11 +54,33 @@ function PatternRow({ rp, onClick }: { rp: RankedPattern; onClick?: () => void }
 }
 
 export default function YarnRecsScreen({ onNavigate, onPatternSelected }: YarnRecsScreenProps) {
+  const { toast } = useToast();
   const { data: patterns = [], isLoading: loadingPatterns, isError: errPatterns, refetch: refetchPatterns, isFetching: fetchingPatterns } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
   const { data: stash = [], isLoading: loadingStash, isError: errStash, refetch: refetchStash, isFetching: fetchingStash } = useQuery<StashItem[]>({ queryKey: ["/api/stash"] });
+  const { data: upNext } = useQuery<{ patternId: string | null }>({ queryKey: ["/api/up-next"] });
   const isError = errPatterns || errStash;
 
   const ranked = rankByStash(patterns, stash);
+
+  // Consolidated shopping list across the projects you're planning to make:
+  // favourites and the "up next" pick, excluding anything already finished.
+  const planned = patterns.filter(
+    (p) => p.status !== "finished" && (p.favorite || p.id === upNext?.patternId),
+  );
+  const shoppingList = buildShoppingList(planned, stash);
+
+  const copyShoppingList = async () => {
+    const body = shoppingList.byCategory
+      .map((g) => `${g.title}:\n${g.items.map((i) => `• ${i.label}`).join("\n")}`)
+      .join("\n\n");
+    const text = `Shopping list (favourites & up next):\n\n${body}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Shopping list copied 🛍️", description: "Paste it into your notes or a message." });
+    } catch {
+      toast({ title: "Couldn't copy automatically", description: text, duration: 10000 });
+    }
+  };
   const ready = ranked.filter((r) => r.coverage.canMake && r.coverage.totalCount > 0);
   const almost = ranked.filter((r) => !r.coverage.canMake && r.coverage.missing.length <= 3);
 
@@ -106,6 +129,50 @@ export default function YarnRecsScreen({ onNavigate, onPatternSelected }: YarnRe
             </p>
           </div>
         </div>
+
+        {/* Consolidated shopping list — what to buy for favourites + up next */}
+        {!isLoading && !isError && shoppingList.itemCount > 0 && (
+          <div className="craft-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="h-4 w-4" style={{ color: palette.gold }} />
+                <p className="font-heading font-semibold text-[14px]" style={{ color: palette.ink }}>
+                  Shopping list
+                </p>
+              </div>
+              <button
+                onClick={copyShoppingList}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all hover:opacity-90"
+                style={{ background: "rgba(212,146,26,0.12)", color: palette.gold, border: "1px dashed rgba(212,146,26,0.4)" }}
+              >
+                📋 Copy
+              </button>
+            </div>
+            <p className="text-[11.5px] mb-3" style={{ color: palette.clay }}>
+              {shoppingList.itemCount} item{shoppingList.itemCount === 1 ? "" : "s"} to buy for your favourites &amp; up next
+            </p>
+            <div className="flex flex-col gap-3">
+              {shoppingList.byCategory.map((group) => (
+                <div key={group.category}>
+                  <p className="text-[11px] font-bold uppercase tracking-wide mb-1.5" style={{ color: palette.clay }}>
+                    {group.title}
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    {group.items.map((item, i) => (
+                      <div key={i} className="flex items-start gap-2 text-[12.5px]">
+                        <span className="flex-shrink-0 mt-0.5" style={{ color: palette.gold }}>•</span>
+                        <span style={{ color: palette.cocoa }}>
+                          {item.label}
+                          <span className="text-[10.5px]" style={{ color: palette.clay }}> — for {item.forPatterns.join(", ")}</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Loading skeleton */}
         {isLoading && (

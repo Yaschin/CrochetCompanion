@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { analyzeStashCoverage, rankByStash, matchedYarnsForPattern } from "../../client/src/lib/stashMatch";
+import { analyzeStashCoverage, rankByStash, matchedYarnsForPattern, buildShoppingList } from "../../client/src/lib/stashMatch";
 import type { Pattern } from "../../client/src/lib/types";
 import type { StashItem } from "../../shared/schema";
 
@@ -87,6 +87,57 @@ describe("matchedYarnsForPattern", () => {
       matchedYarnsForPattern(basePattern({ yarnRequirements: [{ color: "Teal", volume: "~50g" }] }), [yarn("Cotton", "cream")]),
     ).toEqual([]);
     expect(matchedYarnsForPattern(basePattern({}), [yarn("Cotton", "cream")])).toEqual([]);
+  });
+});
+
+describe("buildShoppingList", () => {
+  it("aggregates missing materials across patterns, deduped, grouped and ordered by category", () => {
+    const hat = basePattern({
+      id: "hat", title: "Hat",
+      yarnRequirements: [{ color: "Cream", volume: "~50g" }],
+      hookRequirements: [{ size: "3.5mm", quantity: 1 }],
+    });
+    const scarf = basePattern({
+      id: "scarf", title: "Scarf",
+      yarnRequirements: [{ color: "Cream", volume: "~50g" }, { color: "Teal", volume: "~80g" }],
+    });
+    // Stash is empty → everything is missing.
+    const list = buildShoppingList([hat, scarf], []);
+
+    expect(list.patternCount).toBe(2);
+    expect(list.itemCount).toBe(3); // Cream (shared), Teal, 3.5mm hook
+    // Category order: yarn before hooks.
+    expect(list.byCategory.map((g) => g.category)).toEqual(["yarn", "hook"]);
+
+    const cream = list.items.find((i) => i.label.startsWith("Cream"));
+    expect(cream?.forPatterns).toEqual(["Hat", "Scarf"]); // deduped across both
+    const teal = list.items.find((i) => i.label.startsWith("Teal"));
+    expect(teal?.forPatterns).toEqual(["Scarf"]);
+  });
+
+  it("skips materials already in the stash and patterns that need nothing", () => {
+    const hat = basePattern({
+      id: "hat", title: "Hat",
+      yarnRequirements: [{ color: "Cream", volume: "~50g" }],
+      hookRequirements: [{ size: "3.5mm", quantity: 1 }],
+    });
+    const fullyStocked = basePattern({
+      id: "ready", title: "Ready",
+      yarnRequirements: [{ color: "Cream", volume: "~20g" }],
+    });
+    // Cream yarn is owned; only the hook is missing for "Hat", "Ready" needs nothing.
+    const list = buildShoppingList([hat, fullyStocked], [yarn("Soft cotton", "cream")]);
+
+    expect(list.itemCount).toBe(1);
+    expect(list.items[0].label).toBe("3.5mm hook");
+    expect(list.items[0].forPatterns).toEqual(["Hat"]);
+    expect(list.patternCount).toBe(1); // only "Hat" contributed
+  });
+
+  it("returns an empty list for no patterns or when everything is covered", () => {
+    expect(buildShoppingList([], [])).toMatchObject({ itemCount: 0, patternCount: 0, byCategory: [] });
+    const ready = basePattern({ yarnRequirements: [{ color: "Cream", volume: "~50g" }] });
+    expect(buildShoppingList([ready], [yarn("Cotton", "cream")]).itemCount).toBe(0);
   });
 });
 
