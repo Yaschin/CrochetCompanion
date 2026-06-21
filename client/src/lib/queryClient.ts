@@ -10,10 +10,17 @@ import { withProfile } from "./profile";
  */
 // Default fetcher: builds the URL from the query key (e.g. ["/api/community", id]
 // → "/api/community/<id>"). Screens can still pass an explicit queryFn to override.
+// A 401 means the household session expired or this device isn't trusted yet.
+// Tell the AuthGate to drop back to the lock screen.
+export function onAuthExpired() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("hh-auth-locked"));
+}
+
 const defaultQueryFn = async ({ queryKey }: { queryKey: readonly unknown[] }) => {
   const url = withProfile(queryKey.map((part) => String(part)).join("/"));
   const res = await fetch(url, { credentials: "same-origin" });
   if (!res.ok) {
+    if (res.status === 401) onAuthExpired();
     throw new Error(`API request failed (${res.status})`);
   }
   return res.json();
@@ -65,6 +72,8 @@ export async function apiRequest(
 
   try {
     const response = await fetch(withProfile(path), options);
+
+    if (response.status === 401) onAuthExpired();
 
     if (!response.ok) {
       // Get more detailed error information if available

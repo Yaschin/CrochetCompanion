@@ -65,6 +65,17 @@ npm run smoke      # 36 assertions; also runs in CI via a postgres:16 service
 Schema changes apply automatically at boot via idempotent heals in
 `server/ensureSchema.ts`; one-time starter content is marker-guarded.
 
+### Household passcode (optional gate)
+
+Set `HOUSEHOLD_PASSCODE` to require a shared passcode before the app opens.
+Enforcement is server-side (`server/auth.ts`): every `/api/*` route except
+`/api/auth/*` is gated, and a signed, httpOnly cookie keeps a device trusted for
+~1 year (sliding), so only a new device sees the lock screen. Leave the variable
+**unset to disable the gate** — that's why dev, CI, e2e and smoke stay open.
+Optionally set `SESSION_SECRET` to sign sessions independently of the passcode
+(otherwise the key is derived from the passcode, so rotating it logs everyone
+out). To turn it on in production, add `HOUSEHOLD_PASSCODE` as a Replit secret.
+
 ## Docs
 
 | Doc | Purpose |
