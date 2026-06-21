@@ -9,6 +9,7 @@ import { ViewType } from "../lib/types";
 import { getActiveProfile, withProfile } from "../lib/profile";
 import { restartTutorial } from "../components/TutorialSystem";
 import { gaugeFromSwatch } from "../lib/gauge";
+import RemindersCard from "../components/RemindersCard";
 
 interface SettingsScreenProps {
   onNavigate: (view: ViewType) => void;
@@ -234,6 +235,9 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
             Take the tour again
           </button>
         </div>
+
+        {/* Reminders */}
+        <RemindersCard />
 
         {/* My gauge */}
         <div className="craft-card p-5">

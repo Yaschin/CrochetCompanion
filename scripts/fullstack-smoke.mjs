@@ -218,6 +218,37 @@ let communityId;
   await api("DELETE", `/api/patterns/${b.json?.id}`);
 }
 
+// ── Push reminders (dormant without VAPID keys, but storage works) ──────────
+{
+  const vapid = await api("GET", "/api/push/vapid-key");
+  check("vapid-key reports unconfigured without keys", vapid.status === 200 && vapid.json?.configured === false);
+
+  const def = await api("GET", "/api/push/prefs?profile=akka");
+  check("reminder prefs default off", def.status === 200 && def.json?.dailyEnabled === false && def.json?.dailyTime === "18:00");
+
+  const saved = await api("POST", "/api/push/prefs?profile=akka", { dailyEnabled: true, dailyTime: "07:30", timezone: "UTC", inactiveEnabled: true });
+  check("reminder prefs save and merge", saved.json?.dailyEnabled === true && saved.json?.dailyTime === "07:30");
+  const reread = await api("GET", "/api/push/prefs?profile=akka");
+  check("reminder prefs persist per profile", reread.json?.dailyTime === "07:30" && reread.json?.inactiveEnabled === true);
+
+  const bad = await api("POST", "/api/push/subscribe?profile=akka", { subscription: { endpoint: "x" } });
+  check("subscribe rejects a malformed subscription", bad.status === 400);
+  const sub = await api("POST", "/api/push/subscribe?profile=akka", {
+    subscription: { endpoint: "https://example.com/push/smoke-akka", keys: { p256dh: "BPtest", auth: "atest" } },
+  });
+  check("subscribe stores a valid subscription", sub.status === 200 && sub.json?.ok === true);
+
+  const due = await api("POST", "/api/push/run-due");
+  check("run-due is a no-op without VAPID keys", due.status === 200 && due.json?.sent === 0);
+  const test = await api("POST", "/api/push/test?profile=akka");
+  check("test push reports server not configured", test.status === 503);
+
+  const unsub = await api("POST", "/api/push/unsubscribe?profile=akka", { endpoint: "https://example.com/push/smoke-akka" });
+  check("unsubscribe succeeds", unsub.status === 200 && unsub.json?.ok === true);
+  // reset prefs so reruns start clean
+  await api("POST", "/api/push/prefs?profile=akka", { dailyEnabled: false, inactiveEnabled: false });
+}
+
 // ── Delete ─────────────────────────────────────────────────────────────────
 {
   const del = await api("DELETE", `/api/patterns/${vumshPattern.id}`);

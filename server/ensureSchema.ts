@@ -146,6 +146,17 @@ export async function ensureSchema(): Promise<void> {
     `);
     await setMeta("patterns_deduped_v1", new Date().toISOString());
   }
+
+  // Web-push subscriptions for reminder notifications (one row per device).
+  await db.execute(
+    sql`CREATE TABLE IF NOT EXISTS push_subscriptions (
+      endpoint text PRIMARY KEY,
+      "profileId" text NOT NULL,
+      p256dh text NOT NULL,
+      auth text NOT NULL,
+      "createdAt" timestamptz NOT NULL DEFAULT now()
+    )`
+  );
 }
 
 export async function getMeta(key: string): Promise<string | null> {
