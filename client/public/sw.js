@@ -81,3 +81,36 @@ self.addEventListener("fetch", (event) => {
   // Everything else: try cache, then network.
   event.respondWith(caches.match(request).then((cached) => cached || fetch(request)));
 });
+
+// ── Push reminders ───────────────────────────────────────────────────────────
+// Show the notification the server pushed (daily nudge / inactive project).
+self.addEventListener("push", (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch { /* non-JSON payload */ }
+  const title = data.title || "Crochet Time";
+  const options = {
+    body: data.body || "Time for a few cozy rows ♡",
+    icon: "/characters/char-bee-transparent.png",
+    badge: "/characters/char-bee-transparent.png",
+    tag: data.tag || "crochet-time",
+    data: { url: data.url || "/home" },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Focus an existing tab (or open one) at the reminder's target on tap.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/home";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+      for (const w of wins) {
+        if ("focus" in w) {
+          if ("navigate" in w) { try { w.navigate(target); } catch { /* ignore */ } }
+          return w.focus();
+        }
+      }
+      return self.clients.openWindow(target);
+    }),
+  );
+});

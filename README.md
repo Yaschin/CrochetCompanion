@@ -76,6 +76,26 @@ Optionally set `SESSION_SECRET` to sign sessions independently of the passcode
 (otherwise the key is derived from the passcode, so rotating it logs everyone
 out). To turn it on in production, add `HOUSEHOLD_PASSCODE` as a Replit secret.
 
+### Push reminders (optional)
+
+Web-push nudges (a daily crochet-time reminder + a "your project is waiting"
+poke), opt-in per person in **Settings → Reminders**. Off unless the server has
+VAPID keys, so dev/CI/smoke need no setup. To enable:
+
+1. Generate keys once: `npx web-push generate-vapid-keys`.
+2. Set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (and optionally `VAPID_SUBJECT`,
+   a `mailto:` / URL) as secrets.
+3. Drive the scheduler. The app deploys to **autoscale** (no always-on process),
+   so reminders are sent when something hits `POST /api/push/run-due`. Point a
+   periodic trigger (Replit Scheduled Deployment, GitHub Actions cron, or a free
+   service like cron-job.org) at it every ~10–15 min, and protect it by setting
+   `CRON_SECRET` and sending it as the `x-cron-secret` header (or `?secret=`).
+   On an always-on host you can instead set `ENABLE_REMINDER_LOOP=1` to run the
+   loop in-process.
+
+Note: iOS only delivers web push to a PWA that's been **added to the home
+screen** — the Settings card says so when it detects an uninstalled iOS browser.
+
 ## Docs
 
 | Doc | Purpose |

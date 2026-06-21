@@ -167,6 +167,9 @@ export function clearLoginAttempts(ip: string): void {
  */
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
   if (!req.path.startsWith("/api") || req.path.startsWith("/api/auth/")) return next();
+  // The reminder scheduler is called by external cron without a session cookie;
+  // it authenticates itself with CRON_SECRET inside the handler.
+  if (req.path === "/api/push/run-due") return next();
   if (!authRequired()) return next();
 
   const { ok, exp } = verifyToken(readToken(req));
