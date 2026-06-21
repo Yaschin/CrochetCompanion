@@ -150,3 +150,74 @@ export function rankByStash(patterns: Pattern[], stash: StashItem[]): RankedPatt
       return a.coverage.missing.length - b.coverage.missing.length;
     });
 }
+
+// ── Consolidated shopping list ───────────────────────────────────────────────
+
+const CATEGORY_TITLES: Record<StashItemType, string> = {
+  yarn: "Yarn",
+  hook: "Hooks",
+  notion: "Notions",
+  tool: "Tools",
+};
+const CATEGORY_ORDER: StashItemType[] = ["yarn", "hook", "notion", "tool"];
+
+/** One thing to buy, plus which planned projects need it. */
+export interface ShoppingListItem {
+  category: StashItemType;
+  /** Canonical requirement label, e.g. "Cream (~50g)" or "3.5mm hook". */
+  label: string;
+  /** Titles of the patterns that need this item (deduped, in encounter order). */
+  forPatterns: string[];
+}
+
+export interface ShoppingList {
+  /** Everything to buy, flat — category order then label, A→Z. */
+  items: ShoppingListItem[];
+  /** The same items grouped for display; empty categories omitted. */
+  byCategory: { category: StashItemType; title: string; items: ShoppingListItem[] }[];
+  /** How many of the given patterns actually contributed something to buy. */
+  patternCount: number;
+  /** Distinct things to buy. */
+  itemCount: number;
+}
+
+/**
+ * Build one consolidated shopping list across several patterns: every material
+ * a pattern requires but the stash doesn't cover, deduplicated across patterns
+ * (so two hats needing "Cream (~50g)" list it once) and grouped by category.
+ * Each item remembers which projects need it. Pass the already-scoped set of
+ * patterns (e.g. favourites + up-next); items already in the stash are skipped.
+ */
+export function buildShoppingList(patterns: Pattern[], stash: StashItem[]): ShoppingList {
+  const byKey = new Map<string, ShoppingListItem>();
+  let patternCount = 0;
+
+  for (const pattern of patterns ?? []) {
+    const coverage = analyzeStashCoverage(pattern, stash);
+    let contributed = false;
+    for (const cat of coverage.categories) {
+      for (const item of cat.items) {
+        if (item.have) continue;
+        const key = `${cat.category}::${norm(item.label)}`;
+        let entry = byKey.get(key);
+        if (!entry) {
+          entry = { category: cat.category, label: item.label, forPatterns: [] };
+          byKey.set(key, entry);
+        }
+        if (!entry.forPatterns.includes(pattern.title)) entry.forPatterns.push(pattern.title);
+        contributed = true;
+      }
+    }
+    if (contributed) patternCount++;
+  }
+
+  const items = [...byKey.values()].sort((a, b) => {
+    const byCat = CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category);
+    return byCat !== 0 ? byCat : a.label.localeCompare(b.label);
+  });
+  const byCategory = CATEGORY_ORDER
+    .map((category) => ({ category, title: CATEGORY_TITLES[category], items: items.filter((i) => i.category === category) }))
+    .filter((g) => g.items.length > 0);
+
+  return { items, byCategory, patternCount, itemCount: items.length };
+}
