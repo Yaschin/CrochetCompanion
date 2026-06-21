@@ -68,6 +68,7 @@ export default function PatternViewer({ pattern, onPatternUpdated, onNavigate }:
     pendingDepleteRef,
     coverInputRef,
     formattedDate,
+    timeEstimate,
     isUpNext,
     upNextLoading,
     updatePatternMutation,
@@ -166,6 +167,7 @@ export default function PatternViewer({ pattern, onPatternUpdated, onNavigate }:
         <OverviewTab
           pattern={pattern}
           formattedDate={formattedDate}
+          timeEstimate={timeEstimate}
           onNavigate={onNavigate}
           onUpdatePattern={updatePatternMutation.mutate}
           onRegenerateImage={handleRegenerateImage}

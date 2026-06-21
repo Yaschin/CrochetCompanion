@@ -6,6 +6,7 @@ import {
   makeSession,
   mergeSessions,
   lifetimeMs,
+  estimateForType,
   type WorkSession,
 } from "../../client/src/lib/timeTracking";
 
@@ -104,5 +105,57 @@ describe("lifetimeMs", () => {
       ])
     ).toBe(3500);
     expect(lifetimeMs([])).toBe(0);
+  });
+});
+
+describe("estimateForType", () => {
+  // A finished project of `type` with a single session of `ms` tracked time.
+  const finished = (projectType: string, ms: number) => ({
+    projectType,
+    status: "finished",
+    workSessions: ms > 0 ? [{ start: "s", end: "e", ms }] : [],
+  });
+
+  it("averages tracked time over finished projects of that type", () => {
+    const est = estimateForType(
+      [finished("Hat", 4 * 3_600_000), finished("Hat", 6 * 3_600_000)],
+      "Hat",
+    );
+    expect(est).toEqual({ projectType: "Hat", sampleCount: 2, averageMs: 5 * 3_600_000 });
+  });
+
+  it("withholds an estimate until there are at least minSamples points", () => {
+    expect(estimateForType([finished("Hat", 3_600_000)], "Hat")).toBeNull();   // only 1
+    expect(estimateForType([], "Hat")).toBeNull();                              // none
+    // A custom threshold is honoured.
+    expect(estimateForType([finished("Hat", 1000), finished("Hat", 3000)], "Hat", 3)).toBeNull();
+  });
+
+  it("ignores non-finished projects and finished ones with no tracked time", () => {
+    const est = estimateForType(
+      [
+        finished("Hat", 2_000),
+        finished("Hat", 4_000),
+        { projectType: "Hat", status: "active", workSessions: [{ start: "s", end: "e", ms: 999_999 }] }, // not finished
+        finished("Hat", 0), // finished but never timed → excluded, doesn't drag toward 0
+      ],
+      "Hat",
+    );
+    expect(est).toEqual({ projectType: "Hat", sampleCount: 2, averageMs: 3_000 });
+  });
+
+  it("only counts the requested type, matching case-insensitively and trimmed", () => {
+    const patterns = [
+      finished("hat", 2_000),
+      finished("  HAT ", 4_000),
+      finished("Scarf", 10_000),
+    ];
+    const est = estimateForType(patterns, "Hat");
+    expect(est).toEqual({ projectType: "Hat", sampleCount: 2, averageMs: 3_000 });
+  });
+
+  it("returns null for an empty type and tolerates missing fields", () => {
+    expect(estimateForType([finished("Hat", 1), finished("Hat", 2)], "")).toBeNull();
+    expect(estimateForType([{}, { status: "finished" }], "Hat")).toBeNull();
   });
 });

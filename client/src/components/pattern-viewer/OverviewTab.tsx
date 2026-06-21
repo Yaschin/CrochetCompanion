@@ -1,5 +1,6 @@
 import { palette } from "@/lib/theme";
 import { Pattern, ViewType } from "@/lib/types";
+import { formatDuration, type TimeEstimate } from "@/lib/timeTracking";
 import { printPattern } from "@/lib/printPattern";
 import PatternProgressBar from "@/components/PatternProgressBar";
 import StashCoverage from "@/components/StashCoverage";
@@ -10,6 +11,7 @@ import { RefreshCw, Download, FileText, Play, CheckCircle2, Share2, Scissors, Sh
 interface OverviewTabProps {
   pattern: Pattern;
   formattedDate: string;
+  timeEstimate: TimeEstimate | null;
   onNavigate?: (view: ViewType) => void;
   onUpdatePattern: (pattern: Pattern) => void;
   onRegenerateImage: () => void;
@@ -40,6 +42,7 @@ interface OverviewTabProps {
 const OverviewTab: React.FC<OverviewTabProps> = ({
   pattern,
   formattedDate,
+  timeEstimate,
   onNavigate,
   onUpdatePattern,
   onRegenerateImage,
@@ -106,6 +109,16 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                 <span className="text-[12px] font-medium truncate" style={{ color: palette.ink }}>{value}</span>
               </div>
             ))}
+            {timeEstimate && (
+              <div className="flex items-center gap-2 pt-0.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider w-14 flex-shrink-0"
+                  style={{ color: palette.muted }}>Est. time</span>
+                <span className="text-[12px] font-medium" style={{ color: palette.purple }}>
+                  ⏱ ~{formatDuration(timeEstimate.averageMs)}
+                  <span style={{ color: palette.muted }}> · your avg from {timeEstimate.sampleCount}</span>
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex gap-2 mt-3 flex-wrap">
             {pattern.status === 'pattern' && upNextLoading && (
