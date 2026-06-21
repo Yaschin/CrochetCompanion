@@ -7,7 +7,7 @@ Supersedes the backlog sections (§2, §4, §5) of `CROCHET_TIME_STATUS_REVIEW_2
 
 ---
 
-## Current state — ✅ ROADMAP FULLY DELIVERED (2026-06-11)
+## Current state — ✅ ROADMAP FULLY DELIVERED (2026-06-11) · 🚀 LIVE-VERIFIED & LAUNCHED (2026-06-20)
 
 Every phase is built, verified and **merged to `main`**:
 
@@ -30,10 +30,11 @@ on-demand visual walkthroughs (`npm run walkthrough`, `npm run walkthrough:deep`
 > work this progress log was extended to cover (Calculators, work-time tracking,
 > finished-project record, PDF import, and a large refactor/cleanup program).
 
-**The only outstanding item — live verification on the deployed app (Yash, ~15 min):**
+**Live verification — ✅ PASSED 2026-06-20 (Yash, on the deployed app):**
 App health → Run checks + Deep AI test · scan a real ball band · ask Ashi a question ·
 start/join a make-along across two profiles · share a pattern (check family colour) ·
-set a finished photo (exercises object storage).
+set a finished photo (exercises object storage). **All confirmed working — the app is
+now fully launched; no outstanding gate items remain.**
 
 **Consciously deferred:** drizzle migration files (boot-time `ensureSchema` is the working,
 now smoke-tested mechanism); per-person community likes; count-by-N voice commands;
@@ -194,7 +195,7 @@ Multi-user **auth** / real social community; AI provider swaps; offline write-sy
 - [x] Post-delivery hardening — Batch 3 "Upgrades + tech debt" *(2026-06-14. **W17 Gauge swatch calculator** — Settings gauge card gains a "calculate from any swatch" helper (`client/src/lib/gauge.ts`, 3 new unit tests) that normalises a measured swatch to the per-10cm gauge feeding AI resize. **W10 Bundle split** — `manualChunks` (vendor + charts) drops the main app chunk 694 kB → **266 kB** (gzip 206 → 66) and clears the >500 kB warning. **W11 Route validation** — zod on `/api/up-next` and `/api/gauge` (accepts valid, rejects bad/out-of-range with 400; verified live). **W12 Make-along N+1** — `getPatternsByIds` batches the board's per-member pattern reads into one query. **W15 Error hygiene** — 5xx responses no longer echo internal error text (global handler + 24 routes sanitised; details still logged), and the diagnostics object-storage probe is now deleted after the check (`deleteObject`). Unit 14→17; smoke 36/36; tsc/build green. **W18 stash-depletion deferred** — it's a strategic feature with an ambiguous data model (deducting "~50g" from skein-counted stash), so it needs its own design pass rather than a guess.)*
 - [x] W18 — Stash depletion *(2026-06-14, after the owner chose "manual confirm, by count" to sidestep the grams ambiguity. When a project is finished, after the confetti, a sheet offers the stash yarns that match the pattern (`matchedYarnsForPattern` in `lib/stashMatch.ts`); you tick the skeins you actually used up and each drops by one — removed at zero — via the existing `/api/stash` PUT/DELETE. Nothing changes unless you confirm; if no stash yarn matches, it dismisses silently. New `client/src/components/StashDepletionSheet.tsx`, wired into PatternViewer's finish flow (covers both the viewer button and Follow Mode's "Mark finished"). Yarn-only (hooks/notions aren't "used up"). Unit 17→20 (matcher tests); PUT-decrement + DELETE verified live; tsc/build green.)*
 
-**Post-deploy checklist for Yash (live Replit app):**
+**Post-deploy checklist for Yash (live Replit app) — ✅ completed 2026-06-20:**
 1. Deploy this branch; watch boot logs for `ensureSchema` + seed messages.
 2. Settings → App health → "Run checks", then "Deep AI test" — all should pass.
 3. Spot-check: Projects shows seeded WIP patterns under In Progress; delete a seed pattern, restart, confirm it stays deleted; save a note on a pattern and reload; counter shows same rows in viewer modal and full-screen counter; "Follow step-by-step" advances and persists check-offs; Print/PDF renders with cover photo.
