@@ -142,6 +142,9 @@ export async function mockApi(page: Page) {
       ]);
     if (path === "/api/generate-pattern") return json(PATTERNS[0]);
     if (path === "/api/generate-image") return json({ url: "/api/media/x" });
+    // Household gate is off in tests — the app falls straight through.
+    if (path === "/api/auth/status") return json({ required: false, authenticated: true });
+    if (path === "/api/auth/login" || path === "/api/auth/logout") return json({ authenticated: true });
 
     // Safe fallbacks
     if (method === "GET") return json([]);
