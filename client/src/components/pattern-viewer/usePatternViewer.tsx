@@ -7,6 +7,7 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 import { fileToDataUrl } from '@/lib/utils';
 import { Pattern } from '@/lib/types';
 import { recordActivity } from '@/lib/activityLog';
+import { estimateForType } from '@/lib/timeTracking';
 import { shareStoryCard } from '@/lib/storyCard';
 import { getActiveProfile } from '@/lib/profile';
 import { ToastAction } from '@/components/ui/toast';
@@ -88,6 +89,14 @@ export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: P
   const formattedDate = useMemo(() => {
     return new Date(pattern.createdAt).toLocaleDateString();
   }, [pattern.createdAt]);
+
+  // Personalised time estimate: average tracked time across the family's own
+  // finished projects of this type. Reads the already-cached library list.
+  const { data: allPatterns } = useQuery<Pattern[]>({ queryKey: ["/api/patterns"] });
+  const timeEstimate = useMemo(
+    () => estimateForType(allPatterns ?? [], pattern.projectType),
+    [allPatterns, pattern.projectType],
+  );
 
   // Update pattern mutation
   const updatePatternMutation = useMutation({
@@ -381,6 +390,7 @@ export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: P
     pendingDepleteRef,
     coverInputRef,
     formattedDate,
+    timeEstimate,
     isUpNext,
     upNextLoading,
     updatePatternMutation,

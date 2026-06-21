@@ -77,6 +77,39 @@ export function lifetimeMs(patterns: { workSessions?: WorkSession[] }[]): number
   return patterns.reduce((sum, p) => sum + totalMs(p?.workSessions ?? []), 0);
 }
 
+/** A personalised time estimate for one project type. */
+export interface TimeEstimate {
+  projectType: string;  // the type asked for, echoed back for display
+  sampleCount: number;  // how many finished projects it averages over
+  averageMs: number;    // mean tracked time across those projects
+}
+
+/**
+ * Personalised average crochet time for a project type, learned from the
+ * family's *own* finished projects of that type that actually have tracked
+ * time. A finished project with no logged time is excluded (it would drag the
+ * average toward zero), and the estimate is withheld until there are at least
+ * `minSamples` real data points, so a single outlier never poses as an
+ * "average". Project type is matched case-insensitively and trimmed.
+ *
+ * Returns null when there isn't enough data to say anything honest.
+ */
+export function estimateForType(
+  patterns: { projectType?: string; status?: string; workSessions?: WorkSession[] }[],
+  projectType: string,
+  minSamples = 2,
+): TimeEstimate | null {
+  const target = (projectType ?? "").trim().toLowerCase();
+  if (!target) return null;
+  const times = (patterns ?? [])
+    .filter((p) => p && p.status === "finished" && (p.projectType ?? "").trim().toLowerCase() === target)
+    .map((p) => totalMs(p.workSessions ?? []))
+    .filter((ms) => ms > 0);
+  if (times.length < minSamples) return null;
+  const averageMs = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+  return { projectType, sampleCount: times.length, averageMs };
+}
+
 // ── localStorage wrappers (failure-tolerant) ──────────────────────────────────
 export function getSessions(patternId: string): WorkSession[] {
   try {
