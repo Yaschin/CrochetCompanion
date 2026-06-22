@@ -28,28 +28,13 @@ import {
   requireAuth, authRequired, isAuthenticated, checkPasscode, setSessionCookie,
   clearSessionCookie, loginThrottled, noteFailedLogin, clearLoginAttempts,
 } from "./auth";
-import {
-  pushConfigured, vapidPublicKey, saveSubscription, deleteSubscription,
-  listSubscriptions, sendToSubscriptions,
-} from "./push";
-import { getPrefs, savePrefs, runDueReminders } from "./reminders";
+import { pushConfigured } from "./push";
+import { runDueReminders } from "./reminders";
+import { registerPushRoutes } from "./routes/pushRoutes";
+import { profileOf, capText } from "./httpHelpers";
 import { z } from "zod";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
-
-// Resolve the active family profile from ?profile=<id>. Defaults to Larissa so
-// pre-profile clients (and service-worker-cached requests) keep working.
-function profileOf(req: Request): string {
-  const p = String(req.query.profile ?? "").trim();
-  return isProfileId(p) ? p : DEFAULT_PROFILE_ID;
-}
-
-// Cap free-text that gets interpolated into AI prompts — keeps a stray paste
-// (or anything malicious) from ballooning token spend or hijacking the prompt.
-function capText(value: unknown, max = 500): string {
-  return typeof value === "string" ? value.trim().slice(0, max) : "";
-}
-
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Household gate (no-op unless HOUSEHOLD_PASSCODE is set). Registered before
@@ -83,76 +68,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ authenticated: false });
   });
 
-  // ── Push reminders ──────────────────────────────────────────────────────────
-  const prefsInput = z.object({
-    dailyEnabled: z.boolean().optional(),
-    dailyTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-    timezone: z.string().min(1).max(64).optional(),
-    inactiveEnabled: z.boolean().optional(),
-  });
-
-  app.get("/api/push/vapid-key", (_req: Request, res: Response) => {
-    res.json({ configured: pushConfigured(), publicKey: vapidPublicKey() });
-  });
-
-  app.get("/api/push/prefs", async (req: Request, res: Response) => {
-    res.json(await getPrefs(profileOf(req)));
-  });
-
-  app.post("/api/push/prefs", async (req: Request, res: Response) => {
-    const parsed = prefsInput.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: "Invalid reminder settings" });
-    const profileId = profileOf(req);
-    const next = { ...(await getPrefs(profileId)), ...parsed.data };
-    await savePrefs(profileId, next);
-    res.json(next);
-  });
-
-  app.post("/api/push/subscribe", async (req: Request, res: Response) => {
-    const sub = req.body?.subscription;
-    if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) {
-      return res.status(400).json({ message: "Invalid push subscription" });
-    }
-    const profileId = profileOf(req);
-    await saveSubscription(profileId, sub);
-    if (req.body?.prefs) {
-      const parsed = prefsInput.safeParse(req.body.prefs);
-      if (parsed.success) await savePrefs(profileId, { ...(await getPrefs(profileId)), ...parsed.data });
-    }
-    res.json({ ok: true });
-  });
-
-  app.post("/api/push/unsubscribe", async (req: Request, res: Response) => {
-    const endpoint = req.body?.endpoint;
-    if (typeof endpoint === "string" && endpoint) await deleteSubscription(endpoint);
-    res.json({ ok: true });
-  });
-
-  // Send a test push to the current profile's devices (so people can confirm it works).
-  app.post("/api/push/test", async (req: Request, res: Response) => {
-    if (!pushConfigured()) return res.status(503).json({ message: "Reminders aren't set up on the server yet." });
-    const subs = await listSubscriptions(profileOf(req));
-    if (!subs.length) return res.status(404).json({ message: "No notification devices registered yet." });
-    const sent = await sendToSubscriptions(subs, {
-      title: "Crochet Time ♡",
-      body: "Test reminder — notifications are working!",
-      url: "/home",
-      tag: "test",
-    });
-    res.json({ sent });
-  });
-
-  // Called by an external scheduler (autoscale has no always-on process).
-  // Protect with CRON_SECRET when set; exempt from the household gate.
-  app.post("/api/push/run-due", async (req: Request, res: Response) => {
-    const secret = (process.env.CRON_SECRET ?? "").trim();
-    if (secret) {
-      const given = req.get("x-cron-secret") ?? (typeof req.query.secret === "string" ? req.query.secret : "");
-      if (given !== secret) return res.status(401).json({ message: "Unauthorized" });
-    }
-    const result = await runDueReminders();
-    res.json(result);
-  });
+  // ── Push reminders ── (subscriptions, prefs, test, cron run-due)
+  registerPushRoutes(app);
 
   // Apply idempotent schema/data heals, then run the one-time seeds and
   // resume background image generation for any library patterns missing images.
