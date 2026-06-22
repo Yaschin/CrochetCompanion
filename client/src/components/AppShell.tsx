@@ -73,7 +73,7 @@ export default function AppShell({ activeView, onNavigate, rightPanel, children 
               style={{
                 minWidth: 52,
                 minHeight: 48,
-                color: active ? palette.rose : "#8A6A58",
+                color: active ? palette.rose : palette.navIcon,
                 padding: "6px 8px",
               }}
             >

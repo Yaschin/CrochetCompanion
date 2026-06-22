@@ -1,4 +1,4 @@
-import { palette } from "@/lib/theme";
+import { palette, gradients } from "@/lib/theme";
 import { useState, useEffect, useRef } from "react";
 import { RotateCcw, History, Plus, Minus, Volume2, Mic } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
@@ -160,7 +160,7 @@ export default function StitchCounterScreen({ onNavigate, backView = "home", pat
           whileTap={{ scale: 0.98 }}
           onClick={() => changeRows(1)}
           className="w-full rounded-3xl flex flex-col items-center justify-center gap-1"
-          style={{ minHeight: 92, background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 6px 20px rgba(132,147,79,0.4)" }}>
+          style={{ minHeight: 92, background: gradients.sage, color: "white", boxShadow: "0 6px 20px rgba(132,147,79,0.4)" }}>
           <span className="font-heading font-bold text-[18px]">Tap to count a row</span>
           <span className="text-[11px] opacity-85" aria-live="polite">
             {voice

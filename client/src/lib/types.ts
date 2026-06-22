@@ -125,7 +125,6 @@ export type ViewType =
   | "viewer"
   | "library"
   | "documents"
-  | "search"
   | "stash"
   | "favorites"
   | "projects"
@@ -136,6 +135,5 @@ export type ViewType =
   | "photo-upload"
   | "stitch-counter"
   | "yarn-recs"
-  | "pattern-detail"
   | "tools"
   | "settings";

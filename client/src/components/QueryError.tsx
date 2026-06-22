@@ -1,4 +1,4 @@
-import { palette } from "@/lib/theme";
+import { palette, gradients } from "@/lib/theme";
 import { CloudOff, RefreshCw } from "lucide-react";
 
 interface QueryErrorProps {
@@ -50,7 +50,7 @@ export function QueryError({
           disabled={isRetrying}
           className="flex items-center gap-2 rounded-full px-5 py-2.5 font-heading font-bold text-[13px] transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
           style={{
-            background: "linear-gradient(135deg, #C24E6B, #A83050)",
+            background: gradients.rose,
             color: "white",
             boxShadow: "0 4px 16px rgba(194,78,107,0.30)",
           }}

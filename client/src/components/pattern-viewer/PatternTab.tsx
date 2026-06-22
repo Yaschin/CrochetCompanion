@@ -1,4 +1,4 @@
-import { palette } from "@/lib/theme";
+import { palette, gradients } from "@/lib/theme";
 import { Pattern, PatternStep } from "@/lib/types";
 import PatternSection from "@/components/PatternSection";
 import { isMaterialsSection } from "@shared/sections";
@@ -54,7 +54,7 @@ const PatternTab: React.FC<PatternTabProps> = ({
     <button
       onClick={onOpenFollow}
       className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13.5px] transition-all hover:opacity-90 active:scale-[0.99]"
-      style={{ background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.35)" }}
+      style={{ background: gradients.sage, color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.35)" }}
     >
       <Play className="h-4 w-4" /> Follow step-by-step
     </button>

@@ -1,4 +1,4 @@
-import { palette } from "@/lib/theme";
+import { palette, gradients } from "@/lib/theme";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ViewType } from "../lib/types";
@@ -289,7 +289,7 @@ export default function SplashScreen({ onNavigate }: SplashScreenProps) {
               onClick={() => onNavigate("home")}
               className="flex items-center gap-3 rounded-full px-8 py-4 font-heading font-bold text-[16px] w-full justify-center"
               style={{
-                background: "linear-gradient(135deg, #C24E6B, #A83050)",
+                background: gradients.rose,
                 color: "white",
                 boxShadow: "0 8px 30px rgba(194,78,107,0.45), 0 2px 8px rgba(60,20,30,0.2)",
               }}

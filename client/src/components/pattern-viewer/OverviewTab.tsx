@@ -1,4 +1,4 @@
-import { palette } from "@/lib/theme";
+import { palette, gradients } from "@/lib/theme";
 import { Pattern, ViewType } from "@/lib/types";
 import { formatDuration, type TimeEstimate } from "@/lib/timeTracking";
 import { printPattern } from "@/lib/printPattern";
@@ -209,7 +209,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         <button
           onClick={() => onUpdatePattern({ ...pattern, status: 'active', startedAt: new Date().toISOString() })}
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.3)" }}
+          style={{ background: gradients.rose, color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.3)" }}
         >
           <Play className="h-3.5 w-3.5" /> Start project
         </button>
@@ -218,7 +218,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         <button
           onClick={() => onUpdatePattern({ ...pattern, status: 'finished', finishedAt: new Date().toISOString() })}
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{ background: "rgba(132,147,79,0.14)", color: "#5F6B36", border: "1px solid rgba(132,147,79,0.3)" }}
+          style={{ background: "rgba(132,147,79,0.14)", color: palette.oliveText, border: "1px solid rgba(132,147,79,0.3)" }}
         >
           <CheckCircle2 className="h-3.5 w-3.5" /> Mark finished
         </button>
@@ -303,7 +303,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             onClick={onAdapt}
             disabled={!adaptInstruction.trim() || adaptPending}
             className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90 disabled:opacity-40"
-            style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.25)" }}
+            style={{ background: gradients.rose, color: "white", boxShadow: "0 3px 12px rgba(194,78,107,0.25)" }}
           >
             {adaptPending ? "Creating…" : "✨ Create Adapted Version"}
           </button>
