@@ -253,7 +253,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                             style={{ background: "rgba(61,143,163,0.10)" }}>
                             <span style={{ fontSize: 20, flexShrink: 0 }}>📄</span>
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-[12px] truncate" style={{ color: "#2A6B7D" }}>{f.name}</p>
+                              <p className="font-semibold text-[12px] truncate" style={{ color: palette.tealDeep }}>{f.name}</p>
                               <p className="text-[10px]" style={{ color: palette.clay }}>{(f.size / 1024 / 1024).toFixed(1)} MB</p>
                             </div>
                             <button
@@ -316,7 +316,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
               <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-2xl"
                 style={{ background: "rgba(61,143,163,0.09)", border: "1px solid rgba(61,143,163,0.28)" }}>
                 <span style={{ fontSize: 18, flexShrink: 0 }}>📄</span>
-                <p className="text-[12px] leading-snug" style={{ color: "#2A6B7D" }}>
+                <p className="text-[12px] leading-snug" style={{ color: palette.tealDeep }}>
                   <strong>From:</strong> {pdfFiles.map(f => f.name).join(', ')} · Diagrams weren't imported, only written instructions.
                 </p>
               </div>
@@ -347,7 +347,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                       className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all"
                       style={{
                         background: pdfEditType === c.id ? c.color : "rgba(140,100,55,0.08)",
-                        color: pdfEditType === c.id ? "white" : "#7A5A4A",
+                        color: pdfEditType === c.id ? "white" : palette.barkText,
                         border: pdfEditType === c.id ? "none" : "1.5px solid rgba(140,100,55,0.15)",
                       }}>
                       {c.emoji} {c.id}
@@ -365,7 +365,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                       className="flex-1 py-2 rounded-xl text-[12px] font-semibold transition-all"
                       style={{
                         background: pdfEditSkill === s.id ? palette.ink : "rgba(140,100,55,0.08)",
-                        color: pdfEditSkill === s.id ? "white" : "#7A5A4A",
+                        color: pdfEditSkill === s.id ? "white" : palette.barkText,
                         border: pdfEditSkill === s.id ? "none" : "1.5px solid rgba(140,100,55,0.15)",
                       }}>
                       {s.emoji} {s.id}
@@ -383,7 +383,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                       className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all"
                       style={{
                         background: pdfEditYarnType === yt ? palette.amber : "rgba(140,100,55,0.08)",
-                        color: pdfEditYarnType === yt ? "white" : "#7A5A4A",
+                        color: pdfEditYarnType === yt ? "white" : palette.barkText,
                         border: pdfEditYarnType === yt ? "none" : "1.5px solid rgba(140,100,55,0.15)",
                       }}>
                       {yt}
@@ -398,7 +398,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                   <label className="font-heading font-semibold text-[13px]" style={{ color: palette.cocoa }}>Yarn needed</label>
                   <button onClick={() => setPdfEditYarnReqs(p => [...p, { color: "", volume: "" }])}
                     className="text-[11px] font-semibold px-2.5 py-1 rounded-lg"
-                    style={{ background: "rgba(61,143,163,0.12)", color: "#2A6B7D" }}>
+                    style={{ background: "rgba(61,143,163,0.12)", color: palette.tealDeep }}>
                     + Add
                   </button>
                 </div>
@@ -430,7 +430,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                   <label className="font-heading font-semibold text-[13px]" style={{ color: palette.cocoa }}>Hook size</label>
                   <button onClick={() => setPdfEditHooks(p => [...p, { size: "", note: "" }])}
                     className="text-[11px] font-semibold px-2.5 py-1 rounded-lg"
-                    style={{ background: "rgba(61,143,163,0.12)", color: "#2A6B7D" }}>
+                    style={{ background: "rgba(61,143,163,0.12)", color: palette.tealDeep }}>
                     + Add
                   </button>
                 </div>
@@ -518,7 +518,7 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
                             ? { ...s, steps: [...(s.steps || []), { instruction: "", count: "" }] }
                             : s))}
                           className="text-[11px] font-semibold py-1.5 rounded-xl w-full"
-                          style={{ background: "rgba(61,143,163,0.10)", color: "#2A6B7D" }}>
+                          style={{ background: "rgba(61,143,163,0.10)", color: palette.tealDeep }}>
                           + Add step
                         </button>
                       </div>

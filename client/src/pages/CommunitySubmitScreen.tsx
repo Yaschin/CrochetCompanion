@@ -84,7 +84,7 @@ export default function CommunitySubmitScreen({ onNavigate, initialPattern }: Co
         style={{ borderBottom: "1px solid rgba(140,100,55,0.12)" }}>
         <div className="flex items-center gap-3">
           <BackButton
-            onClick={() => step === 0 ? onNavigate(initialPattern ? "pattern-detail" : "community") : setStep(s => s - 1)}
+            onClick={() => step === 0 ? onNavigate(initialPattern ? "viewer" : "community") : setStep(s => s - 1)}
             bg="rgba(140,100,55,0.08)" color={palette.brown} />
           <div>
             <h1 className="font-heading font-bold text-[18px]" style={{ color: palette.ink }}>

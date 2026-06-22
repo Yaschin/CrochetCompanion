@@ -196,7 +196,7 @@ export function HeroZone() {
       {/* Speech bubbles — outside clip so always fully visible */}
       <div className="absolute z-20 hidden sm:block" style={{ top: 18, left: "7%" }}>
         <div className="speech-bubble" style={{ maxWidth: 140 }}>
-          <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
+          <p className="text-[10.5px] leading-snug" style={{ color: palette.heroCocoa }}>
             Aloo is here to cheer you on! 🐾
           </p>
         </div>
@@ -204,7 +204,7 @@ export function HeroZone() {
 
       <div className="absolute z-20 hidden sm:block" style={{ top: 14, left: "43%" }}>
         <div className="speech-bubble" style={{ maxWidth: 144 }}>
-          <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
+          <p className="text-[10.5px] leading-snug" style={{ color: palette.heroCocoa }}>
             Ashi loves cosy patterns! 🪡
           </p>
         </div>
@@ -212,7 +212,7 @@ export function HeroZone() {
 
       <div className="absolute z-20 hidden sm:block" style={{ bottom: 80, right: "7%" }}>
         <div className="speech-bubble" style={{ maxWidth: 148 }}>
-          <p className="text-[10.5px] leading-snug" style={{ color: "#5C3D28" }}>
+          <p className="text-[10.5px] leading-snug" style={{ color: palette.heroCocoa }}>
             Yala is ready to create something magical. ✨
           </p>
         </div>

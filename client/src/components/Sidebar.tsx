@@ -34,7 +34,8 @@ const SECONDARY_NAV: { id: string; view: ViewType; label: string; icon: typeof H
 function resolveActiveId(view: ViewType): string {
   if (view === "home") return "home";
   if (view === "input" || view === "viewer") return "studio";
-  if (view === "library" || view === "search") return "library";
+  if (view === "library") return "library";
+  if (view === "documents") return "documents";
   if (view === "favorites") return "favorites";
   if (view === "stash") return "stash";
   if (view === "projects") return "projects";
@@ -174,7 +175,7 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
                       marginLeft: -12,
                       borderRadius: "0 999px 999px 0",
                       background: "rgba(194,78,107,0.16)",
-                      color: "#B04060",
+                      color: palette.navActive,
                     }
                   : {
                       paddingLeft: 8,
@@ -186,9 +187,9 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
             >
               <Icon
                 className="flex-shrink-0 transition-colors"
-                style={{ width: 18, height: 18, color: active ? "#B04060" : "#8A6A58" }}
+                style={{ width: 18, height: 18, color: active ? palette.navActive : palette.navIcon }}
               />
-              <span className="flex-1" style={{ color: active ? "#B04060" : palette.cocoa }}>{item.label}</span>
+              <span className="flex-1" style={{ color: active ? palette.navActive : palette.cocoa }}>{item.label}</span>
               {/* Small decorative motif inside active pill */}
               {active && item.id === "home" && <ActivePillDecor />}
             </button>
@@ -210,10 +211,10 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
                 paddingLeft: 8,
                 paddingRight: 8,
                 borderRadius: 8,
-                color: active ? "#B04060" : palette.inkSoft,
+                color: active ? palette.navActive : palette.inkSoft,
               }}
             >
-              <Icon style={{ width: 17, height: 17, color: active ? "#B04060" : "#9A7A68", flexShrink: 0 }} />
+              <Icon style={{ width: 17, height: 17, color: active ? palette.navActive : palette.navMuted, flexShrink: 0 }} />
               <span>{item.label}</span>
             </button>
           );
@@ -231,7 +232,7 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
 
         {/* Made with love label */}
         <div className="text-center mb-0">
-          <p className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: "#9A7A68" }}>
+          <p className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: palette.navMuted }}>
             Made with love for
           </p>
           <p className="font-script text-xl leading-tight" style={{ color: palette.rose, fontWeight: 700 }}>
@@ -265,16 +266,16 @@ const Sidebar: FC<SidebarProps> = ({ activeView, onNavigate }) => {
             <p className="text-[10px] font-bold" style={{ color: "#A06010" }}>
               🔥 {streak.current}-day streak!
             </p>
-            <p className="text-[9.5px] leading-snug" style={{ color: "#9A7A68" }}>
+            <p className="text-[9.5px] leading-snug" style={{ color: palette.navMuted }}>
               {streak.activeToday ? "Today counts ♡" : "Crochet today to keep it!"}
             </p>
           </>
         ) : (
           <>
-            <p className="text-[10px] font-bold" style={{ color: "#B04060" }}>
+            <p className="text-[10px] font-bold" style={{ color: palette.navActive }}>
               Start a streak ♡
             </p>
-            <p className="text-[9.5px] leading-snug" style={{ color: "#9A7A68" }}>
+            <p className="text-[9.5px] leading-snug" style={{ color: palette.navMuted }}>
               Crochet something today!
             </p>
           </>

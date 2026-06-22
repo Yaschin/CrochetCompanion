@@ -1,4 +1,5 @@
 import { FC, useEffect, useMemo, useState } from 'react';
+import { palette } from '@/lib/theme';
 import { useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -360,7 +361,7 @@ const MaterialsInventory: FC = () => {
             onClick={() => scanInputRef.current?.click()}
             disabled={scanMutation.isPending}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12.5px] font-bold transition-all hover:opacity-90 disabled:opacity-60"
-            style={{ background: 'rgba(124,95,168,0.10)', color: '#7C5FA8', border: '1.5px dashed rgba(124,95,168,0.4)' }}
+            style={{ background: 'rgba(124,95,168,0.10)', color: palette.purple, border: '1.5px dashed rgba(124,95,168,0.4)' }}
           >
             📷 {scanMutation.isPending ? 'Reading the label…' : 'Scan the ball band — I\'ll fill this in'}
           </button>

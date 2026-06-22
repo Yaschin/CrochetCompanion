@@ -63,7 +63,6 @@ function pathFor(view: ViewType, opts: NavOpts = {}): string {
     case "loading": return "/loading";
     case "library": return "/library";
     case "documents": return "/documents";
-    case "search": return "/library";
     case "stash": return "/stash";
     case "favorites": return "/favorites";
     case "projects": return "/projects";
@@ -74,7 +73,6 @@ function pathFor(view: ViewType, opts: NavOpts = {}): string {
     case "community-submit": return "/community/submit";
     case "community-detail": return cid ? `/community/${cid}` : "/community";
     case "viewer": return pid ? `/patterns/${pid}` : "/library";
-    case "pattern-detail": return pid ? `/patterns/${pid}` : "/library";
     case "progress": return pid ? `/patterns/${pid}/progress` : "/library";
     case "photo-upload": return pid ? `/patterns/${pid}/photos` : "/library";
     case "stitch-counter": return pid ? `/patterns/${pid}/counter` : "/library";
@@ -94,7 +92,6 @@ function parseLocation(loc: string): { view: ViewType; patternId?: string; commu
     case "loading": return { view: "loading" };
     case "library": return { view: "library" };
     case "documents": return { view: "documents" };
-    case "search": return { view: "library" }; // merged into Library
     case "stash": return { view: "stash" };
     case "favorites": return { view: "favorites" };
     case "projects": return { view: "projects" };

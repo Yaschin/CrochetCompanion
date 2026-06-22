@@ -91,7 +91,7 @@ export default function CoachChat({ patternId, sectionName, stepText, open, onCl
       {/* Messages */}
       <div ref={listRef} className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-2.5" style={{ minHeight: 140 }}>
         {messages.length === 0 && (
-          <div className="text-[12.5px] leading-relaxed p-3 rounded-2xl" style={{ background: "rgba(61,143,163,0.08)", color: "#3D6E7E" }}>
+          <div className="text-[12.5px] leading-relaxed p-3 rounded-2xl" style={{ background: "rgba(61,143,163,0.08)", color: palette.tealText }}>
             Stuck on this round? Ask me anything — <em>"what's an invisible decrease?"</em>,{" "}
             <em>"I have 23 stitches instead of 24"</em>, <em>"how do I change colours here?"</em>
           </div>
@@ -106,7 +106,7 @@ export default function CoachChat({ patternId, sectionName, stepText, open, onCl
           </div>
         ))}
         {ask.isPending && (
-          <div className="self-start px-3.5 py-2.5 rounded-2xl text-[13px]" style={{ background: "rgba(61,143,163,0.10)", color: "#3D6E7E" }}>
+          <div className="self-start px-3.5 py-2.5 rounded-2xl text-[13px]" style={{ background: "rgba(61,143,163,0.10)", color: palette.tealText }}>
             Ashi is thinking… 🧶
           </div>
         )}

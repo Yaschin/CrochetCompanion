@@ -1,4 +1,4 @@
-import { palette } from "@/lib/theme";
+import { palette, gradients } from "@/lib/theme";
 import { useEffect, useRef, useState } from "react";
 import { Download, Upload, Shield, Heart, HelpCircle, Activity, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
@@ -190,7 +190,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
             onClick={handleExport}
             disabled={exporting}
             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-heading font-bold text-[14px] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
-            style={{ background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.35)" }}
+            style={{ background: gradients.sage, color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.35)" }}
           >
             <Download className="h-4 w-4" />
             {exporting ? "Exporting…" : "Export backup (.json)"}
@@ -344,7 +344,7 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
               onClick={() => runChecks("deep")}
               disabled={checking !== false}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-heading font-bold text-[13px] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 4px 16px rgba(194,78,107,0.3)" }}
+              style={{ background: gradients.rose, color: "white", boxShadow: "0 4px 16px rgba(194,78,107,0.3)" }}
             >
               <Sparkles className="h-4 w-4" />
               {checking === "deep" ? "Testing AI…" : "Deep AI test"}

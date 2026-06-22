@@ -120,7 +120,7 @@ export default function WorkCheckButton({ patternId, sectionIndex, stepIndex }: 
 
           <div className="mt-3 mb-1" aria-live="polite">
             {check.isPending && (
-              <p className="text-[13px] py-4 text-center" style={{ color: "#3D6E7E" }}>
+              <p className="text-[13px] py-4 text-center" style={{ color: palette.tealText }}>
                 Ashi is looking at your work… 🧶
               </p>
             )}

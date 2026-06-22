@@ -1,4 +1,4 @@
-import { palette } from "@/lib/theme";
+import { palette, gradients } from "@/lib/theme";
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -248,7 +248,7 @@ const PatternInputRefactored: React.FC<PatternInputProps> = ({ onPatternCreated,
           onClick={() => switchMode("ai")}
           className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all"
           style={{
-            background: mode === "ai" ? "linear-gradient(135deg, #C24E6B, #A83050)" : "transparent",
+            background: mode === "ai" ? gradients.rose : "transparent",
             color: mode === "ai" ? "white" : palette.clay,
             boxShadow: mode === "ai" ? "0 3px 12px rgba(194,78,107,0.35)" : "none",
           }}>

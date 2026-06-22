@@ -1,4 +1,4 @@
-import { palette } from "@/lib/theme";
+import { palette, gradients } from "@/lib/theme";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Plus, Package } from "lucide-react";
@@ -53,7 +53,7 @@ function ProjectCard({ pattern, onSelect, index }: { pattern: Pattern; onSelect:
           </span>
         )}
       </div>
-      <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "#C0A090" }} />
+      <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: palette.clayLight }} />
     </motion.div>
   );
 }
@@ -125,7 +125,7 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
             onClick={() => onNavigate("input")}
             className="flex items-center gap-1.5 rounded-full px-4 py-2 font-heading font-bold text-[13px] transition-all hover:opacity-90 active:scale-95"
             style={{
-              background: "linear-gradient(135deg, #C24E6B, #A83050)",
+              background: gradients.rose,
               color: "white",
               boxShadow: "0 4px 16px rgba(194,78,107,0.35)",
             }}>
@@ -165,7 +165,7 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
               onClick={() => onNavigate("input")}
               className="flex items-center gap-2 rounded-full px-6 py-3 font-heading font-bold text-[14px] transition-all hover:opacity-90 active:scale-95"
               style={{
-                background: "linear-gradient(135deg, #C24E6B, #A83050)",
+                background: gradients.rose,
                 color: "white",
                 boxShadow: "0 4px 16px rgba(194,78,107,0.35)",
               }}>
@@ -233,7 +233,7 @@ export default function ProjectsScreen({ onNavigate, onPatternSelected }: Projec
                   <p className="text-[11px]" style={{ color: palette.clay }}>Yarn, hooks & materials</p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4" style={{ color: "#C0A090" }} />
+              <ChevronRight className="h-4 w-4" style={{ color: palette.clayLight }} />
             </button>
 
           </div>

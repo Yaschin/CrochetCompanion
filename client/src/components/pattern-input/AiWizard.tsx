@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, ChangeEvent } from "react";
-import { palette } from "@/lib/theme";
+import { palette, gradients } from "@/lib/theme";
 import { PatternInputFormData } from "@/lib/types";
 import { Sparkles } from "lucide-react";
 import { CATEGORIES, SIZE_OPTIONS, COLOR_PALETTE } from "./constants";
@@ -184,7 +184,7 @@ export default function AiWizard({
               <button onClick={handleGeneratePattern} disabled={isGenerating}
                 className="w-full py-4 rounded-2xl font-heading font-bold text-[16px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
                 style={{
-                  background: isGenerating ? "rgba(194,78,107,0.4)" : "linear-gradient(135deg, #C24E6B, #A83050)",
+                  background: isGenerating ? "rgba(194,78,107,0.4)" : gradients.rose,
                   color: "white",
                   boxShadow: isGenerating ? "none" : "0 6px 24px rgba(194,78,107,0.4)",
                 }}>
@@ -202,7 +202,7 @@ export default function AiWizard({
               <button onClick={() => canAdvance() && setWizardStep(s => s + 1)} disabled={!canAdvance()}
                 className="px-6 py-2.5 rounded-xl font-heading font-bold text-[13px] transition-all hover:opacity-90 disabled:opacity-35"
                 style={{
-                  background: canAdvance() ? "linear-gradient(135deg, #C24E6B, #A83050)" : "rgba(140,100,55,0.12)",
+                  background: canAdvance() ? gradients.rose : "rgba(140,100,55,0.12)",
                   color: canAdvance() ? "white" : palette.clay,
                   boxShadow: canAdvance() ? "0 3px 12px rgba(194,78,107,0.35)" : "none",
                 }}>

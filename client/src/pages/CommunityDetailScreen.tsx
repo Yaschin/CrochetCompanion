@@ -220,7 +220,7 @@ export default function CommunityDetailScreen({ onNavigate, communityId, onPatte
               onClick={() => importMutation.mutate({ open: false })}
               disabled={importMutation.isPending}
               className="py-3.5 rounded-2xl font-bold text-[14px] transition-all hover:opacity-85 flex items-center justify-center gap-1.5"
-              style={{ background: "rgba(132,147,79,0.15)", color: "#5F6B36", border: "1.5px solid rgba(132,147,79,0.4)" }}>
+              style={{ background: "rgba(132,147,79,0.15)", color: palette.oliveText, border: "1.5px solid rgba(132,147,79,0.4)" }}>
               <Bookmark className="h-4 w-4" /> Add to Library
             </button>
             <button

@@ -1,4 +1,4 @@
-import { palette } from "@/lib/theme";
+import { palette, gradients } from "@/lib/theme";
 import { isMaterialsSection } from "@shared/sections";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronLeft, ChevronRight, Mic, Minus, X } from 'lucide-react';
@@ -368,7 +368,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
             <button
               onClick={onMarkFinished}
               className="px-6 py-3 rounded-2xl font-heading font-bold text-[15px] transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: "linear-gradient(135deg, #C24E6B, #A83050)", color: "white", boxShadow: "0 4px 16px rgba(194,78,107,0.4)" }}
+              style={{ background: gradients.rose, color: "white", boxShadow: "0 4px 16px rgba(194,78,107,0.4)" }}
             >
               Mark project finished ♡
             </button>
@@ -393,7 +393,7 @@ const FollowMode = ({ pattern, open, onClose, onUpdateStep, onMarkFinished }: Fo
           className="flex-1 h-14 rounded-2xl font-heading font-bold text-[16px] transition-all hover:opacity-90 active:scale-[0.99]"
           style={current.step.completed
             ? { background: "rgba(132,147,79,0.12)", color: palette.sage, border: "1.5px solid rgba(132,147,79,0.3)" }
-            : { background: "linear-gradient(135deg, #84934F, #6A7A3A)", color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.4)" }}
+            : { background: gradients.sage, color: "white", boxShadow: "0 4px 16px rgba(132,147,79,0.4)" }}
         >
           {current.step.completed ? (pos < steps.length - 1 ? "Next step →" : "All caught up ✓") : "✓ Done — next"}
         </button>
