@@ -54,5 +54,7 @@ CI gates on three jobs: **typecheck + e2e + fullstack-smoke** — keep all green
 - Home: `components/HomeWorkbench.tsx` + presentational pieces in `components/home/`
 - Pattern viewer: `components/PatternViewer.tsx` + `components/pattern-viewer/*`
   (hooks: `usePatternViewer`, `usePatternRegen`, `useSectionEditing`)
-- Server: `server/` (`routes.ts`, `ensureSchema.ts`, `api/*`)
+- Server: `server/` — `routes.ts` is a thin orchestrator; endpoints live in
+  `server/routes/<domain>Routes.ts` (auth, push, media, ai, pattern, stash,
+  community, account, diagnostics, backup). Also `ensureSchema.ts`, `api/*`.
 - Architecture memory: `.agents/memory/` (index: `MEMORY.md`)

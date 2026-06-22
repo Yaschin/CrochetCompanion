@@ -60,9 +60,34 @@ gated on the same **live deploy verification** as the rest of the app.
 | PRs #34–#42 | **Refactor / cleanup program** — `PatternViewer`, `HomeWorkbench`, `PatternInput` split into focused modules under `components/{pattern-viewer,home}/`; `usePatternViewer` / `usePatternRegen` / self-contained `PdfWizard` extracted; shared `aiErrorToast`; palette tokenised; muted-label a11y contrast fix. **Dead character AI-generation flow + unused `/api/characters` endpoints removed** (no client consumer). DOM unchanged — e2e selects by visible text/role, so behaviour is preserved. |
 | PR #48 (2026-06-20) | **Cleanup / quality pass** (6 commits) — removed **42 dead files** (39 unused shadcn `ui/*` + 3 orphan modules) and **33 unused npm deps** (~4.4k LOC; `npm ci`-verified); consolidated the file→data-URL helpers into `lib/utils` (fixed a `fileToBase64` footgun) and removed 6 inline `FileReader` copies; extracted a shared `<BackButton>` (aria-labelled) across 8 screens; tokenised ~200 more hex literals into `palette`; split section/step editing out of `usePatternViewer` into `useSectionEditing`; closed the last loading-state false-empty flashes. Surviving `ui/` primitives: button, dialog, alert-dialog, input, label, textarea, tabs, toast, toaster. All three CI jobs (typecheck/e2e/fullstack-smoke) green; DOM/behaviour unchanged. |
 
-**Unit test count:** grew 20 → **55** (yarn-calc, stash-matcher, gauge, time-tracking,
-sections, activity-log and crochet-math helpers). Browser e2e runs across 3 viewports;
+**Unit test count:** grew 20 → **55** at #48 (yarn-calc, stash-matcher, gauge,
+time-tracking, sections, activity-log and crochet-math helpers); now **81** after the
+refactor/cleanup program below. Browser e2e runs across 3 viewports;
 the full-stack smoke has 56 assertions.
+
+---
+
+## Delivered since #48 — refactor / cleanup program (2026-06-22)
+
+A focused code-quality program driven by a fresh project-state review. **No new
+user-facing features** — the goal was reuse, simplification, and a clean server
+seam. DOM/behaviour unchanged (e2e selects by visible text/role); every PR landed
+with **all three CI jobs green** (typecheck · e2e · full-stack smoke). Live-verified
+launch state from 2026-06-20 is unaffected.
+
+| Delivered via | Contents |
+|---|---|
+| PR #56 | **P1 quick wins** — migrated the last bespoke `fetch` onto the shared axios/`apiRequest` path (central profile-stamping + error taxonomy); enforced the client-side photo-size cap; extracted a shared `SegmentedControl`; doc touch-ups. |
+| PR #57 | **P2 de-dup** — collapsed duplicated Favorites logic; extracted a shared `usePhotoUpload` hook, replacing repeated `FileReader` + resize + POST flows across screens. |
+| PR #58 | **B5 + B9** — removed vestigial route aliases; tokenised recurring hex literals into `palette.<token>` (`lib/theme.ts`). |
+| PR #59 | **B8.1** — extracted `EditableItemList` from `EnhancedMaterialsList` (shared add/edit/remove list primitive). |
+| PR #60 | **B8.2 — full `routes.ts` split.** `registerRoutes()` went **1409 → 70 lines** (a thin orchestrator: household gate → per-domain `registerXRoutes(app)` → boot `ensureSchema`+seed chain → optional reminder loop). Every domain now lives in `server/routes/<domain>Routes.ts` — auth, push, media, ai, pattern, stash, community (incl. make-alongs), account (profiles/activity/up-next/gauge), diagnostics, backup — plus shared `server/httpHelpers.ts` (`profileOf`/`capText`) and `server/pdfParse.ts`. All **59 routes preserved** and registered exactly once; the path-based `/api/push/run-due` gate exemption and `CRON_SECRET` are unchanged; the full-stack smoke confirmed no runtime regression. |
+
+> **Architecture note for future work:** server endpoints are no longer in one
+> file. To add/modify a route, edit the relevant `server/routes/<domain>Routes.ts`
+> and (for a new domain) wire one `registerXRoutes(app)` call into
+> `server/routes.ts`. The boot-time `ensureSchema` heal + seed chain and the
+> reminder loop remain the orchestrator's responsibility.
 
 ---
 
