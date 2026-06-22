@@ -286,6 +286,20 @@ let communityId;
   await api("DELETE", `/api/patterns/${pid}`);
 }
 
+// ── Photo upload size guard (step + section photos capped at 8 MB) ──────────
+// The cap runs before object storage, so this asserts cleanly even where
+// storage isn't configured. ~8.6 MB decoded stays under the 20 MB body limit.
+{
+  const p = await api("POST", "/api/patterns?profile=akka", samplePattern("Photo Guard Test"));
+  const pid = p.json?.id;
+  const huge = "data:image/png;base64," + "A".repeat(11 * 1024 * 1024);
+  const step = await api("POST", `/api/patterns/${pid}/sections/0/steps/0/photo?profile=akka`, { photo: huge });
+  check("step photo over 8 MB is rejected", step.status === 400, `status=${step.status}`);
+  const section = await api("POST", `/api/patterns/${pid}/sections/0/photo?profile=akka`, { photo: huge });
+  check("section photo over 8 MB is rejected", section.status === 400, `status=${section.status}`);
+  await api("DELETE", `/api/patterns/${pid}`);
+}
+
 // ── Delete ─────────────────────────────────────────────────────────────────
 {
   const del = await api("DELETE", `/api/patterns/${vumshPattern.id}`);

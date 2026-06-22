@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { FileText, X } from 'lucide-react';
 import { Pattern, ViewType } from '../lib/types';
 import SourcePdfViewer from './SourcePdfViewer';
+import SegmentedControl from './SegmentedControl';
 import { deleteSourceFile } from '../lib/documents';
 import { queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -177,22 +178,7 @@ export default function PatternViewer({ pattern, onPatternUpdated, onNavigate }:
       />
 
       {/* ── Tab bar ── */}
-      <div className="flex gap-1 p-1 rounded-xl" style={{ background: "rgba(140,100,55,0.08)" }}>
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className="flex-1 py-2 rounded-lg text-[12.5px] font-semibold capitalize transition-all"
-            style={{
-              background: activeTab === tab ? "white" : "transparent",
-              color: activeTab === tab ? palette.rose : palette.clay,
-              boxShadow: activeTab === tab ? "0 1px 6px rgba(0,0,0,0.1)" : "none",
-            }}
-          >
-            {tabLabel(tab)}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl options={tabs} value={activeTab} onChange={setActiveTab} renderLabel={tabLabel} fullWidth />
 
       {/* ── Overview tab ── */}
       {activeTab === "overview" && (
