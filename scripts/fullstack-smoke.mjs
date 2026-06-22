@@ -249,6 +249,43 @@ let communityId;
   await api("POST", "/api/push/prefs?profile=akka", { dailyEnabled: false, inactiveEnabled: false });
 }
 
+// ── Imported source files (original PDFs kept to refer back to) ─────────────
+// Validation needs no object storage; the happy path does, so it tolerates a
+// 503 in environments where object storage isn't configured.
+{
+  const p = await api("POST", "/api/patterns?profile=akka", samplePattern("PDF Source Test"));
+  const pid = p.json?.id;
+  check("created a pattern to attach files to", p.status === 201 && !!pid);
+
+  const empty = await api("POST", `/api/patterns/${pid}/source-files?profile=akka`, { files: [] });
+  check("source-files rejects an empty list", empty.status === 400);
+  const notPdf = await api("POST", `/api/patterns/${pid}/source-files?profile=akka`, {
+    files: [{ name: "x.pdf", base64: Buffer.from("hello, not a pdf").toString("base64") }],
+  });
+  check("source-files rejects a non-PDF", notPdf.status === 415);
+
+  const tinyPdf = Buffer.from("%PDF-1.1\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF").toString("base64");
+  const add = await api("POST", `/api/patterns/${pid}/source-files?profile=akka`, {
+    files: [{ name: "imported.pdf", base64: tinyPdf }],
+  });
+  if (add.status === 200) {
+    check("source-files stores the original", Array.isArray(add.json?.sourceFiles) && add.json.sourceFiles.length === 1);
+    const key = add.json.sourceFiles[0]?.key;
+    const got = await api("GET", `/api/patterns/${pid}`);
+    check("pattern carries its imported file", (got.json?.sourceFiles ?? []).some((f) => f.key === key));
+    const media = await fetch(`${BASE}/api/media/${key}`);
+    check("stored PDF serves as application/pdf",
+      media.status === 200 && (media.headers.get("content-type") || "").includes("pdf"));
+    const del = await api("DELETE", `/api/patterns/${pid}/source-files/${key}?profile=akka`);
+    check("an imported file can be removed", del.status === 200 && (del.json?.sourceFiles ?? []).length === 0);
+  } else {
+    check("source-files degrades cleanly without object storage", add.status === 503,
+      `status=${add.status}`);
+  }
+
+  await api("DELETE", `/api/patterns/${pid}`);
+}
+
 // ── Delete ─────────────────────────────────────────────────────────────────
 {
   const del = await api("DELETE", `/api/patterns/${vumshPattern.id}`);

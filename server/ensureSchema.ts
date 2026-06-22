@@ -157,6 +157,11 @@ export async function ensureSchema(): Promise<void> {
       "createdAt" timestamptz NOT NULL DEFAULT now()
     )`
   );
+
+  // Original imported PDFs kept alongside the parsed pattern (object-storage keys).
+  await db.execute(
+    sql`ALTER TABLE patterns ADD COLUMN IF NOT EXISTS "sourceFiles" jsonb`
+  );
 }
 
 export async function getMeta(key: string): Promise<string | null> {

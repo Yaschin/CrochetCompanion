@@ -54,6 +54,16 @@ export interface PatternSection {
   steps: PatternStep[];
 }
 
+/** An original document the user imported (currently always a PDF). */
+export interface SourceFile {
+  key: string; // object-storage key, served at /api/media/<key>
+  name: string;
+  type: "pdf";
+  size?: number;
+  pages?: number;
+  addedAt: string;
+}
+
 /** "As-built" record of a finished object — what was actually used / how it turned out. */
 export interface FinishedRecord {
   madeFor?: string;
@@ -73,6 +83,7 @@ export interface Pattern {
   userNotes?: string;
   counterState?: { stitches: number; rows: number; target: number; history?: unknown[] } | null;
   workSessions?: { start: string; end: string; ms: number }[];
+  sourceFiles?: SourceFile[];
   finishedRecord?: FinishedRecord | null;
   yarnRequirements?: YarnRequirement[];
   hookRequirements?: HookRequirement[];
@@ -113,6 +124,7 @@ export type ViewType =
   | "loading"
   | "viewer"
   | "library"
+  | "documents"
   | "search"
   | "stash"
   | "favorites"

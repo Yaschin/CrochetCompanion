@@ -14,6 +14,10 @@ is the source of truth.
 - **AI pattern studio** — describe an item (or upload an inspiration photo /
   paste an existing pattern) and get a structured, editable pattern with
   materials, sections and steps; per-section regeneration preserves locked steps
+- **Import PDF, keep the original** — bring in a pattern PDF (Etsy/Ravelry/…)
+  and it's parsed into editable steps; the original is stored so you can refer
+  back to it any time — a per-pattern **Source** tab (with a peek-alongside
+  sheet while you work) and a **Files** library of every imported PDF
 - **Family profiles** — "Who's crocheting today?" (Larissa, Vumsh, Akka,
   Mummy): no passwords, each with their own library, projects, stash, notes,
   streaks, gauge, up-next pin and backups; community is the shared space with

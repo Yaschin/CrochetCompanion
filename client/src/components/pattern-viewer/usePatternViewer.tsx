@@ -42,7 +42,7 @@ export function usePatternViewer(pattern: Pattern, onPatternUpdated: (pattern: P
   } = usePatternRegen(pattern, onPatternUpdated);
   
   const [counterOpen, setCounterOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "pattern" | "notes">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "pattern" | "source" | "notes">("overview");
   // Notes live in the DB (pattern.userNotes); fall back to the legacy
   // device-local note so nothing written before the migration is lost.
   const [notes, setNotes] = useState(() => {

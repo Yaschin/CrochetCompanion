@@ -1,7 +1,8 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { createRequire } from "module";
-import { uploadBuffer, streamObject, getObjectDataUrl } from "./objectStorage";
+import { uploadBuffer, streamObject, getObjectDataUrl, deleteObject } from "./objectStorage";
+import type { SourceFile } from "@shared/schema";
 import { generatePattern } from "./api/generatePattern";
 import { parsePattern, parsePdfText } from "./api/parsePattern";
 import { generateImage } from "./api/generateImage";
@@ -428,16 +429,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/patterns/:id", async (req: Request, res: Response) => {
     try {
+      // Read the pattern first so we can clean up any stored originals.
+      const existing = await patternService.getPattern(req.params.id);
       const success = await patternService.deletePattern(req.params.id);
-      
+
       if (!success) {
         return res.status(404).json({ message: "Pattern not found" });
       }
-      
+
+      // Best-effort: remove imported PDFs from object storage so they don't orphan.
+      for (const f of existing?.sourceFiles ?? []) {
+        await deleteObject(f.key).catch(() => {});
+      }
+
       res.status(204).end();
     } catch (error) {
       console.error("Error deleting pattern:", error);
       res.status(500).json({ message: "Failed to delete pattern" });
+    }
+  });
+
+  // ─── Imported source files (original PDFs kept to refer back to) ────────────
+  // Attach one or more original PDFs to a pattern. The bytes go to object
+  // storage; metadata rides on the pattern so the viewer + files library can
+  // open them later. Stored at save-time (not during parse) so cancelled
+  // imports never orphan an upload.
+  app.post("/api/patterns/:id/source-files", async (req: Request, res: Response) => {
+    try {
+      const files = req.body?.files;
+      if (!Array.isArray(files) || files.length === 0) {
+        return res.status(400).json({ message: "files array is required" });
+      }
+      if (files.length > 5) {
+        return res.status(400).json({ message: "Maximum 5 files at once." });
+      }
+      const pattern = await patternService.getPattern(req.params.id);
+      if (!pattern) return res.status(404).json({ message: "Pattern not found" });
+
+      const added: SourceFile[] = [];
+      for (const f of files) {
+        const name = typeof f?.name === "string" && f.name.trim() ? f.name.trim() : "pattern.pdf";
+        const payload = typeof f?.base64 === "string" ? f.base64.replace(/^data:[^;]+;base64,/, "") : "";
+        if (!payload) return res.status(400).json({ message: "Each file needs base64 content." });
+        const buffer = Buffer.from(payload, "base64");
+        if (buffer.length > 10 * 1024 * 1024) {
+          return res.status(400).json({ message: `${name} is too large — maximum 10 MB.` });
+        }
+        if (buffer.subarray(0, 5).toString("latin1") !== "%PDF-") {
+          return res.status(415).json({ message: `${name} doesn't look like a valid PDF.` });
+        }
+        let pages: number | undefined;
+        try { pages = (await pdfParseFn(buffer)).numpages; } catch { /* page count is best-effort */ }
+        let url: string;
+        try {
+          url = await uploadBuffer(buffer, "application/pdf");
+        } catch (storageErr) {
+          console.error("[source-files] object storage upload failed:", storageErr);
+          return res.status(503).json({ message: "File storage isn't available right now — try again later." });
+        }
+        added.push({
+          key: url.replace(/^\/api\/media\//, ""),
+          name, type: "pdf", size: buffer.length, pages,
+          addedAt: new Date().toISOString(),
+        });
+      }
+
+      const sourceFiles = [...(pattern.sourceFiles ?? []), ...added];
+      const updated = await patternService.updatePattern(req.params.id, { sourceFiles });
+      res.json({ sourceFiles: updated?.sourceFiles ?? sourceFiles });
+    } catch (error) {
+      console.error("Error attaching source files:", error);
+      res.status(500).json({ message: "Failed to attach files" });
+    }
+  });
+
+  app.delete("/api/patterns/:id/source-files/:key", async (req: Request, res: Response) => {
+    try {
+      const pattern = await patternService.getPattern(req.params.id);
+      if (!pattern) return res.status(404).json({ message: "Pattern not found" });
+      const { key } = req.params;
+      const remaining = (pattern.sourceFiles ?? []).filter((f) => f.key !== key);
+      await patternService.updatePattern(req.params.id, { sourceFiles: remaining });
+      await deleteObject(key).catch(() => {});
+      res.json({ sourceFiles: remaining });
+    } catch (error) {
+      console.error("Error removing source file:", error);
+      res.status(500).json({ message: "Failed to remove file" });
     }
   });
 

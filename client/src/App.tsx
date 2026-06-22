@@ -62,6 +62,7 @@ function pathFor(view: ViewType, opts: NavOpts = {}): string {
     case "input": return "/create";
     case "loading": return "/loading";
     case "library": return "/library";
+    case "documents": return "/documents";
     case "search": return "/library";
     case "stash": return "/stash";
     case "favorites": return "/favorites";
@@ -92,6 +93,7 @@ function parseLocation(loc: string): { view: ViewType; patternId?: string; commu
     case "create": return { view: "input" };
     case "loading": return { view: "loading" };
     case "library": return { view: "library" };
+    case "documents": return { view: "documents" };
     case "search": return { view: "library" }; // merged into Library
     case "stash": return { view: "stash" };
     case "favorites": return { view: "favorites" };
@@ -296,11 +298,12 @@ function App() {
                 </div>
               )}
 
-              {activeView === "library" && (
+              {(activeView === "library" || activeView === "documents") && (
                 <div className="flex flex-col h-full overflow-y-auto px-6 py-6 pb-20 md:pb-6">
                   <PatternLibrary
                     onPatternSelected={handlePatternLoaded}
                     onCreateNew={() => navigateToView("input")}
+                    initialSegment={activeView === "documents" ? "files" : "patterns"}
                   />
                 </div>
               )}
