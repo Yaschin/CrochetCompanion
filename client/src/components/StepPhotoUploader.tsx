@@ -1,11 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Upload, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { getOrdinalSuffix } from '@/lib/dateUtils';
-import { fileToDataUrl } from '@/lib/utils';
+import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 
 interface StepPhotoUploaderProps {
   patternId: string;
@@ -23,100 +23,20 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
   onPhotoUpdated
 }) => {
   const { toast } = useToast();
-  const [isUploading, setIsUploading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
-  // Handle file selection
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      
-      // Create a preview URL
-      fileToDataUrl(file).then(setPreviewUrl);
-    }
-  }, []);
-
+  const {
+    isDialogOpen, setIsDialogOpen,
+    isUploading, setIsUploading,
+    selectedFile, previewUrl,
+    handleFileChange, reset, closeDialog, upload,
+  } = usePhotoUpload();
 
   // Handle upload
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      toast({
-        title: 'No file selected',
-        description: 'Please select an image to upload',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const photoDataUrl = await fileToDataUrl(selectedFile);
-
-      // Send to server
-      const response = await apiRequest('POST',
-        `/api/patterns/${patternId}/sections/${sectionIndex}/steps/${stepIndex}/photo`,
-        { photo: photoDataUrl }
-      );
-      
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Update the step with new photo URL
-      onPhotoUpdated(data.photoUrl);
-      
-      toast({
-        title: 'Photo Successfully Uploaded',
-        description: `Your photo has been added to step ${stepIndex + 1} of the ${sectionIndex + 1}${getOrdinalSuffix(sectionIndex + 1)} section.`,
-        duration: 5000,
-      });
-      
-      // Close dialog and reset state
-      setIsDialogOpen(false);
-      setSelectedFile(null);
-      setPreviewUrl(null);
-    } catch (error) {
-      console.error('Error uploading photo:', error);
-      
-      // Format error message
-      const errorMsg = String(error);
-      
-      // Specific error message for file size issues
-      if (errorMsg.includes('size') || errorMsg.includes('large')) {
-        toast({
-          title: 'File Too Large',
-          description: 'The photo you selected is too large. Please choose a smaller image.',
-          variant: 'destructive',
-          duration: 6000,
-        });
-      } 
-      // Format error message
-      else if (errorMsg.includes('format') || errorMsg.includes('type')) {
-        toast({
-          title: 'Invalid File Format',
-          description: 'Please select a valid image file (JPEG, PNG, GIF, etc.).',
-          variant: 'destructive',
-          duration: 6000,
-        });
-      }
-      // Default error message
-      else {
-        toast({
-          title: 'Upload Failed',
-          description: 'There was an error uploading your photo. Please try again.',
-          variant: 'destructive',
-          duration: 6000,
-        });
-      }
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  const handleUpload = () =>
+    upload(`/api/patterns/${patternId}/sections/${sectionIndex}/steps/${stepIndex}/photo`, {
+      successTitle: 'Photo Successfully Uploaded',
+      successDescription: `Your photo has been added to step ${stepIndex + 1} of the ${sectionIndex + 1}${getOrdinalSuffix(sectionIndex + 1)} section.`,
+      onUploaded: onPhotoUpdated,
+    });
 
   // Delete photo
   const handleDeletePhoto = async () => {
@@ -238,10 +158,7 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
                   />
                   <button
                     className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full"
-                    onClick={() => {
-                      setSelectedFile(null);
-                      setPreviewUrl(null);
-                    }}
+                    onClick={reset}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -274,11 +191,7 @@ const StepPhotoUploader: React.FC<StepPhotoUploaderProps> = ({
             <Button
               type="button"
               variant="secondary"
-              onClick={() => {
-                setIsDialogOpen(false);
-                setSelectedFile(null);
-                setPreviewUrl(null);
-              }}
+              onClick={closeDialog}
             >
               Cancel
             </Button>

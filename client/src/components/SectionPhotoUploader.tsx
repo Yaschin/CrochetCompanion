@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Camera, ImageIcon, Upload, X, RefreshCw, CheckCircle, Percent } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
-import { fileToDataUrl } from '@/lib/utils';
+import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 
 interface SectionPhotoUploaderProps {
   patternId: string;
@@ -22,22 +22,12 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
   onRequestPatternRegeneration
 }) => {
   const { toast } = useToast();
-  const [isUploading, setIsUploading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
-  // Handle file selection
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      
-      // Create a preview URL
-      fileToDataUrl(file).then(setPreviewUrl);
-    }
-  }, []);
-
+  const {
+    isDialogOpen, setIsDialogOpen,
+    isUploading, setIsUploading,
+    selectedFile, previewUrl,
+    handleFileChange, reset, closeDialog, upload,
+  } = usePhotoUpload();
 
   // State for alignment check
   const [isAlignmentChecking, setIsAlignmentChecking] = useState(false);
@@ -45,57 +35,16 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
   const [showRegenerateOption, setShowRegenerateOption] = useState(false);
 
   // Handle upload
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      toast({
-        title: 'No file selected',
-        description: 'Please select an image to upload',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    try {
-      setIsUploading(true);
-      
-      const photoDataUrl = await fileToDataUrl(selectedFile);
-
-      // Send to server
-      const httpRes = await apiRequest('POST', `/api/patterns/${patternId}/sections/${sectionIndex}/photo`, {
-        photo: photoDataUrl,
-      });
-      const result = await httpRes.json();
-
-      if (result.success && result.photoUrl) {
-        toast({
-          title: 'Photo uploaded',
-          description: 'Your section photo has been successfully uploaded',
-        });
-
-        // Update state
-        onPhotoUpdated(result.photoUrl);
-        
-        // Ask if user wants to regenerate pattern based on new image
+  const handleUpload = () =>
+    upload(`/api/patterns/${patternId}/sections/${sectionIndex}/photo`, {
+      successTitle: 'Photo uploaded',
+      successDescription: 'Your section photo has been successfully uploaded',
+      onUploaded: (url) => {
+        onPhotoUpdated(url);
+        // Offer to regenerate the pattern from the new image.
         setShowRegenerateOption(true);
-        
-        // Reset component state
-        setSelectedFile(null);
-        setPreviewUrl(null);
-        setIsDialogOpen(false);
-      } else {
-        throw new Error('Upload failed');
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast({
-        title: 'Upload failed',
-        description: 'There was a problem uploading your photo. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
+      },
+    });
   
   // Handle pattern regeneration request
   const handleRegeneratePattern = () => {
@@ -268,14 +217,11 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
                   alt="Preview" 
                   className="max-w-full h-auto rounded-md" 
                 />
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="absolute top-1 right-1 bg-black/25 hover:bg-black/50 text-white rounded-full p-1"
-                  onClick={() => {
-                    setPreviewUrl(null);
-                    setSelectedFile(null);
-                  }}
+                  onClick={reset}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -334,11 +280,7 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                setIsDialogOpen(false);
-                setPreviewUrl(null);
-                setSelectedFile(null);
-              }}
+              onClick={closeDialog}
               disabled={isUploading}
             >
               Cancel

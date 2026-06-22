@@ -30,7 +30,6 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [sort, setSort] = useState<SortKey>('newest');
-  const [favoritesOnly, setFavoritesOnly] = useState(false);
 
   // Fetch all patterns — uses the global default fetcher so all screens share
   // the same cache behaviour. retry/retryDelay kept for resilience.
@@ -110,10 +109,6 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
       list = list.filter((p) => p.projectType === typeFilter);
     }
 
-    if (favoritesOnly) {
-      list = list.filter((p) => p.favorite);
-    }
-
     list.sort((a, b) => {
       switch (sort) {
         case 'oldest':
@@ -129,7 +124,7 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
     });
 
     return list;
-  }, [patterns, search, typeFilter, sort, favoritesOnly]);
+  }, [patterns, search, typeFilter, sort]);
 
   const hasPatterns = !!patterns && patterns.length > 0;
   const docCount = totalDocumentCount(patterns ?? []);
@@ -195,18 +190,6 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
                 className="w-full rounded-full border border-input bg-background py-2 pl-9 pr-4 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
-            <button
-              type="button"
-              onClick={() => setFavoritesOnly((v) => !v)}
-              aria-pressed={favoritesOnly}
-              className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium transition-colors',
-                favoritesOnly ? 'border-primary-200 bg-primary-50 text-primary-700' : 'border-input text-gray-600 hover:bg-gray-100',
-              )}
-            >
-              <Heart className={cn('h-4 w-4', favoritesOnly && 'fill-primary text-primary')} />
-              Favorites
-            </button>
             <select aria-label="Filter by type" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={selectClass}>
               <option value="all">All types</option>
               {projectTypes.map((t) => (
