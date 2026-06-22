@@ -1,5 +1,8 @@
 # Photo "Fix-My-Mistake" Coach — Design (built 2026-06-14)
 
+> **📦 Archived 2026-06-22.** Shipped feature; design record kept for provenance.
+> Current state: [`../CROCHET_TIME_ROADMAP_2026-06-09.md`](../CROCHET_TIME_ROADMAP_2026-06-09.md).
+
 **Status:** Designed **and built** 2026-06-14. This documents the shipped feature; the build checklist at the end is complete.
 
 **Owner decisions (Yash, 2026-06-14):**

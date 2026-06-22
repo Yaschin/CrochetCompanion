@@ -18,7 +18,7 @@ URLs work. The current pattern hydrates from the route id on refresh.
 ## Family profiles (Phase 6)
 - No-login profiles: larissa/vumsh/akka/mummy — defined in `shared/profiles.ts`.
 - Active profile in localStorage `crochet-time:profile`; appended as `?profile=` to every /api/ call centrally in `client/src/lib/queryClient.ts` (apiRequest + default queryFn) via `withProfile()`.
-- Server resolves with `profileOf(req)` (routes.ts), defaulting to larissa. Owner columns: patterns/stash_items/stash_notes `ownerId` (default 'larissa'); community has `creatorId`.
+- Server resolves with `profileOf(req)` (`server/httpHelpers.ts`), defaulting to larissa. Owner columns: patterns/stash_items/stash_notes `ownerId` (default 'larissa'); community has `creatorId`.
 - Picker screen: `/who` → ProfilePickerScreen (after splash on first run; header avatar + sidebar "Switch Profile" reopen it). Switching calls `queryClient.clear()`.
 - Per-profile localStorage: streaks (`crochet-time-activity:{id}`, larissa keeps legacy key), community-seen bell.
 - e2e: `enterApp()` presets profile via addInitScript; picker has its own test.
@@ -55,7 +55,7 @@ All ViewTypes are in `client/src/lib/types.ts`. Current full list:
 - e2e presets BOTH localStorage flags (profile + tutorial-seen) in `enterApp()`.
 
 ## Phase 8 systems (2026-06-11)
-- Follow Mode (`components/FollowMode.tsx`) now hosts: section-map chips, in-round tally (target parsed from trailing "(N)"), voice control, milestone moments, glossary chips (`lib/glossary.ts`), Ashi coach (`components/CoachChat.tsx` → `POST /api/patterns/:id/coach`, `server/api/coach.ts`), and the photo "check my work" coach (`components/WorkCheckButton.tsx` → `POST /api/patterns/:id/check-work`, `server/api/checkWork.ts`; gentle/non-prescriptive, `on_track|check|unsure`, no score; design in `docs/CROCHET_TIME_PHOTO_COACH_DESIGN.md`).
+- Follow Mode (`components/FollowMode.tsx`) now hosts: section-map chips, in-round tally (target parsed from trailing "(N)"), voice control, milestone moments, glossary chips (`lib/glossary.ts`), Ashi coach (`components/CoachChat.tsx` → `POST /api/patterns/:id/coach`, `server/api/coach.ts`), and the photo "check my work" coach (`components/WorkCheckButton.tsx` → `POST /api/patterns/:id/check-work`, `server/api/checkWork.ts`; gentle/non-prescriptive, `on_track|check|unsure`, no score; design in `docs/archive/CROCHET_TIME_PHOTO_COACH_DESIGN.md`).
 - Ball-band scanner: `POST /api/stash/scan-label` (`server/api/scanLabel.ts`) ← 📷 button in MaterialsInventory dialog.
 - Make-alongs: `server/makealongService.ts`, tables `makealongs`/`makealong_members` (ensureSchema), board UI in CommunityScreen, start button in CommunityDetailScreen.
 - Per-profile app_meta keys: `upnext:{id}`, `gauge:{id}` (`/api/up-next`, `/api/gauge`); story cards `lib/storyCard.ts`; cover photo `POST /api/patterns/:id/cover-photo`.
@@ -79,9 +79,30 @@ A code/quality cleanup across six commits; all four CI layers green.
 - **`usePatternViewer` slimmed** 534→407 lines: section/step expand + CRUD extracted to `pattern-viewer/useSectionEditing.tsx`. `PatternSection` was deliberately **not** split (audit: "only split if touched").
 - **Loading/a11y polish:** skeletons for the last false-empty flashes (Tools stash picker, Community make-along nudge, viewer up-next pin, Progress achievements); CommunityScreen like-button label + keyboard-operable card.
 
+## Refactor/cleanup program (PRs #56–#60, 2026-06-22)
+A second code-quality program from a fresh project-state review. No user-facing
+change; DOM/behaviour unchanged; all three CI jobs green on every merge.
+- **#56** P1: last bespoke `fetch` moved onto the shared axios/`apiRequest` path;
+  client photo-size cap enforced; shared `SegmentedControl`.
+- **#57** P2: Favorites de-dup; shared `usePhotoUpload` hook (replaced repeated
+  `FileReader`+resize+POST flows).
+- **#58** B5/B9: vestigial route aliases removed; ~recurring hex literals tokenised.
+- **#59** B8.1: `EditableItemList` extracted from `EnhancedMaterialsList`.
+- **#60** B8.2 — **server routes split**: `server/routes.ts` went **1409 → 70 lines**
+  and is now a thin orchestrator (household gate → per-domain `registerXRoutes(app)`
+  → boot `ensureSchema`+seed chain → optional reminder loop). **Every endpoint now
+  lives in `server/routes/<domain>Routes.ts`** — `auth`, `push`, `media`, `ai`,
+  `pattern`, `stash`, `community` (incl. make-alongs), `account`
+  (profiles/activity/up-next/gauge), `diagnostics`, `backup`. Shared helpers:
+  `server/httpHelpers.ts` (`profileOf`/`capText`) and `server/pdfParse.ts` (lazy
+  `pdfParseFn`, used by both AI import and pattern source-files). **To add/modify a
+  route, edit the relevant `server/routes/*Routes.ts`** (and for a new domain wire
+  one `registerXRoutes(app)` call into `routes.ts`); the seed chain + reminder loop
+  stay in the orchestrator.
+
 ## Testing infrastructure
 - `server/db.ts` dual driver: Neon WebSocket (prod) vs node-postgres (localhost) — enables real-server testing anywhere.
-- `npm run smoke` (`scripts/fullstack-smoke.mjs`): 36 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
+- `npm run smoke` (`scripts/fullstack-smoke.mjs`): 56 API assertions vs real server+Postgres; in CI as the `fullstack-smoke` job (postgres:16 service). Base DDL: `scripts/create-base-tables.sql`.
 - ensureSchema degrades gracefully on a virgin DB (logs db:push hint) — fresh-DB boot crash fixed 2026-06-11; communityService creatorId persistence fixed same day.
 
 ## Navigation chrome

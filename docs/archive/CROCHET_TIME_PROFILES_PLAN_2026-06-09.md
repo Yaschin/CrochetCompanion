@@ -1,5 +1,8 @@
 # Phase 6 — Family Profiles (detailed plan)
 
+> **📦 Archived 2026-06-22.** Delivered (Phase 6, PR #24). Kept for design
+> provenance. Current state: [`../CROCHET_TIME_ROADMAP_2026-06-09.md`](../CROCHET_TIME_ROADMAP_2026-06-09.md).
+
 **Date:** 2026-06-09 · **Status: IMPLEMENTED — in PR #24 (CI green), awaiting merge.**
 All acceptance criteria below verified via tsc/build + Playwright (42/42, incl. a dedicated first-run picker test). Implementation notes from the build:
 - PR #24 also merges main's same-day Replit additions (tutorial system, pattern import, library image backfill) and restores main's accidentally-reverted Phase 1/3 startup block in `routes.ts`.
