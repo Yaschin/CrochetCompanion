@@ -771,6 +771,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contentType = mimeMatch ? mimeMatch[1] : "image/png";
       const base64Data = photoData.replace(/^data:image\/\w+;base64,/, '');
       const dataBuffer = Buffer.from(base64Data, 'base64');
+      if (dataBuffer.length > 8 * 1024 * 1024) {
+        return res.status(400).json({ message: "Photo too large — maximum 8 MB." });
+      }
 
       // Upload to object storage
       const photoUrl = await uploadBuffer(dataBuffer, contentType);
@@ -836,6 +839,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contentType = mimeMatch ? mimeMatch[1] : "image/png";
       const base64Data = photoData.replace(/^data:image\/\w+;base64,/, '');
       const dataBuffer = Buffer.from(base64Data, 'base64');
+      if (dataBuffer.length > 8 * 1024 * 1024) {
+        return res.status(400).json({ message: "Photo too large — maximum 8 MB." });
+      }
 
       // Upload to object storage
       const photoUrl = await uploadBuffer(dataBuffer, contentType);

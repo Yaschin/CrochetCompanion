@@ -21,8 +21,8 @@ Every phase is built, verified and **merged to `main`**:
 | PR #28 | True full-stack e2e: real-server+Postgres smoke in CI (caught & fixed the fresh-DB boot crash and the dead `creatorId`) |
 | Replit sessions | Tutorial system, pattern/PDF import, per-profile starter content, library image backfill |
 
-**Test layers, all green in CI on every PR:** typecheck · 55 unit tests · browser e2e
-(mocked API, 3 viewports) · **36-assertion full-stack smoke against real Postgres** ·
+**Test layers, all green in CI on every PR:** typecheck · 81 unit tests · browser e2e
+(mocked API, 3 viewports) · **56-assertion full-stack smoke against real Postgres** ·
 on-demand visual walkthroughs (`npm run walkthrough`, `npm run walkthrough:deep`).
 
 > **Note (2026-06-16):** the original phase scope was delivered 2026-06-11, but
@@ -47,7 +47,7 @@ WebP/AVIF character conversion (perf-only, P2).
 
 The original eight-phase scope shipped 2026-06-11; the items below landed on `main`
 **after** that and after the 2026-06-14 hardening batches (W18 is the last entry in the
-progress log). All are verified: `tsc` clean · 55 unit tests · build green · CI green on
+progress log). All are verified: `tsc` clean · 81 unit tests · build green · CI green on
 the latest `main` merge (#48) · features traced into routing/nav. New features remain
 gated on the same **live deploy verification** as the rest of the app.
 
@@ -62,7 +62,7 @@ gated on the same **live deploy verification** as the rest of the app.
 
 **Unit test count:** grew 20 → **55** (yarn-calc, stash-matcher, gauge, time-tracking,
 sections, activity-log and crochet-math helpers). Browser e2e runs across 3 viewports;
-the full-stack smoke has 36 assertions.
+the full-stack smoke has 56 assertions.
 
 ---
 

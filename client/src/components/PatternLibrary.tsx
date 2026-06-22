@@ -9,6 +9,7 @@ import { FolderOpen, Trash, Plus, Search, Heart, FileText } from 'lucide-react';
 import { PatternThumb } from '@/components/PatternThumb';
 import { patternProgress } from '../lib/progress';
 import DocumentsList from './DocumentsList';
+import SegmentedControl from './SegmentedControl';
 import { totalDocumentCount } from '../lib/documents';
 
 interface PatternLibraryProps {
@@ -142,23 +143,22 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
       </h2>
 
       {/* Patterns / Files segment */}
-      <div className="mb-5 inline-flex p-1 rounded-xl" style={{ background: 'rgba(140,100,55,0.08)' }}>
-        {(['patterns', 'files'] as const).map((seg) => (
-          <button
-            key={seg}
-            onClick={() => setSegment(seg)}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12.5px] font-semibold transition-all"
-            style={{
-              background: segment === seg ? 'white' : 'transparent',
-              color: segment === seg ? palette.rose : palette.clay,
-              boxShadow: segment === seg ? '0 1px 6px rgba(0,0,0,0.1)' : 'none',
-            }}
-          >
-            {seg === 'files' && <FileText className="h-3.5 w-3.5" />}
-            {seg === 'patterns' ? 'Patterns' : `Files${docCount ? ` (${docCount})` : ''}`}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        options={['patterns', 'files'] as const}
+        value={segment}
+        onChange={setSegment}
+        className="mb-5"
+        renderLabel={(seg) =>
+          seg === 'patterns' ? (
+            'Patterns'
+          ) : (
+            <>
+              <FileText className="h-3.5 w-3.5" />
+              {`Files${docCount ? ` (${docCount})` : ''}`}
+            </>
+          )
+        }
+      />
 
       {segment === 'files' && <DocumentsList onOpenPattern={onPatternSelected} />}
 

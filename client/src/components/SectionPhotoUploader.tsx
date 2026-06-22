@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Camera, ImageIcon, Upload, X, RefreshCw, CheckCircle, Percent } from 'lucide-react';
-import axios from 'axios';
+import { apiRequest } from '@/lib/queryClient';
 import { fileToDataUrl } from '@/lib/utils';
 
 interface SectionPhotoUploaderProps {
@@ -61,18 +61,19 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
       const photoDataUrl = await fileToDataUrl(selectedFile);
 
       // Send to server
-      const response = await axios.post(`/api/patterns/${patternId}/sections/${sectionIndex}/photo`, {
-        photo: photoDataUrl
+      const httpRes = await apiRequest('POST', `/api/patterns/${patternId}/sections/${sectionIndex}/photo`, {
+        photo: photoDataUrl,
       });
-      
-      if (response.data.success && response.data.photoUrl) {
+      const result = await httpRes.json();
+
+      if (result.success && result.photoUrl) {
         toast({
           title: 'Photo uploaded',
           description: 'Your section photo has been successfully uploaded',
         });
-        
+
         // Update state
-        onPhotoUpdated(response.data.photoUrl);
+        onPhotoUpdated(result.photoUrl);
         
         // Ask if user wants to regenerate pattern based on new image
         setShowRegenerateOption(true);
@@ -114,21 +115,22 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
       setIsAlignmentChecking(true);
       
       // Call API endpoint to check alignment
-      const response = await axios.post(`/api/patterns/${patternId}/sections/${sectionIndex}/alignment-check`);
-      
-      if (response.data.success && response.data.alignmentScore !== undefined) {
-        setAlignmentScore(response.data.alignmentScore);
-        
+      const httpRes = await apiRequest('POST', `/api/patterns/${patternId}/sections/${sectionIndex}/alignment-check`);
+      const result = await httpRes.json();
+
+      if (result.success && result.alignmentScore !== undefined) {
+        setAlignmentScore(result.alignmentScore);
+
         // Recommend regeneration if score is low
-        if (response.data.alignmentScore < 70) {
+        if (result.alignmentScore < 70) {
           setShowRegenerateOption(true);
         }
-        
+
         toast({
           title: 'Alignment Check Complete',
-          description: response.data.feedback
-            ? `${response.data.alignmentScore}% match — ${response.data.feedback}`
-            : `Your pattern matches the image by approximately ${response.data.alignmentScore}%`,
+          description: result.feedback
+            ? `${result.alignmentScore}% match — ${result.feedback}`
+            : `Your pattern matches the image by approximately ${result.alignmentScore}%`,
         });
       } else {
         throw new Error('Alignment check failed');
@@ -151,16 +153,17 @@ const SectionPhotoUploader: React.FC<SectionPhotoUploaderProps> = ({
       setIsUploading(true);
       
       // Call the API endpoint to generate an image for this section
-      const response = await axios.post(`/api/patterns/${patternId}/sections/${sectionIndex}/image`);
-      
-      if (response.data.success && response.data.imageUrl) {
+      const httpRes = await apiRequest('POST', `/api/patterns/${patternId}/sections/${sectionIndex}/image`);
+      const result = await httpRes.json();
+
+      if (result.success && result.imageUrl) {
         toast({
           title: 'Image generated',
           description: 'AI has generated a new image for this section',
         });
-        
+
         // Update state
-        onPhotoUpdated(response.data.imageUrl);
+        onPhotoUpdated(result.imageUrl);
       } else {
         throw new Error('Generation failed');
       }
