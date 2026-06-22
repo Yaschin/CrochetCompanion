@@ -34,6 +34,7 @@ function rowToPattern(row: typeof patternsTable.$inferSelect): Pattern {
     userNotes: row.userNotes || "",
     counterState: (row.counterState ?? null) as Pattern["counterState"],
     workSessions: (row.workSessions ?? []) as Pattern["workSessions"],
+    sourceFiles: (row.sourceFiles ?? []) as Pattern["sourceFiles"],
     finishedRecord: (row.finishedRecord ?? null) as Pattern["finishedRecord"],
     createdAt,
     sections: (row.sections ?? []) as Pattern["sections"],
@@ -64,6 +65,7 @@ function patternToColumns(pattern: Partial<Pattern>) {
   if (pattern.userNotes !== undefined) columns.userNotes = pattern.userNotes || "";
   if (pattern.counterState !== undefined) columns.counterState = pattern.counterState ?? null;
   if (pattern.workSessions !== undefined) columns.workSessions = pattern.workSessions ?? [];
+  if (pattern.sourceFiles !== undefined) columns.sourceFiles = pattern.sourceFiles ?? [];
   if (pattern.finishedRecord !== undefined) columns.finishedRecord = pattern.finishedRecord ?? null;
   if (pattern.sections !== undefined) columns.sections = pattern.sections;
   if (pattern.yarnRequirements !== undefined) columns.yarnRequirements = pattern.yarnRequirements || [];

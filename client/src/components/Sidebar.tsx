@@ -3,7 +3,7 @@ import { Package } from "lucide-react";
 import { getActiveProfile } from "../lib/profile";
 import { FC, useState } from "react";
 import {
-  Home, Wand2, BookOpen, Heart, Users, User, Settings, Sparkles, Calculator,
+  Home, Wand2, BookOpen, Heart, Users, User, Settings, Sparkles, Calculator, FileText,
 } from "lucide-react";
 import { ViewType } from "../lib/types";
 import { getStreak } from "../lib/activityLog";
@@ -23,6 +23,7 @@ const PRIMARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Hom
 
 const SECONDARY_NAV: { id: string; view: ViewType; label: string; icon: typeof Home }[] = [
   { id: "stash",     view: "stash",      label: "My Stash",          icon: Package },
+  { id: "documents", view: "documents",  label: "Files",             icon: FileText },
   { id: "yarn-recs", view: "yarn-recs",  label: "Make From My Stash", icon: Sparkles },
   { id: "tools",     view: "tools",      label: "Calculators",       icon: Calculator },
   { id: "favorites", view: "favorites",  label: "Favorites",         icon: Heart },

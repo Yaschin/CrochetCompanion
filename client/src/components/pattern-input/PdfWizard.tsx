@@ -7,6 +7,7 @@ import { Pattern } from "@/lib/types";
 import { FileUp, ChevronRight, Plus } from "lucide-react";
 import { CATEGORIES, SKILL_LEVELS, YARN_TYPES, PDF_STEPS, PDF_TIPS, PDF_LOADING_MSGS } from "./constants";
 import { fileToBase64, buildPatternToSave } from "./helpers";
+import { attachSourceFiles } from "@/lib/documents";
 import WizardChrome from "./WizardChrome";
 
 interface PdfWizardProps {
@@ -140,8 +141,19 @@ export default function PdfWizard({ onPatternCreated }: PdfWizardProps) {
         undefined,
       );
       const savedPattern = await savePatternMutation.mutateAsync(patternToSave);
+      // Keep the original PDF(s) so you can refer back to them later. Best-effort:
+      // a storage hiccup shouldn't lose the pattern you just imported.
+      let withFiles = savedPattern;
+      try {
+        if (pdfFiles.length) {
+          const sourceFiles = await attachSourceFiles(savedPattern.id, pdfFiles);
+          withFiles = { ...savedPattern, sourceFiles };
+        }
+      } catch (e) {
+        console.warn('Could not store original PDF(s):', e);
+      }
       queryClient.invalidateQueries({ queryKey: ['/api/patterns'] });
-      onPatternCreated(savedPattern, true);
+      onPatternCreated(withFiles, true);
       toast({
         title: "Pattern imported! 🎉",
         description: `"${savedPattern.title}" is now in your library. Tap any step to edit it.`,

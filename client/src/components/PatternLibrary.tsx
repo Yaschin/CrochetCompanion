@@ -5,22 +5,27 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Pattern } from '../lib/types';
 import { cn } from '../lib/utils';
-import { FolderOpen, Trash, Plus, Search, Heart } from 'lucide-react';
+import { FolderOpen, Trash, Plus, Search, Heart, FileText } from 'lucide-react';
 import { PatternThumb } from '@/components/PatternThumb';
 import { patternProgress } from '../lib/progress';
+import DocumentsList from './DocumentsList';
+import { totalDocumentCount } from '../lib/documents';
 
 interface PatternLibraryProps {
   onPatternSelected: (pattern: Pattern) => void;
   onCreateNew: () => void;
+  /** Which segment to show first — "files" lands on the imported-PDF library. */
+  initialSegment?: 'patterns' | 'files';
 }
 
 type SortKey = 'newest' | 'oldest' | 'title' | 'progress';
 
 const progressOf = (pattern: Pattern) => patternProgress(pattern).pct;
 
-const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNew }) => {
+const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNew, initialSegment = 'patterns' }) => {
   const { toast } = useToast();
 
+  const [segment, setSegment] = useState<'patterns' | 'files'>(initialSegment);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [sort, setSort] = useState<SortKey>('newest');
@@ -126,14 +131,38 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
   }, [patterns, search, typeFilter, sort, favoritesOnly]);
 
   const hasPatterns = !!patterns && patterns.length > 0;
+  const docCount = totalDocumentCount(patterns ?? []);
   const selectClass =
     "rounded-full border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
     <div className="mb-8">
-      <h2 className="mb-4 font-heading text-[20px] font-bold" style={{ color: palette.ink }}>My Patterns</h2>
+      <h2 className="mb-4 font-heading text-[20px] font-bold" style={{ color: palette.ink }}>
+        {segment === 'files' ? 'Imported PDFs' : 'My Patterns'}
+      </h2>
 
-      {isLoading ? (
+      {/* Patterns / Files segment */}
+      <div className="mb-5 inline-flex p-1 rounded-xl" style={{ background: 'rgba(140,100,55,0.08)' }}>
+        {(['patterns', 'files'] as const).map((seg) => (
+          <button
+            key={seg}
+            onClick={() => setSegment(seg)}
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12.5px] font-semibold transition-all"
+            style={{
+              background: segment === seg ? 'white' : 'transparent',
+              color: segment === seg ? palette.rose : palette.clay,
+              boxShadow: segment === seg ? '0 1px 6px rgba(0,0,0,0.1)' : 'none',
+            }}
+          >
+            {seg === 'files' && <FileText className="h-3.5 w-3.5" />}
+            {seg === 'patterns' ? 'Patterns' : `Files${docCount ? ` (${docCount})` : ''}`}
+          </button>
+        ))}
+      </div>
+
+      {segment === 'files' && <DocumentsList onOpenPattern={onPatternSelected} />}
+
+      {segment === 'patterns' && (isLoading ? (
         <div className="flex justify-center py-8">
           <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
         </div>
@@ -272,7 +301,7 @@ const PatternLibrary: FC<PatternLibraryProps> = ({ onPatternSelected, onCreateNe
             </button>
           </div>
         </div>
-      )}
+      ))}
     </div>
   );
 };

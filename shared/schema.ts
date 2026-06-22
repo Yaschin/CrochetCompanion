@@ -74,11 +74,23 @@ export const patterns = pgTable("patterns", {
   favorite: boolean("favorite").notNull().default(false),
   counterState: jsonb("counterState"),
   workSessions: jsonb("workSessions"), // WorkSession[] — actual time crocheted
+  sourceFiles: jsonb("sourceFiles"), // SourceFile[] — original imported PDFs (object-storage keys)
   finishedRecord: jsonb("finishedRecord"), // as-built record (yarn/hook/measurements/notes)
   status: text("status").notNull().default("pattern"),
   startedAt: timestamp("started_at"),
   finishedAt: timestamp("finished_at"),
 });
+
+// An original document the user imported (currently always a PDF). The bytes
+// live in object storage; this metadata rides on the pattern.
+export interface SourceFile {
+  key: string; // object-storage key, served at /api/media/<key>
+  name: string; // original filename, e.g. "Etsy-Bunny.pdf"
+  type: "pdf";
+  size?: number; // bytes
+  pages?: number; // page count (from pdf-parse)
+  addedAt: string; // ISO timestamp
+}
 
 // Define yarn requirement
 export interface YarnRequirement {
@@ -159,6 +171,20 @@ export const patternSchema = z.object({
         start: z.string(),
         end: z.string(),
         ms: z.number(),
+      })
+    )
+    .optional(),
+  // Original imported PDFs kept so you can refer back to the source document.
+  // The bytes live in object storage (key → /api/media/<key>); this is metadata.
+  sourceFiles: z
+    .array(
+      z.object({
+        key: z.string(),
+        name: z.string(),
+        type: z.enum(["pdf"]).default("pdf"),
+        size: z.number().optional(),
+        pages: z.number().optional(),
+        addedAt: z.string(),
       })
     )
     .optional(),
