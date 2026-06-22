@@ -41,6 +41,12 @@ Startup chain: `seedProfilePatterns() → seedProfileStash() → seedLibraryImag
 - vumsh/akka/mummy: 5 patterns + 9 stash items each
 
 ## Deduplication
-`ensureSchema()` runs a DISTINCT ON dedup on every boot — keeps oldest row per (ownerId, title). Guards against multi-phase seed re-runs that happened before the one-time flags were set.
+`ensureSchema()` runs a DISTINCT ON dedup that keeps the oldest row per (ownerId, title).
+It is **one-time, marker-guarded** by `patterns_deduped_v1` (`server/ensureSchema.ts`) —
+it does **not** run on every boot. (Originally it ran every boot, which silently
+deleted any two same-title patterns a user legitimately created; the Batch-1
+hardening, 2026-06-14, made it one-time — see the roadmap progress log.)
 
-**Why:** seedAdditionalPatterns was called multiple times across PR phases before the flag was set, creating up to 5x duplicates. The dedup in ensureSchema is the permanent fix.
+**Why:** seedAdditionalPatterns was called multiple times across PR phases before the
+flag was set, creating up to 5x duplicates. The one-time dedup cleans that up without
+endangering real user data.

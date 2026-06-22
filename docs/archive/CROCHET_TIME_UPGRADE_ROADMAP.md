@@ -1,6 +1,6 @@
 # Crochet Time — Upgrade Roadmap
 
-> ⚠️ **SUPERSEDED (2026-06-07).** This roadmap predates substantial implementation work; its Phase 0/1 items are largely done (persistence, types, durable media, design system) while others diverged (routing not migrated; characters shipped as PNG). See **[`CROCHET_TIME_STATUS_REVIEW_2026-06-07.md`](../CROCHET_TIME_STATUS_REVIEW_2026-06-07.md)** for the current source of truth and next steps. Retained for history only.
+> ⚠️ **SUPERSEDED (2026-06-07).** This roadmap predates substantial implementation work; its Phase 0/1 items are largely done (persistence, types, durable media, design system) while others diverged (routing not migrated; characters shipped as PNG). See **[`CROCHET_TIME_STATUS_REVIEW_2026-06-07.md`](CROCHET_TIME_STATUS_REVIEW_2026-06-07.md)** for the current source of truth and next steps. Retained for history only.
 
 **Prepared for:** Yash · **Date:** 2026-06-06 · **Branch:** `claude/gifted-cerf-ckF8q` · **Companion doc:** [`CROCHET_TIME_CURRENT_STATE_ASSESSMENT.md`](./CROCHET_TIME_CURRENT_STATE_ASSESSMENT.md)
 

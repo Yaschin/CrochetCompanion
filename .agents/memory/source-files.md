@@ -13,7 +13,7 @@ keeps the original PDF** so you can refer back to it.
 - `storage.ts` round-trips it via `rowToPattern` + `patternToColumns` (must be
   listed in both, like `workSessions`).
 
-## Server (`routes.ts`)
+## Server (`server/routes/patternRoutes.ts`)
 - `POST /api/patterns/:id/source-files` `{ files:[{name, base64}] }` — validates
   `%PDF-` header + 10 MB cap, derives `pages` via the lazy `pdfParseFn`, uploads
   as `application/pdf`, appends metadata. **Stored at save, not at parse**, so
